@@ -1,0 +1,171 @@
+<?php
+
+namespace App\Tests\Core\Controller;
+
+use App\Core\Controller\RestController;
+use PHPUnit\Framework\TestCase;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
+
+class TestableRestController extends RestController
+{
+    public function callSuccess($content = '', string $addition_message = 'SUCCESS')
+    {
+        return parent::success($content, $addition_message);
+    }
+
+    public function callWarning(string $error_msg = self::UNKNOWN_ERROR, int $error_code = -1, $raw_data = '')
+    {
+        return parent::warning($error_msg, $error_code, $raw_data);
+    }
+}
+
+
+class RestControllerTest extends TestCase
+{
+    public function testSuccessReturnsSerializedJsonResponse()
+    {
+        $request = Request::create('/', 'GET');
+        $requestStack = new RequestStack();
+        $requestStack->push($request);
+
+        $serializer = $this->createMock(SerializerInterface::class);
+        $serializer->method('serialize')->willReturnCallback(function ($data, $format) {
+            // mimic serializer by returning json-encoded data for assertion
+            return json_encode($data);
+        });
+
+        $translator = $this->createMock(TranslatorInterface::class);
+        $translator->method('trans')->willReturnArgument(0);
+
+        $controller = new TestableRestController($requestStack, $serializer, $translator);
+
+        $content = [ 'foo' => 'bar' ];
+        $resp = $controller->callSuccess($content, 'OK');
+
+        $this->assertEquals(200, $resp->getStatusCode());
+
+        $decoded = json_decode($resp->getContent(), true);
+        $this->assertIsArray($decoded);
+        $this->assertArrayHasKey('data', $decoded);
+        $this->assertEquals($content, $decoded['data']);
+        $this->assertEquals(0, $decoded['code']);
+        $this->assertEquals('OK', $decoded['message']);
+    }
+
+    public function testWarningReturnsTranslatedMessageAndRawData()
+    {
+        $request = Request::create('/', 'GET');
+        $requestStack = new RequestStack();
+        $requestStack->push($request);
+
+        $serializer = $this->createMock(SerializerInterface::class);
+        $serializer->method('serialize')->willReturnCallback(function ($data, $format) {
+            return json_encode($data);
+        });
+
+        $translator = $this->createMock(TranslatorInterface::class);
+        // translator should be called with the error message and return something
+        $translator->expects($this->once())->method('trans')->with('MY_ERROR')->willReturn('TRANSLATED');
+
+        $controller = new TestableRestController($requestStack, $serializer, $translator);
+
+        $resp = $controller->callWarning('MY_ERROR', -5, ['x' => 1]);
+
+        $this->assertEquals(200, $resp->getStatusCode());
+        $decoded = json_decode($resp->getContent(), true);
+
+        $this->assertArrayHasKey('message', $decoded);
+        $this->assertEquals('TRANSLATED', $decoded['message']);
+        $this->assertEquals(-5, $decoded['code']);
+        $this->assertArrayHasKey('raw_data', $decoded);
+        $this->assertEquals(['x' => 1], $decoded['raw_data']);
+    }
+
+    public function testPaginationUsesPaginatorOnGet()
+    {
+        $request = Request::create('/?page=2&limit=10', 'GET');
+        $requestStack = new RequestStack();
+        $requestStack->push($request);
+
+        $serializer = $this->createMock(SerializerInterface::class);
+        $serializer->method('serialize')->willReturnCallback(fn($data, $format) => json_encode($data));
+
+        $translator = $this->createMock(TranslatorInterface::class);
+        $translator->method('trans')->willReturnArgument(0);
+
+        $paginator = new class {
+            public function paginate($collection, $page, $limit) {
+                return array_slice(is_array($collection) ? $collection : (array)$collection, 0, 1);
+            }
+        };
+
+        $controller = new TestableRestController($requestStack, $serializer, $translator);
+        $controller->setPaginator($paginator);
+
+        $content = [1,2,3];
+        $resp = $controller->callSuccess($content, 'OK');
+        $decoded = json_decode($resp->getContent(), true);
+
+        $this->assertEquals([1], $decoded['data']);
+    }
+
+    public function testDisplayReduceProducesIdAndToString()
+    {
+        $entity = new class {
+            public function getId() { return 123; }
+            public function __toString() { return 'entity-123'; }
+        };
+
+        $request = Request::create('/?@display=reduce', 'GET');
+        $requestStack = new RequestStack();
+        $requestStack->push($request);
+
+        $serializer = $this->createMock(SerializerInterface::class);
+        $serializer->method('serialize')->willReturnCallback(fn($data, $format) => json_encode($data));
+
+        $translator = $this->createMock(TranslatorInterface::class);
+        $translator->method('trans')->willReturnArgument(0);
+
+        $controller = new TestableRestController($requestStack, $serializer, $translator);
+
+        $resp = $controller->callSuccess([$entity], 'OK');
+        $decoded = json_decode($resp->getContent(), true);
+
+        $this->assertIsArray($decoded['data']);
+        $this->assertEquals([['id' => 123, '__toString' => 'entity-123']], $decoded['data']);
+    }
+
+    public function testExpressionEvaluationInDisplay()
+    {
+        $entity = new class {
+            public function getId() { return 42; }
+        };
+
+        $display = json_encode(['computed' => 'entity.getId()']);
+        $request = Request::create('/?@display=' . rawurlencode($display), 'GET');
+        $requestStack = new RequestStack();
+        $requestStack->push($request);
+
+        $serializer = $this->createMock(SerializerInterface::class);
+        $serializer->method('serialize')->willReturnCallback(fn($data, $format) => json_encode($data));
+
+        $translator = $this->createMock(TranslatorInterface::class);
+        $translator->method('trans')->willReturnArgument(0);
+
+        $controller = new TestableRestController($requestStack, $serializer, $translator);
+
+        $resp = $controller->callSuccess([$entity], 'OK');
+        $decoded = json_decode($resp->getContent(), true);
+
+        $this->assertIsArray($decoded['data']);
+        $this->assertArrayHasKey(0, $decoded['data']);
+        $this->assertArrayHasKey('computed', $decoded['data'][0]);
+        $this->assertEquals(42, $decoded['data'][0]['computed']);
+    }
+}
+
+
+

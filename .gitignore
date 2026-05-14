@@ -18,3 +18,21 @@
 /public/assets/
 /assets/vendor/
 ###< symfony/asset-mapper ###
+
+# Temp files
+.DS_Store
+Thumbs.db
+
+*.swp
+*.bak
+*.tem
+*.temp
+*.*~
+~*.*
+
+# IntelliJ IDEA Project files
+.idea
+*.iml
+*.ipr
+*.iws
+out

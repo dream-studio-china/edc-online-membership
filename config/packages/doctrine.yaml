@@ -14,11 +14,15 @@ doctrine:
             Doctrine\DBAL\Platforms\PostgreSQLPlatform: identity
         auto_mapping: true
         mappings:
+            # Map the entire src/ folder so Doctrine discovers entities placed
+            # in any subnamespace (for example App\Common\Entity). Using
+            # attribute mapping means Doctrine will look for PHP 8 attributes
+            # on classes under the specified path.
             App:
                 type: attribute
                 is_bundle: false
-                dir: '%kernel.project_dir%/src/Entity'
-                prefix: 'App\Entity'
+                dir: '%kernel.project_dir%/src'
+                prefix: 'App'
                 alias: App
         controller_resolver:
             auto_mapping: false
@@ -26,8 +30,7 @@ doctrine:
 when@test:
     doctrine:
         dbal:
-            # "TEST_TOKEN" is typically set by ParaTest
-            dbname_suffix: '_test%env(default::TEST_TOKEN)%'
+            url: 'sqlite:///%kernel.project_dir%/var/test.db'
 
 when@prod:
     doctrine:

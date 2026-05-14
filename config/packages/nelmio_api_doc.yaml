@@ -1,0 +1,11 @@
+nelmio_api_doc:
+    documentation:
+        openapi: 3.1.0
+        info:
+            title: CRUD Skeleton API
+            version: 1.0.0
+            description: API documentation for the CRUD skeleton project.
+    areas:
+        default:
+            path_patterns:
+                - ^/api(?!/doc(?:\.json)?$)
