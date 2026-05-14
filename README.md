@@ -1,106 +1,271 @@
-Project Title: CRUD Skeleton
+# CRUD Skeleton
 
-Small, modern PHP CRUD skeleton and service layer utilities.
+A production-oriented Symfony + Doctrine CRUD starter with reusable service-layer abstractions.
 
-Overview
---------
-This repository contains a compact PHP project scaffold focused on service-layer patterns for CRUD operations using Doctrine ORM and Symfony components. It is intended as a starting point for building APIs and internal services with a clear separation of responsibilities.
+> Chinese version: see `README.zh-cn.md`
 
-Key Principles
----------------
-- Minimal, pragmatic building blocks for services.
-- Clear separation of concerns: infrastructure helpers, read/list logic and mutation logic are split for easier testing and maintenance.
-- Backwards-compatible helpers (for serializer, request access) so the code works both in legacy and modern Symfony containers.
+## Table of Contents
 
-Highlights
-----------
-- Doctrine ORM based repository and query builder helpers
-- A BaseService abstraction (now composed from small traits) to provide common CRUD patterns
-- Lightweight fake objects in tests to allow unit testing services without booting a framework kernel
+- [Why This Project](#why-this-project)
+- [Features](#features)
+- [Tech Stack](#tech-stack)
+- [Project Structure](#project-structure)
+- [Getting Started](#getting-started)
+- [Configuration](#configuration)
+- [Run Locally](#run-locally)
+- [API Endpoints](#api-endpoints)
+- [How the Service Layer Works](#how-the-service-layer-works)
+- [Create Your Own CRUD Module](#create-your-own-crud-module)
+- [Testing](#testing)
+- [Docker Notes](#docker-notes)
+- [Troubleshooting](#troubleshooting)
+- [Contributing](#contributing)
+- [License](#license)
 
-Requirements
-------------
-- PHP >= 8.4
-- Composer
-- The project expects Symfony components and Doctrine packages (see composer.json). For development and running tests you should have dev dependencies installed via Composer.
+## Why This Project
 
-Installation
-------------
-1. Clone the repository:
+This repository is designed as a clean foundation for backend CRUD development with Symfony.
 
-   git clone <repo-url>
-   cd crud-skeleton
+Compared with plain generated boilerplate, it provides:
 
-2. Install dependencies:
+- A shared `BaseService` contract for common entity operations.
+- Reusable API view mixins (list/detail/create/update/delete).
+- A practical pattern for keeping controller logic thin and business logic in services.
+- Backward-compatible behavior while modernizing internal implementation.
 
-   composer install
+## Features
 
-3. Prepare environment (if you will run the integration tests):
-   - Configure a database connection in your .env or Symfony config
-   - Run migrations / schema setup as appropriate for the chosen DB
+- Generic CRUD service methods: `new()`, `get()`, `list()`, `update()`, `updateWithoutListener()`, `remove()`.
+- Dynamic list query options through request parameters (ordering/filtering/grouping/select).
+- OpenAPI attributes on API mixins for API documentation tooling.
+- Unit and integration tests included.
+- Docker Compose setup for PostgreSQL and Mailpit.
 
-Usage
------
-This skeleton is primarily focused on the service layer. Typical usage patterns:
+## Tech Stack
 
-- Build a concrete service by extending App\Core\Service\BaseService and passing the entity class in the constructor.
-- Use the service to create, read, update and delete entities via provided methods: new(), get(), list(), update(), updateWithoutListener(), remove().
+- PHP `>= 8.4`
+- Symfony `8.x`
+- Doctrine ORM `^3.6`
+- PHPUnit `^12.5`
+- PostgreSQL (via Docker Compose)
 
-Example
--------
-Minimal example (pseudocode):
+See `composer.json` for the full dependency list.
 
-   $service = new ContentBaseService($container);
-   $entity = $service->new();
-   $service->update($entity, ['title' => 'Hello']);
-   $fetched = $service->get($entity->getId());
+## Project Structure
 
-Testing
--------
-Unit tests in this repository use PHPUnit. To run the tests:
+```text
+.
+├── src
+│   ├── Common
+│   │   ├── Controller
+│   │   ├── Entity
+│   │   ├── Repository
+│   │   └── Service
+│   └── Core
+│       ├── Controller
+│       ├── Service
+│       │   ├── Concern
+│       │   └── BaseService.php
+│       └── View
+├── tests
+│   ├── Core
+│   └── Integration
+├── compose.yaml
+├── compose.override.yaml
+└── phpunit.dist.xml
+```
 
-1. Ensure your local PHP version meets the requirement (see composer.json). PHPUnit used by the repo expects PHP >= 8.3 or as declared by composer dev dependencies.
-2. Install dev dependencies: composer install --dev
-3. Run tests:
+## Getting Started
 
-   ./vendor/bin/phpunit
+### 1) Clone
 
-If you encounter a PHP version mismatch when running phpunit locally (for example older system PHP), consider using a tool like phpenv, Docker, or a container image that provides the required PHP version.
+```bash
+git clone <your-repo-url>
+cd crud-skeleton
+```
 
-Repository Layout
------------------
-- src/ - application source code
-  - Core/Service - base service and supporting traits & helpers
-- tests/ - unit and integration tests
-- composer.json - dependency and autoload configuration
+### 2) Install dependencies
 
-Contributing
-------------
-Contributions are welcome. When contributing:
+```bash
+composer install
+```
 
-1. Open a feature branch from main.
-2. Keep changes focused and small; prefer small helpers to monolithic changes.
-3. Run tests locally and ensure static checks (if any) pass.
-4. Create a pull request with a clear title and description explaining the "why" not only the "what".
+### 3) Prepare environment
 
-Versioning & Releases
----------------------
-This repository follows semantic versioning for releases. For GitHub Releases provide a changelog entry summarising the notable changes.
+Create your local overrides in `.env.local`:
 
-License
--------
-The repository contains a proprietary license placeholder in composer.json. Confirm licensing with repository owners before redistributing.
+```dotenv
+APP_ENV=dev
+APP_SECRET=change-me
+DATABASE_URL="postgresql://app:!ChangeMe!@127.0.0.1:5432/app?serverVersion=16&charset=utf8"
+```
 
-Contact
--------
-If you have questions or need assistance, open an issue or contact the maintainers listed on the repository.
+## Configuration
 
-Appendix: Notes about BaseService refactor
------------------------------------------
-To make the code easier to maintain and test the monolithic BaseService was refactored into smaller traits, grouped by responsibility:
+Important environment variables (see `.env`):
 
-- Concern/BaseServiceInfrastructureTrait — infrastructure helpers (serializer, logger, entity manager access, etc.)
-- Concern/BaseServiceReadListTrait — read/list/query logic (the former list/get behaviors)
-- Concern/BaseServiceMutationTrait — create/update/remove and metadata handling
+- `APP_ENV`
+- `APP_SECRET`
+- `DATABASE_URL`
+- `MAILER_DSN`
 
-This refactor is internal: public API (BaseServiceInterface and method signatures) were kept intact so existing callers should continue to work.
+For production, do not store secrets in committed files.
+
+## Run Locally
+
+### Option A: Native PHP/Symfony
+
+```bash
+symfony server:start
+```
+
+or
+
+```bash
+php -S 127.0.0.1:8000 -t public
+```
+
+### Option B: Database with Docker Compose
+
+```bash
+docker compose up -d
+```
+
+Then run DB schema/migrations using Symfony console:
+
+```bash
+php bin/console doctrine:migrations:migrate
+```
+
+If no migrations exist yet, you can use schema tools according to your workflow.
+
+## API Endpoints
+
+Current sample module exposes content APIs:
+
+### App scope (read-only style)
+
+- `GET /api/v1/app/contents` - list
+- `GET /api/v1/app/contents/{id}` - detail
+
+### Manage scope (CRUD style)
+
+- `GET /api/v1/manage/contents` - list
+- `GET /api/v1/manage/contents/{id}` - detail
+- `POST /api/v1/manage/contents` - create
+- `PUT /api/v1/manage/contents/{id}` - update
+- `POST /api/v1/manage/contents/batch-update` - batch update/create mixed mode
+- `DELETE /api/v1/manage/contents/{id}` - delete
+
+### Example request
+
+```bash
+curl -X POST "http://127.0.0.1:8000/api/v1/manage/contents" \
+  -H "Content-Type: application/json" \
+  -d '{"title":"Hello","body":"World"}'
+```
+
+## How the Service Layer Works
+
+`BaseService` composes focused traits under `src/Core/Service/Concern`:
+
+- `BaseServiceInfrastructureTrait`
+  - EntityManager/repository/logger/serializer access
+  - Request stack and validator helpers
+  - Expression service and legacy evaluator lazy creation
+- `BaseServiceReadListTrait`
+  - `get()` and `list()` behavior
+  - QueryBuilder-based listing, request-driven filters/order/group/select
+- `BaseServiceMutationTrait`
+  - `new()`, `update()`, `updateWithoutListener()`, `remove()`
+  - Relation/date mapping handling and metadata extraction
+
+Public interface compatibility is preserved through `BaseServiceInterface`.
+
+## Create Your Own CRUD Module
+
+Typical workflow:
+
+1. Create a Doctrine entity in `src/Common/Entity`.
+2. Create a service class extending `BaseService`.
+3. Create a controller using API mixins from `src/Core/View`.
+4. Configure accepted/required input fields in controller properties.
+
+Minimal service example:
+
+```php
+<?php
+
+namespace App\Common\Service;
+
+use App\Common\Entity\Content;
+use App\Core\Service\BaseService;
+use App\Core\Service\ServiceLocatorInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
+
+class ContentService extends BaseService
+{
+    public function __construct(ContainerInterface $container, ServiceLocatorInterface $locator)
+    {
+        parent::__construct($container, Content::class, $locator);
+    }
+}
+```
+
+## Testing
+
+Run all tests:
+
+```bash
+./vendor/bin/phpunit
+```
+
+Run a single test:
+
+```bash
+./vendor/bin/phpunit tests/Core/Service/BaseServiceUnitTest.php
+```
+
+`phpunit.dist.xml` is preconfigured with `APP_ENV=test` and `KERNEL_CLASS=App\Kernel`.
+
+## Docker Notes
+
+The repository includes:
+
+- `compose.yaml` - PostgreSQL service
+- `compose.override.yaml` - host ports + Mailpit
+
+Default exposed ports:
+
+- PostgreSQL: `5432`
+- Mailpit SMTP: `1025`
+- Mailpit UI: `8025`
+
+## Troubleshooting
+
+### PHPUnit says your PHP version is too old
+
+The project dependencies require modern PHP. Ensure your CLI uses the same major version as in `composer.json` (`>= 8.4`).
+
+### Database connection errors
+
+- Verify `DATABASE_URL`.
+- Ensure PostgreSQL is running.
+- Ensure DB user/password/dbname match compose environment.
+
+### Empty responses or serialization issues
+
+Check serializer service wiring and request parameters like `@display`, `@expands`, `@filter`.
+
+## Contributing
+
+1. Fork and create a feature branch.
+2. Keep pull requests focused.
+3. Add/update tests for behavior changes.
+4. Use clear commit messages describing the reason for changes.
+
+## License
+
+`composer.json` currently marks this project as `proprietary`.
+
+If you plan to publish publicly, update license metadata and add a dedicated `LICENSE` file.
