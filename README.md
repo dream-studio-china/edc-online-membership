@@ -1,82 +1,106 @@
-CRUD Skeleton (Symfony)
-======================
+Project Title: CRUD Skeleton
 
-Minimal, pragmatic CRUD skeleton built on Symfony. This repository contains a lightweight service layer (BaseService), controller helpers (RestController and API view mixins), a sample Content entity and service, and small serializer customizations used in API responses.
+Small, modern PHP CRUD skeleton and service layer utilities.
 
-This README explains how to get the project running locally, common troubleshooting, and a few notes about the project's DI/service patterns.
+Overview
+--------
+This repository contains a compact PHP project scaffold focused on service-layer patterns for CRUD operations using Doctrine ORM and Symfony components. It is intended as a starting point for building APIs and internal services with a clear separation of responsibilities.
+
+Key Principles
+---------------
+- Minimal, pragmatic building blocks for services.
+- Clear separation of concerns: infrastructure helpers, read/list logic and mutation logic are split for easier testing and maintenance.
+- Backwards-compatible helpers (for serializer, request access) so the code works both in legacy and modern Symfony containers.
+
+Highlights
+----------
+- Doctrine ORM based repository and query builder helpers
+- A BaseService abstraction (now composed from small traits) to provide common CRUD patterns
+- Lightweight fake objects in tests to allow unit testing services without booting a framework kernel
 
 Requirements
 ------------
 - PHP >= 8.4
 - Composer
-- A supported database (MySQL, MariaDB, PostgreSQL) and its PHP extension
-- Node/npm only if you use frontend assets (not required for backend API)
+- The project expects Symfony components and Doctrine packages (see composer.json). For development and running tests you should have dev dependencies installed via Composer.
 
-Quick Start
------------
-1. Install dependencies:
+Installation
+------------
+1. Clone the repository:
+
+   git clone <repo-url>
+   cd crud-skeleton
+
+2. Install dependencies:
 
    composer install
 
-2. Copy environment file and edit database settings:
+3. Prepare environment (if you will run the integration tests):
+   - Configure a database connection in your .env or Symfony config
+   - Run migrations / schema setup as appropriate for the chosen DB
 
-   cp .env .env.local
-   # Edit DATABASE_URL in .env.local
+Usage
+-----
+This skeleton is primarily focused on the service layer. Typical usage patterns:
 
-3. Create the database and run migrations (example using doctrine):
+- Build a concrete service by extending App\Core\Service\BaseService and passing the entity class in the constructor.
+- Use the service to create, read, update and delete entities via provided methods: new(), get(), list(), update(), updateWithoutListener(), remove().
 
-   php bin/console doctrine:database:create
-   php bin/console doctrine:migrations:migrate
+Example
+-------
+Minimal example (pseudocode):
 
-4. Run the dev server:
-
-   symfony server:start
-
-API endpoints
--------------
-- GET /api/v1/manage/contents — list contents (management)
-- POST /api/v1/app/contents — create content (app)
-
-See src/Common/Controller for controllers and route attributes.
+   $service = new ContentBaseService($container);
+   $entity = $service->new();
+   $service->update($entity, ['title' => 'Hello']);
+   $fetched = $service->get($entity->getId());
 
 Testing
 -------
-- Run PHPUnit tests:
+Unit tests in this repository use PHPUnit. To run the tests:
 
-  ./vendor/bin/phpunit
+1. Ensure your local PHP version meets the requirement (see composer.json). PHPUnit used by the repo expects PHP >= 8.3 or as declared by composer dev dependencies.
+2. Install dev dependencies: composer install --dev
+3. Run tests:
 
-Note: Your local PHP version must meet composer.json requirements (>= 8.4) to run console and tests.
+   ./vendor/bin/phpunit
 
-Service / DI notes (important)
------------------------------
-- The project historically used direct Container access in services. To improve testability and robustness there's a small ServiceLocator abstraction at src/Core/Service/ServiceLocatorInterface and a DefaultServiceLocator implementation.
-- BaseService tries to prefer a ServiceLocator (if provided) and falls back to creating a DefaultServiceLocator from the container. This allows gradual migration away from direct container usage while keeping backward compatibility.
-- The project also provides a FlatNormalizer (src/Core/Serializer/Normalizer/FlatNormalizer.php) that decorates the object normalizer to produce flattened API output. That decorator is registered in src/Core/Resources/config/services.yaml.
+If you encounter a PHP version mismatch when running phpunit locally (for example older system PHP), consider using a tool like phpenv, Docker, or a container image that provides the required PHP version.
 
-Common runtime issues & troubleshooting
--------------------------------------
-- "Serializer service is not available" — If you see this error, the BaseService fallback attempted to use framework serializer but it wasn't available in your runtime container. The project now builds a local fallback Serializer when needed, but you should ensure:
-  - framework.serializer is enabled in config/packages/serializer.yaml (enabled: true)
-  - serializer service is present in the container (php bin/console debug:container serializer)
-  - PHP version meets composer requirements (>= 8.4) when running console commands
-
-- "logger service removed or inlined" — modern Symfony compilation can inline or remove services. We alias LoggerInterface to the logger service in config/services.yaml and BaseService uses a NullLogger fallback when necessary.
-
-Development guidance
---------------------
-- Prefer explicit constructor injection for the concrete dependencies your service needs (EntityManager, LoggerInterface, RequestStack, SerializerInterface) rather than injecting the whole container.
-- Use ServiceLocatorInterface when you need a centralized place to resolve many optional services; prefer it to anonymous container->get() calls scattered across the codebase.
-- Keep serializer customizers (normalizers/encoders) registered in src/Core/Resources/config/services.yaml so the framework serializer composes them as expected.
+Repository Layout
+-----------------
+- src/ - application source code
+  - Core/Service - base service and supporting traits & helpers
+- tests/ - unit and integration tests
+- composer.json - dependency and autoload configuration
 
 Contributing
 ------------
-- Fork the repo, create a branch, make small focused changes and open a PR with a clear description. Include tests for behavior changes when possible.
+Contributions are welcome. When contributing:
+
+1. Open a feature branch from main.
+2. Keep changes focused and small; prefer small helpers to monolithic changes.
+3. Run tests locally and ensure static checks (if any) pass.
+4. Create a pull request with a clear title and description explaining the "why" not only the "what".
+
+Versioning & Releases
+---------------------
+This repository follows semantic versioning for releases. For GitHub Releases provide a changelog entry summarising the notable changes.
 
 License
 -------
-Proprietary (see composer.json)
+The repository contains a proprietary license placeholder in composer.json. Confirm licensing with repository owners before redistributing.
 
-References
-----------
-- Symfony DI: https://symfony.com/doc/current/service_container.html
-- Symfony Serializer: https://symfony.com/doc/current/components/serializer.html
+Contact
+-------
+If you have questions or need assistance, open an issue or contact the maintainers listed on the repository.
+
+Appendix: Notes about BaseService refactor
+-----------------------------------------
+To make the code easier to maintain and test the monolithic BaseService was refactored into smaller traits, grouped by responsibility:
+
+- Concern/BaseServiceInfrastructureTrait — infrastructure helpers (serializer, logger, entity manager access, etc.)
+- Concern/BaseServiceReadListTrait — read/list/query logic (the former list/get behaviors)
+- Concern/BaseServiceMutationTrait — create/update/remove and metadata handling
+
+This refactor is internal: public API (BaseServiceInterface and method signatures) were kept intact so existing callers should continue to work.
