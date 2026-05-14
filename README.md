@@ -165,6 +165,28 @@ curl -X POST "http://127.0.0.1:8000/api/v1/manage/contents" \
   -d '{"title":"Hello","body":"World"}'
 ```
 
+### Pagination response format
+
+List endpoints return a JSON envelope with `data` and — when pagination is applied — a `paginator` object with canonical metadata. Example:
+
+```json
+{
+  "data": [ /* items for current page */ ],
+  "code": 0,
+  "message": "SUCCESS",
+  "paginator": {
+    "total": 123,
+    "page": 2,
+    "limit": 10,
+    "pages": 13,
+    "has_previous": true,
+    "has_next": true
+  }
+}
+```
+
+This project no longer depends on the Knp paginator implementation; QueryBuilder-based results use Doctrine's paginator and arrays/collections use array slicing. Controllers extending `App\Core\Controller\RestController` will receive pagination metadata automatically.
+
 ## How the Service Layer Works
 
 `BaseService` composes focused traits under `src/Core/Service/Concern`:
@@ -191,6 +213,36 @@ Typical workflow:
 3. Create a controller using API mixins from `src/Core/View`.
 4. Configure accepted/required input fields in controller properties.
 
+Note on controller construction
+
+Controllers that extend `App\Core\Controller\RestController` do not need to explicitly forward framework-level services (RequestStack, Serializer, Translator) to the parent constructor. Those core dependencies are injected by the service container via setter injection so you can declare only your module-specific constructor arguments (for example the domain service) and keep controllers concise.
+
+
+Minimal controller example:
+
+```php
+<?php /** @noinspection PhpMissingParentConstructorInspection */
+
+namespace App\Common\Controller\App;
+
+use App\Common\Service\ContentServiceInterface;
+use App\Core\Controller\RestController;
+use App\Core\View\ApiView;
+use App\Core\View\DetailApiViewMixin;
+use App\Core\View\ListApiViewMixin;
+use Symfony\Component\Routing\Attribute\Route;
+
+#[Route('/api/v1/app/contents', name: 'app-contents-')]
+class ContentController extends RestController
+{
+    use ApiView, DetailApiViewMixin, ListApiViewMixin;
+
+    public function __construct(
+        protected readonly ContentServiceInterface $service
+    ) {}
+}
+```
+
 Minimal service example:
 
 ```php
@@ -200,14 +252,13 @@ namespace App\Common\Service;
 
 use App\Common\Entity\Content;
 use App\Core\Service\BaseService;
-use App\Core\Service\ServiceLocatorInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
-class ContentService extends BaseService
+class ContentService extends BaseService implements ContentServiceInterface
 {
-    public function __construct(ContainerInterface $container, ServiceLocatorInterface $locator)
+    public function __construct(ContainerInterface $container)
     {
-        parent::__construct($container, Content::class, $locator);
+        parent::__construct($container, Content::class);
     }
 }
 ```
