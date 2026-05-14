@@ -7,18 +7,19 @@ use App\Core\Utils\FixJSON;
 use App\Core\Utils\Math;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\QueryBuilder;
+use Doctrine\ORM\Tools\Pagination\Paginator as DoctrinePaginator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\ExpressionLanguage\ExpressionLanguage;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Contracts\Service\Attribute\Required;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 class RestController extends AbstractController
 {
     const UNKNOWN_ERROR = 'Api error occurred';
-
-    private ?object $paginator = null;
 
     // Allow nullable properties so child controllers may omit calling parent::__construct()
     private ?RequestStack $requestStack = null;
@@ -31,17 +32,37 @@ class RestController extends AbstractController
      * lazily from the container (AbstractController::$container) so child controllers don't
      * need to explicitly declare or forward those arguments.
      */
-    public function __construct(?RequestStack $requestStack = null, ?SerializerInterface $serializer = null, ?TranslatorInterface $translator = null)
-    {
+    public function __construct(
+        ?RequestStack $requestStack = null,
+        ?SerializerInterface $serializer = null,
+        ?TranslatorInterface $translator = null
+    ) {
         $this->requestStack = $requestStack;
         $this->serializer = $serializer;
         $this->translator = $translator;
     }
-
     /** @noinspection PhpPossiblePolymorphicInvocationInspection */
     public function getService(): object
     {
         return $this->service;
+    }
+
+    #[Required]
+    public function setRequestStack(RequestStack $requestStack): void
+    {
+        $this->requestStack = $requestStack;
+    }
+
+    #[Required]
+    public function setSerializer(SerializerInterface $serializer): void
+    {
+        $this->serializer = $serializer;
+    }
+
+    #[Required]
+    public function setTranslator(TranslatorInterface $translator): void
+    {
+        $this->translator = $translator;
     }
 
     protected function getRequestStack(): RequestStack
@@ -49,25 +70,15 @@ class RestController extends AbstractController
         if ($this->requestStack instanceof RequestStack) {
             return $this->requestStack;
         }
-        if (isset($this->container) && $this->container->has('request_stack')) {
-            // AbstractController provides $this->container
-            $this->requestStack = $this->container->get('request_stack');
-            return $this->requestStack;
-        }
         throw new \RuntimeException('RequestStack is not available in RestController');
     }
-
-    public function setPaginator(?object $paginator): void { $this->paginator = $paginator; }
 
     protected function getSerializer()
     {
         if ($this->serializer instanceof SerializerInterface) {
             return $this->serializer;
         }
-        if (isset($this->container) && $this->container->has('serializer')) {
-            $this->serializer = $this->container->get('serializer');
-            return $this->serializer;
-        }
+
         throw new \RuntimeException('Serializer is not available in RestController');
     }
 
@@ -76,47 +87,60 @@ class RestController extends AbstractController
         if ($this->translator instanceof TranslatorInterface) {
             return $this->translator;
         }
-        if (isset($this->container) && $this->container->has('translator')) {
-            $this->translator = $this->container->get('translator');
-            return $this->translator;
-        }
+
         throw new \RuntimeException('Translator is not available in RestController');
     }
 
 
     /**
-     * @param $collection
-     * @return array|ArrayCollection|QueryBuilder
+     * @param mixed $collection
+     * @return array{items:mixed,paginator:?array}
      */
     protected function pagination($collection)
     {
         // get current request
         $request = $this->getRequestStack()->getCurrentRequest();
+        if ($request === null || $request->getMethod() !== 'GET') {
+            return ['items' => $collection, 'paginator' => null];
+        }
 
         $DEFAULT_PAGE_LIMIT = 100; // PHP_INT_MAX
+        $page = max(1, $request->query->getInt('page', 1));
+        $limit = max(1, $request->query->getInt('limit', $DEFAULT_PAGE_LIMIT));
+        $offset = ($page - 1) * $limit;
 
-        if ($collection && (
-                is_array($collection)
-                || $collection instanceof ArrayCollection
-                || $collection instanceof QueryBuilder
-            )) {
-            $pager = $this->paginator;
-            if (!is_object($pager) || !method_exists($pager, 'paginate')) {
-                return $collection;
-            }
+        $buildMeta = static function (int $total, int $page, int $limit): array {
+            $pages = max(1, (int) ceil($total / $limit));
+            return [
+                'total' => $total,
+                'page' => $page,
+                'limit' => $limit,
+                'pages' => $pages,
+                'has_previous' => $page > 1,
+                'has_next' => $page < $pages,
+            ];
+        };
 
-            if ($request->getMethod() === 'GET') {
-                // GET
-                $paginated = $pager->paginate($collection,
-                    $request->query->getInt('page', 1),
-                    $request->query->getInt('limit', $DEFAULT_PAGE_LIMIT));
-            } else {
-                $paginated = $collection;
-            }
-            return $paginated;
-        } else {
-            return $collection;
+        if ($collection instanceof QueryBuilder) {
+            $query = $collection->getQuery();
+            $total = count(new DoctrinePaginator($query, true));
+            $collection->setFirstResult($offset)->setMaxResults($limit);
+            return [
+                'items' => $collection->getQuery()->getResult(),
+                'paginator' => $buildMeta($total, $page, $limit),
+            ];
         }
+
+        if (is_array($collection) || $collection instanceof ArrayCollection) {
+            $items = $collection instanceof ArrayCollection ? $collection->toArray() : $collection;
+            $total = count($items);
+            return [
+                'items' => array_slice($items, $offset, $limit),
+                'paginator' => $buildMeta($total, $page, $limit),
+            ];
+        }
+
+        return ['items' => $collection, 'paginator' => null];
     }
 
     /**
@@ -270,10 +294,12 @@ class RestController extends AbstractController
     /**
      * @param mixed $content
      * @param string $addition_message
+     * @param int $status
      * @return Response
+     * @throws ExceptionInterface
      */
     protected function success(
-        $content = '',
+        mixed $content = '',
         string $addition_message = 'SUCCESS',
         int $status = 200
     ): Response
@@ -282,31 +308,16 @@ class RestController extends AbstractController
             return new Response('', 204, ['Content-Type' => 'application/json']);
         }
 
-        $paginatedContent = $this->pagination($content);
-
-        // If pagination did not execute the query (no paginator available) and
-        // we still have a QueryBuilder, execute it to get serializable results.
-        if ($paginatedContent instanceof QueryBuilder) {
-            $paginatedContent = $paginatedContent->getQuery()->getResult();
-        }
-
-        if ($this->isKnpPagination($paginatedContent)) {
-            /** @var \Knp\Component\Pager\Pagination\AbstractPagination $pagination */
-            $pagination = $paginatedContent;
-            $processedContent = $this->requestProcess($pagination->getItems());
-        } else {
-            $processedContent = $this->requestProcess($paginatedContent);
-        }
+        $paginated = $this->pagination($content);
+        $processedContent = $this->requestProcess($paginated['items']);
 
         $response = [
             'data' => $processedContent,
             'code' => 0,
             'message' => $addition_message,
         ];
-        if ($this->isKnpPagination($paginatedContent)) {
-            /** @var \Knp\Component\Pager\Pagination\AbstractPagination $pagination */
-            $pagination = $paginatedContent;
-            $response['paginator'] = $pagination->getPaginationData();
+        if (is_array($paginated['paginator'])) {
+            $response['paginator'] = $paginated['paginator'];
         }
         return new Response(
             $this->getSerializer()->serialize($response, 'json'),
@@ -319,12 +330,14 @@ class RestController extends AbstractController
      * @param string $error_msg
      * @param int $error_code
      * @param mixed $raw_data
+     * @param int $status
      * @return Response
+     * @throws ExceptionInterface
      */
     protected function warning(
         string $error_msg = self::UNKNOWN_ERROR,
         int $error_code = -1,
-        $raw_data = '',
+        mixed $raw_data = '',
         int $status = 200
     ): Response
     {
@@ -340,9 +353,4 @@ class RestController extends AbstractController
         );
     }
 
-    private function isKnpPagination($value): bool
-    {
-        return class_exists('Knp\\Component\\Pager\\Pagination\\AbstractPagination')
-            && $value instanceof \Knp\Component\Pager\Pagination\AbstractPagination;
-    }
 }

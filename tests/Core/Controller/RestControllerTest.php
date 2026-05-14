@@ -84,9 +84,9 @@ class RestControllerTest extends TestCase
         $this->assertEquals(['x' => 1], $decoded['raw_data']);
     }
 
-    public function testPaginationUsesPaginatorOnGet()
+    public function testPaginationUsesBuiltInPaginationOnGet()
     {
-        $request = Request::create('/?page=2&limit=10', 'GET');
+        $request = Request::create('/?page=2&limit=1', 'GET');
         $requestStack = new RequestStack();
         $requestStack->push($request);
 
@@ -96,20 +96,17 @@ class RestControllerTest extends TestCase
         $translator = $this->createMock(TranslatorInterface::class);
         $translator->method('trans')->willReturnArgument(0);
 
-        $paginator = new class {
-            public function paginate($collection, $page, $limit) {
-                return array_slice(is_array($collection) ? $collection : (array)$collection, 0, 1);
-            }
-        };
-
         $controller = new TestableRestController($requestStack, $serializer, $translator);
-        $controller->setPaginator($paginator);
 
         $content = [1,2,3];
         $resp = $controller->callSuccess($content, 'OK');
         $decoded = json_decode($resp->getContent(), true);
 
-        $this->assertEquals([1], $decoded['data']);
+        $this->assertEquals([2], $decoded['data']);
+        $this->assertArrayHasKey('paginator', $decoded);
+        $this->assertSame(3, $decoded['paginator']['total']);
+        $this->assertSame(2, $decoded['paginator']['page']);
+        $this->assertSame(1, $decoded['paginator']['limit']);
     }
 
     public function testDisplayReduceProducesIdAndToString()

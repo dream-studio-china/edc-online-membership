@@ -48,6 +48,4 @@ services:
             # $tokenStorage: '@security.token_storage'
             $logger: '@logger'
 
-    App\Core\Controller\RestController:
-        calls:
-            - [ setPaginator, [ '@?knp_paginator' ] ]
+    # RestController dependencies are injected in config/services.yaml via _instanceof.
