@@ -48,6 +48,6 @@ trait DetailApiViewMixin
 
         return $response ?
             $this->success($response):
-            $this->warning('Entity is not found');
+            $this->warning('Entity is not found', 404, '', 404);
     }
 }

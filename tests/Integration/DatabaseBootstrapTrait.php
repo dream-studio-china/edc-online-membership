@@ -36,4 +36,12 @@ trait DatabaseBootstrapTrait
 
         self::$dbBootstrapped = true;
     }
+
+    /**
+     * Ensure KernelTestCase can find the Kernel class in this test suite.
+     */
+    protected static function getKernelClass(): string
+    {
+        return 'App\\Kernel';
+    }
 }

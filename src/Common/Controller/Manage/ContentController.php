@@ -21,6 +21,10 @@ class ContentController extends RestController
     use ApiView, DetailApiViewMixin, ListApiViewMixin,
         CreateApiViewMixin, UpdateApiViewMixin, DeleteApiViewMixin;
 
+    protected array $requiredCreateProperties = ['title'];
+    protected array $acceptedCreateProperties = ['title', 'body'];
+    protected array $acceptedUpdateProperties = ['title', 'body'];
+
     public function __construct(
         RequestStack $requestStack,
         SerializerInterface $serializer,

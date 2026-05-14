@@ -239,9 +239,14 @@ class RestController extends AbstractController
      */
     protected function success(
         $content = '',
-        string $addition_message = 'SUCCESS'
+        string $addition_message = 'SUCCESS',
+        int $status = 200
     ): Response
     {
+        if ($status === 204) {
+            return new Response('', 204, ['Content-Type' => 'application/json']);
+        }
+
         $paginatedContent = $this->pagination($content);
 
         // If pagination did not execute the query (no paginator available) and
@@ -270,7 +275,8 @@ class RestController extends AbstractController
         }
         return new Response(
             $this->getSerializer()->serialize($response, 'json'),
-            200, array()
+            $status,
+            ['Content-Type' => 'application/json']
         );
     }
 
@@ -283,7 +289,8 @@ class RestController extends AbstractController
     protected function warning(
         string $error_msg = self::UNKNOWN_ERROR,
         int $error_code = -1,
-        $raw_data = ''
+        $raw_data = '',
+        int $status = 200
     ): Response
     {
         $response = [
@@ -293,7 +300,8 @@ class RestController extends AbstractController
         ];
         return new Response(
             $this->getSerializer()->serialize($response, 'json'),
-            200, array()
+            $status,
+            ['Content-Type' => 'application/json']
         );
     }
 

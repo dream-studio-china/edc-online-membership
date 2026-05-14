@@ -7,6 +7,7 @@ use OpenApi\Attributes as OA;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Validator\Exception\ValidatorException;
 
 trait CreateApiViewMixin
@@ -66,6 +67,10 @@ trait CreateApiViewMixin
     {
         $service = $this->service ?? $this->get($this->serviceClass);
 
+        if (FixJSON::getJSONType($request->getContent()) === false) {
+            return $this->warning('Invalid JSON', 400, '', 400);
+        }
+
         // External content
         $contents = json_decode($request->getContent(), true) ? : [];
 
@@ -114,7 +119,7 @@ trait CreateApiViewMixin
                     if(property_exists($this, 'requiredCreateProperties')) {
                         foreach ($this->requiredCreateProperties as $property) {
                             if (!array_key_exists($property, $content))
-                                throw new ValidatorException(ucfirst($property) . " cannot be empty.");
+                                throw new ValidatorException(ucfirst($property) . " is required");
                             $data[$property] = $content[$property];
                         }
                     }
@@ -157,13 +162,22 @@ trait CreateApiViewMixin
 
             // $em->commit();
         }
+        catch (ValidatorException $exception) {
+            if (!$partial) {
+                return $this->warning($exception->getMessage(), 400, '', 400);
+            }
+        }
+        catch (NotFoundHttpException $exception) {
+            if (!$partial) {
+                return $this->warning($exception->getMessage(), 404, '', 404);
+            }
+        }
         catch (\Exception $exception) {
             if(!$partial) {
-                // $em->rollback();
-                throw $exception;
+                return $this->warning($exception->getMessage() ?: 'Create failed', 500, '', 500);
             }
         }
 
-        return $this->success($response);
+        return $this->success($response, 'SUCCESS', 201);
     }
 }

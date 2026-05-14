@@ -1,0 +1,28 @@
+common_content_list:
+    path: /api/contents
+    controller: App\Common\Controller\Manage\ContentController::listAction
+    methods: [GET]
+
+common_content_create:
+    path: /api/contents
+    controller: App\Common\Controller\Manage\ContentController::createAction
+    methods: [POST]
+
+common_content_detail:
+    path: /api/contents/{id}
+    controller: App\Common\Controller\Manage\ContentController::detailAction
+    methods: [GET]
+    requirements: { id: '\d+' }
+
+common_content_update:
+    path: /api/contents/{id}
+    controller: App\Common\Controller\Manage\ContentController::updateAction
+    methods: [PUT]
+    requirements: { id: '\d+' }
+
+common_content_delete:
+    path: /api/contents/{id}
+    controller: App\Common\Controller\Manage\ContentController::deleteAction
+    methods: [DELETE]
+    requirements: { id: '\d+' }
+

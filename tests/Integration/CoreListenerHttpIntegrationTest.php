@@ -4,9 +4,8 @@ namespace App\Tests\Integration;
 
 use App\Common\Entity\Content;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
-final class CoreListenerHttpIntegrationTest extends WebTestCase
+final class CoreListenerHttpIntegrationTest extends IntegrationWebTestCase
 {
     use DatabaseBootstrapTrait;
 

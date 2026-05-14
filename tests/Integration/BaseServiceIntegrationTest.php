@@ -5,10 +5,9 @@ namespace App\Tests\Integration;
 use App\Common\Entity\Content;
 use App\Core\Service\BaseService;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
-final class BaseServiceIntegrationTest extends KernelTestCase
+final class BaseServiceIntegrationTest extends IntegrationKernelTestCase
 {
     use DatabaseBootstrapTrait;
 

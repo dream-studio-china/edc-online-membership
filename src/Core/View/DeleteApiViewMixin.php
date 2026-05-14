@@ -28,7 +28,11 @@ trait DeleteApiViewMixin
         $filter = $this->deletionFilter($filter);
         $entity = $service->get($filter, false);
 
+        if (!$entity) {
+            return $this->warning('Entity is not found', 404, '', 404);
+        }
+
         return $service->remove($entity) ?
-            $this->success() : $this->warning();
+            $this->success('', 'SUCCESS', 204) : $this->warning();
     }
 }

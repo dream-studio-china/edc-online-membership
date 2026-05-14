@@ -3,9 +3,8 @@
 namespace App\Tests\Integration;
 
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
-final class ApiRegressionTest extends WebTestCase
+final class ApiRegressionTest extends IntegrationWebTestCase
 {
     use DatabaseBootstrapTrait;
 
@@ -32,13 +31,15 @@ final class ApiRegressionTest extends WebTestCase
         );
         self::assertSame(201, $client->getResponse()->getStatusCode());
         $created = json_decode((string) $client->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR);
-        self::assertIsInt($created['id']);
-        $id = $created['id'];
+        self::assertSame(0, $created['code']);
+        self::assertIsArray($created['data']);
+        self::assertIsInt($created['data']['id']);
+        $id = $created['data']['id'];
 
         $client->request('GET', '/api/contents/' . $id);
         self::assertSame(200, $client->getResponse()->getStatusCode());
         $fetched = json_decode((string) $client->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR);
-        self::assertSame('regression-title', $fetched['title']);
+        self::assertSame('regression-title', $fetched['data']['title']);
 
         $client->request(
             'PUT',
@@ -48,13 +49,15 @@ final class ApiRegressionTest extends WebTestCase
         );
         self::assertSame(200, $client->getResponse()->getStatusCode());
         $updated = json_decode((string) $client->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR);
-        self::assertSame('updated-title', $updated['title']);
+        self::assertSame('updated-title', $updated['data']['title']);
 
         $client->request('GET', '/api/contents?limit=10');
         self::assertSame(200, $client->getResponse()->getStatusCode());
         $list = json_decode((string) $client->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR);
         self::assertIsArray($list);
-        self::assertNotEmpty($list);
+        self::assertArrayHasKey('data', $list);
+        self::assertIsArray($list['data']);
+        self::assertNotEmpty($list['data']);
 
         $client->request('DELETE', '/api/contents/' . $id);
         self::assertSame(204, $client->getResponse()->getStatusCode());

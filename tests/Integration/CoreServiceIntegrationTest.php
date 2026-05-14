@@ -6,9 +6,8 @@ use App\Common\Entity\Content;
 use App\Core\Parser\ExpressionDqlParser;
 use App\Core\Service\ExpressionService;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
-final class CoreServiceIntegrationTest extends KernelTestCase
+final class CoreServiceIntegrationTest extends IntegrationKernelTestCase
 {
     use DatabaseBootstrapTrait;
 

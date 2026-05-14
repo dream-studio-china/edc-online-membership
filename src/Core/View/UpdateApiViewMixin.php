@@ -6,6 +6,7 @@ use OpenApi\Attributes as OA;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Validator\Exception\ValidatorException;
 
 trait UpdateApiViewMixin
@@ -190,6 +191,11 @@ trait UpdateApiViewMixin
             // Single update
             $filter = $this->mixIdToCommonFilter($id);
             $entity = $service->get($filter, false);
+
+            if (!$entity) {
+                throw new NotFoundHttpException('Entity is not found');
+            }
+
             return $this->updateSingle($entity, $content, $transformer);
         }
         elseif(is_array($content)) {
@@ -277,7 +283,17 @@ trait UpdateApiViewMixin
     #[Route('/{id}', name: 'update', methods: ['PUT'], requirements: ['id' => '\\d+'])]
     public function updateAction(Request $request, $id): Response
     {
-        if ($response = $this->updateRecords($request, $id)) {
+        try {
+            $response = $this->updateRecords($request, $id);
+        } catch (ValidatorException $exception) {
+            return $this->warning($exception->getMessage(), 400, '', 400);
+        } catch (NotFoundHttpException $exception) {
+            return $this->warning($exception->getMessage(), 404, '', 404);
+        } catch (\Exception $exception) {
+            return $this->warning($exception->getMessage() ?: self::UNKNOWN_ERROR, 500, '', 500);
+        }
+
+        if ($response) {
             return $this->success($response);
         } else {
             return $this->warning();

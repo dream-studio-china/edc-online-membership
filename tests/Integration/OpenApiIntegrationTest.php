@@ -2,9 +2,7 @@
 
 namespace App\Tests\Integration;
 
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
-
-final class OpenApiIntegrationTest extends WebTestCase
+final class OpenApiIntegrationTest extends IntegrationWebTestCase
 {
     public function testSwaggerUiAndJsonEndpointsAreAvailable(): void
     {
