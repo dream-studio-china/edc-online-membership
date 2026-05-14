@@ -20,12 +20,25 @@ class RestController extends AbstractController
 
     private ?object $paginator = null;
 
-    public function __construct(
-        private readonly RequestStack $requestStack,
-        private readonly SerializerInterface $serializer,
-        private readonly TranslatorInterface $translator
-    ) {}
+    // Allow nullable properties so child controllers may omit calling parent::__construct()
+    private ?RequestStack $requestStack = null;
+    private ?SerializerInterface $serializer = null;
+    private ?TranslatorInterface $translator = null;
 
+    /**
+     * Constructor accepts optional dependencies so subclasses can call parent::__construct()
+     * with or without arguments. If dependencies are not provided, getters will fetch them
+     * lazily from the container (AbstractController::$container) so child controllers don't
+     * need to explicitly declare or forward those arguments.
+     */
+    public function __construct(?RequestStack $requestStack = null, ?SerializerInterface $serializer = null, ?TranslatorInterface $translator = null)
+    {
+        $this->requestStack = $requestStack;
+        $this->serializer = $serializer;
+        $this->translator = $translator;
+    }
+
+    /** @noinspection PhpPossiblePolymorphicInvocationInspection */
     public function getService(): object
     {
         return $this->service;
@@ -33,19 +46,41 @@ class RestController extends AbstractController
 
     protected function getRequestStack(): RequestStack
     {
-        return $this->requestStack;
+        if ($this->requestStack instanceof RequestStack) {
+            return $this->requestStack;
+        }
+        if (isset($this->container) && $this->container->has('request_stack')) {
+            // AbstractController provides $this->container
+            $this->requestStack = $this->container->get('request_stack');
+            return $this->requestStack;
+        }
+        throw new \RuntimeException('RequestStack is not available in RestController');
     }
 
     public function setPaginator(?object $paginator): void { $this->paginator = $paginator; }
 
     protected function getSerializer()
     {
-        return $this->serializer;
+        if ($this->serializer instanceof SerializerInterface) {
+            return $this->serializer;
+        }
+        if (isset($this->container) && $this->container->has('serializer')) {
+            $this->serializer = $this->container->get('serializer');
+            return $this->serializer;
+        }
+        throw new \RuntimeException('Serializer is not available in RestController');
     }
 
     protected function getTranslator()
     {
-        return $this->translator;
+        if ($this->translator instanceof TranslatorInterface) {
+            return $this->translator;
+        }
+        if (isset($this->container) && $this->container->has('translator')) {
+            $this->translator = $this->container->get('translator');
+            return $this->translator;
+        }
+        throw new \RuntimeException('Translator is not available in RestController');
     }
 
 

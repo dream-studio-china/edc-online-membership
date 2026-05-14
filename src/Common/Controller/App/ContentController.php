@@ -4,7 +4,9 @@ namespace App\Common\Controller\App;
 
 use App\Common\Entity\Content;
 use App\Common\Service\ContentService;
+use App\Common\Service\ContentServiceInterface;
 use App\Core\Controller\RestController;
+use App\Core\Service\BaseService;
 use App\Core\View\ApiView;
 use App\Core\View\DetailApiViewMixin;
 use App\Core\View\ListApiViewMixin;
@@ -22,14 +24,10 @@ class ContentController extends RestController
     }
     use ApiView, ListApiViewMixin;
 
+    /** @noinspection PhpMissingParentConstructorInspection */
     public function __construct(
-        RequestStack $requestStack,
-        SerializerInterface $serializer,
-        TranslatorInterface $translator,
-        protected readonly ContentService $service
-    ) {
-        parent::__construct($requestStack, $serializer, $translator);
-    }
+        protected readonly ContentServiceInterface $service
+    ) {}
 
     /**
      * @param $entities
@@ -38,7 +36,7 @@ class ContentController extends RestController
     protected function listResponses($entities): array
     {
         if(!$entities instanceof ArrayCollection) {
-            $entities = new ArrayCollection($entities);
+            $entities = BaseService::listResultToCollection($entities);
         }
 
         return $entities
