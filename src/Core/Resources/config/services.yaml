@@ -45,7 +45,7 @@ services:
             - { name: kernel.event_listener, event: kernel.controller, method: onKernelController }
         arguments:
             $container: '@service_container'
-            # $tokenStorage: '@security.token_storage'
+            $tokenStorage: '@security.token_storage'
             $logger: '@logger'
 
     # RestController dependencies are injected in config/services.yaml via _instanceof.

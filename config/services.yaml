@@ -1,18 +1,15 @@
 # yaml-language-server: $schema=../vendor/symfony/dependency-injection/Loader/schema/services.schema.json
 
-# This file is the entry point to configure your own services.
-# Files in the packages/ subdirectory configure your dependencies.
-# See also https://symfony.com/doc/current/service_container/import.html
-
-# Put parameters here that don't need to change on each machine where the app is deployed
-# https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters: {}
 
+imports:
+    - { resource: '../src/Core/Resources/config/services.yaml', ignore_errors: true }
+    - { resource: '../src/Identity/Resources/config/services_identity.yaml', ignore_errors: true }
+
 services:
-    # default configuration for services in *this* file
     _defaults:
-        autowire: true      # Automatically injects dependencies in your services.
-        autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
+        autowire: true
+        autoconfigure: true
 
     _instanceof:
         App\Core\Controller\RestController:
@@ -21,72 +18,36 @@ services:
                 - [ setSerializer, [ '@serializer' ] ]
                 - [ setTranslator, [ '@translator' ] ]
 
-    # makes classes in src/ available to be used as services
-    # this creates a service per class whose id is the fully-qualified class name
     App\:
         resource: '../src/'
         exclude:
             - '../src/Core/Serializer/Normalizer/FlatNormalizer.php'
+            - '../src/Core/EventListener/*'
+            - '../src/Identity/Controller/AuthController.php'
+            - '../src/Identity/Controller/OtpController.php'
+            - '../src/Identity/Security/TokenManager.php'
+            - '../src/Identity/Sms/AliyunSmsProvider.php'
+            - '../src/Identity/Service/RedisOtpStorage.php'
 
-    # Allow autowiring of the ContainerInterface to the core service container.
     Symfony\Component\DependencyInjection\ContainerInterface: '@service_container'
     Psr\Log\LoggerInterface: '@logger'
     Symfony\Component\Serializer\SerializerInterface: '@serializer'
     Symfony\Contracts\Translation\TranslatorInterface: '@translator'
     App\Core\Service\ServiceLocatorInterface: '@App\Core\Service\DefaultServiceLocator'
 
-    # ----------------------------------------------------------------------
-    # Identity Module — explicit service configuration overrides autowiring
-    # ----------------------------------------------------------------------
-
-    App\Identity\Controller\AuthController:
-        arguments:
-            $otpLoginTemplate: '%env(ALIYUN_SMS_TEMPLATE_LOGIN_OTP)%'
-            $otpVerifyPhoneTemplate: '%env(ALIYUN_SMS_TEMPLATE_VERIFY_PHONE)%'
-
-    App\Identity\Security\TokenManager:
-        arguments:
-            $privateKeyPath: '%env(JWT_PRIVATE_KEY_PATH)%'
-            $publicKeyPath: '%env(JWT_PUBLIC_KEY_PATH)%'
-            $passphrase: '%env(JWT_PASSPHRASE)%'
-            $accessTtl: '%env(int:ACCESS_TOKEN_TTL)%'
-            $refreshTtl: '%env(int:REFRESH_TOKEN_TTL)%'
-            $refreshSecret: '%env(REFRESH_TOKEN_SECRET)%'
-
-    App\Identity\Sms\AliyunSmsProvider:
-        arguments:
-            $accessKeyId: '%env(ALIYUN_ACCESS_KEY_ID)%'
-            $accessKeySecret: '%env(ALIYUN_ACCESS_KEY_SECRET)%'
-            $region: '%env(ALIYUN_SMS_REGION)%'
-            $signName: '%env(ALIYUN_SMS_SIGN_NAME)%'
-            $dryRun: '%env(bool:ALIYUN_SMS_DRY_RUN)%'
-
-    App\Identity\Sms\SmsProviderInterface: '@App\Identity\Sms\AliyunSmsProvider'
-
-    # Default OTP storage uses local cache (temporary replacement for Redis dependency)
     App\Identity\Service\OtpStorageInterface: '@App\Identity\Service\LocalCacheOtpStorage'
 
     App\Identity\Service\LocalCacheOtpStorage:
         arguments:
             $cache: '@cache.app'
 
-    App\Identity\Service\RedisOtpStorage:
-        arguments:
-            $redisDsn: '%env(OTP_REDIS_DSN)%'
-
     App\Identity\Service\OtpService:
         arguments:
             $storage: '@App\Identity\Service\LocalCacheOtpStorage'
             $sms: '@App\Identity\Sms\AliyunSmsProvider'
 
-# Import user-level service configs
-imports:
-    - { resource: '../src/Core/Resources/config/services.yaml', optional: true }
-    - { resource: '../src/Identity/Resources/config/services_identity.yaml', optional: true }
-
 when@test:
     services:
-        # Use in-memory OTP storage in test environment (no Redis needed)
         App\Identity\Service\OtpStorageInterface: '@App\Identity\Service\NullOtpStorage'
         App\Identity\Service\RedisOtpStorage: null
         App\Identity\Service\OtpService:

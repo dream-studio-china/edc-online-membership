@@ -4,6 +4,7 @@ namespace App\Core\EventListener;
 
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\ExceptionEvent;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -11,7 +12,7 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 class ExceptionInterceptor
 {
-    const EFFECTIVE_PATTERN = '/^\/(api|manage|store|public|officer)\/.*$/';
+    const EFFECTIVE_PATTERN = '/^\/(api)\/.*$/';
 
     private ContainerInterface $container;
     private TranslatorInterface $translator;
@@ -38,35 +39,37 @@ class ExceptionInterceptor
         // get environment
         $request = $event->getRequest();
 
-        // check is effective url
+        // check is effective url (only handle API routes)
         $result = preg_match(self::EFFECTIVE_PATTERN, $request->getPathInfo());
         if(!$result) return;
 
-        if('dev' === $this->env) {
-            $exception = $event->getThrowable();
-            $this->logger->error($exception->getMessage());
-            $this->logger->error($event->getThrowable()->getTraceAsString());
+        $exception = $event->getThrowable();
 
-            throw $exception;
+        // Log the exception
+        $this->logger->error(
+            'Exception: ' . $request->getBasePath() . ' => ' . $exception->getMessage(),
+            ['exception' => $exception]
+        );
+
+        // In dev environment, re-throw the exception to see full debug
+        if('dev.disabled' === $this->env) {
+            // let Symfony's default error handler show the debug page
+            return;
         }
-        else {
-            // you can alternatively set a new Exception
-            // $exception = new \Exception('Some special exception');
-            // $event->setException($exception);
 
-            $exception = $event->getThrowable();
-            $this->logger->error(
-                'Exception: ' . $request->getBasePath() . ' => ' . $exception->getMessage()
-            );
+        // In production, return JSON response
+        $statusCode = $exception->getCode() && $exception->getCode() >= 400 && $exception->getCode() < 600 
+            ? $exception->getCode() 
+            : 500;
 
-            $response = [
-                'code' => $exception->getCode() ? : -1,
-                'message' => $this->translator->trans($exception->getMessage()),
-                'class' => get_class($exception),
-            ];
+        $responseData = [
+            'code' => $statusCode,
+            'message' => $this->translator->trans($exception->getMessage()),
+            'class' => get_class($exception),
+        ];
 
-            $response = new Response($this->serializer->serialize($response, 'json'));
-            $event->setResponse($response);
-        }
+        // Use JsonResponse for proper JSON handling
+        $jsonResponse = new JsonResponse($responseData, $statusCode);
+        $event->setResponse($jsonResponse);
     }
 }

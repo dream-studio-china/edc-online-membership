@@ -8,6 +8,7 @@ use App\Identity\Entity\RefreshToken;
 use App\Identity\Entity\User;
 use App\Identity\Repository\RefreshTokenRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Contracts\Cache\CacheInterface;
 
 class TokenManager
 {
@@ -18,6 +19,7 @@ class TokenManager
     public function __construct(
         private readonly EntityManagerInterface $em,
         private readonly RefreshTokenRepository $refreshRepo,
+        private readonly CacheInterface $cache,
         string $privateKeyPath,
         string $publicKeyPath,
         ?string $passphrase,
@@ -95,6 +97,26 @@ class TokenManager
      */
     public function decodeAccessToken(string $token): ?array
     {
+        $payload = $this->decodeAccessTokenWithoutBlacklist($token);
+        if ($payload === null) {
+            return null;
+        }
+
+        // Check if token is revoked (blacklisted)
+        $jti = $payload['jti'] ?? null;
+        if ($jti !== null && $this->isAccessTokenRevoked($jti)) {
+            return null;
+        }
+
+        return $payload;
+    }
+
+    /**
+     * Decode and verify a JWT access token without checking the revocation blacklist.
+     * Used internally for revocation operations.
+     */
+    private function decodeAccessTokenWithoutBlacklist(string $token): ?array
+    {
         $parts = explode('.', $token);
         if (\count($parts) !== 3) {
             return null;
@@ -128,7 +150,23 @@ class TokenManager
             return null;
         }
 
+        // Check if token is revoked (blacklisted)
+        $jti = $payload['jti'] ?? null;
+        if ($jti !== null && $this->isAccessTokenRevoked($jti)) {
+            return null;
+        }
+
         return $payload;
+    }
+
+    /**
+     * Check if an access token JTI is in the revocation blacklist.
+     */
+    private function isAccessTokenRevoked(string $jti): bool
+    {
+        // Create a cache-safe key by hashing the jti (which is hex, but we hash for consistency)
+        $cacheKey = 'revoked_token_' . hash('xxh64', $jti);
+        return $this->cache->hasItem($cacheKey);
     }
 
     /**
@@ -235,6 +273,35 @@ class TokenManager
     public function revokeAllForUser(User $user): void
     {
         $this->refreshRepo->revokeAllForUser($user);
+    }
+
+    /**
+     * Revoke an access token by adding its JTI to the blacklist.
+     * The token is cached until its natural expiration time.
+     */
+    public function revokeAccessToken(string $token): void
+    {
+        $payload = $this->decodeAccessTokenWithoutBlacklist($token);
+        if ($payload === null) {
+            // Token is invalid, cannot revoke
+            return;
+        }
+
+        $jti = $payload['jti'] ?? null;
+        if ($jti === null) {
+            return;
+        }
+
+        $expiresAt = $payload['exp'];
+        $ttl = max(0, $expiresAt - time());
+
+        // Add to revocation blacklist with TTL until token expiration
+        // Use hashed key for cache compatibility
+        $cacheKey = 'revoked_token_' . hash('xxh64', $jti);
+        $item = $this->cache->getItem($cacheKey);
+        $item->set(true);
+        $item->expiresAfter($ttl);
+        $this->cache->save($item);
     }
 
     public function getAccessTtl(): int

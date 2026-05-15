@@ -16,6 +16,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
 
+#[Route('/api/auth', name: 'sys-auth-')]
 class AuthController
 {
     public function __construct(
@@ -62,7 +63,7 @@ class AuthController
         ],
         tags: ['Identity/Auth']
     )]
-    #[Route('/api/auth/login', methods: ['POST'])]
+    #[Route('/login', methods: ['POST'])]
     public function login(Request $request): JsonResponse
     {
         $data = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
@@ -106,7 +107,39 @@ class AuthController
         return (bool) preg_match('/^\+?[0-9]{7,20}$/', $value);
     }
 
-    #[Route('/api/auth/otp/request', methods: ['POST'])]
+    #[OA\Post(
+        path: '/api/auth/otp/request',
+        summary: 'Request OTP code',
+        description: 'Generate and send an OTP code to the specified phone number',
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ['phone', 'purpose'],
+                properties: [
+                    new OA\Property(
+                        property: 'phone',
+                        type: 'string',
+                        description: 'Phone number in E.164 format',
+                        example: '+8613912345678'
+                    ),
+                    new OA\Property(
+                        property: 'purpose',
+                        type: 'string',
+                        description: 'Purpose of OTP: "login" or "verify_phone"',
+                        enum: ['login', 'verify_phone'],
+                        example: 'login'
+                    ),
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(response: 204, description: 'OTP sent successfully'),
+            new OA\Response(response: 400, description: 'Invalid request (missing phone or invalid purpose)'),
+            new OA\Response(response: 429, description: 'Too many requests or rate limit exceeded'),
+        ],
+        tags: ['Identity/Auth']
+    )]
+    #[Route('/otp/request', methods: ['POST'])]
     public function requestOtp(Request $request): JsonResponse
     {
         $data = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
@@ -132,7 +165,45 @@ class AuthController
         return new JsonResponse(null, Response::HTTP_NO_CONTENT);
     }
 
-    #[Route('/api/auth/otp/verify', methods: ['POST'])]
+    #[OA\Post(
+        path: '/api/auth/otp/verify',
+        summary: 'Verify OTP code',
+        description: 'Verify the OTP code for login or phone verification. Returns tokens if purpose is "login".',
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ['phone', 'otp', 'purpose'],
+                properties: [
+                    new OA\Property(
+                        property: 'phone',
+                        type: 'string',
+                        description: 'Phone number in E.164 format',
+                        example: '+8613912345678'
+                    ),
+                    new OA\Property(
+                        property: 'otp',
+                        type: 'string',
+                        description: 'The 6-digit OTP code received via SMS',
+                        example: '123456'
+                    ),
+                    new OA\Property(
+                        property: 'purpose',
+                        type: 'string',
+                        description: 'Purpose of OTP verification: "login" or "verify_phone"',
+                        enum: ['login', 'verify_phone'],
+                        example: 'login'
+                    ),
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(response: 200, description: 'OTP verified successfully, tokens returned'),
+            new OA\Response(response: 400, description: 'Invalid request (missing fields)'),
+            new OA\Response(response: 401, description: 'Invalid or expired OTP, or phone not verified'),
+        ],
+        tags: ['Identity/Auth']
+    )]
+    #[Route('/otp/verify', methods: ['POST'])]
     public function verifyOtp(Request $request): JsonResponse
     {
         $data = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
@@ -178,7 +249,32 @@ class AuthController
         return new JsonResponse(['phone_verified' => true]);
     }
 
-    #[Route('/api/auth/token/refresh', methods: ['POST'])]
+    #[OA\Post(
+        path: '/api/auth/token/refresh',
+        summary: 'Refresh access token',
+        description: 'Use a refresh token to obtain a new access token and refresh token pair',
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ['refresh_token'],
+                properties: [
+                    new OA\Property(
+                        property: 'refresh_token',
+                        type: 'string',
+                        description: 'The refresh token obtained from login or previous refresh',
+                        example: 'eyJhbGc...'
+                    ),
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(response: 200, description: 'Tokens refreshed successfully'),
+            new OA\Response(response: 400, description: 'Refresh token missing'),
+            new OA\Response(response: 401, description: 'Invalid, expired, or reused refresh token'),
+        ],
+        tags: ['Identity/Auth']
+    )]
+    #[Route('/token/refresh', methods: ['POST'])]
     public function refresh(Request $request): JsonResponse
     {
         $data = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
@@ -202,11 +298,57 @@ class AuthController
         }
     }
 
-    #[Route('/api/auth/logout', methods: ['POST'])]
+    #[OA\Post(
+        path: '/api/auth/logout',
+        summary: 'Logout user',
+        description: 'Logout user and revoke provided tokens. Supports refresh token and access token revocation.',
+        requestBody: new OA\RequestBody(
+            required: false,
+            content: new OA\JsonContent(
+                properties: [
+                    new OA\Property(
+                        property: 'access_token',
+                        type: 'string',
+                        description: 'Optional access token to revoke. If omitted, Authorization: Bearer token will be used when present',
+                        example: 'eyJhbGc...'
+                    ),
+                    new OA\Property(
+                        property: 'refresh_token',
+                        type: 'string',
+                        description: 'Optional refresh token to revoke',
+                        example: 'eyJhbGc...'
+                    ),
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(response: 204, description: 'Logout successful'),
+            new OA\Response(response: 400, description: 'Invalid request format'),
+        ],
+        tags: ['Identity/Auth']
+    )]
+    #[Route('/logout', methods: ['POST'])]
     public function logout(Request $request): JsonResponse
     {
-        $data = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
+        $content = trim($request->getContent());
+        $data = $content === '' ? [] : json_decode($content, true, 512, JSON_THROW_ON_ERROR);
+        if (!\is_array($data)) {
+            $data = [];
+        }
+
+        $accessToken = trim((string) ($data['access_token'] ?? ''));
         $refreshToken = trim((string) ($data['refresh_token'] ?? ''));
+
+        if ($accessToken === '') {
+            $authHeader = $request->headers->get('Authorization', '');
+            if (str_starts_with($authHeader, 'Bearer ')) {
+                $accessToken = trim(substr($authHeader, 7));
+            }
+        }
+
+        if ($accessToken !== '') {
+            $this->tokenManager->revokeAccessToken($accessToken);
+        }
 
         if ($refreshToken !== '') {
             $this->tokenManager->revokeRefreshToken($refreshToken);

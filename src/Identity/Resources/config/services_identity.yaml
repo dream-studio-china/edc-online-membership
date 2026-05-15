@@ -8,8 +8,14 @@ services:
             $otpLoginTemplate: '%env(ALIYUN_SMS_TEMPLATE_LOGIN_OTP)%'
             $otpVerifyPhoneTemplate: '%env(ALIYUN_SMS_TEMPLATE_VERIFY_PHONE)%'
 
+    App\Identity\Controller\OtpController:
+        arguments:
+            $otpLoginTemplate: '%env(ALIYUN_SMS_TEMPLATE_LOGIN_OTP)%'
+            $otpVerifyPhoneTemplate: '%env(ALIYUN_SMS_TEMPLATE_VERIFY_PHONE)%'
+
     App\Identity\Security\TokenManager:
         arguments:
+            $cache: '@cache.app'
             $privateKeyPath: '%env(JWT_PRIVATE_KEY_PATH)%'
             $publicKeyPath: '%env(JWT_PUBLIC_KEY_PATH)%'
             $passphrase: '%env(JWT_PASSPHRASE)%'

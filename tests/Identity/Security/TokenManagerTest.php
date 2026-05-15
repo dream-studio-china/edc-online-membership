@@ -11,6 +11,7 @@ use App\Identity\Security\TokenManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Cache\Adapter\ArrayAdapter;
 
 final class TokenManagerTest extends TestCase
 {
@@ -25,10 +26,12 @@ final class TokenManagerTest extends TestCase
     {
         $this->em = $this->createMock(EntityManagerInterface::class);
         $this->refreshRepo = $this->createMock(RefreshTokenRepository::class);
+        $cache = new ArrayAdapter();
 
         $this->tokenManager = new TokenManager(
             $this->em,
             $this->refreshRepo,
+            $cache,
             self::PRIVATE_KEY_PATH,
             self::PUBLIC_KEY_PATH,
             null,
@@ -83,6 +86,7 @@ final class TokenManagerTest extends TestCase
         $tm = new TokenManager(
             $this->em,
             $this->refreshRepo,
+            new ArrayAdapter(),
             self::PRIVATE_KEY_PATH,
             self::PUBLIC_KEY_PATH,
             null,
@@ -239,6 +243,7 @@ final class TokenManagerTest extends TestCase
         $tm = new TokenManager(
             $this->em,
             $this->refreshRepo,
+            new ArrayAdapter(),
             self::PRIVATE_KEY_PATH,
             self::PUBLIC_KEY_PATH,
             null,
@@ -255,6 +260,18 @@ final class TokenManagerTest extends TestCase
         $expectedExp = $payload['iat'] + 42;
         self::assertSame($expectedExp, $payload['exp']);
         self::assertSame(42, $tm->getAccessTtl());
+    }
+
+    public function testRevokeAccessTokenMakesItInvalid(): void
+    {
+        $user = $this->createUser(7, 'revoker', 'revoker@example.com', ['ROLE_USER']);
+        $token = $this->tokenManager->createAccessToken($user);
+
+        self::assertNotNull($this->tokenManager->decodeAccessToken($token));
+
+        $this->tokenManager->revokeAccessToken($token);
+
+        self::assertNull($this->tokenManager->decodeAccessToken($token));
     }
 
     private function createUser(int $id, string $username, string $email, array $roles): User

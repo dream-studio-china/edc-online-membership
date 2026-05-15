@@ -21,7 +21,7 @@ final class ApiRegressionTest extends IntegrationWebTestCase
 
     public function testContentCrudRegressionFlow(): void
     {
-        $client = static::createClient();
+        $client = static::createAuthenticatedClient();
 
         $client->request(
             'POST',
@@ -68,7 +68,7 @@ final class ApiRegressionTest extends IntegrationWebTestCase
 
     public function testCreateValidationRegression(): void
     {
-        $client = static::createClient();
+        $client = static::createAuthenticatedClient();
 
         $client->request(
             'POST',
@@ -84,7 +84,7 @@ final class ApiRegressionTest extends IntegrationWebTestCase
 
     public function testUpdateAndDeleteMissingEntityRegression(): void
     {
-        $client = static::createClient();
+        $client = static::createAuthenticatedClient();
 
         $client->request(
             'PUT',

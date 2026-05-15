@@ -78,5 +78,8 @@
             "username": "root",
             "password": "winface123"
         }
-    ]
+    ],
+    "yaml.schemas": {
+        "file:///Volumes/Nayuki/Development/PHP/crud-skeleton/vendor/symfony/dependency-injection/Loader/schema/services.schema.json": "file:///Volumes/Nayuki/Development/PHP/crud-skeleton/config/services.yaml"
+    }
 }
