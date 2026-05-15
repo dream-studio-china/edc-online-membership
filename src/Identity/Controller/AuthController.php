@@ -9,6 +9,7 @@ use App\Identity\Repository\UserRepository;
 use App\Identity\Security\TokenManager;
 use App\Identity\Service\OtpService;
 use Doctrine\ORM\EntityManagerInterface;
+use OpenApi\Attributes as OA;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -28,6 +29,39 @@ class AuthController
     ) {
     }
 
+    #[OA\Post(
+        path: '/api/auth/login',
+        summary: 'Login with identifier and password',
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ['identifier', 'password'],
+                properties: [
+                    new OA\Property(
+                        property: 'identifier',
+                        type: 'string',
+                        description: 'Email, username, or phone number',
+                        example: 'admin@example.com'
+                    ),
+                    new OA\Property(
+                        property: 'password',
+                        type: 'string',
+                        format: 'password',
+                        minLength: 1,
+                        description: 'Plain password. Must not be empty.',
+                        example: 'P@ssw0rd'
+                    ),
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(response: 200, description: 'Login success, tokens returned'),
+            new OA\Response(response: 400, description: 'Identifier or password missing'),
+            new OA\Response(response: 401, description: 'Invalid credentials'),
+            new OA\Response(response: 403, description: 'Phone not verified'),
+        ],
+        tags: ['Identity/Auth']
+    )]
     #[Route('/api/auth/login', methods: ['POST'])]
     public function login(Request $request): JsonResponse
     {

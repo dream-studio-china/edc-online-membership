@@ -11,8 +11,8 @@ use Doctrine\ORM\EntityManagerInterface;
 
 class TokenManager
 {
-    private string $privateKey;
-    private string $publicKey;
+    private \OpenSSLAsymmetricKey $privateKey;
+    private \OpenSSLAsymmetricKey $publicKey;
     private string $refreshSecret;
 
     public function __construct(
@@ -25,15 +25,19 @@ class TokenManager
         private readonly int $refreshTtl,
         string $refreshSecret,
     ) {
-        $privateKeyRaw = file_get_contents($privateKeyPath);
-        if ($privateKeyRaw === false) {
+        $privateKeyPem = file_get_contents($privateKeyPath);
+        if ($privateKeyPem === false) {
             throw new \RuntimeException("Cannot read private key: {$privateKeyPath}");
         }
-        if ($passphrase !== null && $passphrase !== '') {
-            $privateKeyRaw = openssl_pkey_get_private($privateKeyRaw, $passphrase);
-            if ($privateKeyRaw === false) {
-                throw new \RuntimeException('Invalid private key passphrase.');
-            }
+
+        $privateKey = openssl_pkey_get_private($privateKeyPem, $passphrase ?? '');
+        if ($privateKey === false && $passphrase !== null && $passphrase !== '') {
+            // Dev fallback: allow unencrypted key even when passphrase is configured.
+            $privateKey = openssl_pkey_get_private($privateKeyPem);
+        }
+
+        if ($privateKey === false) {
+            throw new \RuntimeException('Cannot load private key. Check key path/passphrase.');
         }
 
         $pubKeyRaw = file_get_contents($publicKeyPath);
@@ -41,8 +45,13 @@ class TokenManager
             throw new \RuntimeException("Cannot read public key: {$publicKeyPath}");
         }
 
-        $this->privateKey = \is_string($privateKeyRaw) ? $privateKeyRaw : '';
-        $this->publicKey = $pubKeyRaw;
+        $publicKey = openssl_pkey_get_public($pubKeyRaw);
+        if ($publicKey === false) {
+            throw new \RuntimeException('Cannot load public key. Check public key content.');
+        }
+
+        $this->privateKey = $privateKey;
+        $this->publicKey = $publicKey;
         $this->refreshSecret = $refreshSecret;
     }
 
@@ -72,7 +81,11 @@ class TokenManager
 
         $data = "{$header}.{$payload}";
         $signature = '';
-        openssl_sign($data, $signature, $this->privateKey, OPENSSL_ALGO_SHA256);
+        $signed = openssl_sign($data, $signature, $this->privateKey, OPENSSL_ALGO_SHA256);
+        if ($signed !== true) {
+            $detail = openssl_error_string() ?: 'unknown openssl error';
+            throw new \RuntimeException('Failed to sign JWT: ' . $detail);
+        }
 
         return "{$data}." . self::base64UrlEncode($signature);
     }

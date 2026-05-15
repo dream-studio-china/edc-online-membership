@@ -63,7 +63,12 @@ services:
 
     App\Identity\Sms\SmsProviderInterface: '@App\Identity\Sms\AliyunSmsProvider'
 
-    App\Identity\Service\OtpStorageInterface: '@App\Identity\Service\RedisOtpStorage'
+    # Default OTP storage uses local cache (temporary replacement for Redis dependency)
+    App\Identity\Service\OtpStorageInterface: '@App\Identity\Service\LocalCacheOtpStorage'
+
+    App\Identity\Service\LocalCacheOtpStorage:
+        arguments:
+            $cache: '@cache.app'
 
     App\Identity\Service\RedisOtpStorage:
         arguments:
@@ -71,7 +76,7 @@ services:
 
     App\Identity\Service\OtpService:
         arguments:
-            $storage: '@App\Identity\Service\RedisOtpStorage'
+            $storage: '@App\Identity\Service\LocalCacheOtpStorage'
             $sms: '@App\Identity\Sms\AliyunSmsProvider'
 
 # Import user-level service configs

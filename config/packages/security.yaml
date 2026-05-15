@@ -25,17 +25,23 @@ security:
             lazy: true
             provider: app_user_provider
 
-        docs:
-            pattern: ^/api/doc.json
-            security: false
-
     access_control:
+        # Public API docs
+        - { path: ^/api/doc$, roles: PUBLIC_ACCESS }
+        - { path: ^/api/doc\.json$, roles: PUBLIC_ACCESS }
+
         # Public auth endpoints (no token needed)
         - { path: ^/api/auth/login$, roles: PUBLIC_ACCESS }
         - { path: ^/api/auth/otp/request$, roles: PUBLIC_ACCESS }
         - { path: ^/api/auth/otp/verify$, roles: PUBLIC_ACCESS }
         - { path: ^/api/auth/token/refresh$, roles: PUBLIC_ACCESS }
         - { path: ^/api/auth/logout$, roles: PUBLIC_ACCESS }
+
+        # All remaining API endpoints require authentication
+        # Manage endpoints require admin role
+        - { path: ^/api/v1/manage, roles: ROLE_ADMIN }
+
+        - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
 
     role_hierarchy:
         ROLE_ADMIN: [ROLE_USER]

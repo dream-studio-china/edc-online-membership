@@ -8,7 +8,10 @@ use Symfony\Component\Cache\Adapter\RedisAdapter;
 
 class RedisOtpStorage implements OtpStorageInterface
 {
-    private readonly \Redis|\RedisCluster $redis;
+    /**
+     * @var object Redis-like client returned by RedisAdapter::createConnection
+     */
+    private readonly object $redis;
 
     public function __construct(string $redisDsn)
     {

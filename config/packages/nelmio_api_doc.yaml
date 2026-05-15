@@ -5,6 +5,15 @@ nelmio_api_doc:
             title: CRUD Skeleton API
             version: 1.0.0
             description: API documentation for the CRUD skeleton project.
+        components:
+            securitySchemes:
+                bearerAuth:
+                    type: http
+                    scheme: bearer
+                    bearerFormat: JWT
+                    description: 'Use access_token from /api/auth/login. Format: Bearer {token}'
+        security:
+            - bearerAuth: []
     areas:
         default:
             path_patterns:

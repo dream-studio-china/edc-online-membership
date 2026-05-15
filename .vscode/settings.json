@@ -61,5 +61,22 @@
         "env": "dotenv"
     },
 
-    "github.copilot.nextEditSuggestions.enabled": true
+    "github.copilot.nextEditSuggestions.enabled": true,
+    "sqltools.connections": [
+        {
+            "mysqlOptions": {
+                "authProtocol": "default",
+                "enableSsl": "Disabled"
+            },
+            "ssh": "Disabled",
+            "previewLimit": 50,
+            "server": "localhost",
+            "port": 3306,
+            "driver": "MySQL",
+            "name": "crud-skeleton",
+            "database": "crud-skeleton",
+            "username": "root",
+            "password": "winface123"
+        }
+    ]
 }

@@ -6,6 +6,7 @@ A production-oriented Symfony + Doctrine CRUD starter with reusable service-laye
 
 ## Table of Contents
 
+- [Quick Start Guide](#quick-start-guide)
 - [Why This Project](#why-this-project)
 - [Features](#features)
 - [Tech Stack](#tech-stack)
@@ -21,6 +22,12 @@ A production-oriented Symfony + Doctrine CRUD starter with reusable service-laye
 - [Troubleshooting](#troubleshooting)
 - [Contributing](#contributing)
 - [License](#license)
+
+## Quick Start Guide
+
+For a minimal runnable setup (JWT keys, DB migration, admin user, login/auth test), see [QUICKSTART.md](QUICKSTART.md).
+
+If you are on macOS, commands in the quick start prefer Homebrew PHP 8.5 (`/opt/homebrew/bin/php`) to avoid CLI version mismatch.
 
 ## Why This Project
 
