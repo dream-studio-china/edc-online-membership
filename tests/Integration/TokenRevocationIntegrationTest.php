@@ -37,7 +37,7 @@ final class TokenRevocationIntegrationTest extends IntegrationWebTestCase
         $accessToken = substr($authHeader, 7);
 
         // First request with the token should succeed
-        $client->request('GET', '/api/contents?limit=10');
+        $client->request('GET', '/api/v1/manage/contents?limit=10');
         self::assertSame(200, $client->getResponse()->getStatusCode());
 
         // Now logout with the access token
@@ -50,7 +50,7 @@ final class TokenRevocationIntegrationTest extends IntegrationWebTestCase
         $revokedClient = static::createClient();
         $revokedClient->setServerParameter('HTTP_Authorization', 'Bearer ' . $accessToken);
         
-        $revokedClient->request('GET', '/api/contents?limit=10');
+        $revokedClient->request('GET', '/api/v1/manage/contents?limit=10');
         
         // The request should fail with 401 Unauthorized
         self::assertSame(401, $revokedClient->getResponse()->getStatusCode());
@@ -77,7 +77,7 @@ final class TokenRevocationIntegrationTest extends IntegrationWebTestCase
         $testClient->setServerParameter('HTTP_Authorization', 'Bearer ' . $accessToken);
         
         // Should work before logout
-        $testClient->request('GET', '/api/contents?limit=10');
+        $testClient->request('GET', '/api/v1/manage/contents?limit=10');
         self::assertSame(200, $testClient->getResponse()->getStatusCode());
     }
 

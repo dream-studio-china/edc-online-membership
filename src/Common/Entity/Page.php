@@ -2,14 +2,12 @@
 
 namespace App\Common\Entity;
 
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity(repositoryClass: "App\\Common\\Repository\\ContentRepository")]
-#[ORM\Table(name: "common_content")]
+#[ORM\Entity(repositoryClass: "App\\Common\\Repository\\PageRepository")]
+#[ORM\Table(name: "common_page")]
 #[ORM\HasLifecycleCallbacks]
-class Content
+class Page
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -19,18 +17,23 @@ class Content
     #[ORM\Column(type: 'string', length: 255)]
     private string $title;
 
+    #[ORM\Column(type: 'string', length: 255, unique: true)]
+    private string $slug;
+
     #[ORM\Column(type: 'text', nullable: true)]
     private ?string $body = null;
 
-    #[ORM\ManyToOne(targetEntity: Category::class)]
-    #[ORM\JoinColumn(name: 'category_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
-    private ?Category $category = null;
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $metaTitle = null;
 
-    #[ORM\ManyToMany(targetEntity: Tag::class)]
-    #[ORM\JoinTable(name: 'common_content_tag')]
-    #[ORM\JoinColumn(name: 'content_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
-    #[ORM\InverseJoinColumn(name: 'tag_id', referencedColumnName: 'id', onDelete: 'CASCADE')]
-    private ?Collection $tags = null;
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $metaDescription = null;
+
+    #[ORM\Column(type: 'string', length: 50, options: ['default' => 'draft'])]
+    private string $status = 'draft';
+
+    #[ORM\Column(type: 'datetime_immutable', nullable: true)]
+    private ?\DateTimeImmutable $publishedAt = null;
 
     #[ORM\Column(type: 'datetime_immutable')]
     private \DateTimeImmutable $createdAt;
@@ -38,11 +41,10 @@ class Content
     #[ORM\Column(type: 'datetime_immutable', nullable: true)]
     private ?\DateTimeImmutable $updatedAt = null;
 
-    public function __construct(string $title, ?string $body = null)
+    public function __construct(string $title, string $slug)
     {
         $this->title = $title;
-        $this->body = $body;
-        $this->tags = new ArrayCollection();
+        $this->slug = $slug;
         $this->createdAt = new \DateTimeImmutable();
     }
 
@@ -64,7 +66,19 @@ class Content
     public function setTitle(string $title): self
     {
         $this->title = $title;
+        $this->touch();
+        return $this;
+    }
 
+    public function getSlug(): string
+    {
+        return $this->slug;
+    }
+
+    public function setSlug(string $slug): self
+    {
+        $this->slug = $slug;
+        $this->touch();
         return $this;
     }
 
@@ -77,41 +91,54 @@ class Content
     {
         $this->body = $body;
         $this->touch();
-
         return $this;
     }
 
-    public function getCategory(): ?Category
+    public function getMetaTitle(): ?string
     {
-        return $this->category;
+        return $this->metaTitle;
     }
 
-    public function setCategory(?Category $category): self
+    public function setMetaTitle(?string $metaTitle): self
     {
-        $this->category = $category;
+        $this->metaTitle = $metaTitle;
         $this->touch();
         return $this;
     }
 
-    public function getTags(): Collection
+    public function getMetaDescription(): ?string
     {
-        if ($this->tags === null) {
-            $this->tags = new ArrayCollection();
-        }
-        return $this->tags;
+        return $this->metaDescription;
     }
 
-    public function addTag(Tag $tag): self
+    public function setMetaDescription(?string $metaDescription): self
     {
-        if (!$this->getTags()->contains($tag)) {
-            $this->getTags()->add($tag);
-        }
+        $this->metaDescription = $metaDescription;
+        $this->touch();
         return $this;
     }
 
-    public function removeTag(Tag $tag): self
+    public function getStatus(): string
     {
-        $this->getTags()->removeElement($tag);
+        return $this->status;
+    }
+
+    public function setStatus(string $status): self
+    {
+        $this->status = $status;
+        $this->touch();
+        return $this;
+    }
+
+    public function getPublishedAt(): ?\DateTimeImmutable
+    {
+        return $this->publishedAt;
+    }
+
+    public function setPublishedAt(?\DateTimeImmutable $publishedAt): self
+    {
+        $this->publishedAt = $publishedAt;
+        $this->touch();
         return $this;
     }
 
@@ -135,9 +162,6 @@ class Content
     {
         if (!isset($this->createdAt) || $this->createdAt === null) {
             $this->createdAt = new \DateTimeImmutable();
-        }
-        if ($this->tags === null) {
-            $this->tags = new ArrayCollection();
         }
     }
 }

@@ -19,7 +19,7 @@ final class OpenApiIntegrationTest extends IntegrationWebTestCase
         $doc = json_decode((string) $client->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR);
 
         self::assertSame('3.1.0', $doc['openapi'] ?? null);
-        self::assertArrayHasKey('/api/contents', $doc['paths'] ?? []);
-        self::assertArrayHasKey('/api/contents/{id}', $doc['paths'] ?? []);
+        self::assertArrayHasKey('/api/v1/manage/contents', $doc['paths'] ?? []);
+        self::assertArrayHasKey('/api/v1/manage/contents/{id}', $doc['paths'] ?? []);
     }
 }

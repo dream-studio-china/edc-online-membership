@@ -32,7 +32,7 @@ final class CoreListenerHttpIntegrationTest extends IntegrationWebTestCase
     public function testExceptionInterceptorReturnsJsonOnApiErrorInTestEnv(): void
     {
         $client = static::createAuthenticatedClient();
-        $client->request('POST', '/api/contents', server: ['CONTENT_TYPE' => 'application/json'], content: '{bad json');
+        $client->request('POST', '/api/v1/manage/contents', server: ['CONTENT_TYPE' => 'application/json'], content: '{bad json');
 
         $response = $client->getResponse();
         self::assertTrue(in_array($response->getStatusCode(), [200, 400], true));
@@ -42,7 +42,7 @@ final class CoreListenerHttpIntegrationTest extends IntegrationWebTestCase
     public function testCoreListenersDoNotBreakNormalApiFlow(): void
     {
         $client = static::createAuthenticatedClient();
-        $client->request('GET', '/api/contents?limit=5');
+        $client->request('GET', '/api/v1/manage/contents?limit=5');
 
         $response = $client->getResponse();
         self::assertSame(200, $response->getStatusCode());

@@ -2,7 +2,7 @@
 
 namespace App\Common\Controller\Manage;
 
-use App\Common\Service\ContentService;
+use App\Common\Service\CategoryService;
 use App\Core\Controller\RestController;
 use App\Core\View\ApiView;
 use App\Core\View\CreateApiViewMixin;
@@ -13,18 +13,18 @@ use App\Core\View\UpdateApiViewMixin;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
-#[Route('/api/v1/manage/contents', name: 'manage-contents-')]
+#[Route('/api/v1/manage/categories', name: 'manage-categories-')]
 #[IsGranted('ROLE_ADMIN')]
-class ContentController extends RestController
+class CategoryController extends RestController
 {
     use ApiView, DetailApiViewMixin, ListApiViewMixin,
         CreateApiViewMixin, UpdateApiViewMixin, DeleteApiViewMixin;
 
-    protected array $requiredCreateProperties = ['title'];
-    protected array $acceptedCreateProperties = ['title', 'body', 'category', 'tags'];
-    protected array $acceptedUpdateProperties = ['title', 'body', 'category', 'tags'];
+    protected array $requiredCreateProperties = ['name', 'slug'];
+    protected array $acceptedCreateProperties = ['name', 'slug', 'description', 'parent', 'sortOrder', 'enabled'];
+    protected array $acceptedUpdateProperties = ['name', 'slug', 'description', 'parent', 'sortOrder', 'enabled'];
 
     public function __construct(
-        protected readonly ContentService $service
+        protected readonly CategoryService $service
     ) {}
 }

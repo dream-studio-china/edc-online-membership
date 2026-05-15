@@ -14,6 +14,8 @@ final class ContentTest extends TestCase
 
         self::assertSame('hello-title', $entity->getTitle());
         self::assertSame('hello-body', $entity->getBody());
+        self::assertNull($entity->getCategory());
+        self::assertEmpty($entity->getTags());
         self::assertInstanceOf(\DateTimeImmutable::class, $entity->getCreatedAt());
         self::assertNull($entity->getUpdatedAt());
         self::assertSame('hello-title', (string) $entity);
@@ -69,5 +71,47 @@ final class ContentTest extends TestCase
         $entity->prePersist();
 
         self::assertSame($createdAt, $entity->getCreatedAt());
+    }
+
+    public function testCategoryRelationship(): void
+    {
+        $content = new Content('title');
+        $category = new \App\Common\Entity\Category('My Category', 'my-category');
+
+        $content->setCategory($category);
+        self::assertSame($category, $content->getCategory());
+
+        $content->setCategory(null);
+        self::assertNull($content->getCategory());
+    }
+
+    public function testTagRelationships(): void
+    {
+        $content = new Content('title');
+        $tag1 = new \App\Common\Entity\Tag('Tag 1', 'tag-1');
+        $tag2 = new \App\Common\Entity\Tag('Tag 2', 'tag-2');
+
+        $content->addTag($tag1);
+        $content->addTag($tag2);
+
+        self::assertCount(2, $content->getTags());
+        self::assertTrue($content->getTags()->contains($tag1));
+        self::assertTrue($content->getTags()->contains($tag2));
+
+        $content->removeTag($tag1);
+        self::assertCount(1, $content->getTags());
+        self::assertFalse($content->getTags()->contains($tag1));
+        self::assertTrue($content->getTags()->contains($tag2));
+    }
+
+    public function testAddTagDoesNotDuplicate(): void
+    {
+        $content = new Content('title');
+        $tag = new \App\Common\Entity\Tag('Tag', 'tag');
+
+        $content->addTag($tag);
+        $content->addTag($tag);
+
+        self::assertCount(1, $content->getTags());
     }
 }

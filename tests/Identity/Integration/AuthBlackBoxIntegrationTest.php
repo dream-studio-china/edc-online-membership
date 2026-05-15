@@ -64,7 +64,7 @@ final class AuthBlackBoxIntegrationTest extends IntegrationWebTestCase
         self::ensureKernelShutdown();
         $apiClient = static::createClient();
         $apiClient->setServerParameter('HTTP_AUTHORIZATION', 'Bearer ' . $accessToken);
-        $apiClient->request('GET', '/api/contents?limit=5');
+        $apiClient->request('GET', '/api/v1/manage/contents?limit=5');
         self::assertSame(200, $apiClient->getResponse()->getStatusCode());
 
         $apiClient->request(
@@ -81,7 +81,7 @@ final class AuthBlackBoxIntegrationTest extends IntegrationWebTestCase
         self::ensureKernelShutdown();
         $revokedClient = static::createClient();
         $revokedClient->setServerParameter('HTTP_AUTHORIZATION', 'Bearer ' . $accessToken);
-        $revokedClient->request('GET', '/api/contents?limit=5');
+        $revokedClient->request('GET', '/api/v1/manage/contents?limit=5');
         self::assertSame(401, $revokedClient->getResponse()->getStatusCode());
 
         $response = $this->decodeJsonResponse($revokedClient);

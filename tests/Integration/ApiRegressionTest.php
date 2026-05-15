@@ -25,7 +25,7 @@ final class ApiRegressionTest extends IntegrationWebTestCase
 
         $client->request(
             'POST',
-            '/api/contents',
+            '/api/v1/manage/contents',
             server: ['CONTENT_TYPE' => 'application/json'],
             content: json_encode(['title' => 'regression-title', 'body' => 'regression-body'], JSON_THROW_ON_ERROR)
         );
@@ -36,14 +36,14 @@ final class ApiRegressionTest extends IntegrationWebTestCase
         self::assertIsInt($created['data']['id']);
         $id = $created['data']['id'];
 
-        $client->request('GET', '/api/contents/' . $id);
+        $client->request('GET', '/api/v1/manage/contents/' . $id);
         self::assertSame(200, $client->getResponse()->getStatusCode());
         $fetched = json_decode((string) $client->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR);
         self::assertSame('regression-title', $fetched['data']['title']);
 
         $client->request(
             'PUT',
-            '/api/contents/' . $id,
+            '/api/v1/manage/contents/' . $id,
             server: ['CONTENT_TYPE' => 'application/json'],
             content: json_encode(['title' => 'updated-title', 'body' => 'updated-body'], JSON_THROW_ON_ERROR)
         );
@@ -51,7 +51,7 @@ final class ApiRegressionTest extends IntegrationWebTestCase
         $updated = json_decode((string) $client->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR);
         self::assertSame('updated-title', $updated['data']['title']);
 
-        $client->request('GET', '/api/contents?limit=10');
+        $client->request('GET', '/api/v1/manage/contents?limit=10');
         self::assertSame(200, $client->getResponse()->getStatusCode());
         $list = json_decode((string) $client->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR);
         self::assertIsArray($list);
@@ -59,10 +59,10 @@ final class ApiRegressionTest extends IntegrationWebTestCase
         self::assertIsArray($list['data']);
         self::assertNotEmpty($list['data']);
 
-        $client->request('DELETE', '/api/contents/' . $id);
+        $client->request('DELETE', '/api/v1/manage/contents/' . $id);
         self::assertSame(204, $client->getResponse()->getStatusCode());
 
-        $client->request('GET', '/api/contents/' . $id);
+        $client->request('GET', '/api/v1/manage/contents/' . $id);
         self::assertSame(404, $client->getResponse()->getStatusCode());
     }
 
@@ -72,7 +72,7 @@ final class ApiRegressionTest extends IntegrationWebTestCase
 
         $client->request(
             'POST',
-            '/api/contents',
+            '/api/v1/manage/contents',
             server: ['CONTENT_TYPE' => 'application/json'],
             content: json_encode(['body' => 'missing-title'], JSON_THROW_ON_ERROR)
         );
@@ -88,13 +88,13 @@ final class ApiRegressionTest extends IntegrationWebTestCase
 
         $client->request(
             'PUT',
-            '/api/contents/999999',
+            '/api/v1/manage/contents/999999',
             server: ['CONTENT_TYPE' => 'application/json'],
             content: json_encode(['title' => 'x'], JSON_THROW_ON_ERROR)
         );
         self::assertSame(404, $client->getResponse()->getStatusCode());
 
-        $client->request('DELETE', '/api/contents/999999');
+        $client->request('DELETE', '/api/v1/manage/contents/999999');
         self::assertSame(404, $client->getResponse()->getStatusCode());
     }
 }

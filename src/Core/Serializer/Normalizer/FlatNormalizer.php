@@ -38,8 +38,25 @@ class FlatNormalizer implements NormalizerInterface, DenormalizerInterface, Norm
      */
     public function normalize($object, ?string $format = null, array $context = []): float|array|bool|\ArrayObject|int|string|null
     {
+        // Avoid normalizing Doctrine internal objects (ClassMetadata, etc.)
+        if (str_starts_with(get_class($object), 'Doctrine\\ORM\\') || str_starts_with(get_class($object), 'Doctrine\\Persistence\\')) {
+            if (method_exists($object, '__toString')) {
+                return (string) $object;
+            }
+            return get_class($object);
+        }
+
         // First let the decorated normalizer produce the baseline representation
-        $data = $this->decorated->normalize($object, $format, $context);
+        try {
+            $data = $this->decorated->normalize($object, $format, $context);
+        } catch (\Throwable $e) {
+            // When normalization fails (e.g. Doctrine internal objects in collections),
+            // return a minimal representation
+            if (method_exists($object, 'getId') && method_exists($object, '__toString')) {
+                return ['id' => $object->getId(), '__toString' => (string) $object];
+            }
+            return ['__class' => get_class($object)];
+        }
 
         if (!is_array($data)) {
             return $data;
