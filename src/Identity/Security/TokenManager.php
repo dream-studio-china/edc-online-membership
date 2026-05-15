@@ -1,0 +1,251 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Identity\Security;
+
+use App\Identity\Entity\RefreshToken;
+use App\Identity\Entity\User;
+use App\Identity\Repository\RefreshTokenRepository;
+use Doctrine\ORM\EntityManagerInterface;
+
+class TokenManager
+{
+    private string $privateKey;
+    private string $publicKey;
+    private string $refreshSecret;
+
+    public function __construct(
+        private readonly EntityManagerInterface $em,
+        private readonly RefreshTokenRepository $refreshRepo,
+        string $privateKeyPath,
+        string $publicKeyPath,
+        ?string $passphrase,
+        private readonly int $accessTtl,
+        private readonly int $refreshTtl,
+        string $refreshSecret,
+    ) {
+        $privateKeyRaw = file_get_contents($privateKeyPath);
+        if ($privateKeyRaw === false) {
+            throw new \RuntimeException("Cannot read private key: {$privateKeyPath}");
+        }
+        if ($passphrase !== null && $passphrase !== '') {
+            $privateKeyRaw = openssl_pkey_get_private($privateKeyRaw, $passphrase);
+            if ($privateKeyRaw === false) {
+                throw new \RuntimeException('Invalid private key passphrase.');
+            }
+        }
+
+        $pubKeyRaw = file_get_contents($publicKeyPath);
+        if ($pubKeyRaw === false) {
+            throw new \RuntimeException("Cannot read public key: {$publicKeyPath}");
+        }
+
+        $this->privateKey = \is_string($privateKeyRaw) ? $privateKeyRaw : '';
+        $this->publicKey = $pubKeyRaw;
+        $this->refreshSecret = $refreshSecret;
+    }
+
+    /**
+     * Create a signed RS256 JWT access token.
+     */
+    public function createAccessToken(User $user): string
+    {
+        $now = time();
+        $jti = bin2hex(random_bytes(16));
+
+        $header = self::base64UrlEncode(json_encode([
+            'alg' => 'RS256',
+            'typ' => 'JWT',
+        ], JSON_THROW_ON_ERROR));
+
+        $payload = self::base64UrlEncode(json_encode([
+            'sub' => (string) $user->getId(),
+            'username' => $user->getUsername(),
+            'email' => $user->getEmail(),
+            'roles' => $user->getRoles(),
+            'iat' => $now,
+            'exp' => $now + $this->accessTtl,
+            'jti' => $jti,
+            'iss' => 'crud-skeleton',
+        ], JSON_THROW_ON_ERROR));
+
+        $data = "{$header}.{$payload}";
+        $signature = '';
+        openssl_sign($data, $signature, $this->privateKey, OPENSSL_ALGO_SHA256);
+
+        return "{$data}." . self::base64UrlEncode($signature);
+    }
+
+    /**
+     * Decode and verify a JWT access token. Returns payload or null on failure.
+     */
+    public function decodeAccessToken(string $token): ?array
+    {
+        $parts = explode('.', $token);
+        if (\count($parts) !== 3) {
+            return null;
+        }
+
+        [$headerB64, $payloadB64, $signatureB64] = $parts;
+        $data = "{$headerB64}.{$payloadB64}";
+        $signature = self::base64UrlDecode($signatureB64);
+
+        if (\is_bool($signature)) {
+            return null;
+        }
+
+        $result = openssl_verify($data, $signature, $this->publicKey, OPENSSL_ALGO_SHA256);
+        if ($result !== 1) {
+            return null;
+        }
+
+        $payloadRaw = self::base64UrlDecode($payloadB64);
+        if (\is_bool($payloadRaw)) {
+            return null;
+        }
+
+        $payload = json_decode($payloadRaw, true, 512, JSON_THROW_ON_ERROR);
+        if (!\is_array($payload) || !isset($payload['exp'], $payload['sub'])) {
+            return null;
+        }
+
+        // Check expiration
+        if ($payload['exp'] < time()) {
+            return null;
+        }
+
+        return $payload;
+    }
+
+    /**
+     * Create and persist a refresh token. Returns the plaintext token to give to the client.
+     */
+    public function createRefreshToken(User $user): string
+    {
+        $plain = bin2hex(random_bytes(48));
+        $hash = $this->hashRefreshToken($plain);
+        $jti = bin2hex(random_bytes(16));
+        $expiresAt = (new \DateTimeImmutable())->setTimestamp(time() + $this->refreshTtl);
+
+        $entity = new RefreshToken($user, $hash, $expiresAt, $jti);
+        $this->em->persist($entity);
+        $this->em->flush();
+
+        return $plain;
+    }
+
+    /**
+     * Find a valid (non-revoked, non-expired) RefreshToken entity for a given plaintext token.
+     */
+    public function findValidRefreshToken(string $plainToken): ?RefreshToken
+    {
+        $hash = $this->hashRefreshToken($plainToken);
+
+        return $this->refreshRepo->findValidByHash($hash);
+    }
+
+    /**
+     * Rotate a refresh token: revokes the old one and creates a new one.
+     * Returns ['access_token' => string, 'refresh_token' => string] or throws.
+     *
+     * Implements reuse detection: if a revoked/replaced token is presented, all user tokens are revoked.
+     */
+    public function rotateRefreshToken(string $oldPlainToken): array
+    {
+        $hash = $this->hashRefreshToken($oldPlainToken);
+
+        // Also check for replaced tokens (reuse detection)
+        $old = $this->em->getRepository(RefreshToken::class)->findOneBy([
+            'refreshTokenHash' => $hash,
+        ]);
+
+        if ($old === null) {
+            throw new \RuntimeException('Refresh token not found.');
+        }
+
+        // Reuse detection: if this token was already revoked by a rotation
+        if ($old->isRevoked() && $old->getReplacedBy() !== null) {
+            // Revoke ALL user tokens — potential token theft
+            $this->refreshRepo->revokeAllForUser($old->getUser());
+            throw new \RuntimeException('Token reuse detected. All tokens revoked.');
+        }
+
+        if ($old->isRevoked() || $old->isExpired()) {
+            throw new \RuntimeException('Refresh token is invalid or expired.');
+        }
+
+        $user = $old->getUser();
+
+        // Revoke old token
+        $old->revoke();
+
+        // Create new refresh token
+        $newPlain = bin2hex(random_bytes(48));
+        $newHash = $this->hashRefreshToken($newPlain);
+        $newJti = bin2hex(random_bytes(16));
+        $newExpiresAt = (new \DateTimeImmutable())->setTimestamp(time() + $this->refreshTtl);
+
+        $newToken = new RefreshToken($user, $newHash, $newExpiresAt, $newJti);
+        $this->em->persist($newToken);
+        $this->em->flush();
+
+        // Link old to new (must happen after new is persisted to get its ID)
+        $old->setReplacedBy($newToken->getId());
+        $this->em->flush();
+
+        return [
+            'access_token' => $this->createAccessToken($user),
+            'refresh_token' => $newPlain,
+        ];
+    }
+
+    /**
+     * Revoke a specific refresh token by its plaintext value.
+     */
+    public function revokeRefreshToken(string $plainToken): void
+    {
+        $hash = $this->hashRefreshToken($plainToken);
+        $token = $this->em->getRepository(RefreshToken::class)->findOneBy([
+            'refreshTokenHash' => $hash,
+        ]);
+
+        if ($token !== null && !$token->isRevoked()) {
+            $token->revoke();
+            $this->em->flush();
+        }
+    }
+
+    /**
+     * Revoke all refresh tokens for a user.
+     */
+    public function revokeAllForUser(User $user): void
+    {
+        $this->refreshRepo->revokeAllForUser($user);
+    }
+
+    public function getAccessTtl(): int
+    {
+        return $this->accessTtl;
+    }
+
+    private function hashRefreshToken(string $plainToken): string
+    {
+        return hash_hmac('sha256', $plainToken, $this->refreshSecret);
+    }
+
+    public static function base64UrlEncode(string $data): string
+    {
+        return rtrim(strtr(base64_encode($data), '+/', '-_'), '=');
+    }
+
+    public static function base64UrlDecode(string $data): string|bool
+    {
+        $remainder = \strlen($data) % 4;
+        if ($remainder !== 0) {
+            $data .= str_repeat('=', 4 - $remainder);
+        }
+
+        return base64_decode(strtr($data, '-_', '+/'), true);
+    }
+}

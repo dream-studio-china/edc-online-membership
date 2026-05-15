@@ -29,16 +29,62 @@ services:
             - '../src/Core/Serializer/Normalizer/FlatNormalizer.php'
 
     # Allow autowiring of the ContainerInterface to the core service container.
-    # Some legacy services expect a ContainerInterface argument; aliasing it
-    # to the built-in service_container makes autowiring work.
     Symfony\Component\DependencyInjection\ContainerInterface: '@service_container'
     Psr\Log\LoggerInterface: '@logger'
     Symfony\Component\Serializer\SerializerInterface: '@serializer'
     Symfony\Contracts\Translation\TranslatorInterface: '@translator'
     App\Core\Service\ServiceLocatorInterface: '@App\Core\Service\DefaultServiceLocator'
-    # add more service definitions when explicit configuration is needed
-    # please note that last definitions always *replace* previous ones
 
-# Import user-level service configs from src/Core/Resources/config if present
+    # ----------------------------------------------------------------------
+    # Identity Module — explicit service configuration overrides autowiring
+    # ----------------------------------------------------------------------
+
+    App\Identity\Controller\AuthController:
+        arguments:
+            $otpLoginTemplate: '%env(ALIYUN_SMS_TEMPLATE_LOGIN_OTP)%'
+            $otpVerifyPhoneTemplate: '%env(ALIYUN_SMS_TEMPLATE_VERIFY_PHONE)%'
+
+    App\Identity\Security\TokenManager:
+        arguments:
+            $privateKeyPath: '%env(JWT_PRIVATE_KEY_PATH)%'
+            $publicKeyPath: '%env(JWT_PUBLIC_KEY_PATH)%'
+            $passphrase: '%env(JWT_PASSPHRASE)%'
+            $accessTtl: '%env(int:ACCESS_TOKEN_TTL)%'
+            $refreshTtl: '%env(int:REFRESH_TOKEN_TTL)%'
+            $refreshSecret: '%env(REFRESH_TOKEN_SECRET)%'
+
+    App\Identity\Sms\AliyunSmsProvider:
+        arguments:
+            $accessKeyId: '%env(ALIYUN_ACCESS_KEY_ID)%'
+            $accessKeySecret: '%env(ALIYUN_ACCESS_KEY_SECRET)%'
+            $region: '%env(ALIYUN_SMS_REGION)%'
+            $signName: '%env(ALIYUN_SMS_SIGN_NAME)%'
+            $dryRun: '%env(bool:ALIYUN_SMS_DRY_RUN)%'
+
+    App\Identity\Sms\SmsProviderInterface: '@App\Identity\Sms\AliyunSmsProvider'
+
+    App\Identity\Service\OtpStorageInterface: '@App\Identity\Service\RedisOtpStorage'
+
+    App\Identity\Service\RedisOtpStorage:
+        arguments:
+            $redisDsn: '%env(OTP_REDIS_DSN)%'
+
+    App\Identity\Service\OtpService:
+        arguments:
+            $storage: '@App\Identity\Service\RedisOtpStorage'
+            $sms: '@App\Identity\Sms\AliyunSmsProvider'
+
+# Import user-level service configs
 imports:
     - { resource: '../src/Core/Resources/config/services.yaml', optional: true }
+    - { resource: '../src/Identity/Resources/config/services_identity.yaml', optional: true }
+
+when@test:
+    services:
+        # Use in-memory OTP storage in test environment (no Redis needed)
+        App\Identity\Service\OtpStorageInterface: '@App\Identity\Service\NullOtpStorage'
+        App\Identity\Service\RedisOtpStorage: null
+        App\Identity\Service\OtpService:
+            arguments:
+                $storage: '@App\Identity\Service\NullOtpStorage'
+                $sms: '@App\Identity\Sms\AliyunSmsProvider'
