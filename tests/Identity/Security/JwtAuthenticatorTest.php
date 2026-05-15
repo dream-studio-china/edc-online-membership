@@ -8,11 +8,13 @@ use App\Identity\Entity\User;
 use App\Identity\Repository\UserRepository;
 use App\Identity\Security\JwtAuthenticator;
 use App\Identity\Security\TokenManager;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
 use Symfony\Component\Security\Core\Exception\CustomUserMessageAuthenticationException;
 
+#[AllowMockObjectsWithoutExpectations]
 final class JwtAuthenticatorTest extends TestCase
 {
     private TokenManager $tokenManager;

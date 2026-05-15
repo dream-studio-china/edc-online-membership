@@ -10,9 +10,11 @@ use App\Identity\Repository\RefreshTokenRepository;
 use App\Identity\Security\TokenManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 
+#[AllowMockObjectsWithoutExpectations]
 final class TokenManagerTest extends TestCase
 {
     private const PRIVATE_KEY_PATH = __DIR__ . '/test_private.pem';

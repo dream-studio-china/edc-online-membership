@@ -3,6 +3,7 @@
 namespace App\Tests\Core\Controller;
 
 use App\Core\Controller\RestController;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -23,6 +24,7 @@ class TestableRestController extends RestController
 }
 
 
+#[AllowMockObjectsWithoutExpectations]
 class RestControllerTest extends TestCase
 {
     public function testSuccessReturnsSerializedJsonResponse()

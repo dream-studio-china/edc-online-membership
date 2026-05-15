@@ -7,8 +7,10 @@ namespace App\Tests\Identity\Service;
 use App\Identity\Service\OtpService;
 use App\Identity\Service\OtpStorageInterface;
 use App\Identity\Sms\SmsProviderInterface;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 
+#[AllowMockObjectsWithoutExpectations]
 final class OtpServiceTest extends TestCase
 {
     private OtpService $otpService;

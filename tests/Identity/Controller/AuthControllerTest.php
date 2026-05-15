@@ -10,10 +10,12 @@ use App\Identity\Repository\UserRepository;
 use App\Identity\Security\TokenManager;
 use App\Identity\Service\OtpService;
 use Doctrine\ORM\EntityManagerInterface;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
+#[AllowMockObjectsWithoutExpectations]
 final class AuthControllerTest extends TestCase
 {
     private TokenManager $tokenManager;

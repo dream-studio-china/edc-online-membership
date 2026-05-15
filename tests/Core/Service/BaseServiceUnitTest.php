@@ -3,10 +3,12 @@
 namespace App\Tests\Core\Service;
 
 use App\Core\Service\BaseService;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
+#[AllowMockObjectsWithoutExpectations]
 final class BaseServiceUnitTest extends TestCase
 {
     public function testListResultToCollectionSupportsArrayAndFallback(): void

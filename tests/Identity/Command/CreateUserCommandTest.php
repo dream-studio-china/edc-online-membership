@@ -8,11 +8,13 @@ use App\Identity\Command\CreateUserCommand;
 use App\Identity\Entity\User;
 use App\Identity\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
+#[AllowMockObjectsWithoutExpectations]
 final class CreateUserCommandTest extends TestCase
 {
     public function testExecuteFailsWhenPasswordIsEmpty(): void
