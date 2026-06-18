@@ -69,32 +69,23 @@ trait WorkflowApiViewMixin
     #[Route('/{id}/do/{transition}', name: 'do-transition', methods: ['POST'])]
     public function doTransitionAction(Request $request, $id, $transition)
     {
-        // TODO DANGER: This endpoint will potentially modify the entity and change its workflow state.
-        // It calls the service->update() (if request body provided) and then workflow->apply(),
-        // persisting changes immediately. This means:
-        //  - Side effects and business logic may execute (DB writes, downstream processing).
-        //  - Concurrent calls can cause race conditions or inconsistent state if not guarded (use locking or transactions).
-        //  - Input is applied directly to the entity; ensure strict validation and do not accept untrusted fields.
-        //  - Permissions/guards must be enforced (workflow guards and controller-level security may not be sufficient in all cases).
-        //  - Consider adding audit logging, limiting allowed transitions, requiring explicit confirmation, or moving heavy work to background jobs.
-
         try {
             $service = $this->service ?? $this->get($this->serviceClass);
             $entity = $service->get(['id' => $id]);
             $workflow = $this->get($this->workflow);
 
-            if($workflow->can($entity, $transition)) {
-                $content = json_decode($request->getContent(), true);
-                if($content) {
-                    $service->update($entity, $content);
-                }
-
-                $workflow->apply($entity, $transition);
-                $this->get('doctrine')->getManager()->flush();
-            }
-            else {
+            if (!$workflow->can($entity, $transition)) {
                 throw new ValidatorException('Current transition cannot be applied.');
             }
+
+            $content = json_decode($request->getContent(), true);
+
+            $service->wrapInTransaction(function ($em) use ($service, $entity, $content, $workflow, $transition) {
+                if ($content) {
+                    $service->update($entity, $content);
+                }
+                $workflow->apply($entity, $transition);
+            });
 
         } catch (\Throwable $e) {
             return $this->warning($e->getMessage());

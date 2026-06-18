@@ -47,23 +47,24 @@ trait BaseServiceMutationTrait
         }
 
         if (!empty($data)) {
-            $em = $this->getEntityManager();
-            $qb = $em->createQueryBuilder()
-                ->update(get_class($object), 'entity')
-                ->where('entity = :entity')
-                ->setParameter('entity', $object)
-            ;
+            $this->wrapInTransaction(function ($em) use ($object, $data) {
+                $qb = $em->createQueryBuilder()
+                    ->update(get_class($object), 'entity')
+                    ->where('entity = :entity')
+                    ->setParameter('entity', $object)
+                ;
 
-            foreach ($data as $key => $val) {
-                $qb->set("entity.$key", ":$key")
-                    ->setParameter($key, $val);
-            }
+                foreach ($data as $key => $val) {
+                    $qb->set("entity.$key", ":$key")
+                        ->setParameter($key, $val);
+                }
 
-            $qb->getQuery()->execute();
+                $qb->getQuery()->execute();
 
-            if ($object->getId()) {
-                $this->em->refresh($object);
-            }
+                if ($object->getId()) {
+                    $em->refresh($object);
+                }
+            });
         }
         else {
             throw new ValidatorException('Data cannot be empty');
@@ -80,7 +81,7 @@ trait BaseServiceMutationTrait
      * @throws OptimisticLockException
      * @throws \ReflectionException
      */
-    public function update($object, array $data = null)
+    public function update($object, array $data = null, bool $noFlush = false)
     {
         if (empty($object)) {
             $this->logger->error('Object error, original data: '. json_encode($data));
@@ -203,7 +204,9 @@ trait BaseServiceMutationTrait
 
         try {
             $this->em->persist($object);
-            $this->em->flush();
+            if (!$noFlush) {
+                $this->em->flush();
+            }
         }
         catch (UniqueConstraintViolationException $ex) {
             throw new ValidatorException('Duplication entries');

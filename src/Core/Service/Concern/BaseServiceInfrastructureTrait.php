@@ -208,4 +208,36 @@ trait BaseServiceInfrastructureTrait
         $this->legacyEvaluator = new LegacyEvaluator();
         return $this->legacyEvaluator;
     }
+
+    /**
+     * Execute a callable within a database transaction.
+     * The callable receives the EntityManager for convenience.
+     * Flushes before commit, rolls back on any Throwable.
+     * Falls back to plain execution when the EM is a fake/mock without transaction support.
+     */
+    public function wrapInTransaction(callable $fn): mixed
+    {
+        $em = $this->getEntityManager();
+
+        if (!method_exists($em, 'beginTransaction') || !method_exists($em, 'commit')) {
+            $result = $fn($em);
+            if (method_exists($em, 'flush')) {
+                $em->flush();
+            }
+            return $result;
+        }
+
+        $em->beginTransaction();
+        try {
+            $result = $fn($em);
+            $em->flush();
+            $em->commit();
+            return $result;
+        } catch (\Throwable $e) {
+            if ($em->getConnection()->isTransactionActive()) {
+                $em->rollback();
+            }
+            throw $e;
+        }
+    }
 }

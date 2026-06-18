@@ -96,86 +96,87 @@ trait CreateApiViewMixin
             $contents = [];
         }
 
-        // Cannot use transactions here for system fault.
+        $processItem = function ($item) use ($service, $inputType, $transformer, &$response) {
+            // Copy item
+            $content = $item;
 
-        // $em = $this->get('doctrine.orm.entity_manager');
-        // $em->beginTransaction();
+            // Create entity
+            $entity = $service->new();
 
-        try {
-            foreach ($contents as $item) {
-                // Copy item
-                $content = $item;
+            // properties process.
+            if(
+                property_exists($this, 'requiredCreateProperties') ||
+                property_exists($this, 'acceptedCreateProperties')
+            ) {
+                $data = [];
 
-                // Create entity
-                $entity = $service->new();
+                if(property_exists($this, 'requiredCreateProperties')) {
+                    foreach ($this->requiredCreateProperties as $property) {
+                        if (!array_key_exists($property, $content))
+                            throw new ValidatorException(ucfirst($property) . " is required");
+                        $data[$property] = $content[$property];
+                    }
+                }
 
-                // properties process.
-                if(
-                    property_exists($this, 'requiredCreateProperties') ||
-                    property_exists($this, 'acceptedCreateProperties')
-                ) {
-                    $data = [];
-
-                    if(property_exists($this, 'requiredCreateProperties')) {
-                        foreach ($this->requiredCreateProperties as $property) {
-                            if (!array_key_exists($property, $content))
-                                throw new ValidatorException(ucfirst($property) . " is required");
+                if(property_exists($this, 'acceptedCreateProperties')) {
+                    foreach ($this->acceptedCreateProperties as $property) {
+                        if(array_key_exists($property, $content)) {
                             $data[$property] = $content[$property];
                         }
                     }
-
-                    if(property_exists($this, 'acceptedCreateProperties')) {
-                        foreach ($this->acceptedCreateProperties as $property) {
-                            if(array_key_exists($property, $content)) {
-                                $data[$property] = $content[$property];
-                            }
-                        }
-                    }
-
-                    $content = $data;
                 }
 
-                // process content
-                $content = array_merge($content, $this->defaultCreateValues());
-
-                if($transformer) {
-                    $data = json_decode($transformer, true);
-                    $content = $this->transformContent($content, $data, $entity);
-                }
-                $content = $this->processCreateContent($content, $entity);
-
-                // process entity
-                $entity = $this->processEntity($content, $entity);
-
-                if ($entity = $service->update($entity, $content)) {
-                    if($inputType === self::$TYPE_OBJECT) {
-                        $response = $this->afterCreated($entity);
-                    }
-                    elseif($inputType === self::$TYPE_ARRAY) {
-                        $response[] = $this->afterCreated($entity);
-                    }
-                    else {
-                        throw new ValidatorException();
-                    }
-                }
+                $content = $data;
             }
 
-            // $em->commit();
+            // process content
+            $content = array_merge($content, $this->defaultCreateValues());
+
+            if($transformer) {
+                $data = json_decode($transformer, true);
+                $content = $this->transformContent($content, $data, $entity);
+            }
+            $content = $this->processCreateContent($content, $entity);
+
+            // process entity
+            $entity = $this->processEntity($content, $entity);
+
+            if ($entity = $service->update($entity, $content)) {
+                if($inputType === self::$TYPE_OBJECT) {
+                    $response = $this->afterCreated($entity);
+                }
+                elseif($inputType === self::$TYPE_ARRAY) {
+                    $response[] = $this->afterCreated($entity);
+                }
+                else {
+                    throw new ValidatorException();
+                }
+            }
+        };
+
+        $transactional = !$partial && !empty($contents);
+
+        try {
+            if ($transactional) {
+                $service->wrapInTransaction(function ($em) use ($contents, $processItem) {
+                    foreach ($contents as $item) {
+                        $processItem($item);
+                    }
+                });
+            } else {
+                foreach ($contents as $item) {
+                    $processItem($item);
+                }
+            }
         }
         catch (ValidatorException $exception) {
-            if (!$partial) {
-                return $this->warning($exception->getMessage(), 400, '', 400);
-            }
+            return $this->warning($exception->getMessage(), 400, '', 400);
         }
         catch (NotFoundHttpException $exception) {
-            if (!$partial) {
-                return $this->warning($exception->getMessage(), 404, '', 404);
-            }
+            return $this->warning($exception->getMessage(), 404, '', 404);
         }
         catch (\Exception $exception) {
-            if(!$partial) {
-                return $this->warning($exception->getMessage() ?: 'Create failed', 500, '', 500);
-            }
+            return $this->warning($exception->getMessage() ?: 'Create failed', 500, '', 500);
         }
 
         return $this->success($response, 'SUCCESS', 201);

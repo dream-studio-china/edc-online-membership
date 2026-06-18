@@ -217,7 +217,7 @@ class TokenManager
 
         // Reuse detection: if this token was already revoked by a rotation
         if ($old->isRevoked() && $old->getReplacedBy() !== null) {
-            // Revoke ALL user tokens — potential token theft
+            // Revoke ALL user tokens — potential token theft (must persist regardless of transaction)
             $this->refreshRepo->revokeAllForUser($old->getUser());
             throw new \RuntimeException('Token reuse detected. All tokens revoked.');
         }
@@ -228,27 +228,37 @@ class TokenManager
 
         $user = $old->getUser();
 
-        // Revoke old token
-        $old->revoke();
+        $this->em->beginTransaction();
+        try {
+            // Revoke old token
+            $old->revoke();
 
-        // Create new refresh token
-        $newPlain = bin2hex(random_bytes(48));
-        $newHash = $this->hashRefreshToken($newPlain);
-        $newJti = bin2hex(random_bytes(16));
-        $newExpiresAt = (new \DateTimeImmutable())->setTimestamp(time() + $this->refreshTtl);
+            // Create new refresh token
+            $newPlain = bin2hex(random_bytes(48));
+            $newHash = $this->hashRefreshToken($newPlain);
+            $newJti = bin2hex(random_bytes(16));
+            $newExpiresAt = (new \DateTimeImmutable())->setTimestamp(time() + $this->refreshTtl);
 
-        $newToken = new RefreshToken($user, $newHash, $newExpiresAt, $newJti);
-        $this->em->persist($newToken);
-        $this->em->flush();
+            $newToken = new RefreshToken($user, $newHash, $newExpiresAt, $newJti);
+            $this->em->persist($newToken);
+            $this->em->flush();
 
-        // Link old to new (must happen after new is persisted to get its ID)
-        $old->setReplacedBy($newToken->getId());
-        $this->em->flush();
+            // Link old to new (must happen after new is persisted to get its ID)
+            $old->setReplacedBy($newToken->getId());
+            $this->em->flush();
 
-        return [
-            'access_token' => $this->createAccessToken($user),
-            'refresh_token' => $newPlain,
-        ];
+            $this->em->commit();
+
+            return [
+                'access_token' => $this->createAccessToken($user),
+                'refresh_token' => $newPlain,
+            ];
+        } catch (\Throwable $e) {
+            if ($this->em->getConnection()->isTransactionActive()) {
+                $this->em->rollback();
+            }
+            throw $e;
+        }
     }
 
     /**

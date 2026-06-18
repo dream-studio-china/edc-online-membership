@@ -82,7 +82,7 @@ trait UpdateApiViewMixin
      * @param int $writeMode
      * @return mixed
      */
-    private function updateSingle($entity, $content, array $transformer = null, int $writeMode = 1 /* MODE_UPDATE */)
+    private function updateSingle($entity, $content, array $transformer = null, int $writeMode = 1 /* MODE_UPDATE */, bool $noFlush = false)
     {
         $service = $this->service ?? $this->get($this->serviceClass);
 
@@ -143,7 +143,7 @@ trait UpdateApiViewMixin
         unset($content['id']);
 
         // save
-        $entity = $service->update($entity, $content);
+        $entity = $service->update($entity, $content, $noFlush);
         return $writeMode
             ? $this->afterUpdated($entity)
             : (
@@ -200,44 +200,51 @@ trait UpdateApiViewMixin
         }
         elseif(is_array($content)) {
             // Multiple update
-            $em = $this->get('doctrine.orm.entity_manager');
             $response = [];
 
-            $em->beginTransaction();
-            try {
-                foreach ($content as $item) {
-                    // Get entity search data
-                    $data = [];
-                    foreach ($basis as $basisItem) {
-                        $data[$basisItem] = $item[$basisItem];
-                    }
-
-                    $filter = $this->mixToCommonFilter($data);
-                    $entity = $service->get($filter, false);
-                    $writeMode = self::$MODE_UPDATE;
-
-                    if(empty($entity) || empty($basis)) {
-                        if($mode == 'mixed') {
-                            $writeMode = self::$MODE_CREATE;
-                            $entity = $service->new();
+            if (!$partial) {
+                $service->wrapInTransaction(function ($em) use ($content, $service, $basis, $mode, $transformer, &$response) {
+                    foreach ($content as $item) {
+                        $data = [];
+                        foreach ($basis as $basisItem) {
+                            $data[$basisItem] = $item[$basisItem];
                         }
-                        else continue;
+                        $filter = $this->mixToCommonFilter($data);
+                        $entity = $service->get($filter, false);
+                        $writeMode = self::$MODE_UPDATE;
+                        if(empty($entity) || empty($basis)) {
+                            if($mode == 'mixed') {
+                                $writeMode = self::$MODE_CREATE;
+                                $entity = $service->new();
+                            }
+                            else continue;
+                        }
+                        $response[] = $this->updateSingle($entity, $item, $transformer, $writeMode, true);
                     }
-
-                    $response[] = $this->updateSingle($entity, $item, $transformer, $writeMode);
+                });
+            } else {
+                foreach ($content as $item) {
+                    try {
+                        $data = [];
+                        foreach ($basis as $basisItem) {
+                            $data[$basisItem] = $item[$basisItem];
+                        }
+                        $filter = $this->mixToCommonFilter($data);
+                        $entity = $service->get($filter, false);
+                        $writeMode = self::$MODE_UPDATE;
+                        if(empty($entity) || empty($basis)) {
+                            if($mode == 'mixed') {
+                                $writeMode = self::$MODE_CREATE;
+                                $entity = $service->new();
+                            }
+                            else continue;
+                        }
+                        $response[] = $this->updateSingle($entity, $item, $transformer, $writeMode, false);
+                    } catch (\Exception) {
+                        // Partial mode: skip failed items
+                    }
                 }
-                $em->commit();
             }
-            catch (\Exception $exception) {
-                if(!$partial) {
-                    $em->rollback();
-                    throw $exception;
-                }
-                // else {
-                //     If partial insert is available, do nothing
-                // }
-            }
-            return $response;
         }
         else {
             throw new ValidatorException('Content type error.');

@@ -35,9 +35,10 @@ interface BaseServiceInterface
      * Update an entity with provided data (may persist and flush).
      * @param mixed $object
      * @param array|null $data
+     * @param bool $noFlush When true, persist but do not call flush(). Caller is responsible for flushing.
      * @return mixed
      */
-    public function update($object, array $data = null);
+    public function update($object, array $data = null, bool $noFlush = false);
 
     /**
      * Update without triggering listeners (bulk update path).
