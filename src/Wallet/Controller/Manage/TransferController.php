@@ -14,7 +14,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
-#[Route('/api/v1/manage/transfers', name: 'manage-transfers-')]
+#[Route('/manage/transfers', name: 'manage-transfers-')]
 #[IsGranted('ROLE_ADMIN')]
 class TransferController extends RestController
 {

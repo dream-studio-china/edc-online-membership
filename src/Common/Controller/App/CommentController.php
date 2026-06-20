@@ -11,7 +11,7 @@ use App\Core\View\ListApiViewMixin;
 use App\Identity\Entity\User;
 use Symfony\Component\Routing\Attribute\Route;
 
-#[Route('/api/v1/app/comments', name: 'app-comments-')]
+#[Route('/app/comments', name: 'app-comments-')]
 class CommentController extends RestController
 {
     use ApiView, ListApiViewMixin, DetailApiViewMixin, CreateApiViewMixin;

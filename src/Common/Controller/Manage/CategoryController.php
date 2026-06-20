@@ -13,7 +13,7 @@ use App\Core\View\UpdateApiViewMixin;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
-#[Route('/api/v1/manage/categories', name: 'manage-categories-')]
+#[Route('/manage/categories', name: 'manage-categories-')]
 #[IsGranted('ROLE_ADMIN')]
 class CategoryController extends RestController
 {

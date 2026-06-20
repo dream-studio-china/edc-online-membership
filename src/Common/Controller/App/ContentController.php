@@ -9,7 +9,7 @@ use App\Core\View\DetailApiViewMixin;
 use App\Core\View\ListApiViewMixin;
 use Symfony\Component\Routing\Attribute\Route;
 
-#[Route('/api/v1/app/contents', name: 'app-contents-')]
+#[Route('/app/contents', name: 'app-contents-')]
 class ContentController extends RestController
 {
     use ApiView, DetailApiViewMixin, ListApiViewMixin;

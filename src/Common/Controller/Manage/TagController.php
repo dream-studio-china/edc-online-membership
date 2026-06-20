@@ -13,7 +13,7 @@ use App\Core\View\UpdateApiViewMixin;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
-#[Route('/api/v1/manage/tags', name: 'manage-tags-')]
+#[Route('/manage/tags', name: 'manage-tags-')]
 #[IsGranted('ROLE_ADMIN')]
 class TagController extends RestController
 {
