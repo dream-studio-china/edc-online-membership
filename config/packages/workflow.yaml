@@ -1,0 +1,41 @@
+framework:
+    workflows:
+        order:
+            type: 'state_machine'
+            marking_store:
+                type: 'method'
+                property: 'status'
+            supports:
+                - App\Trade\Entity\Order
+            initial_marking: draft
+            places:
+                - draft
+                - pending
+                - confirmed
+                - paid
+                - fulfilled
+                - completed
+                - cancelled
+                - refunded
+            transitions:
+                submit:
+                    from: draft
+                    to: pending
+                confirm:
+                    from: pending
+                    to: confirmed
+                pay:
+                    from: confirmed
+                    to: paid
+                fulfill:
+                    from: paid
+                    to: fulfilled
+                complete:
+                    from: fulfilled
+                    to: completed
+                cancel:
+                    from: [draft, pending, confirmed]
+                    to: cancelled
+                refund:
+                    from: completed
+                    to: refunded
