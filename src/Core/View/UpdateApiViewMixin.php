@@ -249,6 +249,8 @@ trait UpdateApiViewMixin
         else {
             throw new ValidatorException('Content type error.');
         }
+
+        return $response ?? null;
     }
 
     #[OA\Post(
