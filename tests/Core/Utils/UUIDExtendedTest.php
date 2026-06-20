@@ -110,4 +110,66 @@ final class UUIDExtendedTest extends TestCase
         self::assertSame(32, strlen($uuid));
         self::assertStringNotContainsString('-', $uuid);
     }
+
+    public function testIsValidWithUppercase(): void
+    {
+        self::assertTrue(UUID::is_valid('550E8400-E29B-41D4-A716-446655440000'));
+    }
+
+    public function testIsValidWithPartialString(): void
+    {
+        self::assertFalse(UUID::is_valid('550e8400-e29b-41d4-a716'));
+    }
+
+    public function testIsValidWithLeadingWhitespace(): void
+    {
+        self::assertFalse(UUID::is_valid('  550e8400-e29b-41d4-a716-446655440000'));
+    }
+
+    public function testIsValidWithTrailingWhitespace(): void
+    {
+        self::assertFalse(UUID::is_valid('550e8400-e29b-41d4-a716-446655440000  '));
+    }
+
+    public function testV3WithBracedNamespace(): void
+    {
+        $ns = '{550e8400-e29b-41d4-a716-446655440000}';
+        $uuid = UUID::v3($ns, 'test');
+        self::assertNotFalse($uuid);
+
+        $uuid2 = UUID::v3('550e8400-e29b-41d4-a716-446655440000', 'test');
+        self::assertSame($uuid2, $uuid);
+    }
+
+    public function testV5WithBracedNamespace(): void
+    {
+        $ns = '{550e8400-e29b-41d4-a716-446655440000}';
+        $uuid = UUID::v5($ns, 'test');
+        self::assertNotFalse($uuid);
+
+        $uuid2 = UUID::v5('550e8400-e29b-41d4-a716-446655440000', 'test');
+        self::assertSame($uuid2, $uuid);
+    }
+
+    public function testV3WithEmptyName(): void
+    {
+        $uuid = UUID::v3('550e8400-e29b-41d4-a716-446655440000', '');
+        self::assertNotFalse($uuid);
+        self::assertMatchesRegularExpression('/^[0-9a-f]{8}-[0-9a-f]{4}-3[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/', $uuid);
+    }
+
+    public function testV5WithEmptyName(): void
+    {
+        $uuid = UUID::v5('550e8400-e29b-41d4-a716-446655440000', '');
+        self::assertNotFalse($uuid);
+        self::assertMatchesRegularExpression('/^[0-9a-f]{8}-[0-9a-f]{4}-5[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/', $uuid);
+    }
+
+    public function testV4cResultIsValidWithoutDashes(): void
+    {
+        $compact = UUID::v4c();
+        $withDashes = substr($compact, 0, 8) . '-' . substr($compact, 8, 4) . '-' . substr($compact, 12, 4) . '-' . substr($compact, 16, 4) . '-' . substr($compact, 20, 12);
+
+        self::assertTrue(UUID::is_valid($withDashes));
+    }
 }
