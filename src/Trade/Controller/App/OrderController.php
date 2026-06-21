@@ -10,10 +10,12 @@ use App\Core\View\DetailApiViewMixin;
 use App\Core\View\ListApiViewMixin;
 use App\Trade\Entity\Order;
 use App\Trade\Service\OrderServiceInterface;
+use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\Workflow\WorkflowInterface;
 
 #[Route('/app/orders', name: 'app-orders-')]
 #[IsGranted('ROLE_USER')]
@@ -23,6 +25,8 @@ class OrderController extends RestController
 
     public function __construct(
         protected readonly OrderServiceInterface $service,
+        #[Target('state_machine.order')]
+        protected readonly WorkflowInterface $workflow,
     ) {
     }
 
@@ -97,13 +101,14 @@ class OrderController extends RestController
             return $this->warning('Order not found.', 404, '', 404);
         }
 
-        $allowedStatuses = [Order::STATUS_DRAFT, Order::STATUS_PENDING, Order::STATUS_CONFIRMED];
-        if (!in_array($order->getStatus(), $allowedStatuses, true)) {
+        if (!$this->workflow->can($order, 'cancel')) {
             return $this->warning('Order cannot be cancelled in current status.', 400, '', 400);
         }
 
         try {
-            $this->service->update($order, ['status' => Order::STATUS_CANCELLED]);
+            $this->service->wrapInTransaction(function () use ($order) {
+                $this->workflow->apply($order, 'cancel');
+            });
             return $this->success($order, 'Order cancelled');
         } catch (\Throwable $e) {
             return $this->warning($e->getMessage(), 400, '', 400);
