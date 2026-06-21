@@ -31,7 +31,7 @@ services:
 
     App\Core\EventListener\OpenApiEnricherListener:
         tags:
-            - { name: kernel.event_listener, event: kernel.response, priority: -1 }
+            - { name: kernel.event_listener, event: kernel.response, priority: -10 }
 
     Symfony\Component\DependencyInjection\ContainerInterface: '@service_container'
     Psr\Log\LoggerInterface: '@logger'

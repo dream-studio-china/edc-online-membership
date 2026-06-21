@@ -90,7 +90,9 @@ class OpenApiEnricherListener
     public function onKernelResponse(ResponseEvent $event): void
     {
         $request = $event->getRequest();
-        if ($request->getPathInfo() !== '/api/doc.json') {
+        $pathInfo = $request->getPathInfo();
+
+        if ($pathInfo !== '/api/doc.json' && $pathInfo !== '/api/doc') {
             return;
         }
 
@@ -100,11 +102,32 @@ class OpenApiEnricherListener
             return;
         }
 
-        $spec = json_decode($content, true);
-        if (!is_array($spec) || !isset($spec['paths'])) {
+        // /api/doc.json — raw JSON
+        if ($pathInfo === '/api/doc.json' || str_starts_with(trim($content), '{')) {
+            $spec = json_decode($content, true);
+            if (!is_array($spec) || !isset($spec['paths'])) {
+                return;
+            }
+            $spec = $this->enrich($spec);
+            $response->setContent(json_encode($spec, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
             return;
         }
 
+        // /api/doc — HTML with embedded <script id="swagger-data" type="application/json">...</script>
+        $pattern = '#<script id="swagger-data" type="application/json">(.*?)</script>#s';
+        if (preg_match($pattern, $content, $matches)) {
+            $wrapper = json_decode($matches[1], true);
+            if (is_array($wrapper) && isset($wrapper['spec'])) {
+                $wrapper['spec'] = $this->enrich($wrapper['spec']);
+                $newJson = json_encode($wrapper, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+                $content = str_replace($matches[1], $newJson, $content);
+                $response->setContent($content);
+            }
+        }
+    }
+
+    private function enrich(array $spec): array
+    {
         foreach ($spec['paths'] as $path => &$methods) {
             $meta = self::META[$path] ?? null;
             if ($meta === null) continue;
@@ -133,6 +156,6 @@ class OpenApiEnricherListener
             ['name' => 'Wallet', 'description' => 'Balance, transactions, atomic transfers'],
         ];
 
-        $response->setContent(json_encode($spec, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+        return $spec;
     }
 }
