@@ -47,6 +47,7 @@ nav:
       - Data Model: design/data-model.md
       - Module Design: design/module-design.md
       - Controller Design: design/controller-design.md
+      - API Documentation: design/api-documentation.md
       - System Contracts: design/system-contracts.md
   - Bundles:
       - Core Framework: design/bundles/core.md
