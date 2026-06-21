@@ -155,6 +155,10 @@ class Order
         return $this->status;
     }
 
+    /**
+     * @internal Used ONLY by Symfony Workflow marking store.
+     *            DO NOT call directly — use workflow transitions instead.
+     */
     public function setStatus(string $status): self
     {
         $this->status = $status;
