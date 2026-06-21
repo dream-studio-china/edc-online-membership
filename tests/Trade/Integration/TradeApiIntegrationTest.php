@@ -994,4 +994,354 @@ final class TradeApiIntegrationTest extends WebTestCase
         self::assertSame(201, $response->getStatusCode());
         self::assertSame(1000, $content['data']['totalAmount']);
     }
+
+    // ===== New Endpoint Tests: Items, Cancel, Pay, Fulfill, Refund =====
+
+    public function testManageOrderItems(): void
+    {
+        $productId = $this->createProduct('ItemsProduct');
+        $specId = $this->createSpecification($productId, 'ItemsSpec', 500);
+
+        [, $createContent] = $this->jsonRequest('POST', '/api/v1/manage/orders', [
+            'items' => [['specificationId' => $specId, 'quantity' => 3]],
+        ]);
+        $orderId = $createContent['data']['id'];
+
+        [$response, $content] = $this->jsonRequest('GET', "/api/v1/manage/orders/{$orderId}/items");
+
+        self::assertSame(Response::HTTP_OK, $response->getStatusCode());
+        $this->assertSuccess($content);
+        self::assertIsArray($content['data']);
+        self::assertCount(1, $content['data']);
+    }
+
+    public function testManageOrderItemsNotFound(): void
+    {
+        [$response] = $this->jsonRequest('GET', '/api/v1/manage/orders/99999/items');
+        self::assertSame(Response::HTTP_NOT_FOUND, $response->getStatusCode());
+    }
+
+    public function testManageOrderFulfill(): void
+    {
+        $productId = $this->createProduct('FulfillProduct');
+        $specId = $this->createSpecification($productId, 'Spec', 1000);
+
+        [, $createContent] = $this->jsonRequest('POST', '/api/v1/manage/orders', [
+            'items' => [['specificationId' => $specId, 'quantity' => 1]],
+        ]);
+        $orderId = $createContent['data']['id'];
+
+        $transitions = ['submit', 'confirm', 'pay'];
+        foreach ($transitions as $t) {
+            $this->jsonRequest('POST', "/api/v1/manage/orders/{$orderId}/do/{$t}");
+        }
+
+        [$response, $content] = $this->jsonRequest('POST', "/api/v1/manage/orders/{$orderId}/fulfill", [
+            'trackingNumber' => 'SF1234567890',
+            'shippingAddress' => '123 Test St, Shanghai',
+        ]);
+
+        self::assertSame(Response::HTTP_OK, $response->getStatusCode());
+        $this->assertSuccess($content);
+        self::assertSame('fulfilled', $content['data']['status']);
+    }
+
+    public function testManageOrderFulfillWithoutOptionalData(): void
+    {
+        $productId = $this->createProduct('FulfillMin');
+        $specId = $this->createSpecification($productId, 'Spec', 1000);
+
+        [, $createContent] = $this->jsonRequest('POST', '/api/v1/manage/orders', [
+            'items' => [['specificationId' => $specId, 'quantity' => 1]],
+        ]);
+        $orderId = $createContent['data']['id'];
+
+        $transitions = ['submit', 'confirm', 'pay'];
+        foreach ($transitions as $t) {
+            $this->jsonRequest('POST', "/api/v1/manage/orders/{$orderId}/do/{$t}");
+        }
+
+        [$response, $content] = $this->jsonRequest('POST', "/api/v1/manage/orders/{$orderId}/fulfill");
+        self::assertSame(Response::HTTP_OK, $response->getStatusCode());
+        $this->assertSuccess($content);
+        self::assertSame('fulfilled', $content['data']['status']);
+    }
+
+    public function testManageOrderFulfillWrongStatus(): void
+    {
+        $productId = $this->createProduct('FulfillWrong');
+        $specId = $this->createSpecification($productId, 'Spec', 1000);
+
+        [, $createContent] = $this->jsonRequest('POST', '/api/v1/manage/orders', [
+            'items' => [['specificationId' => $specId, 'quantity' => 1]],
+        ]);
+        $orderId = $createContent['data']['id'];
+
+        [$response] = $this->jsonRequest('POST', "/api/v1/manage/orders/{$orderId}/fulfill");
+        self::assertSame(Response::HTTP_BAD_REQUEST, $response->getStatusCode());
+    }
+
+    public function testManageOrderPayRequiresSystemWallet(): void
+    {
+        $productId = $this->createProduct('PayWallet');
+        $specId = $this->createSpecification($productId, 'Spec', 1000);
+
+        [, $createContent] = $this->jsonRequest('POST', '/api/v1/manage/orders', [
+            'items' => [['specificationId' => $specId, 'quantity' => 1]],
+        ]);
+        $orderId = $createContent['data']['id'];
+
+        $transitions = ['submit', 'confirm'];
+        foreach ($transitions as $t) {
+            $this->jsonRequest('POST', "/api/v1/manage/orders/{$orderId}/do/{$t}");
+        }
+
+        [$response] = $this->jsonRequest('POST', "/api/v1/manage/orders/{$orderId}/pay", [
+            'systemWalletId' => 99999,
+        ]);
+
+        self::assertSame(Response::HTTP_BAD_REQUEST, $response->getStatusCode());
+    }
+
+    public function testManageOrderPayMissingSystemWallet(): void
+    {
+        $productId = $this->createProduct('PayNoWallet');
+        $specId = $this->createSpecification($productId, 'Spec', 1000);
+
+        [, $createContent] = $this->jsonRequest('POST', '/api/v1/manage/orders', [
+            'items' => [['specificationId' => $specId, 'quantity' => 1]],
+        ]);
+        $orderId = $createContent['data']['id'];
+
+        $transitions = ['submit', 'confirm'];
+        foreach ($transitions as $t) {
+            $this->jsonRequest('POST', "/api/v1/manage/orders/{$orderId}/do/{$t}");
+        }
+
+        [$response] = $this->jsonRequest('POST', "/api/v1/manage/orders/{$orderId}/pay");
+
+        self::assertSame(Response::HTTP_BAD_REQUEST, $response->getStatusCode());
+    }
+
+    public function testManageOrderPayWrongStatus(): void
+    {
+        $productId = $this->createProduct('PayWrong');
+        $specId = $this->createSpecification($productId, 'Spec', 1000);
+
+        [, $createContent] = $this->jsonRequest('POST', '/api/v1/manage/orders', [
+            'items' => [['specificationId' => $specId, 'quantity' => 1]],
+        ]);
+        $orderId = $createContent['data']['id'];
+
+        [$response] = $this->jsonRequest('POST', "/api/v1/manage/orders/{$orderId}/pay", [
+            'systemWalletId' => 1,
+        ]);
+
+        self::assertSame(Response::HTTP_BAD_REQUEST, $response->getStatusCode());
+    }
+
+    public function testManageOrderRefundRequiresSystemWallet(): void
+    {
+        $productId = $this->createProduct('RefundWallet');
+        $specId = $this->createSpecification($productId, 'Spec', 1000);
+
+        [, $createContent] = $this->jsonRequest('POST', '/api/v1/manage/orders', [
+            'items' => [['specificationId' => $specId, 'quantity' => 1]],
+        ]);
+        $orderId = $createContent['data']['id'];
+
+        $transitions = ['submit', 'confirm', 'pay', 'fulfill', 'complete'];
+        foreach ($transitions as $t) {
+            $this->jsonRequest('POST', "/api/v1/manage/orders/{$orderId}/do/{$t}");
+        }
+
+        [$response] = $this->jsonRequest('POST', "/api/v1/manage/orders/{$orderId}/refund", [
+            'systemWalletId' => 99999,
+            'reason' => 'Customer request',
+        ]);
+
+        self::assertSame(Response::HTTP_BAD_REQUEST, $response->getStatusCode());
+    }
+
+    public function testManageOrderRefundMissingReason(): void
+    {
+        $productId = $this->createProduct('RefundNoReason');
+        $specId = $this->createSpecification($productId, 'Spec', 1000);
+
+        [, $createContent] = $this->jsonRequest('POST', '/api/v1/manage/orders', [
+            'items' => [['specificationId' => $specId, 'quantity' => 1]],
+        ]);
+        $orderId = $createContent['data']['id'];
+
+        $transitions = ['submit', 'confirm', 'pay', 'fulfill', 'complete'];
+        foreach ($transitions as $t) {
+            $this->jsonRequest('POST', "/api/v1/manage/orders/{$orderId}/do/{$t}");
+        }
+
+        [$response] = $this->jsonRequest('POST', "/api/v1/manage/orders/{$orderId}/refund", [
+            'systemWalletId' => 1,
+        ]);
+
+        self::assertSame(Response::HTTP_BAD_REQUEST, $response->getStatusCode());
+    }
+
+    public function testManageOrderRefundWrongStatus(): void
+    {
+        $productId = $this->createProduct('RefundWrong');
+        $specId = $this->createSpecification($productId, 'Spec', 1000);
+
+        [, $createContent] = $this->jsonRequest('POST', '/api/v1/manage/orders', [
+            'items' => [['specificationId' => $specId, 'quantity' => 1]],
+        ]);
+        $orderId = $createContent['data']['id'];
+
+        [$response] = $this->jsonRequest('POST', "/api/v1/manage/orders/{$orderId}/refund", [
+            'systemWalletId' => 1,
+            'reason' => 'Test',
+        ]);
+
+        self::assertSame(Response::HTTP_BAD_REQUEST, $response->getStatusCode());
+    }
+
+    public function testAppOrderItems(): void
+    {
+        $productId = $this->createProduct('AppItemsProduct');
+        $specId = $this->createSpecification($productId, 'Spec', 1000);
+
+        [, $createContent] = $this->jsonRequest('POST', '/api/v1/app/orders', [
+            'items' => [['specificationId' => $specId, 'quantity' => 2]],
+        ]);
+        $orderId = $createContent['data']['id'];
+
+        [$response, $content] = $this->jsonRequest('GET', "/api/v1/app/orders/{$orderId}/items");
+
+        self::assertSame(Response::HTTP_OK, $response->getStatusCode());
+        $this->assertSuccess($content);
+        self::assertIsArray($content['data']);
+        self::assertCount(1, $content['data']);
+    }
+
+    public function testAppOrderItemsOtherUserForbidden(): void
+    {
+        $productId = $this->createProduct('OtherUserProduct');
+        $specId = $this->createSpecification($productId, 'Spec', 1000);
+
+        [, $createContent] = $this->jsonRequest('POST', '/api/v1/manage/orders', [
+            'items' => [['specificationId' => $specId, 'quantity' => 1]],
+        ]);
+        $orderId = $createContent['data']['id'];
+
+        [$response] = $this->jsonRequest('GET', "/api/v1/app/orders/{$orderId}/items");
+        self::assertSame(Response::HTTP_NOT_FOUND, $response->getStatusCode());
+    }
+
+    public function testAppOrderCancelFromDraft(): void
+    {
+        $productId = $this->createProduct('AppCancelDraft');
+        $specId = $this->createSpecification($productId, 'Spec', 1000);
+
+        [, $createContent] = $this->jsonRequest('POST', '/api/v1/app/orders', [
+            'items' => [['specificationId' => $specId, 'quantity' => 1]],
+        ]);
+        $orderId = $createContent['data']['id'];
+
+        [$response, $content] = $this->jsonRequest('POST', "/api/v1/app/orders/{$orderId}/cancel");
+
+        self::assertSame(Response::HTTP_OK, $response->getStatusCode());
+        $this->assertSuccess($content);
+        self::assertSame('cancelled', $content['data']['status']);
+    }
+
+    public function testAppOrderCancelWrongUser(): void
+    {
+        $productId = $this->createProduct('CancelWrongUser');
+        $specId = $this->createSpecification($productId, 'Spec', 1000);
+
+        [, $createContent] = $this->jsonRequest('POST', '/api/v1/manage/orders', [
+            'items' => [['specificationId' => $specId, 'quantity' => 1]],
+        ]);
+        $orderId = $createContent['data']['id'];
+
+        [$response] = $this->jsonRequest('POST', "/api/v1/app/orders/{$orderId}/cancel");
+        self::assertSame(Response::HTTP_NOT_FOUND, $response->getStatusCode());
+    }
+
+    public function testAppOrderCancelAfterPaidNotAllowed(): void
+    {
+        $productId = $this->createProduct('AppCancelPaid');
+        $specId = $this->createSpecification($productId, 'Spec', 1000);
+
+        [, $createContent] = $this->jsonRequest('POST', '/api/v1/app/orders', [
+            'items' => [['specificationId' => $specId, 'quantity' => 1]],
+        ]);
+        $orderId = $createContent['data']['id'];
+
+        $transitions = ['submit', 'confirm', 'pay'];
+        foreach ($transitions as $t) {
+            $this->jsonRequest('POST', "/api/v1/manage/orders/{$orderId}/do/{$t}");
+        }
+
+        [$response] = $this->jsonRequest('POST', "/api/v1/app/orders/{$orderId}/cancel");
+        self::assertSame(Response::HTTP_BAD_REQUEST, $response->getStatusCode());
+    }
+
+    public function testWorkflowCompleteFullFlowTimestamps(): void
+    {
+        $productId = $this->createProduct('TSProduct');
+        $specId = $this->createSpecification($productId, 'Spec', 500);
+
+        [, $createContent] = $this->jsonRequest('POST', '/api/v1/manage/orders', [
+            'items' => [['specificationId' => $specId, 'quantity' => 1]],
+        ]);
+        $orderId = $createContent['data']['id'];
+
+        $flow = ['submit', 'confirm', 'pay', 'fulfill', 'complete'];
+        foreach ($flow as $transition) {
+            $this->jsonRequest('POST', "/api/v1/manage/orders/{$orderId}/do/{$transition}");
+        }
+
+        [, $detail] = $this->jsonRequest('GET', "/api/v1/manage/orders/{$orderId}");
+        self::assertSame('completed', $detail['data']['status']);
+        self::assertNotNull($detail['data']['completedAt'] ?? null);
+        self::assertNotNull($detail['data']['paidAt'] ?? null);
+        self::assertNotNull($detail['data']['fulfilledAt'] ?? null);
+    }
+
+    public function testWorkflowCancelSetsCancelledAt(): void
+    {
+        $productId = $this->createProduct('CancelTS');
+        $specId = $this->createSpecification($productId, 'Spec', 500);
+
+        [, $createContent] = $this->jsonRequest('POST', '/api/v1/manage/orders', [
+            'items' => [['specificationId' => $specId, 'quantity' => 1]],
+        ]);
+        $orderId = $createContent['data']['id'];
+
+        $this->jsonRequest('POST', "/api/v1/manage/orders/{$orderId}/do/cancel");
+
+        [, $detail] = $this->jsonRequest('GET', "/api/v1/manage/orders/{$orderId}");
+        self::assertSame('cancelled', $detail['data']['status']);
+        self::assertNotNull($detail['data']['cancelledAt'] ?? null);
+    }
+
+    public function testWorkflowRefundSetsRefundedAt(): void
+    {
+        $productId = $this->createProduct('RefundTS');
+        $specId = $this->createSpecification($productId, 'Spec', 500);
+
+        [, $createContent] = $this->jsonRequest('POST', '/api/v1/manage/orders', [
+            'items' => [['specificationId' => $specId, 'quantity' => 1]],
+        ]);
+        $orderId = $createContent['data']['id'];
+
+        $transitions = ['submit', 'confirm', 'pay', 'fulfill', 'complete'];
+        foreach ($transitions as $t) {
+            $this->jsonRequest('POST', "/api/v1/manage/orders/{$orderId}/do/{$t}");
+        }
+        $this->jsonRequest('POST', "/api/v1/manage/orders/{$orderId}/do/refund");
+
+        [, $detail] = $this->jsonRequest('GET', "/api/v1/manage/orders/{$orderId}");
+        self::assertSame('refunded', $detail['data']['status']);
+        self::assertNotNull($detail['data']['refundedAt'] ?? null);
+    }
 }

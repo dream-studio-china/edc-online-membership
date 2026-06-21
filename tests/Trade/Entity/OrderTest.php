@@ -29,6 +29,13 @@ final class OrderTest extends TestCase
         self::assertNull($order->getMetadata());
         self::assertNull($order->getCancelledAt());
         self::assertNull($order->getCompletedAt());
+        self::assertNull($order->getPaidAt());
+        self::assertNull($order->getRefundedAt());
+        self::assertNull($order->getFulfilledAt());
+        self::assertNull($order->getPaymentMethod());
+        self::assertNull($order->getTrackingNumber());
+        self::assertNull($order->getShippingAddress());
+        self::assertNull($order->getRefundReason());
         self::assertCount(0, $order->getItems());
         self::assertInstanceOf(\DateTimeImmutable::class, $order->getCreatedAt());
         self::assertNull($order->getUpdatedAt());
@@ -162,5 +169,72 @@ final class OrderTest extends TestCase
         self::assertNull($order->getUpdatedAt());
         $order->touch();
         self::assertInstanceOf(\DateTimeImmutable::class, $order->getUpdatedAt());
+    }
+
+    public function testNewTimestamps(): void
+    {
+        $order = new Order();
+        $before = new \DateTimeImmutable();
+
+        $order->setPaidAt(new \DateTimeImmutable('+1 hour'));
+        self::assertNotNull($order->getPaidAt());
+        self::assertGreaterThan($before, $order->getPaidAt());
+
+        $order->setRefundedAt(new \DateTimeImmutable('+2 hours'));
+        self::assertNotNull($order->getRefundedAt());
+        self::assertGreaterThan($before, $order->getRefundedAt());
+
+        $order->setFulfilledAt(new \DateTimeImmutable('+3 hours'));
+        self::assertNotNull($order->getFulfilledAt());
+        self::assertGreaterThan($before, $order->getFulfilledAt());
+
+        $order->setPaidAt(null);
+        self::assertNull($order->getPaidAt());
+
+        $order->setRefundedAt(null);
+        self::assertNull($order->getRefundedAt());
+
+        $order->setFulfilledAt(null);
+        self::assertNull($order->getFulfilledAt());
+    }
+
+    public function testPaymentMethod(): void
+    {
+        $order = new Order();
+        $order->setPaymentMethod('wallet');
+        self::assertSame('wallet', $order->getPaymentMethod());
+
+        $order->setPaymentMethod(null);
+        self::assertNull($order->getPaymentMethod());
+    }
+
+    public function testTrackingNumber(): void
+    {
+        $order = new Order();
+        $order->setTrackingNumber('SF1234567890');
+        self::assertSame('SF1234567890', $order->getTrackingNumber());
+
+        $order->setTrackingNumber(null);
+        self::assertNull($order->getTrackingNumber());
+    }
+
+    public function testShippingAddress(): void
+    {
+        $order = new Order();
+        $order->setShippingAddress('123 Main St, Beijing');
+        self::assertSame('123 Main St, Beijing', $order->getShippingAddress());
+
+        $order->setShippingAddress(null);
+        self::assertNull($order->getShippingAddress());
+    }
+
+    public function testRefundReason(): void
+    {
+        $order = new Order();
+        $order->setRefundReason('Customer changed mind');
+        self::assertSame('Customer changed mind', $order->getRefundReason());
+
+        $order->setRefundReason(null);
+        self::assertNull($order->getRefundReason());
     }
 }
