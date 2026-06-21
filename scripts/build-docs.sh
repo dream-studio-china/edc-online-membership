@@ -46,6 +46,7 @@ zh_cfg = copy.deepcopy(en_cfg)
 zh_cfg['docs_dir'] = 'docs-zh'
 zh_cfg['site_dir'] = 'site/zh'
 zh_cfg['site_url'] = (site_url.rstrip('/') if site_url else '') + '/zh/'
+zh_cfg.setdefault('theme', {})['language'] = 'zh'
 
 # Translate nav labels (static mapping + auto-translate fallback)
 MAP = {
