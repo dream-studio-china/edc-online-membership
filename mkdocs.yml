@@ -2,7 +2,7 @@ site_name: CRUD Skeleton
 site_description: Symfony 8.1 API backend skeleton with modular architecture
 repo_url: https://github.com/immane/crud-skeleton
 edit_uri: edit/dev/docs/
-site_dir: site/en
+site_dir: site
 
 theme:
   name: material

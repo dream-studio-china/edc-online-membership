@@ -83,7 +83,7 @@ print('     Done.')
 "
 
 echo ""
-echo "=== 3. Building English site (site/en/) ==="
+echo "=== 3. Building English site (site/) ==="
 mkdocs build --clean
 
 echo ""
@@ -92,5 +92,5 @@ mkdocs build -f mkdocs-zh.yml --clean
 
 echo ""
 echo "=== Done ==="
-echo "  English: site/en/index.html"
+echo "  English: site/index.html"
 echo "  Chinese: site/zh/index.html"
