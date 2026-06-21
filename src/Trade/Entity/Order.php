@@ -58,6 +58,27 @@ class Order
     #[ORM\Column(type: 'datetime_immutable', nullable: true)]
     private ?\DateTimeImmutable $completedAt = null;
 
+    #[ORM\Column(type: 'datetime_immutable', nullable: true)]
+    private ?\DateTimeImmutable $paidAt = null;
+
+    #[ORM\Column(type: 'datetime_immutable', nullable: true)]
+    private ?\DateTimeImmutable $refundedAt = null;
+
+    #[ORM\Column(type: 'datetime_immutable', nullable: true)]
+    private ?\DateTimeImmutable $fulfilledAt = null;
+
+    #[ORM\Column(type: 'string', length: 50, nullable: true)]
+    private ?string $paymentMethod = null;
+
+    #[ORM\Column(type: 'string', length: 100, nullable: true)]
+    private ?string $trackingNumber = null;
+
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $shippingAddress = null;
+
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $refundReason = null;
+
     #[ORM\Column(type: 'datetime_immutable')]
     private \DateTimeImmutable $createdAt;
 
@@ -185,6 +206,90 @@ class Order
     public function setCompletedAt(?\DateTimeImmutable $completedAt): self
     {
         $this->completedAt = $completedAt;
+        $this->touch();
+        return $this;
+    }
+
+    public function getPaidAt(): ?\DateTimeImmutable
+    {
+        return $this->paidAt;
+    }
+
+    public function setPaidAt(?\DateTimeImmutable $paidAt): self
+    {
+        $this->paidAt = $paidAt;
+        $this->touch();
+        return $this;
+    }
+
+    public function getRefundedAt(): ?\DateTimeImmutable
+    {
+        return $this->refundedAt;
+    }
+
+    public function setRefundedAt(?\DateTimeImmutable $refundedAt): self
+    {
+        $this->refundedAt = $refundedAt;
+        $this->touch();
+        return $this;
+    }
+
+    public function getFulfilledAt(): ?\DateTimeImmutable
+    {
+        return $this->fulfilledAt;
+    }
+
+    public function setFulfilledAt(?\DateTimeImmutable $fulfilledAt): self
+    {
+        $this->fulfilledAt = $fulfilledAt;
+        $this->touch();
+        return $this;
+    }
+
+    public function getPaymentMethod(): ?string
+    {
+        return $this->paymentMethod;
+    }
+
+    public function setPaymentMethod(?string $paymentMethod): self
+    {
+        $this->paymentMethod = $paymentMethod;
+        $this->touch();
+        return $this;
+    }
+
+    public function getTrackingNumber(): ?string
+    {
+        return $this->trackingNumber;
+    }
+
+    public function setTrackingNumber(?string $trackingNumber): self
+    {
+        $this->trackingNumber = $trackingNumber;
+        $this->touch();
+        return $this;
+    }
+
+    public function getShippingAddress(): ?string
+    {
+        return $this->shippingAddress;
+    }
+
+    public function setShippingAddress(?string $shippingAddress): self
+    {
+        $this->shippingAddress = $shippingAddress;
+        $this->touch();
+        return $this;
+    }
+
+    public function getRefundReason(): ?string
+    {
+        return $this->refundReason;
+    }
+
+    public function setRefundReason(?string $refundReason): self
+    {
+        $this->refundReason = $refundReason;
         $this->touch();
         return $this;
     }

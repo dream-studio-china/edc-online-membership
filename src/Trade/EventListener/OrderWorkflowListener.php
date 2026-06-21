@@ -39,8 +39,23 @@ class OrderWorkflowListener implements EventSubscriberInterface
             case 'cancel':
                 $order->setCancelledAt(new \DateTimeImmutable());
                 break;
+            case 'pay':
+                if ($order->getPaidAt() === null) {
+                    $order->setPaidAt(new \DateTimeImmutable());
+                }
+                break;
+            case 'fulfill':
+                if ($order->getFulfilledAt() === null) {
+                    $order->setFulfilledAt(new \DateTimeImmutable());
+                }
+                break;
             case 'complete':
                 $order->setCompletedAt(new \DateTimeImmutable());
+                break;
+            case 'refund':
+                if ($order->getRefundedAt() === null) {
+                    $order->setRefundedAt(new \DateTimeImmutable());
+                }
                 break;
         }
     }

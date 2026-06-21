@@ -12,6 +12,8 @@ use App\Trade\Entity\Specification;
 use App\Trade\Service\Pricing\PriceCalculationContext;
 use App\Trade\Service\Pricing\PriceCalculationResult;
 use App\Trade\Service\Pricing\PriceCalculatorInterface;
+use App\Wallet\Repository\WalletRepository;
+use App\Wallet\Service\TransferServiceInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -21,6 +23,8 @@ class OrderService extends BaseService implements OrderServiceInterface
         ContainerInterface $container,
         #[AutowireIterator('trade.price_calculator')]
         private readonly iterable $priceCalculators,
+        private readonly ?WalletRepository $walletRepository = null,
+        private readonly ?TransferServiceInterface $transferService = null,
     ) {
         parent::__construct($container, Order::class);
     }
@@ -74,6 +78,106 @@ class OrderService extends BaseService implements OrderServiceInterface
 
             return $order;
         });
+    }
+
+    public function pay(Order $order, int $systemWalletId, string $paymentMethod = 'wallet', ?string $referenceId = null): void
+    {
+        if ($order->getStatus() !== Order::STATUS_CONFIRMED) {
+            throw new \RuntimeException(sprintf(
+                'Order #%d must be in "confirmed" status to pay, current: %s',
+                $order->getId() ?? 0,
+                $order->getStatus(),
+            ));
+        }
+
+        if ($this->walletRepository === null || $this->transferService === null) {
+            throw new \RuntimeException('Wallet module is not configured. Set up wallet before processing payments.');
+        }
+
+        $user = $order->getUser();
+        if ($user === null) {
+            throw new \RuntimeException('Order has no associated user.');
+        }
+
+        $userWallet = $this->walletRepository->findByUserAndCurrency($user->getId(), $order->getCurrency());
+        if ($userWallet === null) {
+            throw new \RuntimeException(sprintf(
+                'No %s wallet found for user #%d.',
+                $order->getCurrency(),
+                $user->getId(),
+            ));
+        }
+
+        $this->transferService->transfer(
+            $userWallet->getId(),
+            $systemWalletId,
+            $order->getTotalAmount(),
+            $referenceId ?? 'order-pay-' . $order->getUuid(),
+            sprintf('Payment for order #%d', $order->getId() ?? 0),
+        );
+
+        $order->setPaidAt(new \DateTimeImmutable());
+        $order->setPaymentMethod($paymentMethod);
+    }
+
+    public function refund(Order $order, int $systemWalletId, string $reason, ?string $referenceId = null): void
+    {
+        if ($order->getStatus() !== Order::STATUS_COMPLETED) {
+            throw new \RuntimeException(sprintf(
+                'Order #%d must be in "completed" status to refund, current: %s',
+                $order->getId() ?? 0,
+                $order->getStatus(),
+            ));
+        }
+
+        if ($this->walletRepository === null || $this->transferService === null) {
+            throw new \RuntimeException('Wallet module is not configured. Set up wallet before processing refunds.');
+        }
+
+        $user = $order->getUser();
+        if ($user === null) {
+            throw new \RuntimeException('Order has no associated user.');
+        }
+
+        $userWallet = $this->walletRepository->findByUserAndCurrency($user->getId(), $order->getCurrency());
+        if ($userWallet === null) {
+            throw new \RuntimeException(sprintf(
+                'No %s wallet found for user #%d.',
+                $order->getCurrency(),
+                $user->getId(),
+            ));
+        }
+
+        $this->transferService->transfer(
+            $systemWalletId,
+            $userWallet->getId(),
+            $order->getTotalAmount(),
+            $referenceId ?? 'order-refund-' . $order->getUuid(),
+            sprintf('Refund for order #%d: %s', $order->getId() ?? 0, $reason),
+        );
+
+        $order->setRefundedAt(new \DateTimeImmutable());
+        $order->setRefundReason($reason);
+    }
+
+    public function fulfill(Order $order, array $data): void
+    {
+        if ($order->getStatus() !== Order::STATUS_PAID) {
+            throw new \RuntimeException(sprintf(
+                'Order #%d must be in "paid" status to fulfill, current: %s',
+                $order->getId() ?? 0,
+                $order->getStatus(),
+            ));
+        }
+
+        if (isset($data['trackingNumber'])) {
+            $order->setTrackingNumber($data['trackingNumber']);
+        }
+        if (isset($data['shippingAddress'])) {
+            $order->setShippingAddress($data['shippingAddress']);
+        }
+
+        $order->setFulfilledAt(new \DateTimeImmutable());
     }
 
     private function getSortedCalculators(): array

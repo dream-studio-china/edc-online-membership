@@ -11,13 +11,13 @@ use App\Core\View\DetailApiViewMixin;
 use App\Core\View\ListApiViewMixin;
 use App\Trade\Entity\Order;
 use App\Trade\Service\OrderServiceInterface;
+use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Validator\Exception\ValidatorException;
 use Symfony\Component\Workflow\WorkflowInterface;
-use Symfony\Component\DependencyInjection\Attribute\Target;
 
 #[Route('/manage/orders', name: 'manage-orders-')]
 #[IsGranted('ROLE_ADMIN')]
@@ -106,6 +106,111 @@ class OrderController extends RestController
         return $this->service->remove($order)
             ? $this->success('', 'SUCCESS', 204)
             : $this->warning();
+    }
+
+    #[Route('/{id<\d+>}/items', name: 'items', methods: ['GET'])]
+    public function itemsAction(int $id): Response
+    {
+        $order = $this->service->get(['id' => $id]);
+
+        if (!$order) {
+            return $this->warning('Order not found.', 404, '', 404);
+        }
+
+        return $this->success($order->getItems()->toArray());
+    }
+
+    #[Route('/{id<\d+>}/pay', name: 'pay', methods: ['POST'])]
+    public function payAction(Request $request, int $id): Response
+    {
+        $order = $this->service->get(['id' => $id]);
+
+        if (!$order) {
+            return $this->warning('Order not found.', 404, '', 404);
+        }
+
+        if (!$this->workflow->can($order, 'pay')) {
+            return $this->warning('Order cannot be paid in current status.', 400, '', 400);
+        }
+
+        $content = json_decode($request->getContent(), true) ?: [];
+        $systemWalletId = (int) ($content['systemWalletId'] ?? 0);
+        $paymentMethod = $content['paymentMethod'] ?? 'wallet';
+
+        if ($systemWalletId <= 0) {
+            return $this->warning('systemWalletId is required.', 400, '', 400);
+        }
+
+        try {
+            $this->service->pay($order, $systemWalletId, $paymentMethod);
+            $this->workflow->apply($order, 'pay');
+            $this->service->update($order, []);
+        } catch (\Throwable $e) {
+            return $this->warning($e->getMessage(), 400, '', 400);
+        }
+
+        return $this->success($order, 'Payment processed');
+    }
+
+    #[Route('/{id<\d+>}/fulfill', name: 'fulfill', methods: ['POST'])]
+    public function fulfillAction(Request $request, int $id): Response
+    {
+        $order = $this->service->get(['id' => $id]);
+
+        if (!$order) {
+            return $this->warning('Order not found.', 404, '', 404);
+        }
+
+        if (!$this->workflow->can($order, 'fulfill')) {
+            return $this->warning('Order cannot be fulfilled in current status.', 400, '', 400);
+        }
+
+        $content = json_decode($request->getContent(), true) ?: [];
+
+        try {
+            $this->service->fulfill($order, $content);
+            $this->workflow->apply($order, 'fulfill');
+            $this->service->update($order, []);
+        } catch (\Throwable $e) {
+            return $this->warning($e->getMessage(), 400, '', 400);
+        }
+
+        return $this->success($order, 'Order fulfilled');
+    }
+
+    #[Route('/{id<\d+>}/refund', name: 'refund', methods: ['POST'])]
+    public function refundAction(Request $request, int $id): Response
+    {
+        $order = $this->service->get(['id' => $id]);
+
+        if (!$order) {
+            return $this->warning('Order not found.', 404, '', 404);
+        }
+
+        if (!$this->workflow->can($order, 'refund')) {
+            return $this->warning('Order cannot be refunded in current status.', 400, '', 400);
+        }
+
+        $content = json_decode($request->getContent(), true) ?: [];
+        $systemWalletId = (int) ($content['systemWalletId'] ?? 0);
+        $reason = $content['reason'] ?? '';
+
+        if ($systemWalletId <= 0) {
+            return $this->warning('systemWalletId is required.', 400, '', 400);
+        }
+        if ($reason === '') {
+            return $this->warning('reason is required.', 400, '', 400);
+        }
+
+        try {
+            $this->service->refund($order, $systemWalletId, $reason);
+            $this->workflow->apply($order, 'refund');
+            $this->service->update($order, []);
+        } catch (\Throwable $e) {
+            return $this->warning($e->getMessage(), 400, '', 400);
+        }
+
+        return $this->success($order, 'Refund processed');
     }
 
     #[Route('/todo', name: 'todo-list', methods: ['GET'])]

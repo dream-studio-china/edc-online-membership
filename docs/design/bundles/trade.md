@@ -299,6 +299,10 @@ OrderService::createOrder($calculatedItems, $user, $totalAmount, $currency, $not
 | POST | `/api/v1/manage/orders` | Create order (custom logic) |
 | PUT | `/api/v1/manage/orders/{id}` | Update draft order only |
 | DELETE | `/api/v1/manage/orders/{id}` | Delete draft order only |
+| GET | `/api/v1/manage/orders/{id}/items` | View order items |
+| POST | `/api/v1/manage/orders/{id}/pay` | Pay with wallet deduction |
+| POST | `/api/v1/manage/orders/{id}/fulfill` | Fulfill with tracking info |
+| POST | `/api/v1/manage/orders/{id}/refund` | Refund with wallet credit |
 | GET | `/api/v1/manage/orders/todo` | Orders with available transitions |
 | GET | `/api/v1/manage/orders/{id}/transitions` | Enabled transitions |
 | POST | `/api/v1/manage/orders/{id}/do/{transition}` | Execute transition |
@@ -311,6 +315,10 @@ OrderService::createOrder($calculatedItems, $user, $totalAmount, $currency, $not
 | GET | `/api/v1/app/products` | List active, non-deleted products |
 | GET | `/api/v1/app/products/{id}` | Product detail |
 | GET | `/api/v1/app/orders` | List current user's orders |
+| GET | `/api/v1/app/orders/{id}` | Order detail |
+| POST | `/api/v1/app/orders` | Create order |
+| GET | `/api/v1/app/orders/{id}/items` | View order items |
+| POST | `/api/v1/app/orders/{id}/cancel` | Cancel own order |
 
 ---
 
@@ -330,6 +338,38 @@ Orders can only be deleted in `draft` status. Other states require cancellation 
 - `transitions`: Returns available transitions for a specific order
 - `do/{transition}`: Executes the named transition within a transaction, optionally accepting data to update the entity before transition
 
+### 9.4 Payment (Pay)
+
+- `POST /manage/orders/{id}/pay` with `{systemWalletId, paymentMethod}`
+- Validates order is in `confirmed` status
+- Deducts from user's wallet, credits to system wallet via `TransferService`
+- Sets `paidAt`, `paymentMethod`, applies `pay` transition
+
+### 9.5 Fulfillment
+
+- `POST /manage/orders/{id}/fulfill` with `{trackingNumber, shippingAddress}`
+- Validates order is in `paid` status
+- Sets `fulfilledAt`, `trackingNumber`, `shippingAddress`
+- Applies `fulfill` transition
+
+### 9.6 Refund
+
+- `POST /manage/orders/{id}/refund` with `{systemWalletId, reason}`
+- Validates order is in `completed` status
+- Transfers from system wallet back to user's wallet via `TransferService`
+- Sets `refundedAt`, `refundReason`, applies `refund` transition
+
+### 9.7 User Cancel
+
+- `POST /app/orders/{id}/cancel` -- authenticated user cancels own order
+- Allowed only when status is `draft`, `pending`, or `confirmed`
+- Sets status to `cancelled` (not via workflow, direct update)
+
+### 9.8 View Items
+
+- `GET /manage/orders/{id}/items` -- admin view
+- `GET /app/orders/{id}/items` -- user view (ownership verified)
+
 ---
 
 ## 10. Money Handling Contract
@@ -345,11 +385,15 @@ Orders can only be deleted in `draft` status. Other states require cancellation 
 
 ---
 
-## 11. Database Migration
+## 11. Database Migrations
 
 **Version**: `Version20250620000000`
 
 Creates 4 tables: `trade_product`, `trade_specification`, `trade_order`, `trade_order_item`.
+
+**Version**: `Version20250621000000`
+
+Adds columns to `trade_order`: `paid_at`, `refunded_at`, `fulfilled_at`, `payment_method`, `tracking_number`, `shipping_address`, `refund_reason`.
 
 ---
 
