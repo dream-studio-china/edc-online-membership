@@ -45,23 +45,24 @@
 - 控制器瘦身模式：业务逻辑放在服务层。
 - 基于表达式的动态查询（`@filter`、`@sort`、`@dql`），编译为 DQL 并具备内存回退能力。
 - 可插拔的电商价格计算管道与订单状态机。
+- 基于发票的统一支付框架，含网关抽象（mock、wallet、未来提供方）。
 - 原子的钱包转账，含死锁预防、乐观锁和幂等性。
 - JWT 鉴权（RS256）配合 Refresh Token 轮换，以及手机验证码登录。
 - 完整的设计契约文档，确保新模块开发一致性。
 
 ## 功能特性
 
-- **CRUD 服务抽象**：`new()`、`get()`、`list()`、`update()`、`updateWithoutListener()`、`remove()`。
+- **CRUD 服务抽象**：`new()`、`get()`、`list()`、`update()`、`remove()`。
 - **动态查询系统**：通过请求参数控制筛选/排序/排序/分组/字段选择，表达式编译为 DQL。
 - **Trait 组合式控制器**：9 个 mixin trait（List、Detail、Create、Update、Delete、Workflow、Singleton、Transform）可按需组合。
-- **模块化架构**：Core 框架 + Common（CMS） + Trade（电商） + Wallet（钱包） + Identity（鉴权）。
+- **模块化架构**：Core 框架 + Common（CMS） + Trade（电商） + Payment（支付） + Wallet（钱包） + Identity（鉴权）。
 - **JWT 鉴权**：RS256 访问令牌，HMAC-SHA256 Refresh Token 轮换，含重用检测。
 - **OTP 登录**：基于手机验证码的短信登录，带频率限制（阿里云）。
 - **订单状态机**：Symfony Workflow（草稿 → 完成），含完整工作流 API。
 - **价格计算管道**：可插拔的价格计算器，按优先级排序执行。
 - **原子钱包转账**：死锁预防（统一锁定顺序）、乐观锁、引用 ID 幂等。
 - **OpenAPI 文档**：NelmioApiDocBundle + `#[OA\*]` 属性，`/api/doc` 提供 Swagger UI。
-- **完善的测试**：约 79 个测试文件，CI 强制 80% 覆盖率。
+- **完善的测试**：约 79 个测试文件，CI 强制 85% 覆盖率。
 - **Docker Compose**：PostgreSQL 16 + Mailpit 开发环境。
 
 ## 技术栈
@@ -107,9 +108,20 @@
 │   │   ├── Service/              #   OrderService、价格计算管道
 │   │   └── Service/Pricing/      #   PriceCalculatorInterface + 3 个实现
 │   ├── Wallet/                   # 钱包模块
-│   │   ├── Controller/Manage/    #   Wallet、Transaction、Transfer
-│   │   ├── Entity/               #   Wallet、WalletTransaction
+│   │   ├── Controller/Manage/    #   钱包、交易、转账 API
+│   │   ├── Entity/               #   Wallet, WalletTransaction
 │   │   └── Service/              #   TransferService（原子转账）
+│   ├── Payment/                  # 支付模块
+│   │   ├── Controller/App/       #   发票列表/详情/支付
+│   │   ├── Controller/Manage/    #   发票创建/取消/退款/转换
+│   │   ├── Controller/Webhook/   #   提供方支付回调
+│   │   ├── DTO/                  #   CreateInvoiceRequest, PaymentResult 等
+│   │   ├── Entity/               #   Invoice（分、工作流、网关）
+│   │   ├── Event/                #   InvoicePaid, Refunded, Cancelled, Failed
+│   │   ├── Exception/            #   GatewayNotFound, Verification, Transition
+│   │   ├── Repository/
+│   │   └── Service/              #   InvoiceService, PaymentGatewayRegistry
+│   │       └── Gateway/          #   MockGateway, WalletGateway
 │   └── Identity/                 # 鉴权模块
 │       ├── Controller/           #   AuthController、OtpController
 │       ├── Entity/               #   User、RefreshToken
@@ -204,6 +216,7 @@ php bin/console doctrine:migrations:migrate
 | **Common** | `App\Common` | CMS | 分类（树）、标签、内容、评论（多态）、页面、媒体、设置（KV） |
 | **Trade** | `App\Trade` | 电商 | 产品 + 规格、订单（状态机）、价格计算管道 |
 | **Wallet** | `App\Wallet` | 钱包 | 余额（分）、原子转账、幂等、乐观锁 |
+| **Payment** | `App\Payment` | 支付 | 发票（分+工作流）、网关抽象（mock/wallet）、Webhook、事件 |
 | **Identity** | `App\Identity` | 鉴权 | JWT (RS256)、OTP (短信)、Refresh Token 轮换 |
 
 ## API 路由
@@ -254,6 +267,9 @@ php bin/console doctrine:migrations:migrate
 | GET | `/api/v1/manage/orders/todo` | 待处理订单 |
 | GET | `/api/v1/manage/orders/{id}/transitions` | 可用状态转换 |
 | POST | `/api/v1/manage/orders/{id}/do/{transition}` | 执行状态转换 |
+| POST | `/api/v1/app/orders/{id}/payment` | 发起订单支付 |
+| POST | `/api/v1/manage/orders/{id}/payment` | 管理端发起订单支付 |
+| POST | `/api/v1/manage/orders/{id}/refund` | 通过关联发票退款 |
 
 ### Wallet
 
@@ -262,6 +278,21 @@ php bin/console doctrine:migrations:migrate
 | GET/POST/PUT/DELETE | `/api/v1/manage/wallets[/{id}]` | 钱包 CRUD |
 | GET | `/api/v1/manage/transactions` | 交易列表 |
 | POST | `/api/v1/manage/transfer` | 原子转账 |
+
+### Payment
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| GET | `/api/v1/app/invoices` | 用户发票列表 |
+| GET | `/api/v1/app/invoices/{id}` | 发票详情 |
+| POST | `/api/v1/app/invoices/{id}/pay/{payment}` | 通过网关支付发票 |
+| GET | `/api/v1/manage/invoices` | 管理端发票列表 |
+| POST | `/api/v1/manage/invoices` | 创建发票 |
+| POST | `/api/v1/manage/invoices/{id}/pay/{payment}` | 管理端支付发票 |
+| POST | `/api/v1/manage/invoices/{id}/cancel` | 取消未付发票 |
+| POST | `/api/v1/manage/invoices/{id}/refund` | 退款已付发票 |
+| GET | `/api/v1/manage/invoices/{id}/transitions` | 可用状态转换 |
+| POST | `/api/payment/notify/{payment}` | 提供方回调 (webhook) |
 
 ### 请求示例
 
@@ -304,7 +335,7 @@ curl -X POST "http://127.0.0.1:8000/api/v1/manage/contents" \
   - 基于 QueryBuilder 的列表能力，请求参数驱动筛选/排序/分组/字段选择
   - DQL 编译（`ExpressionDqlParser`）加内存回退
 - **`BaseServiceMutationTrait`**
-  - `new()`、`update()`、`updateWithoutListener()`、`remove()`
+  - `new()`、`update()`、`remove()`
   - 关系字段、日期字段、反射元数据处理
   - Symfony Serializer 处理标量字段
   - Symfony Validator 集成
@@ -389,7 +420,7 @@ class ContentController extends RestController
 ./vendor/bin/phpunit tests/Core/Service/BaseServiceUnitTest.php
 ```
 
-带覆盖率（CI 强制 80% 最低线）：
+带覆盖率（CI 强制 85% 最低线）：
 
 ```bash
 XDEBUG_MODE=coverage ./vendor/bin/phpunit --coverage-text

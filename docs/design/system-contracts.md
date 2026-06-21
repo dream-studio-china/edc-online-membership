@@ -54,6 +54,10 @@ When `@partial=false` (default):
   |     |-- SameWalletTransferException     (Wallet module)
   |     |-- OrderInvalidTransitionException (Trade module)
   |     |-- SpecificationNotFoundException  (Trade module)
+  |     |-- PaymentGatewayNotFoundException (Payment module)
+  |     |-- PaymentVerificationException    (Payment module)
+  |     |-- InvoiceInvalidTransitionException (Payment module)
+  |     |-- InvoiceAmountMismatchException  (Payment module)
   |-- MessageErrorHttpException             (Core - user-facing)
   |-- MessageSuccessHttpException           (Core - success with custom message)
 ```

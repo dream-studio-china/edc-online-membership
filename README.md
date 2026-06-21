@@ -45,23 +45,24 @@ Compared with plain generated boilerplate, it provides:
 - A practical pattern for keeping controller logic thin and business logic in services.
 - Expression-based dynamic queries (`@filter`, `@sort`, `@dql`) compiled to DQL with in-memory fallback.
 - Pluggable pricing pipeline and state machine for e-commerce workflows.
+- Invoice-based payment framework with gateway abstraction (mock, wallet, future providers).
 - Atomic wallet transfers with deadlock prevention, optimistic locking, and idempotency.
 - JWT authentication (RS256) with refresh token rotation and phone-based OTP login.
 - Comprehensive design contracts for consistent new module creation.
 
 ## Features
 
-- **CRUD Service Abstraction**: `new()`, `get()`, `list()`, `update()`, `updateWithoutListener()`, `remove()`.
+- **CRUD Service Abstraction**: `new()`, `get()`, `list()`, `update()`, `remove()`.
 - **Dynamic Query System**: Filter, sort, order, select, group by via request parameters with expression-to-DQL compilation.
 - **Trait-Based Controller Composition**: 9 mixin traits (List, Detail, Create, Update, Delete, Workflow, Singleton, Transform) composed into controllers.
-- **Modular Architecture**: Core framework + Common (CMS) + Trade (E-Commerce) + Wallet + Identity (Auth) modules.
+- **Modular Architecture**: Core framework + Common (CMS) + Trade (E-Commerce) + Payment + Wallet + Identity (Auth) modules.
 - **JWT Authentication**: RS256 access tokens, HMAC-SHA256 refresh token rotation with reuse detection.
 - **OTP Login**: Phone-based one-time password via Alibaba Cloud SMS, rate-limited.
 - **Order State Machine**: Symfony Workflow for order lifecycle (draft → completed), with workflow API endpoints.
 - **Price Calculation Pipeline**: Pluggable calculators with priority ordering for e-commerce order pricing.
 - **Atomic Wallet Transfers**: Deadlock prevention (consistent lock ordering), optimistic locking, idempotency via reference ID.
 - **OpenAPI Documentation**: NelmioApiDocBundle with `#[OA\*]` attributes, Swagger UI at `/api/doc`.
-- **Comprehensive Testing**: ~79 test files, 80% coverage minimum enforced in CI.
+- **Comprehensive Testing**: ~79 test files, 85% coverage minimum enforced in CI.
 - **Docker Compose**: PostgreSQL 16 + Mailpit for development.
 
 ## Tech Stack
@@ -110,6 +111,17 @@ See `composer.json` for the full dependency list.
 │   │   ├── Controller/Manage/    #   Wallet, Transaction, Transfer endpoints
 │   │   ├── Entity/               #   Wallet, WalletTransaction
 │   │   └── Service/              #   TransferService (atomic transfers)
+│   ├── Payment/                  # Payment module
+│   │   ├── Controller/App/       #   Invoice list/detail/pay
+│   │   ├── Controller/Manage/    #   Invoice create/cancel/refund/transitions
+│   │   ├── Controller/Webhook/   #   Provider payment notification
+│   │   ├── DTO/                  #   CreateInvoiceRequest, PaymentResult, etc.
+│   │   ├── Entity/               #   Invoice (cents, workflow, gateway)
+│   │   ├── Event/                #   InvoicePaid, Refunded, Cancelled, Failed
+│   │   ├── Exception/            #   GatewayNotFound, Verification, Transition
+│   │   ├── Repository/
+│   │   └── Service/              #   InvoiceService, PaymentGatewayRegistry
+│   │       └── Gateway/          #   MockGateway, WalletGateway
 │   └── Identity/                 # Authentication module
 │       ├── Controller/           #   AuthController, OtpController
 │       ├── Entity/               #   User, RefreshToken
@@ -204,6 +216,7 @@ php bin/console doctrine:migrations:migrate
 | **Common** | `App\Common` | CMS | Category (tree), Tag, Content, Comment (polymorphic), Page, Media, Setting (KV) |
 | **Trade** | `App\Trade` | E-Commerce | Product + Specification, Order (state machine), Price pipeline |
 | **Wallet** | `App\Wallet` | Payments | Balance (cents), Atomic transfers, Idempotency, Optimistic locking |
+| **Payment** | `App\Payment` | Invoicing | Invoice (cents + workflow), Gateway abstraction (mock/wallet), Webhooks, Events |
 | **Identity** | `App\Identity` | Authentication | JWT (RS256), OTP (SMS), Refresh token rotation |
 
 ## API Endpoints
@@ -254,6 +267,9 @@ Resources: `categories`, `contents`, `tags`, `comments`, `pages`, `media`, `sett
 | GET | `/api/v1/manage/orders/todo` | Orders with available transitions |
 | GET | `/api/v1/manage/orders/{id}/transitions` | Enabled workflow transitions |
 | POST | `/api/v1/manage/orders/{id}/do/{transition}` | Execute transition |
+| POST | `/api/v1/app/orders/{id}/payment` | Start order payment |
+| POST | `/api/v1/manage/orders/{id}/payment` | Admin start order payment |
+| POST | `/api/v1/manage/orders/{id}/refund` | Refund order via linked invoice |
 
 ### Wallet
 
@@ -262,6 +278,21 @@ Resources: `categories`, `contents`, `tags`, `comments`, `pages`, `media`, `sett
 | GET/POST/PUT/DELETE | `/api/v1/manage/wallets[/{id}]` | Wallet CRUD |
 | GET | `/api/v1/manage/transactions` | List transactions |
 | POST | `/api/v1/manage/transfer` | Atomic transfer |
+
+### Payment
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/v1/app/invoices` | List user's invoices |
+| GET | `/api/v1/app/invoices/{id}` | Invoice detail |
+| POST | `/api/v1/app/invoices/{id}/pay/{payment}` | Pay invoice via gateway |
+| GET | `/api/v1/manage/invoices` | Admin list invoices |
+| POST | `/api/v1/manage/invoices` | Create invoice |
+| POST | `/api/v1/manage/invoices/{id}/pay/{payment}` | Admin pay invoice |
+| POST | `/api/v1/manage/invoices/{id}/cancel` | Cancel unpaid invoice |
+| POST | `/api/v1/manage/invoices/{id}/refund` | Refund paid invoice |
+| GET | `/api/v1/manage/invoices/{id}/transitions` | Available workflow transitions |
+| POST | `/api/payment/notify/{payment}` | Provider callback (webhook) |
 
 ### Example request
 
@@ -304,7 +335,7 @@ All endpoints return a unified JSON envelope:
   - QueryBuilder-based listing, request-driven filters/order/group/select
   - DQL compilation via `ExpressionDqlParser` with in-memory fallback
 - **`BaseServiceMutationTrait`**
-  - `new()`, `update()`, `updateWithoutListener()`, `remove()`
+  - `new()`, `update()`, `remove()`
   - Relation/date mapping handling and metadata extraction
   - Symfony Serializer integration for scalar fields
   - Symfony Validator integration
@@ -389,7 +420,7 @@ Run a single test:
 ./vendor/bin/phpunit tests/Core/Service/BaseServiceUnitTest.php
 ```
 
-With coverage (CI enforces 80% minimum):
+With coverage (CI enforces 85% minimum):
 
 ```bash
 XDEBUG_MODE=coverage ./vendor/bin/phpunit --coverage-text
