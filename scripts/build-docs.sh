@@ -13,7 +13,6 @@ cd "$(dirname "$0")/.."
 echo "=== 1. Translating docs/ → docs-zh/ ==="
 python scripts/translate-docs.py
 
-# Copy research docs (bilingual already) and openapi spec verbatim
 echo "     Copying research/, ai/, openapi/ → docs-zh/"
 rm -rf docs-zh/research docs-zh/openapi docs-zh/ai
 cp -r docs/research docs-zh/research 2>/dev/null || true
@@ -21,11 +20,56 @@ cp -r docs/openapi docs-zh/openapi 2>/dev/null || true
 cp -r docs/ai docs-zh/ai 2>/dev/null || true
 
 echo ""
-echo "=== 2. Building English site (site/en/) ==="
+echo "=== 2. Generating mkdocs-zh.yml ==="
+python3 -c "
+import yaml, copy
+
+with open('mkdocs.yml') as f:
+    en = yaml.safe_load(f)
+
+zh = copy.deepcopy(en)
+zh['docs_dir'] = 'docs-zh'
+zh['site_dir'] = 'site/zh'
+
+# Translate nav labels (static mapping for predictable quality)
+MAP = {
+    'Home': '首页', 'Design Contracts': '设计契约',
+    'System Architecture': '系统架构', 'API Design': 'API 设计',
+    'Data Model': '数据模型', 'Module Design': '模块设计',
+    'Controller Design': '控制器设计', 'API Documentation': 'API 文档',
+    'System Contracts': '系统契约',
+    'Bundles': '模块设计', 'Core Framework': 'Core 框架',
+    'Common (CMS)': 'Common (CMS)', 'Trade (E-Commerce)': 'Trade (电商)',
+    'Payment': 'Payment (支付)', 'Wallet': 'Wallet (钱包)',
+    'Identity (Auth)': 'Identity (鉴权)',
+    'Research': '调研', 'EasyWeChat 6.x Usage': 'EasyWeChat 6.x 用法',
+    'Huifu Payment API': '汇付支付 API', 'AI Context': 'AI 快照',
+    'API Reference': 'API 参考',
+}
+
+def translate_nav(items):
+    for item in items:
+        if isinstance(item, dict):
+            for k in list(item.keys()):
+                new_k = MAP.get(k, k)
+                if new_k != k:
+                    item[new_k] = item.pop(k)
+                translate_nav(item[new_k] if isinstance(item[new_k], list) else [])
+        elif isinstance(item, str) and item in MAP:
+            pass  # handled in dict above
+translate_nav(zh.get('nav', []))
+
+with open('mkdocs-zh.yml', 'w', encoding='utf-8') as f:
+    yaml.dump(zh, f, allow_unicode=True, default_flow_style=False, sort_keys=False)
+print('     Done.')
+"
+
+echo ""
+echo "=== 3. Building English site (site/en/) ==="
 mkdocs build --clean
 
 echo ""
-echo "=== 3. Building Chinese site (site/zh/) ==="
+echo "=== 4. Building Chinese site (site/zh/) ==="
 mkdocs build -f mkdocs-zh.yml --clean
 
 echo ""
