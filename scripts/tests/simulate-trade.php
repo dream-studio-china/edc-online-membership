@@ -17,33 +17,33 @@ use App\Wallet\Entity\Wallet;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\SchemaTool;
 
-require __DIR__ . '/vendor/autoload.php';
+require dirname(__DIR__, 2) . '/vendor/autoload.php';
 
 // ---- Bootstrap ----
 $_SERVER['APP_ENV'] = 'test';
 $_SERVER['APP_DEBUG'] = '0';
 $_ENV['APP_ENV'] = 'test';
-$_ENV['DATABASE_URL'] = 'sqlite:///' . __DIR__ . '/var/test.db';
+$_ENV['DATABASE_URL'] = 'sqlite:///' . dirname(__DIR__, 2) . '/var/test.db';
 $_ENV['MESSENGER_TRANSPORT_DSN'] = 'doctrine://default';
 $_ENV['DEFAULT_URI'] = 'http://localhost';
 $_ENV['MAILER_DSN'] = 'null://null';
 $_ENV['APP_SECRET'] = 'sim_secret_32_bytes_long_key';
-$_ENV['JWT_PRIVATE_KEY_PATH'] = __DIR__ . '/tests/Identity/Security/test_private.pem';
-$_ENV['JWT_PUBLIC_KEY_PATH'] = __DIR__ . '/tests/Identity/Security/test_public.pem';
+$_ENV['JWT_PRIVATE_KEY_PATH'] = dirname(__DIR__, 2) . '/tests/Identity/Security/test_private.pem';
+$_ENV['JWT_PUBLIC_KEY_PATH'] = dirname(__DIR__, 2) . '/tests/Identity/Security/test_public.pem';
 $_ENV['JWT_PASSPHRASE'] = '';
 $_ENV['JWT_REFRESH_TOKEN_SECRET'] = 'sim_refresh_secret_32_bytes';
 putenv('APP_ENV=test');
-putenv('DATABASE_URL=sqlite:///' . __DIR__ . '/var/test.db');
+putenv('DATABASE_URL=sqlite:///' . dirname(__DIR__, 2) . '/var/test.db');
 putenv('MESSENGER_TRANSPORT_DSN=doctrine://default');
 putenv('DEFAULT_URI=http://localhost');
 putenv('MAILER_DSN=null://null');
 putenv('APP_SECRET=sim_secret_32_bytes_long_key');
-putenv('JWT_PRIVATE_KEY_PATH=' . __DIR__ . '/tests/Identity/Security/test_private.pem');
-putenv('JWT_PUBLIC_KEY_PATH=' . __DIR__ . '/tests/Identity/Security/test_public.pem');
+putenv('JWT_PRIVATE_KEY_PATH=' . dirname(__DIR__, 2) . '/tests/Identity/Security/test_private.pem');
+putenv('JWT_PUBLIC_KEY_PATH=' . dirname(__DIR__, 2) . '/tests/Identity/Security/test_public.pem');
 putenv('JWT_PASSPHRASE=');
 putenv('JWT_REFRESH_TOKEN_SECRET=sim_refresh_secret_32_bytes');
 
-@unlink(__DIR__ . '/var/test.db');
+@unlink(dirname(__DIR__, 2) . '/var/test.db');
 $kernel = new Kernel('test', false);
 $kernel->boot();
 /** @var EntityManagerInterface $em */
