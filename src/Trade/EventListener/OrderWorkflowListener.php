@@ -5,14 +5,36 @@ declare(strict_types=1);
 namespace App\Trade\EventListener;
 
 use App\Trade\Entity\Order;
+use App\Trade\Event\OrderCancelledEvent;
+use App\Trade\Event\OrderCompletedEvent;
+use App\Trade\Event\OrderFulfilledEvent;
+use App\Trade\Event\OrderPaidEvent;
+use App\Trade\Event\OrderRefundedEvent;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Workflow\Event\TransitionEvent;
 
+/**
+ * Subscribes to workflow.order.transition events from the Symfony Workflow,
+ * sets entity timestamps, and broadcasts domain events for cross-module consumption.
+ *
+ * After each meaningful transition, a domain event is dispatched:
+ *   pay → OrderPaidEvent
+ *   fulfill → OrderFulfilledEvent
+ *   complete → OrderCompletedEvent
+ *   cancel → OrderCancelledEvent
+ *   refund → OrderRefundedEvent
+ *
+ * Other modules subscribe to these events without depending on Trade internals.
+ *
+ * @see config/packages/workflow.yaml for the state machine definition
+ */
 class OrderWorkflowListener implements EventSubscriberInterface
 {
     public function __construct(
         private readonly LoggerInterface $logger,
+        private readonly EventDispatcherInterface $dispatcher,
     ) {
     }
 
@@ -35,6 +57,7 @@ class OrderWorkflowListener implements EventSubscriberInterface
             $transitionName,
         ));
 
+        // Set timestamps
         switch ($transitionName) {
             case 'cancel':
                 $order->setCancelledAt(new \DateTimeImmutable());
@@ -57,6 +80,20 @@ class OrderWorkflowListener implements EventSubscriberInterface
                     $order->setRefundedAt(new \DateTimeImmutable());
                 }
                 break;
+        }
+
+        // Dispatch domain events for cross-module subscribers
+        $domainEvent = match ($transitionName) {
+            'cancel' => new OrderCancelledEvent($order),
+            'pay' => new OrderPaidEvent($order),
+            'fulfill' => new OrderFulfilledEvent($order),
+            'complete' => new OrderCompletedEvent($order),
+            'refund' => new OrderRefundedEvent($order),
+            default => null,
+        };
+
+        if ($domainEvent !== null) {
+            $this->dispatcher->dispatch($domainEvent);
         }
     }
 }

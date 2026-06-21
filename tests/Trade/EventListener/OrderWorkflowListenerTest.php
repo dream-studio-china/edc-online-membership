@@ -8,6 +8,7 @@ use App\Trade\Entity\Order;
 use App\Trade\EventListener\OrderWorkflowListener;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Workflow\Event\TransitionEvent;
 use Symfony\Component\Workflow\Marking;
 use Symfony\Component\Workflow\Transition;
@@ -144,8 +145,9 @@ final class OrderWorkflowListenerTest extends TestCase
     private function createListener(): OrderWorkflowListener
     {
         $logger = $this->createMock(LoggerInterface::class);
+        $dispatcher = $this->createMock(EventDispatcherInterface::class);
 
-        return new OrderWorkflowListener($logger);
+        return new OrderWorkflowListener($logger, $dispatcher);
     }
 
     private function createTransitionEvent(Order $order, string $transitionName): TransitionEvent
