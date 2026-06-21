@@ -34,48 +34,6 @@ trait BaseServiceMutationTrait
     /**
      * @param $object
      * @param array|null $data
-     * @throws \ReflectionException
-     */
-    public function updateWithoutListener($object, array $data)
-    {
-        if (empty($object)) {
-            $this->logger->error('Object error, original data: '. json_encode($data));
-            throw new ValidatorException('Update object cannot be null');
-        }
-        else {
-            $object = $object->getId() ? $this->get($object->getId()) : $object;
-        }
-
-        if (!empty($data)) {
-            $this->wrapInTransaction(function ($em) use ($object, $data) {
-                $qb = $em->createQueryBuilder()
-                    ->update(get_class($object), 'entity')
-                    ->where('entity = :entity')
-                    ->setParameter('entity', $object)
-                ;
-
-                foreach ($data as $key => $val) {
-                    $qb->set("entity.$key", ":$key")
-                        ->setParameter($key, $val);
-                }
-
-                $qb->getQuery()->execute();
-
-                if ($object->getId()) {
-                    $em->refresh($object);
-                }
-            });
-        }
-        else {
-            throw new ValidatorException('Data cannot be empty');
-        }
-
-        return $object->getId() ? $this->get($object->getId()) : $object;
-    }
-
-    /**
-     * @param $object
-     * @param array|null $data
      * @return bool
      * @throws ORMException
      * @throws OptimisticLockException

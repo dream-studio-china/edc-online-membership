@@ -37,6 +37,9 @@ Thumbs.db
 *.iws
 out
 
+# Obsidian local workspace files
+.obsidian/
+
 ###> mkdocs ###
 /site/
 ###< mkdocs ###

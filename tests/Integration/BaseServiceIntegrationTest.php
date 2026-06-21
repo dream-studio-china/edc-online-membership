@@ -46,10 +46,10 @@ final class BaseServiceIntegrationTest extends IntegrationKernelTestCase
         self::assertNull($this->service->get($updated->getId()));
     }
 
-    public function testUpdateWithoutListenerUpdatesPersistedValues(): void
+    public function testUpdatePersistsValues(): void
     {
         $created = $this->service->update(new Content('name-a', 'body-a'), ['title' => 'name-a', 'body' => 'body-a']);
-        $updated = $this->service->updateWithoutListener($created, ['title' => 'name-b']);
+        $updated = $this->service->update($created, ['title' => 'name-b']);
 
         self::assertInstanceOf(Content::class, $updated);
         self::assertSame('name-b', $updated->getTitle());
