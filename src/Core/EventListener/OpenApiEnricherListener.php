@@ -80,8 +80,10 @@ class OpenApiEnricherListener
         '/api/v1/app/settings/{id}' => ['tags' => ['Settings'], 'summary' => ['get' => 'Get setting (public)']],
 
         '/api/v1/manage/wallets' => ['tags' => ['Wallet'], 'summary' => ['get' => 'List wallets', 'post' => 'Create wallet'], 'desc' => ['post' => 'One wallet per user per currency. Balance starts at 0.']],
+        '/api/v1/manage/wallets/batch-update' => ['tags' => ['Wallet'], 'summary' => ['post' => 'Batch update wallets']],
         '/api/v1/manage/wallets/{id}' => ['tags' => ['Wallet'], 'summary' => ['get' => 'Get wallet', 'put' => 'Update wallet (freeze/unfreeze)', 'delete' => 'Delete wallet']],
         '/api/v1/manage/transactions' => ['tags' => ['Wallet'], 'summary' => ['get' => 'List wallet transactions']],
+        '/api/v1/manage/transactions/{id}' => ['tags' => ['Wallet'], 'summary' => ['get' => 'Get transaction detail']],
         '/api/v1/manage/transfer' => ['tags' => ['Wallet'], 'summary' => ['post' => 'Atomic wallet transfer'], 'desc' => ['post' => 'Atomic, deadlock-safe, idempotent (referenceId), currency match enforced. Cents.']],
     ];
 
