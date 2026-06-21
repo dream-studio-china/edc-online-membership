@@ -1,5 +1,5 @@
 #!/bin/bash
-# Build bilingual docs site: auto-translate → English (site/en/) + Chinese (site/zh/)
+# Build bilingual docs site: auto-translate → English (site/) + Chinese (site/zh/)
 #
 # Prerequisites:
 #   pip install deep-translator
@@ -21,16 +21,31 @@ cp -r docs/openapi docs-zh/openapi 2>/dev/null || true
 cp -r docs/ai docs-zh/ai 2>/dev/null || true
 
 echo ""
-echo "=== 2. Generating mkdocs-zh.yml ==="
+echo "=== 2. Generating bilingual mkdocs configs ==="
 python3 -c "
 import yaml, copy
+from urllib.parse import urlparse
 
 with open('mkdocs.yml') as f:
-    en = yaml.safe_load(f)
+    en_cfg = yaml.safe_load(f)
 
-zh = copy.deepcopy(en)
-zh['docs_dir'] = 'docs-zh'
-zh['site_dir'] = 'site/zh'
+# Extract path from site_url (e.g. /crud-skeleton/ → /crud-skeleton)
+site_url = en_cfg.get('site_url', '')
+path = urlparse(site_url).path.rstrip('/') if site_url else ''
+
+# --- English config ---
+en_cfg.setdefault('extra', {})['alternate'] = [
+    {'name': 'English', 'link': path + '/',        'lang': 'en'},
+    {'name': '中文',    'link': path + '/zh/',      'lang': 'zh'},
+]
+with open('mkdocs-en.yml', 'w', encoding='utf-8') as f:
+    yaml.dump(en_cfg, f, allow_unicode=True, default_flow_style=False, sort_keys=False)
+
+# --- Chinese config ---
+zh_cfg = copy.deepcopy(en_cfg)
+zh_cfg['docs_dir'] = 'docs-zh'
+zh_cfg['site_dir'] = 'site/zh'
+zh_cfg['site_url'] = (site_url.rstrip('/') if site_url else '') + '/zh/'
 
 # Translate nav labels (static mapping + auto-translate fallback)
 MAP = {
@@ -47,41 +62,39 @@ MAP = {
     'Huifu Payment API': '汇付支付 API', 'AI Context': 'AI 快照',
     'API Reference': 'API 参考',
 }
-
-def _zh_label(s):
-    if s in MAP:
-        return MAP[s]
+def tr(s):
+    if s in MAP: return MAP[s]
     if len(s) < 60 and ' ' in s:
         try:
             from deep_translator import GoogleTranslator
             t = GoogleTranslator(source='en', target='zh-CN')
-            result = t.translate(s)
-            MAP[s] = result
-            return result
-        except Exception:
-            pass
+            r = t.translate(s); MAP[s] = r; return r
+        except Exception: pass
     return s
+def walk(items):
+    for i in items:
+        if isinstance(i, dict):
+            for k in list(i.keys()):
+                nk = tr(k)
+                if nk != k: i[nk] = i.pop(k)
+                v = i[nk]
+                if isinstance(v, list): walk(v)
+walk(zh_cfg.get('nav', []))
 
-def translate_nav(items):
-    for item in items:
-        if isinstance(item, dict):
-            for k in list(item.keys()):
-                new_k = _zh_label(k)
-                if new_k != k:
-                    item[new_k] = item.pop(k)
-                val = item[new_k]
-                if isinstance(val, list):
-                    translate_nav(val)
-translate_nav(zh.get('nav', []))
+# Chinese alternate links: same as English (both point to the correct language roots)
+zh_cfg.setdefault('extra', {})['alternate'] = [
+    {'name': 'English', 'link': path + '/',        'lang': 'en'},
+    {'name': '中文',    'link': path + '/zh/',      'lang': 'zh'},
+]
 
 with open('mkdocs-zh.yml', 'w', encoding='utf-8') as f:
-    yaml.dump(zh, f, allow_unicode=True, default_flow_style=False, sort_keys=False)
+    yaml.dump(zh_cfg, f, allow_unicode=True, default_flow_style=False, sort_keys=False)
 print('     Done.')
 "
 
 echo ""
 echo "=== 3. Building English site (site/) ==="
-mkdocs build --clean
+mkdocs build -f mkdocs-en.yml --clean
 
 echo ""
 echo "=== 4. Building Chinese site (site/zh/) ==="

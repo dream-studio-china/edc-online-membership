@@ -3,6 +3,7 @@ site_description: Symfony 8.1 API backend skeleton with modular architecture
 repo_url: https://github.com/immane/crud-skeleton
 edit_uri: edit/dev/docs/
 site_dir: site
+site_url: https://immane.github.io/crud-skeleton/
 
 theme:
   name: material
@@ -63,6 +64,3 @@ nav:
       - Huifu Payment API: research/huifu-payment-api.md
   - AI Context: ai/context.md
   - API Reference: openapi/endpoints.yaml
-
-extra_javascript:
-  - assets/javascripts/i18n.js
