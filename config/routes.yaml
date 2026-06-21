@@ -21,3 +21,23 @@ api_wallet:
         path: ../src/Wallet/Controller/
         namespace: App\Wallet\Controller
     type: attribute
+
+api_payment_app:
+    prefix: /api/v1
+    resource:
+        path: ../src/Payment/Controller/App/
+        namespace: App\Payment\Controller\App
+    type: attribute
+
+api_payment_manage:
+    prefix: /api/v1
+    resource:
+        path: ../src/Payment/Controller/Manage/
+        namespace: App\Payment\Controller\Manage
+    type: attribute
+
+payment_webhook:
+    resource:
+        path: ../src/Payment/Controller/Webhook/
+        namespace: App\Payment\Controller\Webhook
+    type: attribute

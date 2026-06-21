@@ -70,6 +70,15 @@ class Order
     #[ORM\Column(type: 'string', length: 50, nullable: true)]
     private ?string $paymentMethod = null;
 
+    #[ORM\Column(type: 'string', length: 64, nullable: true)]
+    private ?string $invoiceId = null;
+
+    #[ORM\Column(type: 'string', length: 64, nullable: true)]
+    private ?string $invoiceNo = null;
+
+    #[ORM\Column(type: 'string', length: 30, nullable: true)]
+    private ?string $paymentStatus = null;
+
     #[ORM\Column(type: 'string', length: 100, nullable: true)]
     private ?string $trackingNumber = null;
 
@@ -258,6 +267,42 @@ class Order
     public function setPaymentMethod(?string $paymentMethod): self
     {
         $this->paymentMethod = $paymentMethod;
+        $this->touch();
+        return $this;
+    }
+
+    public function getInvoiceId(): ?string
+    {
+        return $this->invoiceId;
+    }
+
+    public function setInvoiceId(?string $invoiceId): self
+    {
+        $this->invoiceId = $invoiceId;
+        $this->touch();
+        return $this;
+    }
+
+    public function getInvoiceNo(): ?string
+    {
+        return $this->invoiceNo;
+    }
+
+    public function setInvoiceNo(?string $invoiceNo): self
+    {
+        $this->invoiceNo = $invoiceNo;
+        $this->touch();
+        return $this;
+    }
+
+    public function getPaymentStatus(): ?string
+    {
+        return $this->paymentStatus;
+    }
+
+    public function setPaymentStatus(?string $paymentStatus): self
+    {
+        $this->paymentStatus = $paymentStatus;
         $this->touch();
         return $this;
     }

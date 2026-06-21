@@ -157,6 +157,29 @@ class OrderController extends RestController
         return $this->success($order, 'Payment processed');
     }
 
+    #[Route('/{id<\d+>}/payment', name: 'payment', methods: ['POST'])]
+    public function paymentAction(Request $request, int $id): Response
+    {
+        $order = $this->service->get(['id' => $id]);
+
+        if (!$order) {
+            return $this->warning('Order not found.', 404, '', 404);
+        }
+
+        if (!$this->workflow->can($order, 'pay')) {
+            return $this->warning('Order cannot be paid in current status.', 400, '', 400);
+        }
+
+        $content = json_decode($request->getContent(), true) ?: [];
+        $payment = (string) ($content['payment'] ?? 'mock');
+
+        try {
+            return $this->success($this->service->createPayment($order, $payment, $content), 'Payment started');
+        } catch (\Throwable $e) {
+            return $this->warning($e->getMessage(), 400, '', 400);
+        }
+    }
+
     #[Route('/{id<\d+>}/fulfill', name: 'fulfill', methods: ['POST'])]
     public function fulfillAction(Request $request, int $id): Response
     {
@@ -202,14 +225,19 @@ class OrderController extends RestController
         $systemWalletId = (int) ($content['systemWalletId'] ?? 0);
         $reason = $content['reason'] ?? '';
 
-        if ($systemWalletId <= 0) {
-            return $this->warning('systemWalletId is required.', 400, '', 400);
-        }
         if ($reason === '') {
             return $this->warning('reason is required.', 400, '', 400);
         }
 
         try {
+            if ($order->getInvoiceId() !== null) {
+                return $this->success($this->service->refundPayment($order, $reason, $content), 'Refund processed');
+            }
+
+            if ($systemWalletId <= 0) {
+                return $this->warning('systemWalletId is required.', 400, '', 400);
+            }
+
             // Wallet refund + workflow transition + persist in ONE atomic transaction
             $this->service->wrapInTransaction(function () use ($order, $systemWalletId, $reason) {
                 $this->service->refund($order, $systemWalletId, $reason);

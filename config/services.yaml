@@ -5,6 +5,7 @@ parameters: {}
 imports:
     - { resource: '../src/Core/Resources/config/services.yaml', ignore_errors: true }
     - { resource: '../src/Identity/Resources/config/services_identity.yaml', ignore_errors: true }
+    - { resource: '../src/Payment/Resources/config/services_payment.yaml', ignore_errors: true }
 
 services:
     _defaults:
@@ -17,6 +18,8 @@ services:
                 - [ setRequestStack, [ '@request_stack' ] ]
                 - [ setSerializer, [ '@serializer' ] ]
                 - [ setTranslator, [ '@translator' ] ]
+        App\Payment\Service\PaymentGatewayInterface:
+            tags: ['payment.gateway']
 
     App\:
         resource: '../src/'

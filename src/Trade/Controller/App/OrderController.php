@@ -114,4 +114,32 @@ class OrderController extends RestController
             return $this->warning($e->getMessage(), 400, '', 400);
         }
     }
+
+    #[Route('/{id<\d+>}/payment', name: 'payment', methods: ['POST'])]
+    public function paymentAction(Request $request, int $id): Response
+    {
+        $order = $this->service->get(['id' => $id]);
+
+        if (!$order) {
+            return $this->warning('Order not found.', 404, '', 404);
+        }
+
+        $user = $this->getUser();
+        if ($user === null || $order->getUser()?->getId() !== $user->getId()) {
+            return $this->warning('Order not found.', 404, '', 404);
+        }
+
+        if (!$this->workflow->can($order, 'pay')) {
+            return $this->warning('Order cannot be paid in current status.', 400, '', 400);
+        }
+
+        $content = json_decode($request->getContent(), true) ?: [];
+        $payment = (string) ($content['payment'] ?? 'mock');
+
+        try {
+            return $this->success($this->service->createPayment($order, $payment, $content), 'Payment started');
+        } catch (\Throwable $e) {
+            return $this->warning($e->getMessage(), 400, '', 400);
+        }
+    }
 }

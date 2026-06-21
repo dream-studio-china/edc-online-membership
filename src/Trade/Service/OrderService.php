@@ -6,6 +6,11 @@ namespace App\Trade\Service;
 
 use App\Core\Service\BaseService;
 use App\Identity\Entity\User;
+use App\Payment\DTO\CreateInvoiceRequest;
+use App\Payment\DTO\PaymentRefundResult;
+use App\Payment\DTO\PaymentResult;
+use App\Payment\Entity\Invoice;
+use App\Payment\Service\InvoiceServiceInterface;
 use App\Trade\Entity\Order;
 use App\Trade\Entity\OrderItem;
 use App\Trade\Entity\Specification;
@@ -25,6 +30,7 @@ class OrderService extends BaseService implements OrderServiceInterface
         private readonly iterable $priceCalculators,
         private readonly ?WalletRepository $walletRepository = null,
         private readonly ?TransferServiceInterface $transferService = null,
+        private readonly ?InvoiceServiceInterface $invoiceService = null,
     ) {
         parent::__construct($container, Order::class);
     }
@@ -178,6 +184,57 @@ class OrderService extends BaseService implements OrderServiceInterface
         }
 
         $order->setFulfilledAt(new \DateTimeImmutable());
+    }
+
+    public function createPayment(Order $order, string $payment = Invoice::PAYMENT_MOCK, array $options = []): PaymentResult
+    {
+        if ($this->invoiceService === null) {
+            throw new \RuntimeException('Payment module is not configured.');
+        }
+        if ($order->getStatus() !== Order::STATUS_CONFIRMED) {
+            throw new \RuntimeException('Only confirmed orders can start payment.');
+        }
+
+        $invoice = null;
+        if ($order->getInvoiceId() !== null) {
+            $invoice = $this->invoiceService->get(['uuid' => $order->getInvoiceId()]);
+        }
+        if (!$invoice instanceof Invoice) {
+            $invoice = $this->invoiceService->createInvoice(new CreateInvoiceRequest(
+                sourceType: 'trade_order',
+                sourceId: $order->getUuid(),
+                scene: Invoice::SCENE_ORDER,
+                amount: $order->getTotalAmount(),
+                currency: $order->getCurrency(),
+                payer: $order->getUser(),
+                subject: sprintf('Order #%d', $order->getId() ?? 0),
+                description: $order->getNotes(),
+                extraData: ['orderId' => $order->getId()],
+            ));
+
+            $order->setInvoiceId($invoice->getUuid());
+            $order->setInvoiceNo($invoice->getOutTradeNo());
+            $order->setPaymentStatus($invoice->getStatus());
+            $this->update($order, []);
+        }
+
+        return $this->invoiceService->pay($invoice, $payment, $options);
+    }
+
+    public function refundPayment(Order $order, string $reason, array $options = []): PaymentRefundResult
+    {
+        if ($this->invoiceService === null) {
+            throw new \RuntimeException('Payment module is not configured.');
+        }
+        $invoice = null;
+        if ($order->getInvoiceId() !== null) {
+            $invoice = $this->invoiceService->get(['uuid' => $order->getInvoiceId()]);
+        }
+        if (!$invoice instanceof Invoice) {
+            throw new \RuntimeException('Order has no linked invoice.');
+        }
+
+        return $this->invoiceService->refund($invoice, $invoice->getAmount() - $invoice->getRefundedAmount(), $reason, $options);
     }
 
     private function getSortedCalculators(): array
