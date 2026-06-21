@@ -31,7 +31,7 @@ zh = copy.deepcopy(en)
 zh['docs_dir'] = 'docs-zh'
 zh['site_dir'] = 'site/zh'
 
-# Translate nav labels (static mapping for predictable quality)
+# Translate nav labels (static mapping + auto-translate fallback)
 MAP = {
     'Home': '首页', 'Design Contracts': '设计契约',
     'System Architecture': '系统架构', 'API Design': 'API 设计',
@@ -47,16 +47,34 @@ MAP = {
     'API Reference': 'API 参考',
 }
 
+def _zh_label(s):
+    \"\"\"Translate a nav label to Chinese, using static MAP first, then auto-translate.\"\"\"
+    if s in MAP:
+        return MAP[s]
+    # Only translate short labels (long file paths should not be translated)
+    if len(s) < 60 and ' ' in s:
+        try:
+            from deep_translator import GoogleTranslator
+            t = GoogleTranslator(source='en', target='zh-CN')
+            result = t.translate(s)
+            MAP[s] = result  # cache for subsequent calls
+            return result
+        except Exception:
+            pass
+    return s
+
 def translate_nav(items):
     for item in items:
         if isinstance(item, dict):
             for k in list(item.keys()):
-                new_k = MAP.get(k, k)
+                new_k = _zh_label(k)
                 if new_k != k:
                     item[new_k] = item.pop(k)
-                translate_nav(item[new_k] if isinstance(item[new_k], list) else [])
-        elif isinstance(item, str) and item in MAP:
-            pass  # handled in dict above
+                val = item[new_k]
+                if isinstance(val, list):
+                    translate_nav(val)
+        elif isinstance(item, str):
+            pass  # leaf nav items handled in dict above
 translate_nav(zh.get('nav', []))
 
 with open('mkdocs-zh.yml', 'w', encoding='utf-8') as f:
