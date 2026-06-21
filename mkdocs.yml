@@ -55,3 +55,4 @@ nav:
       - Wallet: design/bundles/wallet.md
       - Identity (Auth): design/bundles/identity.md
   - AI Context: ai/context.md
+  - API Reference: openapi/endpoints.yaml
