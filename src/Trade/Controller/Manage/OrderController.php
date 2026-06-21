@@ -142,9 +142,14 @@ class OrderController extends RestController
         }
 
         try {
-            $this->service->pay($order, $systemWalletId, $paymentMethod);
-            $this->workflow->apply($order, 'pay');
-            $this->service->update($order, []);
+            // Wallet transfer happens in its own nested transaction (savepoint).
+            // workflow.apply() and update() persist inside the outer transaction,
+            // ensuring atomicity: if status update fails, wallet transfer rolls back.
+            $this->service->wrapInTransaction(function () use ($order, $systemWalletId, $paymentMethod) {
+                $this->service->pay($order, $systemWalletId, $paymentMethod);
+                $this->workflow->apply($order, 'pay');
+                $this->service->update($order, []);
+            });
         } catch (\Throwable $e) {
             return $this->warning($e->getMessage(), 400, '', 400);
         }
@@ -168,9 +173,11 @@ class OrderController extends RestController
         $content = json_decode($request->getContent(), true) ?: [];
 
         try {
-            $this->service->fulfill($order, $content);
-            $this->workflow->apply($order, 'fulfill');
-            $this->service->update($order, []);
+            $this->service->wrapInTransaction(function () use ($order, $content) {
+                $this->service->fulfill($order, $content);
+                $this->workflow->apply($order, 'fulfill');
+                $this->service->update($order, []);
+            });
         } catch (\Throwable $e) {
             return $this->warning($e->getMessage(), 400, '', 400);
         }
@@ -203,9 +210,12 @@ class OrderController extends RestController
         }
 
         try {
-            $this->service->refund($order, $systemWalletId, $reason);
-            $this->workflow->apply($order, 'refund');
-            $this->service->update($order, []);
+            // Wallet refund + workflow transition + persist in ONE atomic transaction
+            $this->service->wrapInTransaction(function () use ($order, $systemWalletId, $reason) {
+                $this->service->refund($order, $systemWalletId, $reason);
+                $this->workflow->apply($order, 'refund');
+                $this->service->update($order, []);
+            });
         } catch (\Throwable $e) {
             return $this->warning($e->getMessage(), 400, '', 400);
         }
