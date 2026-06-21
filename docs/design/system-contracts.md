@@ -226,7 +226,7 @@ Supported via `SerializerContextFactory`:
 
 ### 7.1 Coverage Requirement
 
-- **Minimum**: 80% line coverage (enforced in CI)
+- **Minimum**: 85% line coverage (enforced in CI)
 - **Test environment**: `APP_ENV=test`, SQLite database
 
 ### 7.2 Test Categories
@@ -372,7 +372,7 @@ class XxxCommand extends Command
 | 3 | Install dependencies (`composer install`) |
 | 4 | Run migrations (test DB) |
 | 5 | Run PHPUnit with coverage |
-| 6 | Enforce 80% line coverage minimum |
+| 6 | Enforce 85% line coverage minimum |
 
 ### 11.2 Docker
 

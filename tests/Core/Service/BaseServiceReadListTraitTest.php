@@ -3,21 +3,34 @@
 namespace App\Tests\Core\Service;
 
 use App\Core\Service\BaseService;
+use App\Core\Service\ExpressionServiceInterface;
+use App\Core\Service\LegacyEvaluator;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Psr\Log\NullLogger;
 use Doctrine\ORM\QueryBuilder;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\Validator\Exception\ValidatorException;
 
 final class BaseServiceReadListTraitTest extends TestCase
 {
-    private function createService(ContainerInterface $container, string $entityClass): BaseService
+    private function createService(
+        ContainerInterface $container,
+        string $entityClass,
+        ?ExpressionServiceInterface $expressionService = null,
+        ?LegacyEvaluator $legacyEvaluator = null,
+    ): BaseService
     {
-        return new class($container, $entityClass) extends BaseService {
-            public function __construct(ContainerInterface $container, string $entityClass)
+        return new class($container, $entityClass, $expressionService, $legacyEvaluator) extends BaseService {
+            public function __construct(
+                ContainerInterface $container,
+                string $entityClass,
+                ?ExpressionServiceInterface $expressionService,
+                ?LegacyEvaluator $legacyEvaluator,
+            )
             {
-                parent::__construct($container, $entityClass);
+                parent::__construct($container, $entityClass, null, $expressionService, $legacyEvaluator);
             }
         };
     }
@@ -185,6 +198,133 @@ final class BaseServiceReadListTraitTest extends TestCase
         self::assertIsArray($result);
         self::assertCount(3, $result);
     }
+
+    public function testListWithRequestDqlOrderAndHintsReturnsQueryBuilder(): void
+    {
+        $repo = new ReadListFakeRepository([]);
+        $em = new ReadListFakeEntityManager($repo);
+        $request = new Request([
+            '@dql' => 'SELECT i.id FROM Items i',
+            '@order' => 'entity.name|DESC',
+            '@hints' => '{"HINT_CUSTOM_OUTPUT_WALKER":"walker"}',
+        ]);
+        $container = new ReadListFakeContainer($em, $this->createRequestStack($request));
+
+        $service = $this->createService($container, ReadListEntity::class);
+        $result = $service->list(null, null, false);
+
+        self::assertIsObject($result);
+        self::assertSame(['entity.name' => 'DESC'], $em->lastQueryBuilder?->orderBy ?? []);
+        self::assertSame(['HINT_CUSTOM_OUTPUT_WALKER' => 'walker'], $em->lastQuery?->hints ?? []);
+    }
+
+    public function testListWithSelectAndGroupByReturnsRows(): void
+    {
+        $repo = new ReadListFakeRepository([]);
+        $em = new ReadListFakeEntityManager($repo);
+        $em->setQueryResults([['name' => 'alpha']]);
+        $request = new Request([
+            '@select' => 'entity.name',
+            '@groupBy' => 'entity.name',
+        ]);
+        $container = new ReadListFakeContainer($em, $this->createRequestStack($request));
+
+        $service = $this->createService($container, ReadListEntity::class);
+        $result = $service->list(null, null, false);
+
+        self::assertSame([['name' => 'alpha']], $result);
+        self::assertSame('entity.name', $em->lastQueryBuilder?->selectClause);
+        self::assertSame('entity.name', $em->lastQueryBuilder?->groupByClause);
+    }
+
+    public function testListWithShowDqlThrowsDebugException(): void
+    {
+        $repo = new ReadListFakeRepository([]);
+        $em = new ReadListFakeEntityManager($repo);
+        $container = new ReadListFakeContainer($em, $this->createRequestStack(new Request(['@showDQL' => '1'])));
+
+        $service = $this->createService($container, ReadListEntity::class);
+
+        $this->expectException(ValidatorException::class);
+        $this->expectExceptionMessage('DQL: SELECT');
+
+        $service->list(null, null, false);
+    }
+
+    public function testListWithSelectAndSortFallbackThrowsGroupingFilterError(): void
+    {
+        $repo = new ReadListFakeRepository([]);
+        $em = new ReadListFakeEntityManager($repo);
+        $request = new Request([
+            '@select' => 'entity.name',
+            '@sort' => 'x.getId() > y.getId()',
+        ]);
+        $container = new ReadListFakeContainer($em, $this->createRequestStack($request));
+
+        $service = $this->createService($container, ReadListEntity::class);
+
+        $this->expectException(ValidatorException::class);
+        $this->expectExceptionMessage('Filter error from grouping by or selection');
+
+        $service->list(null, null, false);
+    }
+
+    public function testListWithFilterBuildSuccessAddsDqlAndParameters(): void
+    {
+        $repo = new ReadListFakeRepository([]);
+        $em = new ReadListFakeEntityManager($repo);
+        $container = new ReadListFakeContainer($em, $this->createRequestStack(new Request(['@filter' => 'entity.getId() == 1'])));
+
+        $filterQb = $this->createMock(QueryBuilder::class);
+        $filterQb->method('getDQL')->willReturn('SELECT filter_entity.id FROM Entity filter_entity');
+
+        $parameter = new class {
+            public function getName(): string { return 'filter_parameter_1'; }
+            public function getValue(): int { return 1; }
+        };
+
+        $expressionService = $this->createMock(ExpressionServiceInterface::class);
+        $expressionService->expects(self::once())
+            ->method('buildFilter')
+            ->with('entity.getId() == 1', ReadListEntity::class, self::isType('array'), $em)
+            ->willReturn(['qb' => $filterQb, 'parameters' => [$parameter]]);
+
+        $service = $this->createService($container, ReadListEntity::class, $expressionService);
+        $result = $service->list(null, null, false);
+
+        self::assertIsObject($result);
+        self::assertSame(1, $em->lastQueryBuilder?->params['filter_parameter_1'] ?? null);
+    }
+
+    public function testListWithFilterErrorFallsBackToLegacyFilterAndSorter(): void
+    {
+        $alpha = new ReadListEntity(1, 'alpha');
+        $beta = new ReadListEntity(2, 'beta');
+        $repo = new ReadListFakeRepository([1 => $alpha, 2 => $beta]);
+        $em = new ReadListFakeEntityManager($repo);
+        $em->setQueryResults([$beta, $alpha]);
+        $request = new Request([
+            '@filter' => 'entity.getName() == "alpha"',
+            '@sort' => 'x.getId() > y.getId()',
+        ]);
+        $container = new ReadListFakeContainer($em, $this->createRequestStack($request));
+
+        $expressionService = $this->createMock(ExpressionServiceInterface::class);
+        $expressionService->method('buildFilter')->willThrowException(new \RuntimeException('unsupported filter'));
+
+        $service = $this->createService($container, ReadListEntity::class, $expressionService, new LegacyEvaluator());
+        $result = $service->list(null, null, false);
+
+        self::assertSame([$alpha], array_values($result));
+    }
+
+    private function createRequestStack(Request $request): RequestStack
+    {
+        $stack = new RequestStack();
+        $stack->push($request);
+
+        return $stack;
+    }
 }
 
 // -------------------------------------------------------
@@ -220,6 +360,8 @@ final class ReadListFakeRepository
 final class ReadListFakeEntityManager
 {
     private array $queryResults = [];
+    public ?object $lastQueryBuilder = null;
+    public ?object $lastQuery = null;
 
     public function __construct(private readonly ReadListFakeRepository $repo) {}
 
@@ -229,25 +371,26 @@ final class ReadListFakeEntityManager
 
     public function createQuery(string $dql): object
     {
-        return new class { public function getDQL(): string { return ''; } };
+        return new class ($dql) { public function __construct(private readonly string $dql) {} public function getDQL(): string { return $this->dql; } };
     }
 
     public function createQueryBuilder(): object
     {
         $results = $this->queryResults;
-        return new class ($results) {
+        $qb = new class ($results, $this) {
             private array $wheres = [];
-            private array $params = [];
+            public array $params = [];
             private string $alias = 'entity';
-            private $selectClause = null;
-            private array $orderBy = [];
+            public $selectClause = null;
+            public array $orderBy = [];
             private array $joins = [];
+            public ?string $groupByClause = null;
 
-            public function __construct(private array $results) {}
+            public function __construct(private array $results, private readonly ReadListFakeEntityManager $em) {}
             public function select($s): self { $this->selectClause = $s; return $this; }
             public function from(string $from, string $alias): self { return $this; }
-            public function where(string $condition): self { return $this; }
-            public function andWhere(string $condition): self { $this->wheres[] = $condition; return $this; }
+            public function where(mixed $condition): self { return $this; }
+            public function andWhere(mixed $condition): self { $this->wheres[] = $condition; return $this; }
             public function setParameter(string $name, mixed $value): self { $this->params[$name] = $value; return $this; }
             public function addOrderBy(string $field, string $order): self { $this->orderBy[$field] = $order; return $this; }
             public function addGroupBy(string $group): self { $this->groupByClause = $group; return $this; }
@@ -256,27 +399,36 @@ final class ReadListFakeEntityManager
             public function getDQL(): string { return 'SELECT ...'; }
             public function getQuery(): object
             {
-                return new class ($this->results) {
+                $query = new class ($this->results) {
+                    public array $hints = [];
                     public function __construct(private array $results) {}
-                    public function setHint(string $k, mixed $v): void {}
+                    public function setHint(string $k, mixed $v): void { $this->hints[$k] = $v; }
                     public function getResult(): array { return $this->results; }
                     public function getSingleResult(): mixed { return $this->results[0] ?? null; }
                 };
+                $this->em->lastQuery = $query;
+                return $query;
             }
         };
+        $this->lastQueryBuilder = $qb;
+
+        return $qb;
     }
 }
 
 final class ReadListFakeContainer implements ContainerInterface
 {
-    public function __construct(private readonly ReadListFakeEntityManager $em) {}
+    public function __construct(
+        private readonly ReadListFakeEntityManager $em,
+        private readonly ?RequestStack $requestStack = null,
+    ) {}
 
     public function get(string $id, int $invalidBehavior = self::EXCEPTION_ON_INVALID_REFERENCE): ?object
     {
         return match ($id) {
             'doctrine.orm.entity_manager' => $this->em,
             'logger' => new NullLogger(),
-            'request_stack' => new RequestStack(),
+            'request_stack' => $this->requestStack ?? new RequestStack(),
             'security.token_storage' => new class { public function getToken(): ?object { return null; } },
             'serializer' => new \Symfony\Component\Serializer\Serializer([
                 new \Symfony\Component\Serializer\Normalizer\ObjectNormalizer()
