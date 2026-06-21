@@ -1,0 +1,57 @@
+site_name: CRUD Skeleton
+site_description: Symfony 8.1 API backend skeleton with modular architecture
+repo_url: https://github.com/immane/crud-skeleton
+edit_uri: edit/dev/docs/
+
+theme:
+  name: material
+  language: zh
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+
+markdown_extensions:
+  - admonition
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences
+  - pymdownx.inlinehilite
+  - pymdownx.details
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+  - Design Contracts:
+      - System Architecture: design/system-architecture.md
+      - API Design: design/api-design.md
+      - Data Model: design/data-model.md
+      - Module Design: design/module-design.md
+      - Controller Design: design/controller-design.md
+      - System Contracts: design/system-contracts.md
+  - Bundles:
+      - Core Framework: design/bundles/core.md
+      - Common (CMS): design/bundles/common.md
+      - Trade (E-Commerce): design/bundles/trade.md
+      - Wallet: design/bundles/wallet.md
+      - Identity (Auth): design/bundles/identity.md
+  - AI Context: ai/context.md
