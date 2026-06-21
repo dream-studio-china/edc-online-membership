@@ -15,7 +15,7 @@ ROOT = Path(__file__).resolve().parent.parent
 SRC = ROOT / "docs"
 DST = ROOT / "docs-zh"
 
-SKIP_DIRS = {"research"}
+SKIP_DIRS = {"research", "ai"}
 
 STASH: list[str] = []
 

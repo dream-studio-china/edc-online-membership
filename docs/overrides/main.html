@@ -1,21 +1,9 @@
 {% extends "base.html" %}
 
-{% block footer %}
-<footer class="md-footer">
-  <div class="md-footer-meta md-typeset">
-    <div class="md-footer-meta__inner md-grid">
-      <div class="md-copyright">
-        {% if config.copyright %}
-          <div class="md-copyright__highlight">{{ config.copyright }}</div>
-        {% endif %}
-        Made with
-        <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
-          Material for MkDocs
-        </a>
-      </div>
-      <div id="google_translate_element" style="display: flex; align-items: center;"></div>
-      {% include "partials/social.html" %}
-    </div>
-  </div>
-</footer>
+{% block announce %}
+<div style="display: flex; justify-content: flex-end; gap: 6px; padding: 2px 0; font-size: 0.75rem;">
+  <a href="/en/{{ page.url }}" style="color: inherit; opacity: 0.7;">EN</a>
+  <span style="opacity: 0.4;">|</span>
+  <a href="/zh/{{ page.url }}" style="color: inherit; opacity: 0.7;">中文</a>
+</div>
 {% endblock %}
