@@ -13,7 +13,7 @@ use App\Core\View\UpdateApiViewMixin;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
-#[Route('/api/v1/manage/media', name: 'manage-media-')]
+#[Route('/manage/media', name: 'manage-media-')]
 #[IsGranted('ROLE_ADMIN')]
 class MediaController extends RestController
 {

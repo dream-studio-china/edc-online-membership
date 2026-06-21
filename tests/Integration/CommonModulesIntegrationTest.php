@@ -274,7 +274,7 @@ final class CommonModulesIntegrationTest extends IntegrationKernelTestCase
         self::assertTrue($service->remove($root->getId()));
     }
 
-    public function testUpdateWithoutListenerForAllModuleTypes(): void
+    public function testUpdateForAllModuleTypes(): void
     {
         $modules = [
             ['class' => Category::class, 'create' => ['name' => 'cat-name', 'slug' => 'cat-slug'], 'update' => ['name' => 'updated-cat']],
@@ -291,7 +291,7 @@ final class CommonModulesIntegrationTest extends IntegrationKernelTestCase
             self::assertNotNull($created, "Failed to create {$module['class']}");
             self::assertNotNull($created->getId());
 
-            $updated = $service->updateWithoutListener($created, $module['update']);
+            $updated = $service->update($created, $module['update']);
             self::assertNotNull($updated);
 
             self::assertTrue($service->remove($created->getId()));

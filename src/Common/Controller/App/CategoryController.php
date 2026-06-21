@@ -9,7 +9,7 @@ use App\Core\View\DetailApiViewMixin;
 use App\Core\View\ListApiViewMixin;
 use Symfony\Component\Routing\Attribute\Route;
 
-#[Route('/api/v1/app/categories', name: 'app-categories-')]
+#[Route('/app/categories', name: 'app-categories-')]
 class CategoryController extends RestController
 {
     use ApiView, DetailApiViewMixin, ListApiViewMixin;

@@ -28,14 +28,14 @@ trait WorkflowApiViewMixin
     #[Route('/todo', name: 'todo-list', methods: ['GET'])]
     public function todoAction()
     {
-        $service = $this->service ?? $this->get($this->serviceClass);
+        $service = $this->service ?? $this->container->get($this->serviceClass);
         $entities = BaseService::listResultToCollection(
             $service->list(null, null, false)
         )->toArray();
 
         // TODO: this method will VERY SLOW when reached the large apply entry.
         $entities = array_filter($entities, function ($entity) {
-            $workflow = $this->get($this->workflow);
+            $workflow = $this->container->get($this->workflow);
             return count($workflow->getEnabledTransitions($entity));
         });
 
@@ -51,10 +51,10 @@ trait WorkflowApiViewMixin
     #[Route('/{id}/transitions', name: 'available-transition', methods: ['GET'])]
     public function availableTransitionsAction($id)
     {
-        $service = $this->service ?? $this->get($this->serviceClass);
+        $service = $this->service ?? $this->container->get($this->serviceClass);
         $entity = $service->get(['id' => $id]);
 
-        $workflow = $this->get($this->workflow);
+        $workflow = $this->container->get($this->workflow);
         $transitions = $workflow->getEnabledTransitions($entity);
 
         return $this->success($transitions);
@@ -70,9 +70,9 @@ trait WorkflowApiViewMixin
     public function doTransitionAction(Request $request, $id, $transition)
     {
         try {
-            $service = $this->service ?? $this->get($this->serviceClass);
+            $service = $this->service ?? $this->container->get($this->serviceClass);
             $entity = $service->get(['id' => $id]);
-            $workflow = $this->get($this->workflow);
+            $workflow = $this->container->get($this->workflow);
 
             if (!$workflow->can($entity, $transition)) {
                 throw new ValidatorException('Current transition cannot be applied.');
@@ -105,7 +105,7 @@ trait WorkflowApiViewMixin
     public function resetMarkingAction($entity)
     {
         $entity->setStatus([]);
-        $this->get('doctrine')->getManager()->flush();
+        $this->container->get('doctrine')->getManager()->flush();
 
         return $this->success();
     }

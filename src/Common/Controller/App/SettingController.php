@@ -9,7 +9,7 @@ use App\Core\View\DetailApiViewMixin;
 use App\Core\View\ListApiViewMixin;
 use Symfony\Component\Routing\Attribute\Route;
 
-#[Route('/api/v1/app/settings', name: 'app-settings-')]
+#[Route('/app/settings', name: 'app-settings-')]
 class SettingController extends RestController
 {
     use ApiView, DetailApiViewMixin, ListApiViewMixin;

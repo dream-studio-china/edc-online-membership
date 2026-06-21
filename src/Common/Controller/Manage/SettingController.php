@@ -13,7 +13,7 @@ use App\Core\View\UpdateApiViewMixin;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
-#[Route('/api/v1/manage/settings', name: 'manage-settings-')]
+#[Route('/manage/settings', name: 'manage-settings-')]
 #[IsGranted('ROLE_ADMIN')]
 class SettingController extends RestController
 {

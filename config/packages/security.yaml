@@ -37,6 +37,10 @@ security:
         - { path: ^/api/auth/token/refresh$, roles: PUBLIC_ACCESS }
         - { path: ^/api/auth/logout$, roles: PUBLIC_ACCESS }
 
+        # Public payment provider callbacks verify their own gateway signatures
+        - { path: ^/api/payment/notify, roles: PUBLIC_ACCESS }
+        - { path: ^/api/payment/refund-notify, roles: PUBLIC_ACCESS }
+
         # All remaining API endpoints require authentication
         # Manage endpoints require admin role
         - { path: ^/api/v1/manage, roles: ROLE_ADMIN }

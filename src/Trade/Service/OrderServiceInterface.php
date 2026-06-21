@@ -1,0 +1,28 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Trade\Service;
+
+use App\Core\Service\BaseServiceInterface;
+use App\Payment\DTO\PaymentRefundResult;
+use App\Payment\DTO\PaymentResult;
+use App\Trade\Entity\Order;
+use App\Trade\Service\Pricing\PriceCalculationResult;
+
+interface OrderServiceInterface extends BaseServiceInterface
+{
+    public function calculatePrices(array $items, string $currency = 'CNY'): PriceCalculationResult;
+
+    public function createOrder(array $calculatedItems, mixed $user, int $totalAmount, string $currency = 'CNY', ?string $notes = null): Order;
+
+    public function pay(Order $order, int $systemWalletId, string $paymentMethod = 'wallet', ?string $referenceId = null): void;
+
+    public function refund(Order $order, int $systemWalletId, string $reason, ?string $referenceId = null): void;
+
+    public function fulfill(Order $order, array $data): void;
+
+    public function createPayment(Order $order, string $payment = 'mock', array $options = []): PaymentResult;
+
+    public function refundPayment(Order $order, string $reason, array $options = []): PaymentRefundResult;
+}

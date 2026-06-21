@@ -4,7 +4,7 @@
  * Test script to verify ExceptionInterceptor JSON response (using JsonResponse)
  */
 
-require_once __DIR__ . '/vendor/autoload.php';
+require_once dirname(__DIR__, 2) . '/vendor/autoload.php';
 
 use Symfony\Component\HttpFoundation\JsonResponse;
 

@@ -13,7 +13,7 @@ use App\Core\View\UpdateApiViewMixin;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
-#[Route('/api/v1/manage/pages', name: 'manage-pages-')]
+#[Route('/manage/pages', name: 'manage-pages-')]
 #[IsGranted('ROLE_ADMIN')]
 class PageController extends RestController
 {

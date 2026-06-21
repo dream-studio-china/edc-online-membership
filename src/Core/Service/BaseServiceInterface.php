@@ -41,14 +41,6 @@ interface BaseServiceInterface
     public function update($object, array $data = null, bool $noFlush = false);
 
     /**
-     * Update without triggering listeners (bulk update path).
-     * @param mixed $object
-     * @param array $data
-     * @return mixed
-     */
-    public function updateWithoutListener($object, array $data);
-
-    /**
      * Remove the given entity.
      * @param mixed $object
      * @return bool

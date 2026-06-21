@@ -153,46 +153,8 @@ final class BaseServiceMutationTraitTest extends TestCase
     }
 
     // -------------------------------------------------------
-    //  updateWithoutListener()
+    //  Entity creation
     // -------------------------------------------------------
-
-    public function testUpdateWithoutListenerCallsDql(): void
-    {
-        $entity = new SimpleEntity();
-        $entity->setId(1);
-        $entity->setName('original');
-
-        $repo = new MutationFakeRepository([1 => $entity]);
-        $em = new MutationFakeEntityManager($repo);
-        $container = new MutationFakeContainer($em);
-        $service = $this->createService($container, SimpleEntity::class);
-
-        $result = $service->updateWithoutListener($entity, ['name' => 'bulk-updated']);
-        self::assertInstanceOf(SimpleEntity::class, $result);
-    }
-
-    public function testUpdateWithoutListenerNullObjectThrows(): void
-    {
-        $em = new MutationFakeEntityManager(new MutationFakeRepository([]));
-        $container = new MutationFakeContainer($em);
-        $service = $this->createService($container, SimpleEntity::class);
-
-        $this->expectException(\Symfony\Component\Validator\Exception\ValidatorException::class);
-        $service->updateWithoutListener(null, ['name' => 'test']);
-    }
-
-    public function testUpdateWithoutListenerEmptyDataThrows(): void
-    {
-        $entity = new SimpleEntity();
-        $entity->setId(1);
-
-        $em = new MutationFakeEntityManager(new MutationFakeRepository([1 => $entity]));
-        $container = new MutationFakeContainer($em);
-        $service = $this->createService($container, SimpleEntity::class);
-
-        $this->expectException(\Symfony\Component\Validator\Exception\ValidatorException::class);
-        $service->updateWithoutListener($entity, []);
-    }
 }
 
 // -------------------------------------------------------

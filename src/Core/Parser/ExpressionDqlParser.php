@@ -324,8 +324,8 @@ class ExpressionDqlParser
             } else {
                 // fallback: evaluate against provided values (safe-eval)
                 try {
-                    $val = $node->evaluate(null, $this->values);
-                } catch (\Exception $e) {
+                    $val = $node->evaluate([], $this->values);
+                } catch (\Throwable $e) {
                     throw new ValidatorException('Failed to evaluate dynamic value: ' . $e->getMessage());
                 }
                 $idx = $this->parameters->count() + 1;
@@ -431,7 +431,7 @@ class ExpressionDqlParser
                 $meta = $em->getClassMetadata($currentClass);
                 if ($meta->hasAssociation($seg)) {
                     $assoc = $meta->getAssociationMapping($seg);
-                    $currentClass = $assoc['targetEntity'];
+                    $currentClass = is_array($assoc) ? $assoc['targetEntity'] : $assoc->targetEntity;
                     continue;
                 }
                 if ($meta->hasField($seg)) {

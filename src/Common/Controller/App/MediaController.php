@@ -9,7 +9,7 @@ use App\Core\View\DetailApiViewMixin;
 use App\Core\View\ListApiViewMixin;
 use Symfony\Component\Routing\Attribute\Route;
 
-#[Route('/api/v1/app/media', name: 'app-media-')]
+#[Route('/app/media', name: 'app-media-')]
 class MediaController extends RestController
 {
     use ApiView, DetailApiViewMixin, ListApiViewMixin;
