@@ -64,11 +64,5 @@ nav:
   - AI Context: ai/context.md
   - API Reference: openapi/endpoints.yaml
 
-extra:
-  alternate:
-    - name: English
-      link: /
-      lang: en
-    - name: 中文
-      link: /zh/
-      lang: zh
+extra_javascript:
+  - assets/javascripts/i18n.js

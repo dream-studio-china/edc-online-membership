@@ -13,8 +13,9 @@ cd "$(dirname "$0")/.."
 echo "=== 1. Translating docs/ → docs-zh/ ==="
 python scripts/translate-docs.py
 
-echo "     Copying research/, ai/, openapi/ → docs-zh/"
-rm -rf docs-zh/research docs-zh/openapi docs-zh/ai
+echo "     Copying assets/, research/, ai/, openapi/ → docs-zh/"
+rm -rf docs-zh/assets docs-zh/research docs-zh/openapi docs-zh/ai
+cp -r docs/assets docs-zh/assets 2>/dev/null || true
 cp -r docs/research docs-zh/research 2>/dev/null || true
 cp -r docs/openapi docs-zh/openapi 2>/dev/null || true
 cp -r docs/ai docs-zh/ai 2>/dev/null || true
@@ -48,16 +49,14 @@ MAP = {
 }
 
 def _zh_label(s):
-    \"\"\"Translate a nav label to Chinese, using static MAP first, then auto-translate.\"\"\"
     if s in MAP:
         return MAP[s]
-    # Only translate short labels (long file paths should not be translated)
     if len(s) < 60 and ' ' in s:
         try:
             from deep_translator import GoogleTranslator
             t = GoogleTranslator(source='en', target='zh-CN')
             result = t.translate(s)
-            MAP[s] = result  # cache for subsequent calls
+            MAP[s] = result
             return result
         except Exception:
             pass
@@ -73,8 +72,6 @@ def translate_nav(items):
                 val = item[new_k]
                 if isinstance(val, list):
                     translate_nav(val)
-        elif isinstance(item, str):
-            pass  # leaf nav items handled in dict above
 translate_nav(zh.get('nav', []))
 
 with open('mkdocs-zh.yml', 'w', encoding='utf-8') as f:
