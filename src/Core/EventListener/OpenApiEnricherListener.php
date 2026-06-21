@@ -130,25 +130,9 @@ class OpenApiEnricherListener
 
     private function enrich(array $spec): array
     {
-        foreach ($spec['paths'] as $path => &$methods) {
-            // Auto-detect tag from URL pattern — no manual mapping needed for new endpoints
-            $tag = $this->detectTag($path);
-            if ($tag === null) continue;
-
-            // Apply explicit overrides from META map (for custom summaries/descriptions)
-            $meta = self::META[$path] ?? null;
-
-            foreach ($methods as $method => &$op) {
-                if (!is_array($op)) continue;
-                $op['tags'] = [$tag];
-                if ($meta && isset($meta['summary'][$method])) $op['summary'] = $meta['summary'][$method];
-                if ($meta && isset($meta['desc'][$method])) $op['description'] = $meta['desc'][$method];
-            }
-            unset($op);
-        }
-        unset($methods);
-
-        $spec['tags'] = [
+        // Start with known tags; dynamically detected ones will be appended
+        $spec['tags'] = $spec['tags'] ?? [];
+        foreach ([
             ['name' => 'Auth', 'description' => 'Login, OTP, token refresh, logout'],
             ['name' => 'Products', 'description' => 'Product and Specification CRUD + public listing'],
             ['name' => 'Orders', 'description' => 'Order lifecycle: draft→pending→confirmed→paid→fulfilled→completed→refunded'],
@@ -160,31 +144,87 @@ class OpenApiEnricherListener
             ['name' => 'Media', 'description' => 'File metadata management'],
             ['name' => 'Settings', 'description' => 'Key-value configuration'],
             ['name' => 'Wallet', 'description' => 'Balance, transactions, atomic transfers'],
-        ];
+        ] as $t) {
+            $this->ensureTag($spec['tags'], $t['name']);
+        }
+
+        foreach ($spec['paths'] as $path => &$methods) {
+            // Pick the first operation to get the operationId (same route for all methods)
+            $firstOp = null;
+            foreach ($methods as $op) { if (is_array($op)) { $firstOp = $op; break; } }
+            $tag = $this->detectTag($firstOp ?? []);
+            if ($tag === null) continue;
+
+            // Apply explicit overrides from META map (for custom summaries/descriptions)
+            $meta = self::META[$path] ?? null;
+
+            foreach ($methods as $method => &$op) {
+                if (!is_array($op)) continue;
+                $op['tags'] = [$tag];
+                $this->ensureTag($spec['tags'], $tag);
+                if ($meta && isset($meta['summary'][$method])) $op['summary'] = $meta['summary'][$method];
+                if ($meta && isset($meta['desc'][$method])) $op['description'] = $meta['desc'][$method];
+            }
+            unset($op);
+        }
+        unset($methods);
 
         return $spec;
     }
 
     /**
-     * Auto-detect module tag from URL path.
-     * New endpoints under these prefixes automatically get the correct tag.
-     * Add new prefixes here when adding new modules.
+     * Auto-detect module tag from the route name (operationId).
+     * Route naming convention: {scope}-{resource}-{action}
+     *   e.g. manage-products-list → Products, app-orders-create → Orders
+     *
+     * Known resources are matched explicitly. Unknown resources are
+     * title-cased from the route prefix automatically.
      */
-    private function detectTag(string $path): ?string
+    private function detectTag(array $operation): ?string
     {
-        return match (true) {
-            str_starts_with($path, '/api/auth') => 'Auth',
-            str_contains($path, '/products') => 'Products',
-            str_contains($path, '/orders') => 'Orders',
-            str_contains($path, '/categories') => 'Categories',
-            str_contains($path, '/tags') => 'Tags',
-            str_contains($path, '/contents') => 'Contents',
-            str_contains($path, '/comments') => 'Comments',
-            str_contains($path, '/pages') => 'Pages',
-            str_contains($path, '/media') => 'Media',
-            str_contains($path, '/settings') => 'Settings',
-            str_contains($path, '/wallets') || str_contains($path, '/transactions') || str_contains($path, '/transfer') => 'Wallet',
-            default => null,
-        };
+        $opId = $operation['operationId'] ?? '';
+        if ($opId === '') return null;
+
+        // Auth routes use a special prefix
+        if (str_contains($opId, 'sys-auth')) return 'Auth';
+
+        // Extract resource name: {scope}-{resource} or {scope}-{resource}-{action}
+        if (preg_match('/(?:manage|app)-([a-z][a-z0-9_]*)(?:-|$)/', $opId, $m)) {
+            $resource = $m[1];
+
+            // Map resource names to display names (supports both singular and plural forms)
+            $known = [
+                'product' => 'Products', 'products' => 'Products',
+                'specification' => 'Products', 'specifications' => 'Products',
+                'order' => 'Orders', 'orders' => 'Orders',
+                'category' => 'Categories', 'categories' => 'Categories',
+                'tag' => 'Tags', 'tags' => 'Tags',
+                'content' => 'Contents', 'contents' => 'Contents',
+                'comment' => 'Comments', 'comments' => 'Comments',
+                'page' => 'Pages', 'pages' => 'Pages',
+                'media' => 'Media',
+                'setting' => 'Settings', 'settings' => 'Settings',
+                'wallet' => 'Wallet', 'wallets' => 'Wallet',
+                'transaction' => 'Wallet', 'transactions' => 'Wallet',
+                'transfer' => 'Wallet', 'transfers' => 'Wallet',
+            ];
+            if (isset($known[$resource])) return $known[$resource];
+
+            // Unknown resource — auto-title-case
+            return str_replace('_', ' ', ucfirst($resource));
+        }
+
+        return null;
+    }
+
+    /**
+     * Ensure dynamically detected tags appear in the spec's tag list.
+     */
+    private function ensureTag(array &$tags, string $name): void
+    {
+        foreach ($tags as $t) {
+            if ($t['name'] === $name) return;
+        }
+        $tags[] = ['name' => $name, 'description' => ''];
     }
 }
