@@ -55,7 +55,7 @@ class Xxx
 | Rule | Example |
 |------|---------|
 | Lowercase, underscore-separated | `common_category` |
-| Module prefix | `common_*`, `trade_*`, `wallet_*`, `identity_*` |
+| Module prefix | `common_*`, `trade_*`, `payment_*`, `wallet_*`, `identity_*` |
 | Singular noun | `wallet` not `wallets` |
 | Join tables | `{left}_{right}` (e.g., `common_content_tag`) |
 

@@ -7,7 +7,7 @@
 
 ## 1. Overview
 
-The Core bundle is NOT a business module -- it is the framework layer. It exports abstractions consumed by Common, Trade, Wallet, and Identity modules. Core MUST NOT depend on any business module.
+The Core bundle is NOT a business module -- it is the framework layer. It exports abstractions consumed by Common, Trade, Payment, Wallet, and Identity modules. Core MUST NOT depend on any business module.
 
 ### 1.1 What Core Provides
 

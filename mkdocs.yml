@@ -53,7 +53,11 @@ nav:
       - Core Framework: design/bundles/core.md
       - Common (CMS): design/bundles/common.md
       - Trade (E-Commerce): design/bundles/trade.md
+      - Payment: design/bundles/payment.md
       - Wallet: design/bundles/wallet.md
       - Identity (Auth): design/bundles/identity.md
+  - Research:
+      - EasyWeChat 6.x Usage: research/easywechat-6.x-usage.md
+      - Huifu Payment API: research/huifu-payment-api.md
   - AI Context: ai/context.md
   - API Reference: openapi/endpoints.yaml
