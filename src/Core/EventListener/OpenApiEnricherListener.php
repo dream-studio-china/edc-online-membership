@@ -144,6 +144,7 @@ class OpenApiEnricherListener
             ['name' => 'Media', 'description' => 'File metadata management'],
             ['name' => 'Settings', 'description' => 'Key-value configuration'],
             ['name' => 'Wallet', 'description' => 'Balance, transactions, atomic transfers'],
+            ['name' => 'System', 'description' => 'Entity metadata introspection and route listing'],
         ] as $t) {
             $this->ensureTag($spec['tags'], $t['name']);
         }
@@ -187,6 +188,9 @@ class OpenApiEnricherListener
 
         // Auth routes use a special prefix
         if (str_contains($opId, 'sys-auth')) return 'Auth';
+
+        // System routes: system-entity-*, system-router-*
+        if (str_starts_with($opId, 'system-')) return 'System';
 
         // Extract resource name: {scope}-{resource} or {scope}-{resource}-{action}
         if (preg_match('/(?:manage|app)-([a-z][a-z0-9_]*)(?:-|$)/', $opId, $m)) {

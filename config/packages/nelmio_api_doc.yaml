@@ -39,6 +39,7 @@ nelmio_api_doc:
             - { name: Media, description: 'File metadata management' }
             - { name: Settings, description: 'Key-value configuration storage' }
             - { name: Wallet, description: 'Wallet balance, transactions, and atomic transfers' }
+            - { name: System, description: 'System introspection: entity metadata export and route listing' }
 
         components:
             securitySchemes:
@@ -543,3 +544,4 @@ nelmio_api_doc:
         default:
             path_patterns:
                 - ^/api(?!/doc(?:\.json)?$)
+                - ^/system
