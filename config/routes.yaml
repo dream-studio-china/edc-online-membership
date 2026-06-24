@@ -41,3 +41,9 @@ payment_webhook:
         path: ../src/Payment/Controller/Webhook/
         namespace: App\Payment\Controller\Webhook
     type: attribute
+
+wechat:
+    resource:
+        path: ../src/Wechat/Controller/
+        namespace: App\Wechat\Controller
+    type: attribute

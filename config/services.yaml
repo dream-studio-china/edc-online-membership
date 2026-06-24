@@ -6,6 +6,7 @@ imports:
     - { resource: '../src/Core/Resources/config/services.yaml', ignore_errors: true }
     - { resource: '../src/Identity/Resources/config/services_identity.yaml', ignore_errors: true }
     - { resource: '../src/Payment/Resources/config/services_payment.yaml', ignore_errors: true }
+    - { resource: '../src/Wechat/Resources/config/services_wechat.yaml', ignore_errors: true }
 
 services:
     _defaults:
@@ -31,6 +32,8 @@ services:
             - '../src/Identity/Security/TokenManager.php'
             - '../src/Identity/Sms/AliyunSmsProvider.php'
             - '../src/Identity/Service/RedisOtpStorage.php'
+            - '../src/Wechat/Service/WechatService.php'
+            - '../src/Wechat/Service/Gateway/WechatPayGateway.php'
 
     App\Core\EventListener\OpenApiEnricherListener:
         tags:

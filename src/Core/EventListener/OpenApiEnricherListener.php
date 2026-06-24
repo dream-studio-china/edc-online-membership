@@ -145,6 +145,7 @@ class OpenApiEnricherListener
             ['name' => 'Settings', 'description' => 'Key-value configuration'],
             ['name' => 'Wallet', 'description' => 'Balance, transactions, atomic transfers'],
             ['name' => 'System', 'description' => 'Entity metadata introspection and route listing'],
+            ['name' => 'Wechat', 'description' => 'WeChat Mini Program / Official Account login and WeChat Pay'],
         ] as $t) {
             $this->ensureTag($spec['tags'], $t['name']);
         }
@@ -196,6 +197,9 @@ class OpenApiEnricherListener
 
         // System routes: system-entity-*, system-router-*
         if (str_starts_with($opId, 'system-')) return 'System';
+
+        // Wechat routes: wechat-*
+        if (str_starts_with($opId, 'wechat-')) return 'Wechat';
 
         // Extract resource name: {scope}-{resource} or {scope}-{resource}-{action}
         if (preg_match('/(?:manage|app)-([a-z][a-z0-9_]*)(?:-|$)/', $opId, $m)) {

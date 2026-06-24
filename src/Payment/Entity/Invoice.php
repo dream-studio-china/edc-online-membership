@@ -33,6 +33,7 @@ class Invoice
 
     public const PAYMENT_MOCK = 'mock';
     public const PAYMENT_WALLET = 'wallet';
+    public const PAYMENT_WECHAT = 'wechat';
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
