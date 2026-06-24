@@ -8,6 +8,7 @@ use App\Wechat\Service\WechatService;
 use EasyWeChat\MiniApp\Application as MiniApp;
 use EasyWeChat\OfficialAccount\Application as OfficialAccount;
 use Overtrue\Socialite\Contracts\ProviderInterface;
+use Overtrue\Socialite\Contracts\UserInterface as SocialiteUserInterface;
 use PHPUnit\Framework\TestCase;
 
 final class WechatServiceTest extends TestCase
@@ -126,6 +127,66 @@ final class WechatServiceTest extends TestCase
         self::expectExceptionMessage('WeChat OAuth failed');
 
         $this->service->getOAuthUser('bad_code');
+    }
+
+    public function testGetOAuthUserSuccess(): void
+    {
+        $socialiteUser = $this->createMock(SocialiteUserInterface::class);
+        $socialiteUser->method('getId')->willReturn('o_oauth123');
+        $socialiteUser->method('getNickname')->willReturn('WeChatUser');
+        $socialiteUser->method('getAvatar')->willReturn('https://example.com/avatar.jpg');
+        $socialiteUser->method('getRaw')->willReturn([
+            'sex' => 1,
+            'province' => 'Guangdong',
+            'city' => 'Shenzhen',
+            'country' => 'China',
+            'unionid' => 'u_union_abc',
+        ]);
+
+        $provider = $this->createMock(ProviderInterface::class);
+        $provider->method('userFromCode')
+            ->with('valid_oauth_code')
+            ->willReturn($socialiteUser);
+
+        $officialAccount = $this->createMock(OfficialAccount::class);
+        $officialAccount->method('getOAuth')->willReturn($provider);
+
+        $this->service->setOfficialAccount($officialAccount);
+
+        $result = $this->service->getOAuthUser('valid_oauth_code');
+
+        self::assertSame('o_oauth123', $result['openid']);
+        self::assertSame('WeChatUser', $result['nickname']);
+        self::assertSame('https://example.com/avatar.jpg', $result['avatar']);
+        self::assertSame(1, $result['sex']);
+        self::assertSame('Guangdong', $result['province']);
+        self::assertSame('Shenzhen', $result['city']);
+        self::assertSame('China', $result['country']);
+        self::assertSame('u_union_abc', $result['unionid']);
+    }
+
+    public function testGetOAuthUserWithNullProfile(): void
+    {
+        $socialiteUser = $this->createMock(SocialiteUserInterface::class);
+        $socialiteUser->method('getId')->willReturn('o_minimal');
+        $socialiteUser->method('getNickname')->willReturn(null);
+        $socialiteUser->method('getAvatar')->willReturn(null);
+        $socialiteUser->method('getRaw')->willReturn([]);
+
+        $provider = $this->createMock(ProviderInterface::class);
+        $provider->method('userFromCode')->willReturn($socialiteUser);
+
+        $officialAccount = $this->createMock(OfficialAccount::class);
+        $officialAccount->method('getOAuth')->willReturn($provider);
+
+        $this->service->setOfficialAccount($officialAccount);
+
+        $result = $this->service->getOAuthUser('minimal_code');
+
+        self::assertSame('o_minimal', $result['openid']);
+        self::assertSame('', $result['nickname']);
+        self::assertSame('', $result['avatar']);
+        self::assertSame(0, $result['sex']);
     }
 
     public function testSetMiniAppOverridesCachedInstance(): void
