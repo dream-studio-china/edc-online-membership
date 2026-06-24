@@ -47,3 +47,10 @@ wechat:
         path: ../src/Wechat/Controller/
         namespace: App\Wechat\Controller
     type: attribute
+
+wechat_app:
+    prefix: /api/v1
+    resource:
+        path: ../src/Wechat/Controller/App/
+        namespace: App\Wechat\Controller\App
+    type: attribute
