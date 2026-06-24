@@ -182,6 +182,69 @@ final class WechatPayGatewayTest extends TestCase
         self::assertSame('WeChat Native order created', $result->message);
     }
 
+    public function testPayJsapiSuccess(): void
+    {
+        $payer = new \App\Identity\Entity\User();
+
+        $wechatUser = $this->createMock(WechatUser::class);
+        $wechatUser->method('getOpenid')->willReturn('o_jsapi_user');
+
+        $this->wechatUserRepo->method('findByUser')
+            ->with($payer)
+            ->willReturn($wechatUser);
+
+        $payApp = $this->createMock(PayApp::class);
+        $merchant = $this->createMock(Merchant::class);
+        $merchant->method('getMerchantId')->willReturn(1234567890);
+        $payApp->method('getMerchant')->willReturn($merchant);
+
+        $clientResponse = $this->createMock(WechatResponse::class);
+        $clientResponse->method('toArray')->willReturn(['prepay_id' => 'wx_prepay_jsapi_001']);
+
+        $payClient = $this->createMock(\EasyWeChat\Pay\Client::class);
+        $payClient->method('postJson')->willReturn($clientResponse);
+        $payApp->method('getClient')->willReturn($payClient);
+
+        $payUtils = $this->createMock(Utils::class);
+        $payUtils->method('buildMiniAppConfig')
+            ->with('wx_prepay_jsapi_001', 'wx_mini_app', 'RSA')
+            ->willReturn([
+                'timeStamp' => '1234567890',
+                'nonceStr' => 'abc123',
+                'package' => 'prepay_id=wx_prepay_jsapi_001',
+                'signType' => 'RSA',
+                'paySign' => 'sign_abc',
+            ]);
+        $payApp->method('getUtils')->willReturn($payUtils);
+
+        $this->wechatService->method('getPayApp')->willReturn($payApp);
+
+        $miniApp = $this->createMock(MiniApp::class);
+        $miniAccount = $this->createMock(MiniAccount::class);
+        $miniAccount->method('getAppId')->willReturn('wx_mini_app');
+        $miniApp->method('getAccount')->willReturn($miniAccount);
+        $this->wechatService->method('getMiniApp')->willReturn($miniApp);
+
+        $invoice = $this->createMock(Invoice::class);
+        $invoice->method('getTradeType')->willReturn('jsapi');
+        $invoice->method('getAmount')->willReturn(100);
+        $invoice->method('getCurrency')->willReturn('CNY');
+        $invoice->method('getSubject')->willReturn('Test JSAPI Order');
+        $invoice->method('getDescription')->willReturn(null);
+        $invoice->method('getOutTradeNo')->willReturn('TXN_JSAPI');
+        $invoice->method('getPayer')->willReturn($payer);
+
+        $result = $this->gateway->pay($invoice);
+
+        self::assertInstanceOf(PaymentResult::class, $result);
+        self::assertSame(Invoice::STATUS_PAYING, $result->status);
+        self::assertSame('WeChat JSAPI order created', $result->message);
+        self::assertNotNull($result->payload);
+        self::assertSame('1234567890', $result->payload['timeStamp']);
+        self::assertSame('abc123', $result->payload['nonceStr']);
+        self::assertSame('sign_abc', $result->payload['paySign']);
+    }
+
     public function testPayNativeWithDescriptionFallback(): void
     {
         $payApp = $this->createMock(PayApp::class);

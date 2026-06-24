@@ -69,7 +69,7 @@ final class WechatPayGateway implements PaymentGatewayInterface
             return new PaymentResult(
                 invoice: $invoice,
                 status: Invoice::STATUS_PAYING,
-                payload: $config->toArray(),
+                payload: $config,
                 message: 'WeChat JSAPI order created',
             );
         }
