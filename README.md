@@ -55,14 +55,15 @@ Compared with plain generated boilerplate, it provides:
 - **CRUD Service Abstraction**: `new()`, `get()`, `list()`, `update()`, `remove()`.
 - **Dynamic Query System**: Filter, sort, order, select, group by via request parameters with expression-to-DQL compilation.
 - **Trait-Based Controller Composition**: 9 mixin traits (List, Detail, Create, Update, Delete, Workflow, Singleton, Transform) composed into controllers.
-- **Modular Architecture**: Core framework + Common (CMS) + Trade (E-Commerce) + Payment + Wallet + Identity (Auth) modules.
+- **Modular Architecture**: Core framework + Common (CMS) + Trade (E-Commerce) + Payment + Wallet + Wechat (Login + Pay) + Identity (Auth) modules.
 - **JWT Authentication**: RS256 access tokens, HMAC-SHA256 refresh token rotation with reuse detection.
 - **OTP Login**: Phone-based one-time password via Alibaba Cloud SMS, rate-limited.
 - **Order State Machine**: Symfony Workflow for order lifecycle (draft → completed), with workflow API endpoints.
 - **Price Calculation Pipeline**: Pluggable calculators with priority ordering for e-commerce order pricing.
 - **Atomic Wallet Transfers**: Deadlock prevention (consistent lock ordering), optimistic locking, idempotency via reference ID.
 - **OpenAPI Documentation**: NelmioApiDocBundle with `#[OA\*]` attributes, Swagger UI at `/api/doc`.
-- **Comprehensive Testing**: ~79 test files, 85% coverage minimum enforced in CI.
+- **System Introspection**: Entity metadata and route export endpoints (`/system/*`).
+- **Comprehensive Testing**: ~80+ test files, 917 tests, ~3150 assertions, 85.50% coverage.
 - **Docker Compose**: PostgreSQL 16 + Mailpit for development.
 
 ## Tech Stack
@@ -121,7 +122,15 @@ See `composer.json` for the full dependency list.
 │   │   ├── Exception/            #   GatewayNotFound, Verification, Transition
 │   │   ├── Repository/
 │   │   └── Service/              #   InvoiceService, PaymentGatewayRegistry
-│   │       └── Gateway/          #   MockGateway, WalletGateway
+│   │       └── Gateway/          #   MockGateway, WalletGateway, WechatPayGateway
+│   ├── Wechat/                   # WeChat module
+│   │   ├── Controller/           #   LoginController (Mini Program + OAuth)
+│   │   ├── Controller/App/       #   WechatUser CRUD (user-scoped)
+│   │   ├── Controller/Manage/    #   WechatUser CRUD (admin)
+│   │   ├── Entity/               #   WechatUser (OneToOne→User)
+│   │   ├── Repository/
+│   │   └── Service/              #   WechatService, WechatAuthService, WechatUserService
+│   │       └── Gateway/          #   WechatPayGateway
 │   └── Identity/                 # Authentication module
 │       ├── Controller/           #   AuthController, OtpController
 │       ├── Entity/               #   User, RefreshToken
@@ -129,8 +138,8 @@ See `composer.json` for the full dependency list.
 │       └── Service/              #   OtpService, SMS providers
 ├── config/                       # Symfony configuration
 │   └── packages/                 #   Doctrine, Security, Workflow, Serializer, etc.
-├── migrations/                   # Doctrine migrations (5 versions)
-├── tests/                        # ~79 PHPUnit test files
+├── migrations/                   # Doctrine migrations (7 versions)
+├── tests/                        # ~80+ PHPUnit test files (917 tests, ~3150 assertions)
 ├── docs/                         # Project documentation
 │   ├── design/                   #   Design contracts (system, API, data, module, controller)
 │   │   └── bundles/              #   Per-module design documents
@@ -216,7 +225,8 @@ php bin/console doctrine:migrations:migrate
 | **Common** | `App\Common` | CMS | Category (tree), Tag, Content, Comment (polymorphic), Page, Media, Setting (KV) |
 | **Trade** | `App\Trade` | E-Commerce | Product + Specification, Order (state machine), Price pipeline |
 | **Wallet** | `App\Wallet` | Payments | Balance (cents), Atomic transfers, Idempotency, Optimistic locking |
-| **Payment** | `App\Payment` | Invoicing | Invoice (cents + workflow), Gateway abstraction (mock/wallet), Webhooks, Events |
+| **Payment** | `App\Payment` | Invoicing | Invoice (cents + workflow), Gateway abstraction (mock/wallet/wechat), Webhooks, Events |
+| **Wechat** | `App\Wechat` | WeChat integration | Mini Program/Official Account login, WeChat Pay V3, WechatUser (OneToOne→User) |
 | **Identity** | `App\Identity` | Authentication | JWT (RS256), OTP (SMS), Refresh token rotation |
 
 ## API Endpoints
@@ -293,6 +303,25 @@ Resources: `categories`, `contents`, `tags`, `comments`, `pages`, `media`, `sett
 | POST | `/api/v1/manage/invoices/{id}/refund` | Refund paid invoice |
 | GET | `/api/v1/manage/invoices/{id}/transitions` | Available workflow transitions |
 | POST | `/api/payment/notify/{payment}` | Provider callback (webhook) |
+
+### Wechat (`/api/wechat`)
+
+| Method | Path | Description |
+|--------|------|-------------|
+| POST | `/api/wechat/miniapp/login` | Mini Program login (`js_code` → JWT) |
+| POST | `/api/wechat/miniapp/phone` | Bind WeChat phone number |
+| GET | `/api/wechat/oauth/url` | Official Account OAuth redirect URL |
+| POST | `/api/wechat/oauth/callback` | OAuth callback (`code` → JWT) |
+| GET | `/api/v1/app/wechat-users` | User-scoped WechatUser CRUD |
+| GET | `/api/v1/manage/wechat-users` | Admin WechatUser CRUD |
+
+### System Introspection (`/system`)
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/system/entities` | List all Doctrine entity FQCNs |
+| GET | `/system/entities/{entityName}` | Entity field + association metadata |
+| GET | `/system/router` | List all registered routes |
 
 ### Example request
 

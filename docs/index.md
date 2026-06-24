@@ -11,6 +11,7 @@ src/
 ├── Trade/      # E-Commerce (Product, Specification, Order, OrderItem, Pricing Pipeline)
 ├── Payment/    # Payments (Invoice, Gateway abstraction, Webhooks, Events)
 ├── Wallet/     # Wallet (Balance, Atomic Transfers, Idempotency)
+├── Wechat/     # WeChat (Mini Program/Official Account Login, WeChat Pay V3, Gateway)
 └── Identity/   # Authentication (JWT RS256, OTP SMS, Refresh Token Rotation)
 ```
 
@@ -24,7 +25,7 @@ src/
 | Database | PostgreSQL 16 |
 | Auth | JWT (RS256) + OTP (SMS via Alibaba Cloud) |
 | API Docs | Swagger UI (`/api/doc`) via NelmioApiDocBundle |
-| Testing | PHPUnit 12.5 (80% coverage minimum) |
+| Testing | PHPUnit 12.5 (85% coverage minimum, currently 85.50%) |
 | Assets | Stimulus + Turbo via AssetMapper |
 
 ## Key Features
@@ -33,7 +34,9 @@ src/
 - **Trait-based controller composition**: 9 PHP traits (List, Detail, Create, Update, Delete, Workflow, etc.) assembled into controllers
 - **Pluggable price calculation pipeline**: Priority-ordered calculators for e-commerce order pricing
 - **State machine**: Symfony Workflow for order lifecycle (draft -> completed) and invoice lifecycle (pending -> paid/refunded)
-- **Invoice-based payment framework**: Gateway abstraction (mock/wallet), webhooks, provider-agnostic invoice events
+- **Invoice-based payment framework**: Gateway abstraction (mock/wallet/wechat), webhooks, provider-agnostic invoice events
+- **WeChat integration**: Mini Program and Official Account login, WeChat Pay V3 gateway, WechatUser entity (OneToOne→User)
+- **System introspection**: Entity metadata and route export via `/system/*` endpoints
 - **Atomic wallet transfers**: Deadlock prevention, optimistic locking, idempotency
 - **Token rotation with reuse detection**: Refresh tokens hashed (HMAC-SHA256), rotated on use
 

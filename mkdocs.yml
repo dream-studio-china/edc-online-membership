@@ -59,6 +59,7 @@ nav:
       - Payment: design/bundles/payment.md
       - Wallet: design/bundles/wallet.md
       - Identity (Auth): design/bundles/identity.md
+      - Wechat (Login + Pay): design/bundles/wechat.md
   - Research:
       - EasyWeChat 6.x Usage: research/easywechat-6.x-usage.md
       - Huifu Payment API: research/huifu-payment-api.md

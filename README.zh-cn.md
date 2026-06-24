@@ -55,14 +55,15 @@
 - **CRUD 服务抽象**：`new()`、`get()`、`list()`、`update()`、`remove()`。
 - **动态查询系统**：通过请求参数控制筛选/排序/排序/分组/字段选择，表达式编译为 DQL。
 - **Trait 组合式控制器**：9 个 mixin trait（List、Detail、Create、Update、Delete、Workflow、Singleton、Transform）可按需组合。
-- **模块化架构**：Core 框架 + Common（CMS） + Trade（电商） + Payment（支付） + Wallet（钱包） + Identity（鉴权）。
+- **模块化架构**：Core 框架 + Common（CMS） + Trade（电商） + Payment（支付） + Wallet（钱包） + Wechat（微信登录+支付） + Identity（鉴权）。
 - **JWT 鉴权**：RS256 访问令牌，HMAC-SHA256 Refresh Token 轮换，含重用检测。
 - **OTP 登录**：基于手机验证码的短信登录，带频率限制（阿里云）。
 - **订单状态机**：Symfony Workflow（草稿 → 完成），含完整工作流 API。
 - **价格计算管道**：可插拔的价格计算器，按优先级排序执行。
 - **原子钱包转账**：死锁预防（统一锁定顺序）、乐观锁、引用 ID 幂等。
 - **OpenAPI 文档**：NelmioApiDocBundle + `#[OA\*]` 属性，`/api/doc` 提供 Swagger UI。
-- **完善的测试**：约 79 个测试文件，CI 强制 85% 覆盖率。
+- **系统自省**：实体元数据和路由导出接口（`/system/*`）。
+- **完善的测试**：约 80+ 个测试文件，917 个测试，~3150 个断言，85.50% 覆盖。
 - **Docker Compose**：PostgreSQL 16 + Mailpit 开发环境。
 
 ## 技术栈
@@ -121,7 +122,15 @@
 │   │   ├── Exception/            #   GatewayNotFound, Verification, Transition
 │   │   ├── Repository/
 │   │   └── Service/              #   InvoiceService, PaymentGatewayRegistry
-│   │       └── Gateway/          #   MockGateway, WalletGateway
+│   │       └── Gateway/          #   MockGateway, WalletGateway, WechatPayGateway
+│   ├── Wechat/                   # 微信模块
+│   │   ├── Controller/           #   LoginController（小程序 + 公众号）
+│   │   ├── Controller/App/       #   WechatUser CRUD（用户范围）
+│   │   ├── Controller/Manage/    #   WechatUser CRUD（管理员）
+│   │   ├── Entity/               #   WechatUser（OneToOne→User）
+│   │   ├── Repository/
+│   │   └── Service/              #   WechatService, WechatAuthService, WechatUserService
+│   │       └── Gateway/          #   WechatPayGateway
 │   └── Identity/                 # 鉴权模块
 │       ├── Controller/           #   AuthController、OtpController
 │       ├── Entity/               #   User、RefreshToken
@@ -129,8 +138,8 @@
 │       └── Service/              #   OtpService、短信供应商
 ├── config/                       # Symfony 配置
 │   └── packages/                 #   Doctrine、Security、Workflow、Serializer 等
-├── migrations/                   # Doctrine 迁移（5 个版本）
-├── tests/                        # ~79 个 PHPUnit 测试文件
+├── migrations/                   # Doctrine 迁移（7 个版本）
+├── tests/                        # ~80+ 个 PHPUnit 测试文件（917 测试，~3150 断言）
 ├── docs/                         # 项目文档
 │   ├── design/                   #   设计契约（系统、API、数据、模块、控制器）
 │   │   └── bundles/              #   各模块设计文档
@@ -217,6 +226,7 @@ php bin/console doctrine:migrations:migrate
 | **Trade** | `App\Trade` | 电商 | 产品 + 规格、订单（状态机）、价格计算管道 |
 | **Wallet** | `App\Wallet` | 钱包 | 余额（分）、原子转账、幂等、乐观锁 |
 | **Payment** | `App\Payment` | 支付 | 发票（分+工作流）、网关抽象（mock/wallet）、Webhook、事件 |
+| **Wechat** | `App\Wechat` | 微信集成 | 小程序/公众号登录、微信支付 V3、WechatUser（OneToOne→User） |
 | **Identity** | `App\Identity` | 鉴权 | JWT (RS256)、OTP (短信)、Refresh Token 轮换 |
 
 ## API 路由
@@ -293,6 +303,25 @@ php bin/console doctrine:migrations:migrate
 | POST | `/api/v1/manage/invoices/{id}/refund` | 退款已付发票 |
 | GET | `/api/v1/manage/invoices/{id}/transitions` | 可用状态转换 |
 | POST | `/api/payment/notify/{payment}` | 提供方回调 (webhook) |
+
+### Wechat (`/api/wechat`)
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| POST | `/api/wechat/miniapp/login` | 小程序登录（`js_code` → JWT） |
+| POST | `/api/wechat/miniapp/phone` | 绑定微信手机号 |
+| GET | `/api/wechat/oauth/url` | 公众号 OAuth 跳转地址 |
+| POST | `/api/wechat/oauth/callback` | OAuth 回调（`code` → JWT） |
+| GET | `/api/v1/app/wechat-users` | 用户范围 WechatUser CRUD |
+| GET | `/api/v1/manage/wechat-users` | 管理员 WechatUser CRUD |
+
+### 系统自省 (`/system`)
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| GET | `/system/entities` | 列出所有 Doctrine 实体 FQCN |
+| GET | `/system/entities/{entityName}` | 实体字段 + 关联元数据 |
+| GET | `/system/router` | 列出所有已注册路由 |
 
 ### 请求示例
 
