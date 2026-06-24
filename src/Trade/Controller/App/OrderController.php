@@ -34,7 +34,7 @@ class OrderController extends RestController
     {
         $user = $this->getUser();
         if ($user === null) {
-            return [];
+            return ['id' => -1];
         }
         return ['user' => $user];
     }

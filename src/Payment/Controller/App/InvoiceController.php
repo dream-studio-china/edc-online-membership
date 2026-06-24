@@ -29,7 +29,7 @@ class InvoiceController extends RestController
     protected function commonFilter(): array
     {
         $user = $this->getUser();
-        return $user ? ['payer' => $user] : [];
+        return $user ? ['payer' => $user] : ['id' => -1];
     }
 
     #[Route('/{id<\d+>}/pay/{payment}', name: 'pay', methods: ['POST'])]

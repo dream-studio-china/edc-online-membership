@@ -33,6 +33,6 @@ class WechatUserController extends RestController
     protected function commonFilter(): array
     {
         $user = $this->getUser();
-        return $user ? ['user' => $user] : [];
+        return $user ? ['user' => $user] : ['id' => -1];
     }
 }
