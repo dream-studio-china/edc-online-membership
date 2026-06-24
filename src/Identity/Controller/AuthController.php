@@ -61,7 +61,7 @@ class AuthController
             new OA\Response(response: 401, description: 'Invalid credentials'),
             new OA\Response(response: 403, description: 'Phone not verified'),
         ],
-        tags: ['Identity/Auth']
+        tags: ['Auth']
     )]
     #[Route('/login', methods: ['POST'])]
     public function login(Request $request): JsonResponse
@@ -137,7 +137,7 @@ class AuthController
             new OA\Response(response: 400, description: 'Invalid request (missing phone or invalid purpose)'),
             new OA\Response(response: 429, description: 'Too many requests or rate limit exceeded'),
         ],
-        tags: ['Identity/Auth']
+        tags: ['Auth']
     )]
     #[Route('/otp/request', methods: ['POST'])]
     public function requestOtp(Request $request): JsonResponse
@@ -201,7 +201,7 @@ class AuthController
             new OA\Response(response: 400, description: 'Invalid request (missing fields)'),
             new OA\Response(response: 401, description: 'Invalid or expired OTP, or phone not verified'),
         ],
-        tags: ['Identity/Auth']
+        tags: ['Auth']
     )]
     #[Route('/otp/verify', methods: ['POST'])]
     public function verifyOtp(Request $request): JsonResponse
@@ -272,7 +272,7 @@ class AuthController
             new OA\Response(response: 400, description: 'Refresh token missing'),
             new OA\Response(response: 401, description: 'Invalid, expired, or reused refresh token'),
         ],
-        tags: ['Identity/Auth']
+        tags: ['Auth']
     )]
     #[Route('/token/refresh', methods: ['POST'])]
     public function refresh(Request $request): JsonResponse
@@ -325,7 +325,7 @@ class AuthController
             new OA\Response(response: 204, description: 'Logout successful'),
             new OA\Response(response: 400, description: 'Invalid request format'),
         ],
-        tags: ['Identity/Auth']
+        tags: ['Auth']
     )]
     #[Route('/logout', methods: ['POST'])]
     public function logout(Request $request): JsonResponse

@@ -170,6 +170,11 @@ class OpenApiEnricherListener
         }
         unset($methods);
 
+        // Remove generic operation-type tags (List, Detail, Create, Update, Delete)
+        // that come from View mixin OA attributes — we use module tags instead.
+        $genericTags = ['List', 'Detail', 'Create', 'Update', 'Delete', 'Workflow'];
+        $spec['tags'] = array_values(array_filter($spec['tags'], fn($t) => !in_array($t['name'], $genericTags, true)));
+
         return $spec;
     }
 
