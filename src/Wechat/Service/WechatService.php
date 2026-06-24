@@ -82,6 +82,30 @@ class WechatService
     }
 
     /**
+     * @internal For testing: inject a pre-configured MiniApp Application
+     */
+    public function setMiniApp(MiniApp $app): void
+    {
+        $this->miniApp = $app;
+    }
+
+    /**
+     * @internal For testing: inject a pre-configured OfficialAccount Application
+     */
+    public function setOfficialAccount(OfficialAccount $app): void
+    {
+        $this->officialAccount = $app;
+    }
+
+    /**
+     * @internal For testing: inject a pre-configured Pay Application
+     */
+    public function setPayApp(Pay $app): void
+    {
+        $this->payApp = $app;
+    }
+
+    /**
      * Mini Program: code2Session
      * @return array{openid: string, unionid?: string, session_key: string}
      */
