@@ -1,0 +1,21 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
+    App\Wechat\Service\WechatService:
+        arguments:
+            $miniappAppId: '%env(WECHAT_MINIAPP_APP_ID)%'
+            $miniappSecret: '%env(WECHAT_MINIAPP_SECRET)%'
+            $officialAppId: '%env(WECHAT_OFFICIAL_APP_ID)%'
+            $officialSecret: '%env(WECHAT_OFFICIAL_SECRET)%'
+            $officialToken: '%env(WECHAT_OFFICIAL_TOKEN)%'
+            $officialAesKey: '%env(WECHAT_OFFICIAL_AES_KEY)%'
+            $payMchId: '%env(WECHAT_PAY_MCH_ID)%'
+            $paySecretKey: '%env(WECHAT_PAY_SECRET_KEY)%'
+            $payPrivateKeyPath: '%env(WECHAT_PAY_PRIVATE_KEY)%'
+            $payCertificatePath: '%env(WECHAT_PAY_CERTIFICATE)%'
+
+    App\Wechat\Service\Gateway\WechatPayGateway:
+        arguments:
+            $notifyUrl: '%env(WECHAT_PAY_NOTIFY_URL)%'
