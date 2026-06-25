@@ -22,7 +22,7 @@ src/
 | Framework | Symfony 8.1 |
 | Language | PHP 8.4+ |
 | ORM | Doctrine ORM 3.6 |
-| Database | PostgreSQL 16 |
+| Database | MySQL 8 |
 | Auth | JWT (RS256) + OTP (SMS via Alibaba Cloud) |
 | API Docs | Swagger UI (`/api/doc`) via NelmioApiDocBundle |
 | Testing | PHPUnit 12.5 (85% coverage minimum, currently 85.50%) |
@@ -47,17 +47,14 @@ src/
 git clone https://github.com/immane/crud-skeleton.git
 cd crud-skeleton
 
-# Install dependencies
-composer install
-
-# Start services
-docker compose up -d
+# Start all services
+docker compose up -d --build
 
 # Run migrations
-php bin/console doctrine:migrations:migrate
+docker compose exec app php bin/console doctrine:migrations:migrate --no-interaction
 
-# Start dev server
-php -S localhost:8000 -t public/
+# Create an admin user
+docker compose exec app php bin/console app:identity:user:create admin@example.com admin 'P@ssw0rd' --admin
 ```
 
 ## Documentation

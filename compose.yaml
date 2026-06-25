@@ -11,16 +11,16 @@ services:
       # Symfony core (required)
       APP_ENV: ${APP_ENV:-prod}
       APP_DEBUG: "0"
-      APP_SECRET: ${APP_SECRET:?required}
-      DATABASE_URL: "postgresql://${POSTGRES_USER:-app}:${POSTGRES_PASSWORD:-!ChangeMe!}@database:5432/${POSTGRES_DB:-app}?serverVersion=16&charset=utf8"
+      APP_SECRET: ${APP_SECRET:-dev-secret-change-me}
+      DATABASE_URL: "mysql://${MYSQL_USER:-app}:${MYSQL_PASSWORD:-!ChangeMe!}@database:3306/${MYSQL_DATABASE:-app}?serverVersion=8.0&charset=utf8mb4"
 
       # JWT authentication (required)
-      JWT_PRIVATE_KEY_PATH: ${JWT_PRIVATE_KEY_PATH:-/var/www/html/var/jwt_private.pem}
-      JWT_PUBLIC_KEY_PATH: ${JWT_PUBLIC_KEY_PATH:-/var/www/html/var/jwt_public.pem}
+      JWT_PRIVATE_KEY_PATH: ${JWT_PRIVATE_KEY_PATH:-/var/www/html/var/jwt/jwt_private.pem}
+      JWT_PUBLIC_KEY_PATH: ${JWT_PUBLIC_KEY_PATH:-/var/www/html/var/jwt/jwt_public.pem}
       JWT_PASSPHRASE: ${JWT_PASSPHRASE:-}
       ACCESS_TOKEN_TTL: ${ACCESS_TOKEN_TTL:-7200}
       REFRESH_TOKEN_TTL: ${REFRESH_TOKEN_TTL:-31536000}
-      REFRESH_TOKEN_SECRET: ${REFRESH_TOKEN_SECRET:?required}
+      REFRESH_TOKEN_SECRET: ${REFRESH_TOKEN_SECRET:-dev-refresh-secret-change-me}
 
       # OTP / SMS (optional — leave empty to disable)
       OTP_REDIS_DSN: ${OTP_REDIS_DSN:-redis://redis:6379/0}
@@ -55,8 +55,7 @@ services:
       DEFAULT_URI: ${DEFAULT_URI:-http://localhost}
 
     volumes:
-      - app_var:/var/www/html/var
-      - ./var/jwt:/var/www/html/var/jwt:ro            # JWT keys
+      - ./var:/var/www/html/var
     depends_on:
       database:
         condition: service_healthy
@@ -82,22 +81,23 @@ services:
       - internal
 
   # ========================
-  # Database (PostgreSQL 16)
+  # Database (MySQL 8)
   # ========================
   database:
-    image: postgres:${POSTGRES_VERSION:-16}-alpine
+    image: mysql:${MYSQL_VERSION:-8.4}
     restart: unless-stopped
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-app}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-!ChangeMe!}
-      POSTGRES_USER: ${POSTGRES_USER:-app}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-app}
+      MYSQL_USER: ${MYSQL_USER:-app}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-!ChangeMe!}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-!RootChangeMe!}
     healthcheck:
-      test: ["CMD", "pg_isready", "-d", "${POSTGRES_DB:-app}", "-U", "${POSTGRES_USER:-app}"]
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u$${MYSQL_USER} -p$${MYSQL_PASSWORD} --silent"]
       timeout: 5s
       retries: 5
       start_period: 60s
     volumes:
-      - database_data:/var/lib/postgresql/data:rw
+      - mysql_data:/var/lib/mysql:rw
     networks:
       - internal
 
@@ -130,6 +130,5 @@ networks:
   internal:
 
 volumes:
-  database_data:
+  mysql_data:
   redis_data:
-  app_var:

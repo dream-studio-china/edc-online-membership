@@ -23,7 +23,7 @@ A production-oriented Symfony 8.1 API skeleton with reusable service-layer abstr
 - [Create Your Own CRUD Module](#create-your-own-crud-module)
 - [Documentation](#documentation)
 - [Testing](#testing)
-- [Docker Notes](#docker-notes)
+- [Docker Deployment](#docker-deployment)
 - [Troubleshooting](#troubleshooting)
 - [Contributing](#contributing)
 - [License](#license)
@@ -64,7 +64,7 @@ Compared with plain generated boilerplate, it provides:
 - **OpenAPI Documentation**: NelmioApiDocBundle with `#[OA\*]` attributes, Swagger UI at `/api/doc`.
 - **System Introspection**: Entity metadata and route export endpoints (`/system/*`).
 - **Comprehensive Testing**: ~80+ test files, 917 tests, ~3150 assertions, 85.50% coverage.
-- **Docker Compose**: PostgreSQL 16 + Mailpit for development.
+- **Docker Compose**: MySQL 8 + Mailpit for development.
 
 ## Tech Stack
 
@@ -73,7 +73,7 @@ Compared with plain generated boilerplate, it provides:
 | Language | PHP `>= 8.4` |
 | Framework | Symfony `8.1.*` |
 | ORM | Doctrine ORM `^3.6` |
-| Database | PostgreSQL 16 (prod) / SQLite (test) |
+| Database | MySQL 8 (Docker/prod) / SQLite (test) |
 | Auth | JWT (RS256) + OTP (SMS) |
 | API Docs | NelmioApiDocBundle (OpenAPI 3) |
 | Testing | PHPUnit `^12.5` |
@@ -144,7 +144,7 @@ See `composer.json` for the full dependency list.
 │   ├── design/                   #   Design contracts (system, API, data, module, controller)
 │   │   └── bundles/              #   Per-module design documents
 │   └── ai/                       #   AI context snapshot
-├── compose.yaml                  # PostgreSQL 16
+├── compose.yaml                  # MySQL 8
 ├── compose.override.yaml         # Port mapping + Mailpit
 └── mkdocs.yml                    # MkDocs Material configuration
 ```
@@ -164,32 +164,47 @@ cd crud-skeleton
 composer install
 ```
 
-### 3) Prepare environment
+### 3) Prepare environment for native PHP
 
-Create your local overrides in `.env.local`:
+Docker development works without creating an env file. For native PHP/Symfony, create local overrides in `.env.local`:
 
 ```dotenv
 APP_ENV=dev
 APP_SECRET=change-me
-DATABASE_URL="postgresql://app:!ChangeMe!@127.0.0.1:5432/app?serverVersion=16&charset=utf8"
+DATABASE_URL="mysql://app:!ChangeMe!@127.0.0.1:3306/app?serverVersion=8.0&charset=utf8mb4"
+JWT_PRIVATE_KEY_PATH=var/jwt_dev_private.pem
+JWT_PUBLIC_KEY_PATH=var/jwt_dev_public.pem
+JWT_PASSPHRASE=
+REFRESH_TOKEN_SECRET=change-this-secret
 ```
 
 ## Configuration
 
-Important environment variables (see `.env` and `.env.example`):
+Environment file roles:
+
+| File | Purpose | Commit? |
+|------|---------|---------|
+| `.env` | Committed Symfony defaults, no secrets | Yes |
+| `.env.dev`, `.env.test` | Committed environment defaults for dev/test | Yes |
+| `.env.local`, `.env.*.local` | Machine-local overrides and secrets | No |
+| `.env.example` | Local development variable reference | Yes |
+| `.env.prod.example` | Production Docker template | Yes |
+| `.env.prod.local` | Real production Docker values | No |
+
+Important variables:
 
 | Variable | Purpose |
 |----------|---------|
 | `APP_ENV` | Environment (`dev`/`prod`/`test`) |
 | `APP_SECRET` | Symfony application secret |
-| `DATABASE_URL` | PostgreSQL connection string |
+| `DATABASE_URL` | MySQL connection string |
 | `JWT_PRIVATE_KEY_PATH` | RS256 private key |
 | `JWT_PUBLIC_KEY_PATH` | RS256 public key |
 | `JWT_PASSPHRASE` | Key passphrase |
-| `JWT_REFRESH_TOKEN_SECRET` | HMAC-SHA256 secret |
+| `REFRESH_TOKEN_SECRET` | HMAC-SHA256 secret |
 | `MAILER_DSN` | Mailer transport |
 
-For production, do not store secrets in committed files.
+For production, do not store secrets in committed files. Use real environment variables or `docker compose --env-file .env.prod.local`.
 
 ## Run Locally
 
@@ -205,14 +220,14 @@ or
 php -S 127.0.0.1:8000 -t public
 ```
 
-### Option B: Full Docker deployment
+### Option B: Docker development
 
-For local development with all services (app, nginx, PostgreSQL, Redis, Mailpit):
+For local development with all services (app, nginx, MySQL, Redis, Mailpit):
 
 ```bash
 docker compose up -d --build
-php bin/console doctrine:migrations:migrate
-php bin/console app:identity:user:create admin@example.com admin 'P@ssw0rd' --admin
+docker compose exec app php bin/console doctrine:migrations:migrate --no-interaction
+docker compose exec app php bin/console app:identity:user:create admin@example.com admin 'P@ssw0rd' --admin
 ```
 
 The app runs at `http://localhost:${APP_PORT:-8080}`.
@@ -459,62 +474,204 @@ XDEBUG_MODE=coverage ./vendor/bin/phpunit --coverage-text
 
 ## Docker Deployment
 
-### Quick start (development)
+### Architecture
+
+```
+                ┌──────────────┐
+   :8080  ──────│    nginx     │────── /api/* ──────┐
+                └──────────────┘                     │
+                                                    ▼
+                                            ┌──────────────┐
+                                            │  PHP-FPM 8.4 │
+                                            │   (app)      │
+                                            └──────┬───────┘
+                                                   │
+                      ┌────────────────────────────┼────────────────────┐
+                      │                            │                    │
+                ┌─────▼─────┐              ┌──────▼──────┐      ┌──────▼──────┐
+                │  MySQL 8   │              │    Redis 7   │      │   Mailpit   │
+                │            │              │  (OTP/cache) │      │ (email dev) │
+                └───────────┘              └─────────────┘      └─────────────┘
+```
+
+| Service | Image | Container | Purpose |
+|---------|-------|-----------|---------|
+| **nginx** | `nginx:alpine` | reverse proxy | Routes requests to PHP-FPM, serves static files |
+| **app** | built from `Dockerfile` | PHP-FPM 8.4 | Symfony application |
+| **database** | `mysql:8.4` | MySQL 8 | Persistent data storage |
+| **redis** | `redis:7-alpine` | Redis 7 | OTP storage, cache (optional: OTP fallbacks to local cache) |
+| **mailer** | `axllent/mailpit` | Mailpit | Catches outgoing emails, UI at mailpit port |
+
+### Development
 
 ```bash
+# One command to start everything. No env file is required for local Docker dev.
 docker compose up -d --build
-docker compose exec app php bin/console doctrine:migrations:migrate
+
+# First-run: migrate DB and create admin
+docker compose exec app php bin/console doctrine:migrations:migrate --no-interaction
 docker compose exec app php bin/console app:identity:user:create admin@example.com admin 'P@ssw0rd' --admin
-# App at http://localhost:${APP_PORT:-8080}
+
+# App → http://localhost:8080   Swagger → http://localhost:8080/api/doc
 ```
+
+What happens under the hood:
+- `docker/app/entrypoint.sh` creates development JWT keys once under the mounted `./var/jwt` directory, then reuses them
+- `compose.override.yaml` auto-loads with dev settings (`APP_ENV=dev`, `APP_DEBUG=1`)
+- `compose.yaml` supplies safe development defaults for required secrets
+- All optional features (WeChat, SMS) are disabled by default — enable them with `.env` or `--env-file`
+
+If you need to customize Docker ports, database credentials, or optional integrations, create a Docker env file and pass it explicitly:
+
+```bash
+cp .env.example .env.docker.local
+docker compose --env-file .env.docker.local up -d --build
+```
+
+Do not put production secrets in the committed `.env` file.
 
 ### Production
 
-```bash
-# 1) Create env file with secrets (do NOT commit)
-cat > .env.prod.local << 'EOF'
-APP_SECRET=your-production-secret
-REFRESH_TOKEN_SECRET=your-refresh-token-secret
-EOF
+#### Step 1: Prepare production env file
 
-# 2) Generate JWT keys on host (persisted via volume mount)
+```bash
+cp .env.prod.example .env.prod.local
+```
+
+Edit `.env.prod.local` and set at least:
+
+```dotenv
+APP_SECRET=your-64-char-random-secret
+REFRESH_TOKEN_SECRET=your-32-byte-random-secret
+MYSQL_PASSWORD=your-database-password
+MYSQL_ROOT_PASSWORD=your-root-database-password
+DEFAULT_URI=https://api.example.com
+```
+
+Optional integrations can stay empty. Empty WeChat/SMS variables disable those features.
+
+#### Step 2: Generate JWT keys on host
+
+Keys are persisted outside the container via the `./var` bind mount:
+
+```bash
 mkdir -p var/jwt
 openssl genpkey -algorithm RSA -out var/jwt/jwt_private.pem -pkeyopt rsa_keygen_bits:2048
 openssl rsa -pubout -in var/jwt/jwt_private.pem -out var/jwt/jwt_public.pem
-
-# 3) Start services
-docker compose --env-file .env.prod.local up -d --build
-
-# 4) One-time setup
-docker compose exec app php bin/console doctrine:migrations:migrate
-docker compose exec app php bin/console app:identity:user:create admin@example.com admin 'P@ssw0rd' --admin
+chmod 600 var/jwt/jwt_private.pem
 ```
 
-### Services
+> If your private key has a passphrase, set `JWT_PASSPHRASE` in `.env.prod.local`.
 
-| Service | Port | Description |
-|---------|------|-------------|
-| nginx | `${APP_PORT:-8080}` | API gateway |
-| app | — | PHP-FPM 8.4 |
-| database | `5432` (dev) | PostgreSQL 16 |
-| redis | — | Redis 7 (OTP/session) |
-| mailer | `${MAILPIT_UI_PORT:-8025}` | Mailpit (email testing) |
+#### Step 3: Start
 
-## Docker Notes
+```bash
+docker compose -f compose.yaml -f compose.prod.yaml --env-file .env.prod.local up -d --build
+```
 
-| File | Purpose |
-|------|---------|
-| `compose.yaml` | Production: app (PHP-FPM), nginx, PostgreSQL 16, Redis 7, Mailpit |
-| `compose.override.yaml` | Dev: source mount + debug + exposed ports |
-| `Dockerfile` | PHP 8.4-FPM Alpine image |
-| `.env.prod.local` | Gitignored: `APP_SECRET` + `REFRESH_TOKEN_SECRET` (create yourself) |
+#### Step 4: Initialize
 
-Default exposed ports:
+```bash
+docker compose -f compose.yaml -f compose.prod.yaml --env-file .env.prod.local exec app php bin/console doctrine:migrations:migrate --no-interaction
+docker compose -f compose.yaml -f compose.prod.yaml --env-file .env.prod.local exec app php bin/console app:identity:user:create admin@example.com admin 'P@ssw0rd' --admin
+```
 
-- App: `${APP_PORT:-8080}` (via nginx)
-- PostgreSQL: `5432` (dev only)
-- Mailpit SMTP: `1025` (dev only)
-- Mailpit UI: `${MAILPIT_UI_PORT:-8025}`
+#### Step 5: Verify
+
+```bash
+curl -s http://localhost:8080/api/auth/login \
+  -H 'Content-Type: application/json' \
+  -d '{"identifier":"admin@example.com","password":"P@ssw0rd"}'
+```
+
+### Environment Variables Reference
+
+**Required for production**:
+
+| Variable | Purpose |
+|----------|---------|
+| `APP_SECRET` | Symfony application secret |
+| `REFRESH_TOKEN_SECRET` | HMAC-SHA256 key for refresh tokens |
+| `MYSQL_PASSWORD` | MySQL application user password |
+| `MYSQL_ROOT_PASSWORD` | MySQL root password |
+
+**Provided by compose.yaml** (development defaults, override for production as needed):
+
+| Variable | Docker default |
+|----------|----------------|
+| `DATABASE_URL` | `mysql://app:...@database:3306/app` |
+| `MAILER_DSN` | `smtp://mailer:1025` |
+| `OTP_REDIS_DSN` | `redis://redis:6379/0` |
+| `JWT_PRIVATE_KEY_PATH` | `/var/www/html/var/jwt/jwt_private.pem` |
+| `JWT_PUBLIC_KEY_PATH` | `/var/www/html/var/jwt/jwt_public.pem` |
+
+**Optional** (leave empty to disable the feature):
+
+| Feature | Variables (see `.env.example` or `.env` for full list) |
+|---------|----------------------------------------------------------|
+| Aliyun SMS | `ALIYUN_ACCESS_KEY_ID`, `ALIYUN_ACCESS_KEY_SECRET`, ... |
+| WeChat Mini Program | `WECHAT_MINIAPP_APP_ID`, `WECHAT_MINIAPP_SECRET` |
+| WeChat Official Account | `WECHAT_OFFICIAL_APP_ID`, `WECHAT_OFFICIAL_SECRET`, ... |
+| WeChat Pay V3 | `WECHAT_PAY_MCH_ID`, `WECHAT_PAY_SECRET_KEY`, ... |
+
+### Useful Commands
+
+The commands below are for Docker development. For production, add `-f compose.yaml -f compose.prod.yaml --env-file .env.prod.local` after `docker compose`.
+
+```bash
+# View logs
+docker compose logs -f app
+
+# Run a Symfony command
+docker compose exec app php bin/console about
+
+# Open a shell in the app container
+docker compose exec app bash
+
+# Clear Symfony cache
+docker compose exec app php bin/console cache:clear
+
+# Check which migrations are pending
+docker compose exec app php bin/console doctrine:migrations:status
+
+# Stop everything
+docker compose down
+
+# Reset and restart (WARNING: deletes all data)
+docker compose down -v && docker compose up -d --build
+```
+
+### Custom nginx Configuration
+
+Replace `docker/nginx/default.conf` with your own config. Common changes:
+- Add TLS/SSL certificates and listen on 443
+- Change `server_name` to your domain
+- Add rate limiting or IP whitelisting
+
+Then rebuild:
+```bash
+docker compose up -d --build nginx
+```
+
+### Upgrading
+
+Development:
+
+```bash
+git pull
+docker compose up -d --build
+docker compose exec app php bin/console doctrine:migrations:migrate --no-interaction
+docker compose exec app php bin/console cache:clear
+```
+
+Production:
+
+```bash
+git pull
+docker compose -f compose.yaml -f compose.prod.yaml --env-file .env.prod.local up -d --build
+docker compose -f compose.yaml -f compose.prod.yaml --env-file .env.prod.local exec app php bin/console doctrine:migrations:migrate --no-interaction
+docker compose -f compose.yaml -f compose.prod.yaml --env-file .env.prod.local exec app php bin/console cache:clear
+```
 
 ## Troubleshooting
 
@@ -525,7 +682,7 @@ The project dependencies require modern PHP (`>= 8.4`). Ensure your CLI matches.
 ### Database connection errors
 
 - Verify `DATABASE_URL`.
-- Ensure PostgreSQL is running (`docker compose ps`).
+- Ensure MySQL is running (`docker compose ps`).
 - Ensure DB user/password/dbname match compose environment.
 
 ### Empty responses or serialization issues

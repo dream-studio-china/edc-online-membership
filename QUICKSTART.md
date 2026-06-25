@@ -4,12 +4,10 @@ This Quick Start walks you through a minimal, runnable development setup.
 
 ## Option A: Docker (recommended)
 
-No PHP, Composer, or database setup required on your host.
-
-Prerequisites: **Docker** only.
+No PHP, Composer, or database setup required on your host. Prerequisites: **Docker** only.
 
 ```bash
-# 1) Start all services (app, nginx, PostgreSQL, Redis, Mailpit)
+# 1) Start all services (app, nginx, MySQL, Redis, Mailpit)
 docker compose up -d --build
 
 # 2) Run database migration
@@ -21,25 +19,33 @@ docker compose exec app php bin/console app:identity:user:create admin@example.c
 # 4) Login and get token
 curl -s -X POST http://localhost:8080/api/auth/login \
   -H 'Content-Type: application/json' \
-  -d '{"identifier":"admin@example.com","password":"P@ssw0rd"}'
+  -d '{"identifier":"admin@example.com","password":"P@ssw0rd"}' \
+  | php -r 'print_r(json_decode(stream_get_contents(STDIN),true));'
 ```
 
-App runs at `http://localhost:8080`. Swagger docs at `http://localhost:8080/api/doc`.
+> Docker dev creates JWT keys once under the mounted `./var/jwt` directory and reuses them on later starts. For production, generate keys on the host before starting — see [README](README.md#docker-deployment).
+
+Docker development uses built-in safe defaults. Create a Docker env file only when you need to customize ports, database credentials, or optional integrations:
+
+```bash
+cp .env.example .env.docker.local
+docker compose --env-file .env.docker.local up -d --build
+```
 
 ---
 
 ## Option B: Native PHP
 
 Prerequisites
- - PHP 8.5 (Homebrew is recommended on macOS)
- - Composer
- - MySQL / MariaDB or PostgreSQL (as configured in `DATABASE_URL`)
- - Optional: Symfony CLI
+- PHP 8.4+ (Homebrew is recommended on macOS)
+- Composer
+- MySQL / MariaDB or PostgreSQL (as configured in `DATABASE_URL`)
+- Optional: Symfony CLI
 
 On macOS (Homebrew):
 
 ```bash
-brew install php@8.5 composer
+brew install php composer
 ```
 
 1) Install dependencies
@@ -50,7 +56,7 @@ composer install
 
 2) Configure environment variables
 
-Create or update `.env.local` (do not commit) with values appropriate for your environment. Example:
+Create or update `.env.local` (do not commit) with the values needed for native PHP. Keep optional integrations in `.env.example` unless you use them.
 
 ```dotenv
 APP_ENV=dev
@@ -63,31 +69,9 @@ JWT_PASSPHRASE=
 ACCESS_TOKEN_TTL=7200
 REFRESH_TOKEN_TTL=31536000
 REFRESH_TOKEN_SECRET=change-this-secret
-
-OTP_TTL=300
-OTP_REDIS_DSN=redis://127.0.0.1:6379/0
-
-ALIYUN_ACCESS_KEY_ID=
-ALIYUN_ACCESS_KEY_SECRET=
-ALIYUN_SMS_REGION=cn-hangzhou
-ALIYUN_SMS_SIGN_NAME=DemoApp
-ALIYUN_SMS_TEMPLATE_LOGIN_OTP=SMS_0000001
-ALIYUN_SMS_TEMPLATE_VERIFY_PHONE=SMS_0000002
-ALIYUN_SMS_DRY_RUN=true
-
-# WeChat (Miniapp+Official Account+Pay — optional, only needed for WeChat features)
-WECHAT_MINIAPP_APP_ID=
-WECHAT_MINIAPP_SECRET=
-WECHAT_OFFICIAL_APP_ID=
-WECHAT_OFFICIAL_SECRET=
-WECHAT_OFFICIAL_TOKEN=
-WECHAT_OFFICIAL_AES_KEY=
-WECHAT_PAY_MCH_ID=
-WECHAT_PAY_SECRET_KEY=
-WECHAT_PAY_PRIVATE_KEY=
-WECHAT_PAY_CERTIFICATE=
-WECHAT_PAY_NOTIFY_URL=
 ```
+
+See `.env.example` for the full variable reference.
 
 3) Generate development JWT keys
 
@@ -102,17 +86,17 @@ If your private key is not encrypted, leave `JWT_PASSPHRASE` empty.
 
 4) Initialize the database (recommended unified migration flow)
 
-Use Homebrew PHP to avoid CLI version mismatch:
+Use your PHP 8.4+ binary. On macOS with Homebrew, replace `php` with `/opt/homebrew/bin/php` if needed to avoid CLI version mismatch:
 
 ```bash
-/opt/homebrew/bin/php bin/console doctrine:schema:drop --force
-/opt/homebrew/bin/php bin/console doctrine:migrations:migrate --no-interaction
+php bin/console doctrine:schema:drop --force
+php bin/console doctrine:migrations:migrate --no-interaction
 ```
 
 5) Create an administrator account
 
 ```bash
-/opt/homebrew/bin/php bin/console app:identity:user:create admin@example.com admin 'P@ssw0rd' --admin
+php bin/console app:identity:user:create admin@example.com admin 'P@ssw0rd' --admin
 ```
 
 6) Start the local server
@@ -135,7 +119,7 @@ Obtain an access token:
 TOKEN=$(curl -s -X POST http://127.0.0.1:8000/api/auth/login \
    -H 'Content-Type: application/json' \
    -d '{"identifier":"admin@example.com","password":"P@ssw0rd"}' \
-   | /opt/homebrew/bin/php -r 'echo json_decode(stream_get_contents(STDIN), true)["access_token"];')
+   | php -r 'echo json_decode(stream_get_contents(STDIN), true)["access_token"];')
 ```
 
 Call a management endpoint (requires `ROLE_ADMIN`):
@@ -173,4 +157,3 @@ Troubleshooting
 
 - `doctrine:migrations:migrate` failing due to missing tables:
    - Ensure you have the latest migrations and run the unified migration flow in step 4.
-

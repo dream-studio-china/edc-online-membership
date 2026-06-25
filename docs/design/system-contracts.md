@@ -380,7 +380,7 @@ class XxxCommand extends Command
 
 ### 11.2 Docker
 
-- `compose.yaml`: PostgreSQL 16
+- `compose.yaml`: MySQL 8
 - `compose.override.yaml`: Port mapping + Mailpit
 - All services health-checked before app starts
 
@@ -388,9 +388,9 @@ class XxxCommand extends Command
 
 | Env | `APP_ENV` | `APP_DEBUG` | Database |
 |-----|-----------|-------------|----------|
-| Production | `prod` | `false` | PostgreSQL |
-| Staging | `staging` | `false` | PostgreSQL |
-| Development | `dev` | `true` | PostgreSQL (Docker) |
+| Production | `prod` | `false` | MySQL |
+| Staging | `staging` | `false` | MySQL |
+| Development | `dev` | `true` | MySQL (Docker) |
 | Testing | `test` | `true` | SQLite |
 
 ---
