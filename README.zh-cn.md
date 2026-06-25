@@ -502,6 +502,4 @@ XDEBUG_MODE=coverage ./vendor/bin/phpunit --coverage-text
 
 ## 许可证
 
-当前 `composer.json` 中标记为 `proprietary`。
-
-如果你要公开发布仓库，建议补充标准 `LICENSE` 文件并同步更新元数据。
+MIT。详见 [LICENSE](LICENSE)。
