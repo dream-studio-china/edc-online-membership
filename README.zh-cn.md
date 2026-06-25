@@ -47,7 +47,10 @@
 - 可插拔的电商价格计算管道与订单状态机。
 - 基于发票的统一支付框架，含网关抽象（mock、wallet、未来提供方）。
 - 原子的钱包转账，含死锁预防、乐观锁和幂等性。
+- **钱包对账**：系统注资（deposit）含审计追踪，余额校验接口，逐钱包对账修复。
 - JWT 鉴权（RS256）配合 Refresh Token 轮换，以及手机验证码登录。
+- 密码自助注册，用户个人信息管理，管理员用户 CRUD。
+- 钱包余额校验与对账：时刻保证 SUM(所有钱包) == SUM(所有存款)。
 - 完整的设计契约文档，确保新模块开发一致性。
 
 ## 功能特性
@@ -60,10 +63,10 @@
 - **OTP 登录**：基于手机验证码的短信登录，带频率限制（阿里云）。
 - **订单状态机**：Symfony Workflow（草稿 → 完成），含完整工作流 API。
 - **价格计算管道**：可插拔的价格计算器，按优先级排序执行。
-- **原子钱包转账**：死锁预防（统一锁定顺序）、乐观锁、引用 ID 幂等。
+- **原子钱包转账 + 系统注资**：死锁预防（统一锁定顺序）、乐观锁、引用 ID 幂等。
 - **OpenAPI 文档**：NelmioApiDocBundle + `#[OA\*]` 属性，`/api/doc` 提供 Swagger UI。
 - **系统自省**：实体元数据和路由导出接口（`/system/*`）。
-- **完善的测试**：约 80+ 个测试文件，917 个测试，~3150 个断言，85.50% 覆盖。
+- **完善的测试**：约 100+ 个测试文件，1019 个测试，~3489 个断言，86.64% 覆盖。
 - **Docker Compose**：MySQL 8 + Mailpit 开发环境。
 
 ## 技术栈
@@ -103,12 +106,12 @@
 │   │   ├── Repository/
 │   │   └── Service/
 │   ├── Trade/                    # 电商模块
-│   │   ├── Controller/App/       #   Product、Order 列表
+│   │   ├── Controller/App/       #   Product、Order、Specification 列表
 │   │   ├── Controller/Manage/    #   Product、Specification、Order（CRUD + 工作流）
 │   │   ├── Entity/               #   Product、Specification、Order、OrderItem
 │   │   ├── Service/              #   OrderService、价格计算管道
 │   │   └── Service/Pricing/      #   PriceCalculatorInterface + 3 个实现
-│   ├── Wallet/                   # 钱包模块
+│   ├── Wallet/                    # 钱包模块
 │   │   ├── Controller/Manage/    #   钱包、交易、转账 API
 │   │   ├── Entity/               #   Wallet, WalletTransaction
 │   │   └── Service/              #   TransferService（原子转账）
@@ -132,6 +135,9 @@
 │   │   └── Service/              #   WechatService, WechatAuthService, WechatUserService
 │   │       └── Gateway/          #   WechatPayGateway
 │   └── Identity/                 # 鉴权模块
+│       ├── Controller/App/       #   UserController (个人信息、改密码)
+│       ├── Controller/Manage/    #   UserController (管理员 CRUD)
+│       ├── Command/              #   CreateUserCommand (CLI)
 │       ├── Controller/           #   AuthController、OtpController
 │       ├── Entity/               #   User、RefreshToken
 │       ├── Security/             #   JwtAuthenticator、TokenManager
@@ -239,7 +245,7 @@ docker compose exec app php bin/console app:identity:user:create admin@example.c
 | **Core** | `App\Core` | 框架基础 | RestController、BaseService、View mixin、表达式解析器 |
 | **Common** | `App\Common` | CMS | 分类（树）、标签、内容、评论（多态）、页面、媒体、设置（KV） |
 | **Trade** | `App\Trade` | 电商 | 产品 + 规格、订单（状态机）、价格计算管道 |
-| **Wallet** | `App\Wallet` | 钱包 | 余额（分）、原子转账、幂等、乐观锁 |
+| **Wallet** | `App\Wallet` | 钱包 | 余额（分）、原子转账、系统注资、幂等、乐观锁、余额校验与对账 |
 | **Payment** | `App\Payment` | 支付 | 发票（分+工作流）、网关抽象（mock/wallet）、Webhook、事件 |
 | **Wechat** | `App\Wechat` | 微信集成 | 小程序/公众号登录、微信支付 V3、WechatUser（OneToOne→User） |
 | **Identity** | `App\Identity` | 鉴权 | JWT (RS256)、OTP (短信)、Refresh Token 轮换 |
@@ -250,11 +256,22 @@ docker compose exec app php bin/console app:identity:user:create admin@example.c
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
+| **POST** | **`/api/auth/register`** | **密码自注册 → 返回令牌** |
 | POST | `/api/auth/login` | 账号 + 密码登录 |
 | POST | `/api/auth/otp/request` | 请求短信验证码 |
 | POST | `/api/auth/otp/verify` | 验证验证码 |
 | POST | `/api/auth/token/refresh` | 刷新令牌 |
 | POST | `/api/auth/logout` | 退出登录 |
+
+### User (`/api/v1/app/users`, `/api/v1/manage/users`)
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/v1/app/users/me` | 当前用户个人信息 |
+| PUT | `/api/v1/app/users/me` | 更新个人信息 |
+| POST | `/api/v1/app/users/change-password` | 修改密码 |
+| GET/POST/PUT/DELETE | `/api/v1/manage/users[/{id}]` | 管理员用户 CRUD |
+| POST | `/api/v1/manage/users/{id}/change-password` | 管理员修改任意用户密码 |
 
 ### Common — App（公开只读）
 
@@ -301,6 +318,8 @@ docker compose exec app php bin/console app:identity:user:create admin@example.c
 | 方法 | 路径 | 说明 |
 |------|------|------|
 | GET/POST/PUT/DELETE | `/api/v1/manage/wallets[/{id}]` | 钱包 CRUD |
+| **GET** | **`/api/v1/manage/wallets/balance`** | **校验会计恒等式** |
+| **POST** | **`/api/v1/manage/wallets/reconcile`** | **逐钱包对账** |
 | GET | `/api/v1/manage/transactions` | 交易列表 |
 | POST | `/api/v1/manage/transfer` | 原子转账 |
 
