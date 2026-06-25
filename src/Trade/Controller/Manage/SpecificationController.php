@@ -8,6 +8,7 @@ use App\Core\Controller\RestController;
 use App\Core\View\ApiView;
 use App\Core\View\CreateApiViewMixin;
 use App\Core\View\DeleteApiViewMixin;
+use App\Core\View\DetailApiViewMixin;
 use App\Core\View\ListApiViewMixin;
 use App\Core\View\UpdateApiViewMixin;
 use App\Trade\Service\SpecificationServiceInterface;
@@ -18,8 +19,8 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[IsGranted('ROLE_ADMIN')]
 class SpecificationController extends RestController
 {
-    use ApiView, ListApiViewMixin, CreateApiViewMixin,
-        UpdateApiViewMixin, DeleteApiViewMixin;
+    use ApiView, DetailApiViewMixin, ListApiViewMixin,
+        CreateApiViewMixin, UpdateApiViewMixin, DeleteApiViewMixin;
 
     protected array $requiredCreateProperties = ['name', 'price'];
     protected array $acceptedCreateProperties = ['name', 'price', 'status', 'sort'];

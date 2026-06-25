@@ -53,4 +53,14 @@ class WalletRepository extends ServiceEntityRepository
     {
         return $this->findOneBy(['user' => $userId, 'currency' => strtoupper($currency)]);
     }
+
+    public function getTotalBalance(): int
+    {
+        $result = $this->createQueryBuilder('w')
+            ->select('COALESCE(SUM(w.balance), 0)')
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        return (int) $result;
+    }
 }

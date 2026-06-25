@@ -42,6 +42,20 @@ payment_webhook:
         namespace: App\Payment\Controller\Webhook
     type: attribute
 
+api_identity_app:
+    prefix: /api/v1
+    resource:
+        path: ../src/Identity/Controller/App/
+        namespace: App\Identity\Controller\App
+    type: attribute
+
+api_identity_manage:
+    prefix: /api/v1
+    resource:
+        path: ../src/Identity/Controller/Manage/
+        namespace: App\Identity\Controller\Manage
+    type: attribute
+
 wechat:
     resource:
         path: ../src/Wechat/Controller/
