@@ -46,6 +46,19 @@ ALIYUN_SMS_SIGN_NAME=DemoApp
 ALIYUN_SMS_TEMPLATE_LOGIN_OTP=SMS_0000001
 ALIYUN_SMS_TEMPLATE_VERIFY_PHONE=SMS_0000002
 ALIYUN_SMS_DRY_RUN=true
+
+# WeChat (Miniapp+Official Account+Pay — optional, only needed for WeChat features)
+WECHAT_MINIAPP_APP_ID=
+WECHAT_MINIAPP_SECRET=
+WECHAT_OFFICIAL_APP_ID=
+WECHAT_OFFICIAL_SECRET=
+WECHAT_OFFICIAL_TOKEN=
+WECHAT_OFFICIAL_AES_KEY=
+WECHAT_PAY_MCH_ID=
+WECHAT_PAY_SECRET_KEY=
+WECHAT_PAY_PRIVATE_KEY=
+WECHAT_PAY_CERTIFICATE=
+WECHAT_PAY_NOTIFY_URL=
 ```
 
 3) Generate development JWT keys
@@ -107,6 +120,19 @@ curl -i -H "Authorization: Bearer $TOKEN" http://127.0.0.1:8000/api/v1/manage/co
 
 - Swagger UI: `http://127.0.0.1:8000/api/doc`
 - Click `Authorize` and paste `Bearer <access_token>` to try authenticated endpoints in the UI.
+
+9) System introspection endpoints
+
+```bash
+# List all Doctrine entities
+curl http://127.0.0.1:8000/system/entities
+
+# Get entity field metadata
+curl http://127.0.0.1:8000/system/entities/App%5CCommon%5CEntity%5CCategory
+
+# List all registered routes
+curl http://127.0.0.1:8000/system/router
+```
 
 Troubleshooting
 

@@ -47,6 +47,19 @@ ALIYUN_SMS_SIGN_NAME=DemoApp
 ALIYUN_SMS_TEMPLATE_LOGIN_OTP=SMS_0000001
 ALIYUN_SMS_TEMPLATE_VERIFY_PHONE=SMS_0000002
 ALIYUN_SMS_DRY_RUN=true
+
+# 微信（小程序+公众号+支付 — 可选，仅需微信功能时配置）
+WECHAT_MINIAPP_APP_ID=
+WECHAT_MINIAPP_SECRET=
+WECHAT_OFFICIAL_APP_ID=
+WECHAT_OFFICIAL_SECRET=
+WECHAT_OFFICIAL_TOKEN=
+WECHAT_OFFICIAL_AES_KEY=
+WECHAT_PAY_MCH_ID=
+WECHAT_PAY_SECRET_KEY=
+WECHAT_PAY_PRIVATE_KEY=
+WECHAT_PAY_CERTIFICATE=
+WECHAT_PAY_NOTIFY_URL=
 ```
 
 ## 3) 生成 JWT 开发密钥
@@ -108,6 +121,19 @@ curl -i -H "Authorization: Bearer $TOKEN" http://127.0.0.1:8000/api/v1/manage/co
 
 - Swagger UI: `http://127.0.0.1:8000/api/doc`
 - 右上角 `Authorize` 输入：`Bearer <access_token>`
+
+## 9) 系统自省接口
+
+```bash
+# 列出所有 Doctrine 实体
+curl http://127.0.0.1:8000/system/entities
+
+# 获取实体字段元数据
+curl http://127.0.0.1:8000/system/entities/App%5CCommon%5CEntity%5CCategory
+
+# 列出所有已注册路由
+curl http://127.0.0.1:8000/system/router
+```
 
 ## 常见问题
 
