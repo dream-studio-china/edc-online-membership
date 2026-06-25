@@ -46,6 +46,9 @@ security:
         - { path: ^/api/wechat/oauth/url$, roles: PUBLIC_ACCESS }
         - { path: ^/api/wechat/oauth/callback$, roles: PUBLIC_ACCESS }
 
+        # Public user self-registration
+        - { path: ^/api/auth/register$, roles: PUBLIC_ACCESS }
+
         # All remaining API endpoints require authentication
         # Manage endpoints require admin role
         - { path: ^/api/v1/manage, roles: ROLE_ADMIN }

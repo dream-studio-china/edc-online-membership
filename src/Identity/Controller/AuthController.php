@@ -8,6 +8,7 @@ use App\Identity\Entity\User;
 use App\Identity\Repository\UserRepository;
 use App\Identity\Security\TokenManager;
 use App\Identity\Service\OtpService;
+use App\Identity\Service\UserService;
 use Doctrine\ORM\EntityManagerInterface;
 use OpenApi\Attributes as OA;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -24,6 +25,7 @@ class AuthController
         private readonly UserRepository $userRepository,
         private readonly UserPasswordHasherInterface $hasher,
         private readonly OtpService $otpService,
+        private readonly UserService $userService,
         private readonly EntityManagerInterface $em,
         private readonly string $otpLoginTemplate,
         private readonly string $otpVerifyPhoneTemplate,
@@ -100,6 +102,53 @@ class AuthController
             'expires_in' => $this->tokenManager->getAccessTtl(),
             'refresh_token' => $refreshToken,
         ]);
+    }
+
+    #[OA\Post(
+        path: '/api/auth/register',
+        summary: 'Register a new user account',
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ['email', 'username', 'password'],
+                properties: [
+                    new OA\Property(property: 'email', type: 'string', example: 'user@example.com'),
+                    new OA\Property(property: 'username', type: 'string', example: 'newuser'),
+                    new OA\Property(property: 'password', type: 'string', format: 'password', example: 'P@ssw0rd'),
+                    new OA\Property(property: 'phone', type: 'string', nullable: true, description: 'Optional phone number'),
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(response: 201, description: 'Registration success, tokens returned'),
+            new OA\Response(response: 400, description: 'Missing fields or weak password'),
+            new OA\Response(response: 409, description: 'Email, username, or phone already exists'),
+        ],
+        tags: ['Auth']
+    )]
+    #[Route('/register', methods: ['POST'])]
+    public function register(Request $request): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
+        $email = trim((string) ($data['email'] ?? ''));
+        $username = trim((string) ($data['username'] ?? ''));
+        $password = (string) ($data['password'] ?? '');
+        $phone = isset($data['phone']) ? trim((string) $data['phone']) : null;
+
+        try {
+            $user = $this->userService->register($email, $username, $password, $phone);
+        } catch (\InvalidArgumentException $e) {
+            return $this->error($e->getMessage(), Response::HTTP_BAD_REQUEST);
+        }
+
+        $accessToken = $this->tokenManager->createAccessToken($user);
+        $refreshToken = $this->tokenManager->createRefreshToken($user);
+
+        return new JsonResponse([
+            'access_token' => $accessToken,
+            'expires_in' => $this->tokenManager->getAccessTtl(),
+            'refresh_token' => $refreshToken,
+        ], Response::HTTP_CREATED);
     }
 
     private function looksLikePhone(string $value): bool
