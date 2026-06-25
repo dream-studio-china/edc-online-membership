@@ -16,7 +16,7 @@ class MessageErrorHttpException extends HttpException
      * @param string $message The internal exception message
      * @param string|null $redirectUrl
      */
-    public function __construct(string $message = null, string $redirectUrl = null)
+    public function __construct(?string $message = null, ?string $redirectUrl = null)
     {
         parent::__construct(403, $message, null, ['redirectUrl' => $redirectUrl ], 0);
     }

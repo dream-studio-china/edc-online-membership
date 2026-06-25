@@ -71,7 +71,7 @@ trait BaseServiceInfrastructureTrait
     /**
      * Get repository for given class (or default entityClass).
      */
-    protected function getRepository(string $class = null)
+    protected function getRepository(?string $class = null)
     {
         if ($class === null) $class = $this->entityClass;
         if ($this->rep && $class === $this->entityClass) return $this->rep;
