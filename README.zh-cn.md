@@ -23,7 +23,7 @@
 - [如何创建自己的 CRUD 模块](#如何创建自己的-crud-模块)
 - [文档说明](#文档说明)
 - [测试](#测试)
-- [Docker 说明](#docker-说明)
+- [Docker 部署](#docker-部署)
 - [常见问题](#常见问题)
 - [贡献指南](#贡献指南)
 - [许可证](#许可证)
@@ -64,7 +64,7 @@
 - **OpenAPI 文档**：NelmioApiDocBundle + `#[OA\*]` 属性，`/api/doc` 提供 Swagger UI。
 - **系统自省**：实体元数据和路由导出接口（`/system/*`）。
 - **完善的测试**：约 80+ 个测试文件，917 个测试，~3150 个断言，85.50% 覆盖。
-- **Docker Compose**：PostgreSQL 16 + Mailpit 开发环境。
+- **Docker Compose**：MySQL 8 + Mailpit 开发环境。
 
 ## 技术栈
 
@@ -73,7 +73,7 @@
 | 语言 | PHP `>= 8.4` |
 | 框架 | Symfony `8.1.*` |
 | ORM | Doctrine ORM `^3.6` |
-| 数据库 | PostgreSQL 16（生产）/ SQLite（测试） |
+| 数据库 | MySQL 8（Docker/生产）/ SQLite（测试） |
 | 鉴权 | JWT (RS256) + OTP (短信) |
 | API 文档 | NelmioApiDocBundle (OpenAPI 3) |
 | 测试 | PHPUnit `^12.5` |
@@ -144,7 +144,7 @@
 │   ├── design/                   #   设计契约（系统、API、数据、模块、控制器）
 │   │   └── bundles/              #   各模块设计文档
 │   └── ai/                       #   AI 上下文快照
-├── compose.yaml                  # PostgreSQL 16
+├── compose.yaml                  # MySQL 8
 ├── compose.override.yaml         # 端口映射 + Mailpit
 └── mkdocs.yml                    # MkDocs Material 配置
 ```
@@ -164,32 +164,47 @@ cd crud-skeleton
 composer install
 ```
 
-### 3) 准备环境变量
+### 3) 为本机 PHP 准备环境变量
 
-建议在 `.env.local` 中覆盖本地配置：
+Docker 开发环境无需创建 env 文件即可启动。本机 PHP/Symfony 运行时，建议在 `.env.local` 中覆盖本地配置：
 
 ```dotenv
 APP_ENV=dev
 APP_SECRET=change-me
-DATABASE_URL="postgresql://app:!ChangeMe!@127.0.0.1:5432/app?serverVersion=16&charset=utf8"
+DATABASE_URL="mysql://app:!ChangeMe!@127.0.0.1:3306/app?serverVersion=8.0&charset=utf8mb4"
+JWT_PRIVATE_KEY_PATH=var/jwt_dev_private.pem
+JWT_PUBLIC_KEY_PATH=var/jwt_dev_public.pem
+JWT_PASSPHRASE=
+REFRESH_TOKEN_SECRET=change-this-secret
 ```
 
 ## 配置说明
 
-关键环境变量（参考 `.env` 和 `.env.example`）：
+环境变量文件职责：
+
+| 文件 | 用途 | 是否提交 |
+|------|------|----------|
+| `.env` | 已提交的 Symfony 默认值，不放密钥 | 是 |
+| `.env.dev`、`.env.test` | 已提交的开发/测试默认值 | 是 |
+| `.env.local`、`.env.*.local` | 本机覆盖值和密钥 | 否 |
+| `.env.example` | 本地开发变量参考 | 是 |
+| `.env.prod.example` | 生产 Docker 模板 | 是 |
+| `.env.prod.local` | 真实生产 Docker 配置 | 否 |
+
+关键环境变量：
 
 | 变量 | 用途 |
 |------|------|
 | `APP_ENV` | 运行环境（`dev`/`prod`/`test`） |
 | `APP_SECRET` | Symfony 应用密钥 |
-| `DATABASE_URL` | PostgreSQL 连接字符串 |
+| `DATABASE_URL` | MySQL 连接字符串 |
 | `JWT_PRIVATE_KEY_PATH` | RS256 私钥路径 |
 | `JWT_PUBLIC_KEY_PATH` | RS256 公钥路径 |
 | `JWT_PASSPHRASE` | 密钥密码 |
-| `JWT_REFRESH_TOKEN_SECRET` | HMAC-SHA256 密钥 |
+| `REFRESH_TOKEN_SECRET` | HMAC-SHA256 密钥 |
 | `MAILER_DSN` | 邮件发送器 |
 
-生产环境请不要在仓库中提交明文密钥。
+生产环境请不要在仓库中提交明文密钥。使用真实系统环境变量，或通过 `docker compose --env-file .env.prod.local` 提供。
 
 ## 本地运行
 
@@ -205,17 +220,17 @@ symfony server:start
 php -S 127.0.0.1:8000 -t public
 ```
 
-### 方式 B：使用 Docker 启动数据库
+### 方式 B：Docker 开发环境
+
+本地开发环境，一键启动所有服务（app、nginx、MySQL、Redis、Mailpit）：
 
 ```bash
-docker compose up -d
+docker compose up -d --build
+docker compose exec app php bin/console doctrine:migrations:migrate --no-interaction
+docker compose exec app php bin/console app:identity:user:create admin@example.com admin 'P@ssw0rd' --admin
 ```
 
-然后执行数据库迁移：
-
-```bash
-php bin/console doctrine:migrations:migrate
-```
+应用访问地址：`http://localhost:${APP_PORT:-8080}`。
 
 ## 模块概览
 
@@ -457,18 +472,206 @@ XDEBUG_MODE=coverage ./vendor/bin/phpunit --coverage-text
 
 `phpunit.dist.xml` 已配置 `APP_ENV=test` 以及 `KERNEL_CLASS=App\Kernel`。
 
-## Docker 说明
+## Docker 部署
 
-仓库包含：
+### 架构
 
-- `compose.yaml` - PostgreSQL 16 服务
-- `compose.override.yaml` - 本机端口映射与 Mailpit
+```
+                ┌──────────────┐
+   :8080  ──────│    nginx     │────── /api/* ──────┐
+                └──────────────┘                     │
+                                                    ▼
+                                            ┌──────────────┐
+                                            │  PHP-FPM 8.4 │
+                                            │   (app)      │
+                                            └──────┬───────┘
+                                                   │
+                      ┌────────────────────────────┼────────────────────┐
+                      │                            │                    │
+                ┌─────▼─────┐              ┌──────▼──────┐      ┌──────▼──────┐
+                │  MySQL 8   │              │    Redis 7   │      │   Mailpit   │
+                │            │              │  (OTP/缓存)  │      │ (邮件开发)  │
+                └───────────┘              └─────────────┘      └─────────────┘
+```
 
-默认端口：
+| 服务 | 镜像 | 容器 | 用途 |
+|------|------|------|------|
+| **nginx** | `nginx:alpine` | 反向代理 | 路由请求到 PHP-FPM，处理静态文件 |
+| **app** | `Dockerfile` 构建 | PHP-FPM 8.4 | Symfony 应用 |
+| **database** | `mysql:8.4` | MySQL 8 | 持久化数据存储 |
+| **redis** | `redis:7-alpine` | Redis 7 | OTP 存储、缓存 |
+| **mailer** | `axllent/mailpit` | Mailpit | 开发环境邮件查看器 |
 
-- PostgreSQL: `5432`
-- Mailpit SMTP: `1025`
-- Mailpit UI: `8025`
+### 开发环境
+
+```bash
+# 一键启动。本地 Docker 开发不需要创建 env 文件。
+docker compose up -d --build
+
+# 首次运行：数据库迁移 + 创建管理员
+docker compose exec app php bin/console doctrine:migrations:migrate --no-interaction
+docker compose exec app php bin/console app:identity:user:create admin@example.com admin 'P@ssw0rd' --admin
+
+# 应用 → http://localhost:8080   Swagger → http://localhost:8080/api/doc
+```
+
+启动时自动完成：
+- `docker/app/entrypoint.sh` 会在挂载的 `./var/jwt` 目录下生成一次开发 JWT 密钥，后续启动复用
+- `compose.override.yaml` 自动加载开发配置（`APP_ENV=dev`、`APP_DEBUG=1`）
+- `compose.yaml` 提供安全的开发默认密钥
+- 所有可选功能（微信、短信）默认禁用 — 如需启用可使用 `.env` 或 `--env-file`
+
+如果需要定制 Docker 端口、数据库密码或可选集成，建议显式传入 Docker env 文件：
+
+```bash
+cp .env.example .env.docker.local
+docker compose --env-file .env.docker.local up -d --build
+```
+
+不要把生产密钥写入已提交的 `.env` 文件。
+
+### 生产环境
+
+#### 第一步：准备生产 env 文件
+
+```bash
+cp .env.prod.example .env.prod.local
+```
+
+编辑 `.env.prod.local`，至少设置：
+
+```dotenv
+APP_SECRET=你的64字符随机密钥
+REFRESH_TOKEN_SECRET=你的32字节随机密钥
+MYSQL_PASSWORD=你的数据库密码
+MYSQL_ROOT_PASSWORD=你的 root 数据库密码
+DEFAULT_URI=https://api.example.com
+```
+
+可选集成可以留空。微信、短信变量留空时，对应功能自动禁用。
+
+#### 第二步：在主机上生成 JWT 密钥
+
+密钥通过 `./var` 绑定挂载持久化在容器外：
+
+```bash
+mkdir -p var/jwt
+openssl genpkey -algorithm RSA -out var/jwt/jwt_private.pem -pkeyopt rsa_keygen_bits:2048
+openssl rsa -pubout -in var/jwt/jwt_private.pem -out var/jwt/jwt_public.pem
+chmod 600 var/jwt/jwt_private.pem
+```
+
+> 如果私钥有密码，在 `.env.prod.local` 中设置 `JWT_PASSPHRASE`。
+
+#### 第三步：启动
+
+```bash
+docker compose -f compose.yaml -f compose.prod.yaml --env-file .env.prod.local up -d --build
+```
+
+#### 第四步：初始化
+
+```bash
+docker compose -f compose.yaml -f compose.prod.yaml --env-file .env.prod.local exec app php bin/console doctrine:migrations:migrate --no-interaction
+docker compose -f compose.yaml -f compose.prod.yaml --env-file .env.prod.local exec app php bin/console app:identity:user:create admin@example.com admin 'P@ssw0rd' --admin
+```
+
+#### 第五步：验证
+
+```bash
+curl -s http://localhost:8080/api/auth/login \
+  -H 'Content-Type: application/json' \
+  -d '{"identifier":"admin@example.com","password":"P@ssw0rd"}'
+```
+
+### 环境变量参考
+
+**生产必填**：
+
+| 变量 | 用途 |
+|------|------|
+| `APP_SECRET` | Symfony 应用密钥 |
+| `REFRESH_TOKEN_SECRET` | Refresh Token 的 HMAC-SHA256 密钥 |
+| `MYSQL_PASSWORD` | MySQL 应用用户密码 |
+| `MYSQL_ROOT_PASSWORD` | MySQL root 密码 |
+
+**compose.yaml 已提供**（开发默认值，生产环境按需覆盖）：
+
+| 变量 | Docker 默认值 |
+|------|---------------|
+| `DATABASE_URL` | `mysql://app:...@database:3306/app` |
+| `MAILER_DSN` | `smtp://mailer:1025` |
+| `OTP_REDIS_DSN` | `redis://redis:6379/0` |
+| `JWT_PRIVATE_KEY_PATH` | `/var/www/html/var/jwt/jwt_private.pem` |
+| `JWT_PUBLIC_KEY_PATH` | `/var/www/html/var/jwt/jwt_public.pem` |
+
+**可选功能**（留空表示禁用）：
+
+| 功能 | 需要的变量（完整列表见 `.env.example` 或 `.env`） |
+|------|---------------------------------------------------|
+| 阿里云短信 | `ALIYUN_ACCESS_KEY_ID`、`ALIYUN_ACCESS_KEY_SECRET` 等 |
+| 微信小程序 | `WECHAT_MINIAPP_APP_ID`、`WECHAT_MINIAPP_SECRET` |
+| 微信公众号 | `WECHAT_OFFICIAL_APP_ID`、`WECHAT_OFFICIAL_SECRET` 等 |
+| 微信支付 V3 | `WECHAT_PAY_MCH_ID`、`WECHAT_PAY_SECRET_KEY` 等 |
+
+### 常用命令
+
+下面命令用于 Docker 开发环境。生产环境请在 `docker compose` 后追加 `-f compose.yaml -f compose.prod.yaml --env-file .env.prod.local`。
+
+```bash
+# 查看日志
+docker compose logs -f app
+
+# 运行 Symfony 命令
+docker compose exec app php bin/console about
+
+# 进入 app 容器
+docker compose exec app bash
+
+# 清除缓存
+docker compose exec app php bin/console cache:clear
+
+# 查看待执行的迁移
+docker compose exec app php bin/console doctrine:migrations:status
+
+# 停止所有服务
+docker compose down
+
+# 重置并重启（警告：删除所有数据）
+docker compose down -v && docker compose up -d --build
+```
+
+### 自定义 nginx 配置
+
+修改 `docker/nginx/default.conf` 文件。常见定制：
+- 添加 TLS/SSL 证书并监听 443 端口
+- 将 `server_name` 改为你的域名
+- 添加速率限制或 IP 白名单
+
+修改后重建：
+```bash
+docker compose up -d --build nginx
+```
+
+### 升级
+
+开发环境：
+
+```bash
+git pull
+docker compose up -d --build
+docker compose exec app php bin/console doctrine:migrations:migrate --no-interaction
+docker compose exec app php bin/console cache:clear
+```
+
+生产环境：
+
+```bash
+git pull
+docker compose -f compose.yaml -f compose.prod.yaml --env-file .env.prod.local up -d --build
+docker compose -f compose.yaml -f compose.prod.yaml --env-file .env.prod.local exec app php bin/console doctrine:migrations:migrate --no-interaction
+docker compose -f compose.yaml -f compose.prod.yaml --env-file .env.prod.local exec app php bin/console cache:clear
+```
 
 ## 常见问题
 
@@ -479,7 +682,7 @@ XDEBUG_MODE=coverage ./vendor/bin/phpunit --coverage-text
 ### 数据库连接失败
 
 - 检查 `DATABASE_URL`。
-- 确认 PostgreSQL 正在运行（`docker compose ps`）。
+- 确认 MySQL 正在运行（`docker compose ps`）。
 - 确认数据库用户名、密码、库名与 compose 配置一致。
 
 ### 返回结果为空或序列化异常

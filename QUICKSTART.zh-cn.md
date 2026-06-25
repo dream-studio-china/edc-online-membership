@@ -1,10 +1,44 @@
 # Quick Start / 快速上手
 
-> 5-10 分钟完成本地可登录、可调用受保护接口的最小流程。
+> 5 分钟完成本地可登录、可调用受保护接口的最小流程。
 
-## 0) 环境要求
+## 方式 A：Docker（推荐）
 
-- PHP `8.5`（建议 Homebrew）
+无需本地安装 PHP、Composer 或数据库，仅需 **Docker**。
+
+```bash
+# 1) 启动所有服务（app、nginx、MySQL、Redis、Mailpit）
+docker compose up -d --build
+
+# 2) 执行数据库迁移
+docker compose exec app php bin/console doctrine:migrations:migrate --no-interaction
+
+# 3) 创建管理员
+docker compose exec app php bin/console app:identity:user:create admin@example.com admin 'P@ssw0rd' --admin
+
+# 4) 登录获取 token
+curl -s -X POST http://localhost:8080/api/auth/login \
+  -H 'Content-Type: application/json' \
+  -d '{"identifier":"admin@example.com","password":"P@ssw0rd"}' \
+  | php -r 'print_r(json_decode(stream_get_contents(STDIN),true));'
+```
+
+> Docker 开发环境会在挂载的 `./var/jwt` 目录下生成一次 JWT 密钥，后续启动会复用。生产环境请先在主机上手动生成 — 详见 [README](README.zh-cn.md#docker-部署)。
+
+Docker 开发环境使用内置安全默认值。只有需要定制端口、数据库密码或可选集成时，才需要创建 Docker env 文件：
+
+```bash
+cp .env.example .env.docker.local
+docker compose --env-file .env.docker.local up -d --build
+```
+
+---
+
+## 方式 B：本机 PHP
+
+环境要求
+
+- PHP `8.4+`（建议 Homebrew）
 - Composer
 - MySQL/MariaDB（按你的 `DATABASE_URL`）
 - 可选：Symfony CLI
@@ -12,7 +46,7 @@
 macOS (Homebrew) 推荐：
 
 ```bash
-brew install php@8.5 composer
+brew install php composer
 ```
 
 ## 1) 安装依赖
@@ -23,7 +57,7 @@ composer install
 
 ## 2) 配置环境变量
 
-在项目根创建/更新 `.env.local`（不要提交到 Git）：
+在项目根创建/更新 `.env.local`（不要提交到 Git），只保留本机 PHP 运行所需变量。可选集成变量参考 `.env.example`。
 
 ```dotenv
 APP_ENV=dev
@@ -32,34 +66,10 @@ DATABASE_URL="mysql://user:password@127.0.0.1:3306/crud_skeleton?serverVersion=8
 
 JWT_PRIVATE_KEY_PATH=var/jwt_dev_private.pem
 JWT_PUBLIC_KEY_PATH=var/jwt_dev_public.pem
-JWT_PASSPHRASE=dev-passphrase
+JWT_PASSPHRASE=
 ACCESS_TOKEN_TTL=7200
 REFRESH_TOKEN_TTL=31536000
 REFRESH_TOKEN_SECRET=change-this-secret
-
-OTP_TTL=300
-OTP_REDIS_DSN=redis://127.0.0.1:6379/0
-
-ALIYUN_ACCESS_KEY_ID=
-ALIYUN_ACCESS_KEY_SECRET=
-ALIYUN_SMS_REGION=cn-hangzhou
-ALIYUN_SMS_SIGN_NAME=DemoApp
-ALIYUN_SMS_TEMPLATE_LOGIN_OTP=SMS_0000001
-ALIYUN_SMS_TEMPLATE_VERIFY_PHONE=SMS_0000002
-ALIYUN_SMS_DRY_RUN=true
-
-# 微信（小程序+公众号+支付 — 可选，仅需微信功能时配置）
-WECHAT_MINIAPP_APP_ID=
-WECHAT_MINIAPP_SECRET=
-WECHAT_OFFICIAL_APP_ID=
-WECHAT_OFFICIAL_SECRET=
-WECHAT_OFFICIAL_TOKEN=
-WECHAT_OFFICIAL_AES_KEY=
-WECHAT_PAY_MCH_ID=
-WECHAT_PAY_SECRET_KEY=
-WECHAT_PAY_PRIVATE_KEY=
-WECHAT_PAY_CERTIFICATE=
-WECHAT_PAY_NOTIFY_URL=
 ```
 
 ## 3) 生成 JWT 开发密钥
@@ -75,17 +85,17 @@ chmod 600 var/jwt_dev_private.pem
 
 ## 4) 初始化数据库（统一迁移流程）
 
-> 使用 Homebrew PHP 8.5，避免系统默认 PHP 版本不一致。
+> 使用 PHP 8.4+。如果 macOS 系统默认 PHP 版本不一致，可把下面的 `php` 换成 `/opt/homebrew/bin/php`。
 
 ```bash
-/opt/homebrew/bin/php bin/console doctrine:schema:drop --force
-/opt/homebrew/bin/php bin/console doctrine:migrations:migrate --no-interaction
+php bin/console doctrine:schema:drop --force
+php bin/console doctrine:migrations:migrate --no-interaction
 ```
 
 ## 5) 创建管理员账号
 
 ```bash
-/opt/homebrew/bin/php bin/console app:identity:user:create admin@example.com admin 'P@ssw0rd' --admin
+php bin/console app:identity:user:create admin@example.com admin 'P@ssw0rd' --admin
 ```
 
 ## 6) 启动服务
@@ -108,7 +118,7 @@ symfony server:start
 TOKEN=$(curl -s -X POST http://127.0.0.1:8000/api/auth/login \
   -H 'Content-Type: application/json' \
   -d '{"identifier":"admin@example.com","password":"P@ssw0rd"}' \
-  | /opt/homebrew/bin/php -r 'echo json_decode(stream_get_contents(STDIN), true)["access_token"];')
+  | php -r 'echo json_decode(stream_get_contents(STDIN), true)["access_token"];')
 ```
 
 访问管理接口（需要 `ROLE_ADMIN`）：

@@ -1,18 +1,18 @@
 # CRUD Skeleton - Full Codebase Context
 
-> Auto-generated context snapshot. Last updated: 2025-06-25
+> Auto-generated context snapshot. Last updated: 2025-06-26
 
 ---
 
 ## 1. Project Overview
 
 **CRUD Skeleton** is a Symfony 8.1 API backend skeleton with:
-- **PHP 8.4+**, Doctrine ORM 3.6, PostgreSQL 16
+- **PHP 8.4+**, Doctrine ORM 3.6, MySQL 8 (Docker), SQLite (tests)
 - JWT authentication (RS256), OTP/SMS login, WeChat Mini Program / Official Account login
 - Expression-based dynamic query engine (`@filter`, `@sort`, `@dql`)
 - Modular architecture: **Core** (framework), **Common** (CMS), **Identity** (auth), **Trade** (e-commerce), **Payment** (invoices), **Wallet** (balances), **Wechat** (login + pay)
 - EasyWeChat 6.x integration (Mini Program, Official Account OAuth, WeChat Pay V3)
-- NelmioApiDoc (Swagger at `/api/doc`), PHPUnit 12.5, Docker Compose
+- NelmioApiDoc (Swagger at `/api/doc`), PHPUnit 12.5, Docker Compose (5 services)
 - MkDocs Material + GitHub Pages documentation
 
 ## 2. Directory Structure
@@ -94,9 +94,15 @@
 │   │   └── bundles/              # Per-module design docs (core, common, trade, wallet, identity, wechat)
 │   └── openapi/endpoints.yaml
 ├── scripts/tests/                # Test scripts
-├── tests/                        # ~917 PHPUnit tests, ~3150 assertions
+├── tests/                        # ~922 PHPUnit tests, ~3177 assertions
 ├── mkdocs.yml                    # MkDocs Material config
-├── compose.yaml                  # PostgreSQL 16 + Mailpit via Docker
+├── compose.yaml                  # Production deployment: app (PHP-FPM), nginx, MySQL, Redis, Mailpit
+├── compose.override.yaml         # Dev overrides (source mount, debug, exposed ports)
+├── Dockerfile                    # PHP 8.4-FPM Alpine with openssl + JWT key entrypoint
+├── .dockerignore                 # Build context exclusions (tests, docs, dev files)
+├── docker/
+│   ├── app/entrypoint.sh         # Dev key generation + prod key validation
+│   └── nginx/default.conf        # nginx config (reverse proxy to PHP-FPM)
 └── .github/workflows/
     ├── ci.yml                    # CI: PHP 8.4, 80% coverage
     └── docs.yml                  # GitHub Pages deploy
@@ -407,7 +413,7 @@ Enriches all endpoints (90+):
 - **Framework**: PHPUnit 12.5
 - **DB**: SQLite `var/test.db` in test environment
 - **Coverage**: 80% minimum (enforced in CI), currently 85.50% lines
-- **Test count**: 917 tests, ~3150 assertions
+- **Test count**: 922 tests, ~3177 assertions
 - **Key test groups**:
   - `tests/Wechat/`: 59 tests (Entity, Service, AuthService, Gateway, Controller, Repository)
   - `tests/Trade/`: 171 tests (Entity, Service, Pricing, Integration, EventListener, Workflow API)
@@ -424,9 +430,9 @@ Enriches all endpoints (90+):
 |-----|---------|
 | `APP_ENV`, `APP_DEBUG` | Symfony environment |
 | `DATABASE_URL` | DB connection (PostgreSQL/SQLite/MySQL) |
-| `JWT_PRIVATE_KEY_PATH`, `JWT_PUBLIC_KEY_PATH` | RS256 key pair |
+| `JWT_PRIVATE_KEY_PATH`, `JWT_PUBLIC_KEY_PATH` | RS256 key pair (Docker dev: generated once under mounted `./var/jwt` if missing) |
 | `JWT_PASSPHRASE` | Private key passphrase |
-| `JWT_REFRESH_TOKEN_SECRET` | HMAC-SHA256 secret |
+| `REFRESH_TOKEN_SECRET` | HMAC-SHA256 secret |
 | `OTP_REDIS_DSN` | Redis for OTP storage |
 | `ALIYUN_SMS_*` | Alibaba Cloud SMS |
 | `WECHAT_MINIAPP_APP_ID`, `WECHAT_MINIAPP_SECRET` | WeChat Mini Program |
@@ -436,13 +442,39 @@ Enriches all endpoints (90+):
 | `DEFAULT_URI` | Base URL for CLI contexts |
 | `MAILER_DSN` | Mailer transport |
 
-## 17. Console Commands
+## 17. Docker Deployment
+
+### 17.1 Architecture
+
+5 services in `compose.yaml`: **nginx** (reverse proxy), **app** (PHP-FPM 8.4, built from `Dockerfile`), **database** (MySQL 8), **redis** (Redis 7 Alpine), **mailer** (Mailpit).
+
+### 17.2 Development (zero-config)
+
+```bash
+docker compose up -d --build
+docker compose exec app php bin/console doctrine:migrations:migrate --no-interaction
+docker compose exec app php bin/console app:identity:user:create admin@example.com admin 'P@ssw0rd' --admin
+```
+
+- `compose.override.yaml` auto-loads — sets `APP_ENV=dev`, `APP_DEBUG=1`, source mount
+- `docker/app/entrypoint.sh` creates development JWT keys once under mounted `./var/jwt` if missing; production fails fast when keys are missing
+- All optional features (WeChat, SMS) default to empty — disabled gracefully
+
+### 17.3 Production
+
+Requires `.env.prod.local` copied from `.env.prod.example` with `APP_SECRET`, `REFRESH_TOKEN_SECRET`, `MYSQL_PASSWORD`, and `MYSQL_ROOT_PASSWORD`. JWT keys are generated on the host at `./var/jwt/` and mounted into the container. Start production with `docker compose -f compose.yaml -f compose.prod.yaml --env-file .env.prod.local up -d --build`.
+
+### 17.4 Environment Variables in Docker
+
+`compose.yaml` provides defaults for `DATABASE_URL`, `MAILER_DSN`, `OTP_REDIS_DSN`, and JWT key paths. Required vars use `${VAR:?required}` which fails fast if missing. Optional vars use `${VAR:-}` which defaults to empty.
+
+## 18. Console Commands
 
 | Command | Module | Purpose |
 |---------|--------|---------|
 | `app:identity:user:create` | Identity | Create user: email, username, password, --phone, --role, --admin, --phone-verified |
 
-## 18. Service Container Wiring
+## 19. Service Container Wiring
 
 - Default: all `src/` classes autowired/autoconfigured
 - Explicit exclusions: `FlatNormalizer`, EventListener classes (except `OpenApiEnricherListener`), Auth/Otp controllers, TokenManager, AliyunSmsProvider, RedisOtpStorage, **WechatService, WechatPayGateway**

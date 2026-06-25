@@ -225,9 +225,9 @@ Resolution order: `.env` -> `.env.{env}` -> `.env.local` -> `.env.{env}.local`
 
 | Environment | Database | Config |
 |-------------|----------|--------|
-| Production | PostgreSQL 16 | `DATABASE_URL` env var |
+| Production | MySQL 8 | `DATABASE_URL` env var |
 | Testing | SQLite | `var/test.db` |
-| Development | PostgreSQL (Docker) | `compose.yaml` |
+| Development | MySQL (Docker) | `compose.yaml` |
 
 ### 8.2 Migrations
 
