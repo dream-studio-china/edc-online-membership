@@ -448,6 +448,7 @@ Enriches all endpoints (90+):
 - **DB**: SQLite `var/test.db` in test environment
 - **Coverage**: 80% minimum (enforced in CI), currently **86.64% lines**
 - **Test count**: **1019 tests**, **~3489 assertions**
+- **Local PHP note**: default `php` may point to PHP 7.4; use Homebrew PHP 8.5 at `/opt/homebrew/opt/php/bin/php` for local Symfony/PHPUnit commands.
 - **Key test groups**:
   - `tests/Wechat/`: 59 tests (Entity, Service, AuthService, Gateway, Controller, Repository)
   - `tests/Trade/`: 171 tests (Entity, Service, Pricing, Integration, EventListener, Workflow API)

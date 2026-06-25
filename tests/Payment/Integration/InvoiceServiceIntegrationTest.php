@@ -110,7 +110,9 @@ final class InvoiceServiceIntegrationTest extends IntegrationKernelTestCase
         $registry = static::getContainer()->get(PaymentGatewayRegistry::class);
         self::assertTrue($registry->has(Invoice::PAYMENT_MOCK));
         self::assertTrue($registry->has(Invoice::PAYMENT_WALLET));
+        self::assertTrue($registry->has(Invoice::PAYMENT_WECHAT));
         self::assertContains(Invoice::PAYMENT_MOCK, $registry->names());
+        self::assertContains(Invoice::PAYMENT_WECHAT, $registry->names());
     }
 
     private function createUser(string $email): User

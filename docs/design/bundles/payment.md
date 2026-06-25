@@ -16,6 +16,7 @@ The Payment module provides a unified invoice abstraction for all payment flows:
 |------------|---------|
 | Invoice creation | Represent a payable business document independent of payment provider |
 | Gateway dispatch | Route pay/notify/refund actions to a named gateway adapter |
+| Deductions | Apply invoice-level wallet balance deduction before external gateway payment |
 | State management | Enforce legal invoice status transitions |
 | Webhook handling | Verify provider callbacks and update invoices idempotently |
 | Cross-module events | Notify business modules such as Trade when invoices are paid/refunded |
@@ -31,6 +32,8 @@ The first phase MUST NOT include concrete Fuiou/Huifu integration code.
 | POS device management | Provider-specific operational module, not core invoice framework |
 | Auto withdraw / settlement | Finance and settlement concern, not first-phase payment collection |
 | Split settlement / fees | Requires accounting design beyond invoice payment |
+| Multi-invoice aggregate payment | Too much orchestration complexity for first phase; use one invoice with deductions instead |
+| Multiple deduction types | First deduction implementation only supports `wallet_balance` for a specific currency |
 | Payment requisition | Outbound payment approval workflow, separate from collection invoices |
 
 ### 1.3 Legacy Reference
@@ -65,14 +68,18 @@ src/Payment/
 |   |-- Manage/InvoiceController.php
 |   |-- Webhook/PaymentNotifyController.php
 |-- Entity/Invoice.php
+|-- Entity/Deduction.php
 |-- Repository/InvoiceRepository.php
+|-- Repository/DeductionRepository.php
 |-- Service/InvoiceService.php
 |-- Service/InvoiceServiceInterface.php
+|-- Service/DeductionService.php
 |-- Service/PaymentGatewayInterface.php
 |-- Service/PaymentGatewayRegistry.php
 |-- Service/Gateway/MockGateway.php
 |-- Service/Gateway/WalletGateway.php
 |-- DTO/CreateInvoiceRequest.php
+|-- DTO/DeductionRequest.php
 |-- DTO/PaymentResult.php
 |-- DTO/PaymentNotifyResult.php
 |-- DTO/PaymentRefundResult.php
@@ -92,7 +99,7 @@ src/Payment/
 |------|----|---------|------|
 | Payment | Core | Yes | BaseService, RestController, serializer, events |
 | Payment | Identity | Yes | Optional payer relation or current user lookup |
-| Payment | Wallet | Yes | Only for `WalletGateway`; depend on service interfaces |
+| Payment | Wallet | Yes | Only for `WalletGateway` and `DeductionService`; depend on service interfaces |
 | Payment | Trade | No | Payment MUST NOT import Trade services or entities |
 | Trade | Payment | Yes | Trade consumes `InvoiceServiceInterface` and Payment events |
 | Gateway adapters | Payment | Yes | Implement `PaymentGatewayInterface` |
@@ -168,6 +175,7 @@ Only `SCENE_ORDER` is required in the first phase. Other scene constants exist t
 ```php
 public const PAYMENT_MOCK = 'mock';
 public const PAYMENT_WALLET = 'wallet';
+public const PAYMENT_WECHAT = 'wechat';
 ```
 
 Provider constants such as `fuiou`, `fuiou-pos`, `huifu`, and `huifu-pos` are reserved for future adapters. They MUST NOT be used until concrete adapters exist.
@@ -188,6 +196,12 @@ Provider constants such as `fuiou`, `fuiou-pos`, `huifu`, and `huifu-pos` are re
 
 All invoice amounts MUST be stored as integer cents.
 
+`Invoice::amount` MUST represent the gross business payable amount, not the external gateway charge amount. If wallet balance is deducted before provider payment, the gateway charge amount is computed as:
+
+```text
+gatewayPayAmount = invoice.amount - sum(applied deductions)
+```
+
 | Direction | Format |
 |-----------|--------|
 | Entity storage | int cents |
@@ -196,6 +210,63 @@ All invoice amounts MUST be stored as integer cents.
 | Provider payload | provider-specific, converted at gateway boundary |
 
 Gateway adapters are responsible for converting cents into provider formats such as yuan decimal strings or fen integers.
+
+### 3.8 Deduction Domain Model
+
+**File**: `src/Payment/Entity/Deduction.php`
+
+**Namespace**: `App\Payment\Entity`
+
+**Table**: `payment_deduction`
+
+Deduction is an invoice-level reduction applied before external gateway collection. It belongs to Payment, not Trade. Business modules should continue to react to invoice events and should not know deduction internals.
+
+First-phase implementation only supports one wallet balance deduction per invoice and per currency.
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `id` | int | Yes | Internal primary key |
+| `uuid` | string(36) | Yes | Public stable identifier |
+| `invoice` | Invoice | Yes | Invoice being deducted |
+| `type` | string(30) | Yes | First phase: `wallet_balance` only |
+| `amount` | int | Yes | Deduction amount in cents |
+| `currency` | string(10) | Yes | Must equal invoice currency |
+| `status` | string(30) | Yes | `pending`, `applied`, `released`, `refunded`, `failed` |
+| `walletTransactionId` | ?string | No | Wallet transfer transaction uuid/reference after deduction is applied |
+| `refundTransactionId` | ?string | No | Wallet transfer transaction uuid/reference after deduction is refunded/released |
+| `referenceId` | string(64) | Yes | Idempotency key used for wallet transfer |
+| `metadata` | ?array | No | Sanitized operational metadata |
+| `createdAt` | DateTimeImmutable | Yes | Creation timestamp |
+| `appliedAt` | ?DateTimeImmutable | No | Deduction applied timestamp |
+| `releasedAt` | ?DateTimeImmutable | No | Unpaid deduction release timestamp |
+| `refundedAt` | ?DateTimeImmutable | No | Paid invoice refund timestamp |
+
+#### Deduction Constants
+
+```php
+public const TYPE_WALLET_BALANCE = 'wallet_balance';
+
+public const STATUS_PENDING = 'pending';
+public const STATUS_APPLIED = 'applied';
+public const STATUS_RELEASED = 'released';
+public const STATUS_REFUNDED = 'refunded';
+public const STATUS_FAILED = 'failed';
+```
+
+#### Deduction Constraints
+
+| Constraint | Requirement |
+|------------|-------------|
+| `uuid` | Unique |
+| `referenceId` | Unique |
+| `invoice + type` | Unique for first-phase `wallet_balance` support |
+| `amount` | `> 0`, `<= invoice.amount` |
+| `currency` | Must equal `invoice.currency` |
+| `type` | Must be `wallet_balance` in first phase |
+
+#### Full Wallet Deduction
+
+When wallet deduction covers the full invoice amount, Payment MUST record `invoice.payment = wallet`. No external provider gateway should be called. The invoice can be marked paid after the deduction is applied successfully.
 
 ---
 
@@ -308,11 +379,63 @@ interface InvoiceServiceInterface extends BaseServiceInterface
 | Apply workflow transitions | Use `state_machine.invoice`, never direct status writes |
 | Call gateway registry | Resolve named gateway for pay/refund |
 | Handle notify result | Find invoice by `outTradeNo` or transaction id and update safely |
+| Apply deductions | Apply supported invoice deductions before gateway payment request |
+| Calculate gateway pay amount | Use `invoice.amount - appliedDeductionAmount` as provider charge amount |
 | Persist provider snapshots | Store sanitized notify/refund data in `extraData` |
 | Dispatch events | Emit invoice domain events after successful state changes |
 | Maintain idempotency | Treat duplicate terminal callbacks as successful no-ops |
 
-### 5.3 DTOs
+### 5.3 DeductionService Responsibilities
+
+**File**: `src/Payment/Service/DeductionService.php`
+
+DeductionService owns wallet balance deduction lifecycle for invoices. It is inside Payment and may depend on Wallet service interfaces, but it MUST NOT depend on Trade.
+
+| Responsibility | Detail |
+|----------------|--------|
+| Parse deduction request | Accept `walletAmount` shortcut or structured `deduction` payload |
+| Validate deduction | Ensure type is `wallet_balance`, amount is positive, and currency equals invoice currency |
+| Apply deduction | Transfer payer wallet balance to system wallet using Wallet `TransferServiceInterface` |
+| Enforce idempotency | Use stable reference id such as `invoice-deduction-{invoice.uuid}` |
+| Sum applied amount | Return total applied deduction amount for invoice pay/notify/refund validation |
+| Release deduction | Reverse applied deduction when gateway payment creation fails or unpaid invoice is cancelled |
+| Refund deduction | Reverse applied deduction when a paid invoice is fully refunded |
+
+First phase MUST support only one `wallet_balance` deduction per invoice. Future deduction types such as coupons or points may reuse the same entity, but MUST NOT be implemented until required.
+
+```php
+final class DeductionService
+{
+    public function apply(Invoice $invoice, int $amount, string $currency, array $options = []): Deduction;
+
+    public function release(Invoice $invoice, string $reason): ?Deduction;
+
+    public function refund(Invoice $invoice, string $reason): ?Deduction;
+
+    public function sumAppliedAmount(Invoice $invoice): int;
+
+    public function findApplied(Invoice $invoice): ?Deduction;
+}
+```
+
+### 5.4 Deduction Payment Flow
+
+Invoice payment with deduction follows this sequence:
+
+```text
+InvoiceService::pay(invoice, payment, options)
+  -> DeductionService::apply() when wallet deduction is requested
+  -> compute payAmount = invoice.amount - appliedDeductionAmount
+  -> if payAmount == 0: set invoice.payment = wallet and mark invoice paid
+  -> if payAmount > 0: call gateway->pay(invoice, options + payAmount)
+  -> gateway returns PaymentResult
+  -> provider notify later confirms payAmount
+  -> InvoiceService::markPaid() verifies payAmount + deductions == invoice.amount
+```
+
+If deduction succeeds but gateway payment creation fails, InvoiceService MUST call `DeductionService::release()` before surfacing the error.
+
+### 5.5 DTOs
 
 #### CreateInvoiceRequest
 
@@ -332,6 +455,27 @@ final readonly class CreateInvoiceRequest
     ) {}
 }
 ```
+
+#### DeductionRequest
+
+```php
+final readonly class DeductionRequest
+{
+    public function __construct(
+        public string $type,
+        public int $amount,
+        public string $currency,
+        public array $options = [],
+    ) {}
+}
+```
+
+First-phase valid values:
+
+| Field | Valid Value |
+|-------|-------------|
+| `type` | `wallet_balance` |
+| `currency` | Same as invoice currency |
 
 #### PaymentResult
 
@@ -406,6 +550,14 @@ interface PaymentGatewayInterface
 }
 ```
 
+Gateway method signatures remain unchanged. When deductions are applied, InvoiceService passes the actual external charge amount through `$options['payAmount']`:
+
+```php
+$amount = (int) ($options['payAmount'] ?? $invoice->getAmount());
+```
+
+Gateway adapters MUST use `payAmount` for provider payment/refund requests when present. `Invoice::amount` remains the gross business payable amount.
+
 ### 6.2 Gateway Registry
 
 Gateway implementations MUST be registered through a tagged iterator.
@@ -437,6 +589,11 @@ final class PaymentGatewayRegistry
 |---------|---------|----------|
 | `mock` | Deterministic test/development gateway | Yes |
 | `wallet` | Internal wallet balance payment | Yes if Wallet module remains payment-capable |
+| `wechat` | WeChat Pay adapter implemented in Wechat module and tagged as `payment.gateway` | Optional/provider-dependent |
+
+`mock` is a fake external gateway for tests and local development. It does not move wallet funds and must not be treated as wallet payment. It simulates provider pay/notify/refund behavior and is useful for validating invoice workflow, deductions, and Trade integration without real provider credentials.
+
+When used with deduction, `mock` notify amount MUST equal the remaining gateway pay amount, not the invoice gross amount.
 
 ### 6.4 Future Provider Gateways
 
@@ -497,10 +654,12 @@ Every gateway notify parser MUST verify:
 |-------|-------------|
 | Signature | Required for external gateways |
 | Merchant id | Must match configured merchant |
-| Amount | Must equal invoice amount for pay callbacks |
+| Amount | Must equal expected gateway pay amount: `invoice.amount - appliedDeductionAmount` |
 | Currency | Must match invoice currency when provider sends it |
 | Trade number | Must map to invoice `outTradeNo` |
 | Transaction id | Must be stored when success is confirmed |
+
+For invoices with applied deductions, webhook amount verification MUST be performed by `InvoiceService::markPaid()`, not by business modules. Business modules should receive only the final `InvoicePaidEvent`.
 
 ---
 
@@ -566,6 +725,8 @@ Trade `Order` SHOULD store lightweight invoice references only:
 
 Trade MUST NOT require an ORM `ManyToOne` relation to `Payment\Entity\Invoice` in the first phase.
 
+Trade MUST NOT model or persist deduction internals. When wallet balance deduction is used, Payment still emits a normal `InvoicePaidEvent` after `invoice.amount` is fully covered by gateway payment plus applied deductions.
+
 ### 9.3 Payment Request Flow
 
 ```
@@ -591,17 +752,22 @@ Provider webhook or wallet success
   -> OrderService persists paidAt/paymentMethod/paymentStatus
 ```
 
+For invoices with deductions, Trade still validates `invoice.amount == order.totalAmount`. Deduction is internal to Payment and should not alter Trade's amount comparison.
+
 ### 9.5 Refund Flow
 
 ```
 POST /api/v1/manage/orders/{id}/refund
   -> Trade validates order can refund
   -> Trade calls InvoiceServiceInterface::refund()
-  -> Payment gateway performs refund or mock refund
+  -> Payment gateway refunds external pay amount
+  -> DeductionService refunds applied wallet deduction when present
   -> invoice workflow partial_refund/refund
   -> dispatch InvoiceRefundedEvent
   -> Trade listener applies order refund transition when full refund is confirmed
 ```
+
+First-phase deduction support SHOULD only allow full invoice refund when a deduction exists. Partial refund allocation between gateway payment and wallet deduction is explicitly out of scope.
 
 ### 9.6 Trade Listener Contract
 
@@ -653,7 +819,45 @@ Trade MAY expose convenience routes that call Payment services:
 | POST | `/api/v1/manage/orders/{id}/payment` | Admin create/start order payment |
 | POST | `/api/v1/manage/orders/{id}/refund` | Refund order through linked invoice |
 
-### 10.4 Response Envelope
+### 10.4 Deduction Request Payload
+
+Payment endpoints MAY accept wallet balance deduction options. First phase supports only one wallet balance deduction in the invoice currency.
+
+Shortcut payload for App clients:
+
+```json
+{
+  "payment": "wechat",
+  "walletAmount": 3000,
+  "tradeType": "jsapi"
+}
+```
+
+Structured payload for future extensibility:
+
+```json
+{
+  "payment": "wechat",
+  "deduction": {
+    "type": "wallet_balance",
+    "amount": 3000,
+    "currency": "CNY"
+  },
+  "tradeType": "jsapi"
+}
+```
+
+Rules:
+
+| Rule | Requirement |
+|------|-------------|
+| DED-API-1 | `walletAmount` is converted into `deduction.type = wallet_balance` |
+| DED-API-2 | Deduction amount must be `> 0` and `<= invoice.amount` |
+| DED-API-3 | Deduction currency must equal invoice currency |
+| DED-API-4 | Full wallet deduction sets `invoice.payment = wallet` |
+| DED-API-5 | Partial wallet deduction keeps requested external `payment` and passes remaining `payAmount` to the gateway |
+
+### 10.5 Response Envelope
 
 All Payment API endpoints MUST use the standard response envelope:
 
@@ -678,10 +882,14 @@ Webhook endpoints are the exception: they MAY return provider-required raw text/
 ```yaml
 payment:
     default_currency: 'CNY'
+    system_wallet_id: 0
     gateways:
         mock:
             enabled: true
         wallet:
+            enabled: true
+    deductions:
+        wallet_balance:
             enabled: true
 ```
 
@@ -718,9 +926,28 @@ Payment mutations MUST be managed in the service layer.
 | Operation | Transaction Boundary |
 |-----------|----------------------|
 | Create invoice | `InvoiceService::createInvoice()` |
+| Apply wallet deduction | `DeductionService::apply()` using Wallet transfer idempotency |
 | Start wallet payment | `InvoiceService::pay()` and `WalletGateway` transfer service |
 | Handle webhook | `InvoiceService::handleNotifyResult()` |
-| Refund invoice | `InvoiceService::refund()` |
+| Refund invoice | `InvoiceService::refund()` plus `DeductionService::refund()` when a deduction exists |
+
+### 12.1.1 Deduction Transaction Rules
+
+| Scenario | Rule |
+|----------|------|
+| Deduction applied, gateway pay succeeds | Keep deduction applied; invoice remains `paying` until notify or immediate paid result |
+| Deduction applied, gateway pay creation fails | Call `DeductionService::release()` before returning error |
+| Full wallet deduction | Mark invoice paid with `payment = wallet`; do not call external gateway |
+| Paid invoice refund | Refund external gateway pay amount first, then refund wallet deduction |
+| Unpaid invoice cancel | Release applied deduction |
+
+Deduction wallet transfer reference ids MUST be stable and idempotent:
+
+```text
+invoice-deduction-{invoice.uuid}
+invoice-deduction-release-{invoice.uuid}
+invoice-deduction-refund-{invoice.uuid}
+```
 
 ### 12.2 Cross-Module Consistency
 
@@ -843,6 +1070,7 @@ Provider account modules MUST NOT be required for generic invoice payment.
 | `InvoiceTest` | Status constants, timestamps, amount/refund getters, `__toString()` |
 | `PaymentGatewayRegistryTest` | Resolve gateway, unknown gateway exception, names list |
 | `InvoiceServiceTest` | Create invoice, pay, mark paid, cancel, refund validation |
+| `DeductionServiceTest` | Apply/release/refund wallet balance deduction validation and idempotency |
 | `MockGatewayTest` | Pay/notify/refund deterministic behavior |
 | `WalletGatewayTest` | Wallet transfer success/failure mapping |
 
@@ -854,6 +1082,7 @@ Provider account modules MUST NOT be required for generic invoice payment.
 | `PaymentWebhookIntegrationTest` | Webhook success, invalid signature, duplicate notify |
 | `TradePaymentIntegrationTest` | Order payment creates invoice and paid event updates order |
 | `TradeRefundIntegrationTest` | Order refund through invoice updates both modules |
+| `DeductionPaymentIntegrationTest` | Wallet balance deduction plus mock/external pay amount marks invoice/order paid |
 
 ### 16.3 Regression Cases
 
@@ -864,6 +1093,12 @@ Provider account modules MUST NOT be required for generic invoice payment.
 | Refund more than paid | Rejected |
 | Pay cancelled invoice | Rejected |
 | Unknown gateway | 400 warning for API, provider failure response for webhook |
+| Deduction currency mismatch | Rejected before wallet transfer |
+| Deduction amount exceeds invoice amount | Rejected before wallet transfer |
+| Deduction + mock payment | Mock notify amount must equal remaining gateway pay amount |
+| Full wallet deduction | Invoice payment is `wallet` and no external gateway is called |
+| Gateway pay failure after deduction | Deduction is released via reverse wallet transfer |
+| Deducted invoice full refund | External pay amount and wallet deduction are both refunded |
 
 ---
 
@@ -891,14 +1126,25 @@ Provider account modules MUST NOT be required for generic invoice payment.
 5. Replace direct wallet payment route with Payment-backed path or keep direct path temporarily behind explicit compatibility.
 6. Add Trade payment integration tests.
 
-### Phase 3: Provider Adapter Readiness
+### Phase 3: Wallet Balance Deduction
+
+1. Add `Deduction` entity and repository under Payment.
+2. Add `DeductionService` for first-phase `wallet_balance` deduction in invoice currency.
+3. Update `InvoiceService::pay()` to apply deduction before gateway payment and pass `payAmount` to gateways.
+4. Update `InvoiceService::markPaid()` to verify `notify.amount == invoice.amount - appliedDeductionAmount`.
+5. Update `InvoiceService::refund()` to refund external gateway amount and wallet deduction for full refunds.
+6. Update `MockGateway`, `WalletGateway`, and provider gateways to honor `$options['payAmount']`.
+7. Update Trade payment convenience endpoints to accept `walletAmount` and structured `deduction` payloads.
+8. Add deduction unit and integration tests.
+
+### Phase 4: Provider Adapter Readiness
 
 1. Define provider config schema for external gateways.
 2. Add abstract signer/parser client patterns if needed.
 3. Add provider adapter tests with fake payloads.
 4. Document required certification/manual verification steps.
 
-### Phase 4: Fuiou/Huifu Providers
+### Phase 5: Fuiou/Huifu Providers
 
 This phase is intentionally out of first implementation scope.
 
@@ -925,6 +1171,10 @@ Do not migrate account onboarding, POS management, or auto withdraw in this phas
 | Should provider gateway update Order directly? | No, events only |
 | Should Fuiou/Huifu be standalone bundles? | No, future gateway adapters under Payment |
 | Should PaymentRequisition be included? | No, separate Finance/Approval module later |
+| Should wallet balance deduction be a standalone module? | No, keep `Deduction` inside Payment |
+| Which deduction type is implemented first? | Only `wallet_balance` for the invoice currency |
+| How should full wallet deduction be recorded? | Set `invoice.payment = wallet` and mark invoice paid after deduction applies |
+| Should deducted invoices support partial refund first? | No, only full refund until allocation rules are designed |
 
 ---
 
@@ -940,5 +1190,6 @@ The Payment module design is implemented when:
 | Webhook | Updates invoice through service, not controller logic |
 | Events | Invoice paid/refunded/cancelled events dispatched |
 | Trade integration | Order can be paid through invoice event flow |
+| Deduction | Payment supports first-phase `wallet_balance` deduction with specific currency and gateway `payAmount` |
 | Tests | Unit and integration tests cover idempotency and invalid transitions |
 | CI | Coverage remains at or above required threshold |

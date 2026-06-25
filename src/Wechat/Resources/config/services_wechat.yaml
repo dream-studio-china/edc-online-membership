@@ -19,3 +19,4 @@ services:
     App\Wechat\Service\Gateway\WechatPayGateway:
         arguments:
             $notifyUrl: '%env(WECHAT_PAY_NOTIFY_URL)%'
+        tags: ['payment.gateway']
