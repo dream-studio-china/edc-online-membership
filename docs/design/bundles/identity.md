@@ -3,17 +3,22 @@ Identity Module Design
 
 Overview
 --------
-This document describes the Identity module (src/Identity) we will add to the project. It implements:
+This document describes the Identity module (src/Identity). It implements:
 
 - JWT access tokens (RS256) with a 7200s TTL
 - server-stored refresh tokens (opaque, hashed) with 1 year TTL and rotation
 - phone-based OTP login/verification, delivered via Alibaba Cloud SMS
 - identifier-based login: identifier can be email, username or a verified phone
+- **password-based user self-registration** (`POST /api/auth/register`)
+- **user profile management** with password change and profile update
+- **admin user CRUD** with managed password changes
 
 Goals
 -----
 - Keep existing identifier+password flow intact
 - Add phone+OTP as an additional auth path
+- **Add password registration** as a self-service onboarding path
+- **Add user controllers** for profile management (App) and admin CRUD (Manage)
 - Use Redis for OTP storage and rate-limiting
 - Use RS256 for JWT signing and verify with public key
 - Store refresh tokens hashed in MySQL (identity_refresh_token table)
@@ -64,6 +69,14 @@ Login (identifier + password)
 - identifier may be email, username or a phone (phone allowed only if phone_verified=true)
 - on success returns { access_token, refresh_token, expires_in }
 
+Register (password self-registration)
+- POST /api/auth/register { email, username, password, phone? }
+- Public endpoint (no auth required)
+- Validates uniqueness of email, username, and phone
+- Creates User with hashed password via UserService::register()
+- Returns JWT tokens directly (same format as login)
+- Password minimum 6 characters
+
 OTP Login / Verify
 - POST /api/auth/otp/request { phone, purpose }
   - generates OTP, stores hash in Redis, sends SMS via Aliyun
@@ -77,6 +90,41 @@ Token Refresh
 Logout
 - POST /api/auth/logout { refresh_token }
 - marks refresh token revoked
+
+User Profile (App)
+------------------
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET | `/api/v1/app/users/me` | ROLE_USER | Get current user profile |
+| PUT | `/api/v1/app/users/me` | ROLE_USER | Update email, username, phone, optional password |
+| POST | `/api/v1/app/users/change-password` | ROLE_USER | Change own password (requires current password) |
+
+User Management (Manage)
+------------------------
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET | `/api/v1/manage/users` | ROLE_ADMIN | List all users |
+| GET | `/api/v1/manage/users/{id}` | ROLE_ADMIN | View user detail |
+| POST | `/api/v1/manage/users` | ROLE_ADMIN | Create user (with hashed password) |
+| PUT | `/api/v1/manage/users/{id}` | ROLE_ADMIN | Update user (email, username, password, phone, roles) |
+| DELETE | `/api/v1/manage/users/{id}` | ROLE_ADMIN | Delete user |
+| POST | `/api/v1/manage/users/{id}/change-password` | ROLE_ADMIN | Admin change user password (no current pw required) |
+
+UserService
+-----------
+
+`App\Identity\Service\UserService` extends `BaseService` and encapsulates all user business logic:
+
+| Method | Description |
+|--------|-------------|
+| `register($email, $username, $password, $phone)` | Validate uniqueness, create User, hash password, persist |
+| `verifyPassword($user, $password)` | Verify a plain password against a User |
+| `changePassword($user, $currentPassword, $newPassword)` | Verify current password, hash and set new, persist |
+| `adminChangePassword($user, $newPassword)` | Hash and set new password, persist (no current pw check) |
+| `updateProfile($user, $data)` | Validate uniqueness of email/username/phone, update fields, optional password change |
+| `update($object, $data)` | Auto-hashes password when present in data; skips empty passwords |
 
 Security Considerations
 -----------------------
@@ -98,7 +146,17 @@ Implementation notes
 - Namespace: App\Identity
 - Paths: src/Identity/{Entity,Repository,Service,Sms,Security,Controller,Resources}
 - Services registered under src/Identity/Resources/config/services_identity.yaml
-- Tests: unit tests for TokenManager and OtpService; integration tests for endpoints
+- Tests: unit tests for TokenManager, OtpService, and **UserService**; integration tests for all endpoints
+
+Test Coverage
+-------------
+
+| File | Type | Coverage |
+|------|------|----------|
+| `UserServiceTest` | Unit (28 tests) | register, changePassword, adminChangePassword, updateProfile, update password hashing |
+| `UserControllerTest` | Unit (3 tests) | Unauthenticated access rejection for all actions |
+| `UserApiIntegrationTest` | Integration (45 tests) | Register flow, login, profile, change-password, update-profile, manage CRUD, manage change-password, specification browsing, wallet deposit, transfer, balance, reconcile, edge cases for all endpoints |
+| `AuthControllerTest` | Unit (existing) | Login, logout, refresh, OTP verification |
 
 Next steps
 ----------

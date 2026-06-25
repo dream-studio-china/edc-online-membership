@@ -34,8 +34,9 @@ Trade provides a complete order management system:
 src/Trade/
 |-- Controller/
 |   |-- App/
-|   |   |-- OrderController.php           # Public read: list my orders
+|   |   |-- OrderController.php           # Public: list/create/cancel own orders
 |   |   |-- ProductController.php          # Public read: list products
+|   |   |-- SpecificationController.php    # Public read: browse specs by product
 |   |-- Manage/
 |       |-- OrderController.php            # CRUD + workflow + price calculation
 |       |-- ProductController.php          # CRUD
@@ -294,6 +295,7 @@ OrderService::createOrder($calculatedItems, $user, $totalAmount, $currency, $not
 | POST | `/api/v1/manage/specifications` | Create spec |
 | PUT | `/api/v1/manage/specifications/{id}` | Update spec |
 | DELETE | `/api/v1/manage/specifications/{id}` | Delete spec |
+| GET | `/api/v1/manage/products/{id}/specifications/{sid}` | **Manage spec detail** |
 | GET | `/api/v1/manage/orders` | List orders |
 | GET | `/api/v1/manage/orders/{id}` | Order detail |
 | POST | `/api/v1/manage/orders` | Create order (custom logic) |
@@ -314,6 +316,9 @@ OrderService::createOrder($calculatedItems, $user, $totalAmount, $currency, $not
 |--------|------|-------------|
 | GET | `/api/v1/app/products` | List active, non-deleted products |
 | GET | `/api/v1/app/products/{id}` | Product detail |
+| **GET** | **`/api/v1/app/specifications`** | **Browse all active specs** |
+| **GET** | **`/api/v1/app/specifications/by-product/{id}`** | **Specs by product** |
+| **GET** | **`/api/v1/app/specifications/{id}`** | **Spec detail** |
 | GET | `/api/v1/app/orders` | List current user's orders |
 | GET | `/api/v1/app/orders/{id}` | Order detail |
 | POST | `/api/v1/app/orders` | Create order |

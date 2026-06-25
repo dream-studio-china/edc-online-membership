@@ -42,8 +42,9 @@
 ├── src/Identity/                 # Authentication & Identity
 │   ├── Entity/User.php, RefreshToken.php
 │   ├── Security/JwtAuthenticator.php, TokenManager.php
-│   ├── Service/OtpService.php, SMS providers
-│   └── Controller/AuthController.php, OtpController.php
+│   ├── Service/OtpService.php, UserService.php, SMS providers
+│   ├── Command/CreateUserCommand.php
+│   └── Controller/AuthController.php, App/UserController.php, Manage/UserController.php
 │
 ├── src/Trade/                    # E-commerce module
 │   ├── Entity/                   # Product, Specification, Order, OrderItem
@@ -51,7 +52,7 @@
 │   ├── Service/Pricing/                # PriceCalculatorInterface (Base, Quantity, Total)
 │   ├── EventListener/OrderWorkflowListener.php
 │   ├── Exception/                      # OrderInvalidTransitionException, SpecificationNotFoundException
-│   └── Controller/App/ + Manage/       # CRUD + workflow + pay/refund/fulfill + items + cancel
+│   └── Controller/App/ + Manage/       # CRUD + workflow + pay/refund/fulfill + items + cancel + spec browse/v2
 │
 ├── src/Payment/                  # Payment module
 │   ├── Entity/Invoice.php              # Payment invoice (pending→paying→paid→refunded)
@@ -64,8 +65,11 @@
 │
 ├── src/Wallet/                   # Wallet module
 │   ├── Entity/                   # Wallet (balance, optimistic locking), WalletTransaction
-│   ├── Service/TransferService.php     # Atomic transfer with deadlock prevention + idempotency
+│   ├── Service/TransferService.php     # Atomic transfer + deposit with deadlock prevention + idempotency
+│   ├── Service/WalletService.php       # verifyBalance() + reconcile()
 │   └── Controller/Manage/
+│       ├── TransferController.php      # transfer + deposit endpoints
+│       └── WalletController.php        # CRUD + balance + reconcile
 │
 ├── src/Wechat/                   # WeChat module
 │   ├── Entity/WechatUser.php           # OneToOne→User (openid, unionid, sessionKey, profile)
@@ -121,6 +125,7 @@
 | Endpoint | Method | Auth | Description |
 |----------|--------|------|-------------|
 | `/api/auth/login` | POST | PUBLIC | Email/username/phone + password → `{access_token, refresh_token}` |
+| `/api/auth/register` | POST | PUBLIC | **Self-registration** (email, username, password, phone?) → tokens |
 | `/api/auth/otp/request` | POST | PUBLIC | Request 6-digit OTP via SMS (Alibaba Cloud) |
 | `/api/auth/otp/verify` | POST | PUBLIC | Verify OTP → tokens or mark phone verified |
 | `/api/auth/token/refresh` | POST | PUBLIC | Rotate refresh token (old revoked, new issued) |
@@ -129,6 +134,23 @@
 | `/api/wechat/oauth/url` | GET | PUBLIC | Official Account OAuth redirect URL |
 | `/api/wechat/oauth/callback` | POST | PUBLIC | OAuth `code` → JWT tokens |
 | `/api/wechat/miniapp/phone` | POST | AUTH | Bind WeChat phone number to authenticated user |
+
+### 4.1 User Profile (App)
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET | `/api/v1/app/users/me` | ROLE_USER | Current user profile |
+| PUT | `/api/v1/app/users/me` | ROLE_USER | Update email, username, phone, optional password |
+| POST | `/api/v1/app/users/change-password` | ROLE_USER | Change password (requires current) |
+
+### 4.2 User Management (Manage)
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET/POST/PUT/DELETE | `/api/v1/manage/users/*` | ROLE_ADMIN | Admin user CRUD |
+| POST | `/api/v1/manage/users/{id}/change-password` | ROLE_ADMIN | Admin change user password |
+
+**UserService** (`App\Identity\Service\UserService`): encapsulates register, verifyPassword, changePassword, adminChangePassword, updateProfile. Auto-hashes passwords in `update()`.
 
 **Token management**: RS256 JWT (7200s TTL), HMAC-SHA256 refresh tokens with rotation + reuse detection.
 
@@ -219,6 +241,15 @@ draft → pending → confirmed → paid → fulfilled → completed → refunde
 | POST | `/app/orders` | Create order (auto-assigns user) |
 | GET | `/app/orders/{id}/items` | View own order items |
 | POST | `/app/orders/{id}/cancel` | Cancel own order (draft/pending/confirmed) |
+| POST | `/app/orders/{id}/payment` | **Pay order via gateway (wallet, mock, wechat)** |
+
+### 7.6 App Specification Endpoints
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/v1/app/specifications` | Browse all active specs |
+| GET | `/api/v1/app/specifications/by-product/{id}` | Specs for a product |
+| GET | `/api/v1/app/specifications/{id}` | Spec detail |
 
 ## 8. Payment Module
 
@@ -332,6 +363,9 @@ Placed in `src/Core/Controller/System/` (framework layer). NelmioApiDoc path_pat
 | **Optimistic locking** | Wallet | `#[ORM\Version]` on Wallet |
 | **Post-response enrichment** | Core | `OpenApiEnricherListener` post-processes `/api/doc` and `/api/doc.json` |
 | **commonFilter** | Controllers | Array of WHERE criteria injected into all queries. `[]` = no filter (admin), `['user' => $user]` = user-scoped, `['id' => -1]` = block all |
+| **Payment via wallet** | Trade | `POST /app/orders/{id}/payment` with `payment: "wallet"` creates Invoice → WalletGateway deducts user wallet |
+| **Balance audit** | Wallet | `GET /wallets/balance` checks `SUM(wallets) == SUM(deposits)`; `POST /wallets/reconcile` fixes per-wallet gaps with `TYPE_ADJUSTMENT` |
+| **Idempotent deposit** | Wallet | `POST /transfers/deposit` with `referenceId` — duplicate requests return existing transaction |
 | **Gateway registry** | Payment | `#[AutowireIterator]` + `_instanceof` auto-tags all `PaymentGatewayInterface` implementations |
 | **OneToOne extension** | Wechat | `WechatUser` extends User identity without modifying User entity |
 | **System introspection** | Core | Entity metadata + route export via `/system/*` endpoints |
@@ -412,14 +446,14 @@ Enriches all endpoints (90+):
 
 - **Framework**: PHPUnit 12.5
 - **DB**: SQLite `var/test.db` in test environment
-- **Coverage**: 80% minimum (enforced in CI), currently 85.50% lines
-- **Test count**: 922 tests, ~3177 assertions
+- **Coverage**: 80% minimum (enforced in CI), currently **86.64% lines**
+- **Test count**: **1019 tests**, **~3489 assertions**
 - **Key test groups**:
   - `tests/Wechat/`: 59 tests (Entity, Service, AuthService, Gateway, Controller, Repository)
   - `tests/Trade/`: 171 tests (Entity, Service, Pricing, Integration, EventListener, Workflow API)
-  - `tests/Wallet/`: 63 tests (Entity, Integration, Transfer Service, API regression)
+  - `tests/Wallet/`: **94 tests** (Entity, Integration, Transfer Service, **WalletService**, API regression)
   - `tests/Common/`: 68 tests (Entity, Integration, Batch update)
-  - `tests/Identity/`: 11 tests (Auth, OTP, Token, Black box)
+  - `tests/Identity/`: **92 tests** (Auth, OTP, Token, Black box, **UserService**, **UserController**, **UserApiIntegration**)
   - `tests/Payment/`: Integration tests for Invoice + Gateway
   - `tests/Integration/`: ~20 cross-module tests
   - `tests/Core/`: BaseService, RestController, Parser, Serializer, Utils, System controllers
