@@ -502,6 +502,4 @@ Check serializer service wiring and request parameters like `@display`, `@expand
 
 ## License
 
-`composer.json` currently marks this project as `proprietary`.
-
-If you plan to publish publicly, update license metadata and add a dedicated `LICENSE` file.
+MIT. See [LICENSE](LICENSE) for details.
