@@ -32,12 +32,14 @@ final class AuthControllerTest extends TestCase
         $this->hasher = $this->createMock(UserPasswordHasherInterface::class);
         $this->otpService = $this->createMock(OtpService::class);
         $this->em = $this->createMock(EntityManagerInterface::class);
+        $userService = $this->createMock(\App\Identity\Service\UserService::class);
 
         $this->controller = new AuthController(
             $this->tokenManager,
             $this->userRepository,
             $this->hasher,
             $this->otpService,
+            $userService,
             $this->em,
             'TPL_LOGIN',
             'TPL_VERIFY',
