@@ -1,18 +1,17 @@
-
 services:
-###> doctrine/doctrine-bundle ###
+  app:
+    environment:
+      APP_ENV: dev
+      APP_DEBUG: "1"
+      # Dev fallback: use .env or .env.local's APP_SECRET, or this default
+      APP_SECRET: ${APP_SECRET:-dev-secret-change-me}
+    volumes:
+      - ./:/var/www/html
+
   database:
     ports:
-      - "5432"
-###< doctrine/doctrine-bundle ###
+      - "5432:5432"
 
-###> symfony/mailer ###
   mailer:
-    image: axllent/mailpit
     ports:
-      - "1025"
-      - "8025"
-    environment:
-      MP_SMTP_AUTH_ACCEPT_ANY: 1
-      MP_SMTP_AUTH_ALLOW_INSECURE: 1
-###< symfony/mailer ###
+      - "1025:1025"

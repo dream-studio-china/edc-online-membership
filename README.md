@@ -457,12 +457,54 @@ XDEBUG_MODE=coverage ./vendor/bin/phpunit --coverage-text
 
 `phpunit.dist.xml` is preconfigured with `APP_ENV=test` and `KERNEL_CLASS=App\Kernel`.
 
+## Docker Deployment
+
+### Production
+
+```bash
+# Build and start all services
+docker compose up -d
+
+# Run database migration
+docker compose exec app php bin/console doctrine:migrations:migrate
+
+# Generate JWT keys (in app container)
+docker compose exec app mkdir -p var
+docker compose exec app php -r '
+  $key = openssl_pkey_new(["private_key_bits"=>2048,"private_key_type"=>OPENSSL_KEYTYPE_RSA]);
+  openssl_pkey_export($key, $priv);
+  file_put_contents("var/jwt_private.pem", $priv);
+  file_put_contents("var/jwt_public.pem", openssl_pkey_get_details($key)["key"]);
+'
+
+# Create admin user
+docker compose exec app php bin/console app:identity:user:create admin@example.com admin 'P@ssw0rd' --admin
+```
+
+### Development
+
+```bash
+# Dev mode overrides (mounts source, enables debug, exposes ports)
+docker compose -f compose.yaml -f compose.override.yaml up -d --build
+```
+
+### Services
+
+| Service | Port | Description |
+|---------|------|-------------|
+| nginx | `${APP_PORT:-8080}` | API gateway |
+| app | — | PHP-FPM 8.4 |
+| database | `5432` (dev) | PostgreSQL 16 |
+| redis | — | Redis 7 (OTP/session) |
+| mailer | `${MAILPIT_UI_PORT:-8025}` | Mailpit (email testing) |
+
 ## Docker Notes
 
 The repository includes:
 
-- `compose.yaml` - PostgreSQL 16 service
-- `compose.override.yaml` - host ports + Mailpit
+- `compose.yaml` - Production: app (PHP-FPM), nginx, PostgreSQL 16, Redis 7, Mailpit
+- `compose.override.yaml` - Dev overrides (source mounting, debug, exposed ports)
+- `Dockerfile` - PHP 8.4-FPM Alpine with required extensions
 
 Default exposed ports:
 
