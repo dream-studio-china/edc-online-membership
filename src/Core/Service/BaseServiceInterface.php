@@ -38,7 +38,7 @@ interface BaseServiceInterface
      * @param bool $noFlush When true, persist but do not call flush(). Caller is responsible for flushing.
      * @return mixed
      */
-    public function update($object, array $data = null, bool $noFlush = false);
+    public function update($object, ?array $data = null, bool $noFlush = false);
 
     /**
      * Remove the given entity.

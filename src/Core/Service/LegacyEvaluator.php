@@ -14,7 +14,7 @@ class LegacyEvaluator
     /** @var array */
     protected $globals;
 
-    public function __construct(ExpressionLanguage $language = null, LoggerInterface $logger = null, array $globals = [])
+    public function __construct(?ExpressionLanguage $language = null, ?LoggerInterface $logger = null, array $globals = [])
     {
         $this->language = $language ?: new ExpressionLanguage();
         $this->logger = $logger;

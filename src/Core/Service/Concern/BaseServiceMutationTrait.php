@@ -39,7 +39,7 @@ trait BaseServiceMutationTrait
      * @throws OptimisticLockException
      * @throws \ReflectionException
      */
-    public function update($object, array $data = null, bool $noFlush = false)
+    public function update($object, ?array $data = null, bool $noFlush = false)
     {
         if (empty($object)) {
             $this->logger->error('Object error, original data: '. json_encode($data));

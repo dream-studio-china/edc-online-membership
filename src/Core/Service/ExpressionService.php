@@ -17,7 +17,7 @@ class ExpressionService implements ExpressionServiceInterface
     /** @var CacheInterface|null */
     private $cache;
 
-    public function __construct(CacheInterface $cache = null)
+    public function __construct(?CacheInterface $cache = null)
     {
         $this->cache = $cache;
     }

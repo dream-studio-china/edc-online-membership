@@ -82,7 +82,7 @@ trait UpdateApiViewMixin
      * @param int $writeMode
      * @return mixed
      */
-    private function updateSingle($entity, $content, array $transformer = null, int $writeMode = 1 /* MODE_UPDATE */, bool $noFlush = false)
+    private function updateSingle($entity, $content, ?array $transformer = null, int $writeMode = 1 /* MODE_UPDATE */, bool $noFlush = false)
     {
         $service = $this->service ?? $this->get($this->serviceClass);
 

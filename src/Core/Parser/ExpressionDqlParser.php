@@ -60,7 +60,7 @@ class ExpressionDqlParser
         'matches' => 'REGEXP(%1$s, %2$s) = TRUE',
     ];
 
-    public function __construct(SimpleCacheInterface $cache = null, ExpressionLanguage $language = null)
+    public function __construct(?SimpleCacheInterface $cache = null, ?ExpressionLanguage $language = null)
     {
         $this->cache = $cache;
         $this->expressionLanguage = $language ?? new ExpressionLanguage();
