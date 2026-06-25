@@ -26,6 +26,7 @@ class InvoiceService extends BaseService implements InvoiceServiceInterface
     public function __construct(
         ContainerInterface $container,
         private readonly PaymentGatewayRegistry $gatewayRegistry,
+        private readonly DeductionService $deductionService,
         #[Target('state_machine.invoice')]
         private readonly WorkflowInterface $workflow,
         private readonly EventDispatcherInterface $dispatcher,
@@ -59,14 +60,21 @@ class InvoiceService extends BaseService implements InvoiceServiceInterface
 
     public function pay(Invoice $invoice, string $payment, array $options = []): PaymentResult
     {
-        $gateway = $this->gatewayRegistry->get($payment);
-
-        return $this->wrapInTransaction(function () use ($invoice, $payment, $options, $gateway) {
+        return $this->wrapInTransaction(function () use ($invoice, $payment, $options) {
             if (!$this->workflow->can($invoice, 'start_pay')) {
                 throw new InvoiceInvalidTransitionException($invoice, 'start_pay');
             }
 
-            $invoice->setPayment($payment);
+            $deduction = $this->deductionService->applyFromOptions($invoice, $options);
+            $deductedAmount = $this->deductionService->sumAppliedAmount($invoice);
+            $payAmount = $invoice->getAmount() - $deductedAmount;
+
+            if ($payAmount < 0) {
+                throw new InvoiceAmountMismatchException('Deduction amount exceeds invoice amount.');
+            }
+
+            $effectivePayment = $payAmount === 0 ? Invoice::PAYMENT_WALLET : $payment;
+            $invoice->setPayment($effectivePayment);
             if (isset($options['gateway'])) {
                 $invoice->setGateway((string) $options['gateway']);
             }
@@ -76,7 +84,41 @@ class InvoiceService extends BaseService implements InvoiceServiceInterface
             $this->workflow->apply($invoice, 'start_pay');
             $this->getEntityManager()->flush();
 
-            $result = $gateway->pay($invoice, $options);
+            if ($payAmount === 0) {
+                $payload = [
+                    'deductionOnly' => true,
+                    'deductionId' => $deduction?->getUuid(),
+                    'transactionId' => $deduction?->getWalletTransactionId(),
+                    'payAmount' => 0,
+                ];
+                $this->markPaid($invoice, new PaymentNotifyResult(
+                    payment: Invoice::PAYMENT_WALLET,
+                    outTradeNo: $invoice->getOutTradeNo(),
+                    status: Invoice::STATUS_PAID,
+                    amount: 0,
+                    currency: $invoice->getCurrency(),
+                    transactionId: $deduction?->getWalletTransactionId(),
+                    paidAt: new \DateTimeImmutable(),
+                    rawData: $payload,
+                ));
+
+                return new PaymentResult(
+                    invoice: $invoice,
+                    status: Invoice::STATUS_PAID,
+                    payload: $payload,
+                    message: 'Wallet deduction payment completed',
+                );
+            }
+
+            try {
+                $gateway = $this->gatewayRegistry->get($payment);
+                $result = $gateway->pay($invoice, array_merge($options, ['payAmount' => $payAmount]));
+            } catch (\Throwable $e) {
+                if ($deduction !== null) {
+                    $this->deductionService->release($invoice, 'Gateway payment failed: ' . $e->getMessage());
+                }
+                throw $e;
+            }
             $payload = $result->payload ?? [];
             if ($payload) {
                 $invoice->appendExtraData('pay', $this->sanitizePayload($payload));
@@ -87,7 +129,7 @@ class InvoiceService extends BaseService implements InvoiceServiceInterface
                     payment: $payment,
                     outTradeNo: $invoice->getOutTradeNo(),
                     status: Invoice::STATUS_PAID,
-                    amount: $invoice->getAmount(),
+                    amount: $payAmount,
                     currency: $invoice->getCurrency(),
                     transactionId: $payload['transactionId'] ?? null,
                     paidAt: new \DateTimeImmutable(),
@@ -122,7 +164,8 @@ class InvoiceService extends BaseService implements InvoiceServiceInterface
         if ($invoice->getStatus() === Invoice::STATUS_CANCELLED) {
             throw new InvoiceInvalidTransitionException($invoice, 'mark_paid');
         }
-        if ($invoice->getAmount() !== $result->amount || $invoice->getCurrency() !== strtoupper($result->currency)) {
+        $expectedAmount = $invoice->getAmount() - $this->deductionService->sumAppliedAmount($invoice);
+        if ($expectedAmount !== $result->amount || $invoice->getCurrency() !== strtoupper($result->currency)) {
             throw new InvoiceAmountMismatchException('Payment notify amount or currency does not match invoice.');
         }
         if (!$this->workflow->can($invoice, 'mark_paid')) {
@@ -152,6 +195,7 @@ class InvoiceService extends BaseService implements InvoiceServiceInterface
         }
 
         return $this->wrapInTransaction(function () use ($invoice, $result) {
+            $this->deductionService->release($invoice, 'Invoice payment failed.');
             $invoice->appendExtraData('notify_failed', $this->sanitizePayload($result->rawData));
             $this->workflow->apply($invoice, 'fail');
             $this->getEntityManager()->flush();
@@ -168,6 +212,7 @@ class InvoiceService extends BaseService implements InvoiceServiceInterface
         }
 
         return $this->wrapInTransaction(function () use ($invoice, $reason) {
+            $this->deductionService->release($invoice, $reason ?? 'Invoice cancelled.');
             if ($reason !== null) {
                 $invoice->appendExtraData('cancel', ['reason' => $reason]);
             }
@@ -185,6 +230,11 @@ class InvoiceService extends BaseService implements InvoiceServiceInterface
         if ($amount <= 0) {
             throw new \InvalidArgumentException('Refund amount must be positive.');
         }
+        $hasDeduction = $this->deductionService->hasApplied($invoice);
+        if ($hasDeduction && $amount !== $invoice->getAmount()) {
+            throw new InvoiceAmountMismatchException('Deducted invoices only support full refund.');
+        }
+
         $remaining = $invoice->getAmount() - $invoice->getRefundedAmount();
         if ($amount > $remaining) {
             throw new InvoiceAmountMismatchException('Refund amount exceeds paid remaining amount.');
@@ -194,13 +244,35 @@ class InvoiceService extends BaseService implements InvoiceServiceInterface
         }
 
         $payment = $invoice->getPayment() ?? throw new \RuntimeException('Invoice has no payment gateway.');
-        $gateway = $this->gatewayRegistry->get($payment);
 
-        return $this->wrapInTransaction(function () use ($invoice, $amount, $reason, $options, $gateway) {
-            $result = $gateway->refund($invoice, $amount, $reason, $options);
+        return $this->wrapInTransaction(function () use ($invoice, $amount, $reason, $options, $payment, $hasDeduction) {
+            $deductedAmount = $this->deductionService->sumAppliedAmount($invoice);
+            $gatewayAmount = $hasDeduction ? $amount - $deductedAmount : $amount;
+            $rawData = [];
+            $refundId = null;
+
+            if ($gatewayAmount > 0) {
+                $gateway = $this->gatewayRegistry->get($payment);
+                $gatewayPaidAmount = $invoice->getAmount() - $deductedAmount;
+                $result = $gateway->refund($invoice, $gatewayAmount, $reason, array_merge($options, ['payAmount' => $gatewayPaidAmount]));
+                $refundId = $result->refundId;
+                $rawData['gateway'] = $result->rawData;
+            }
+
+            if ($hasDeduction) {
+                $deduction = $this->deductionService->refund($invoice, $reason);
+                if ($deduction !== null) {
+                    $rawData['deduction'] = [
+                        'deductionId' => $deduction->getUuid(),
+                        'refundTransactionId' => $deduction->getRefundTransactionId(),
+                        'amount' => $deduction->getAmount(),
+                    ];
+                }
+            }
+
             $newRefundedAmount = $invoice->getRefundedAmount() + $amount;
             $invoice->setRefundedAmount($newRefundedAmount);
-            $invoice->appendExtraData('refund_' . ($result->refundId ?? count($invoice->getExtraData() ?? [])), $this->sanitizePayload($result->rawData));
+            $invoice->appendExtraData('refund_' . ($refundId ?? count($invoice->getExtraData() ?? [])), $this->sanitizePayload($rawData));
 
             $transition = $newRefundedAmount >= $invoice->getAmount() ? 'refund' : 'partial_refund';
             if (!$this->workflow->can($invoice, $transition)) {
@@ -212,7 +284,7 @@ class InvoiceService extends BaseService implements InvoiceServiceInterface
             $this->workflow->apply($invoice, $transition);
             $this->getEntityManager()->flush();
 
-            $finalResult = new PaymentRefundResult($invoice, $amount, $invoice->getStatus(), $result->refundId, $result->rawData);
+            $finalResult = new PaymentRefundResult($invoice, $amount, $invoice->getStatus(), $refundId, $rawData);
             $this->dispatcher->dispatch(new InvoiceRefundedEvent($invoice, $finalResult));
 
             return $finalResult;

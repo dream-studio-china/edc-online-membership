@@ -81,6 +81,7 @@ final class InvoiceServiceIntegrationTest extends IntegrationKernelTestCase
 
         $partial = $this->service->refund($invoice, 500, 'partial');
         self::assertSame(Invoice::STATUS_PARTIAL_REFUNDED, $partial->status);
+        self::assertSame(1200, $partial->rawData['gateway']['paidAmount']);
         self::assertSame(500, $invoice->getRefundedAmount());
 
         $full = $this->service->refund($invoice, 700, 'full');

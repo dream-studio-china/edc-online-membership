@@ -44,11 +44,12 @@ final class WalletGateway implements PaymentGatewayInterface
         if ($wallet === null || $wallet->getId() === null) {
             throw new \RuntimeException(sprintf('No %s wallet found for payer.', $invoice->getCurrency()));
         }
+        $amount = (int) ($options['payAmount'] ?? $invoice->getAmount());
 
         $result = $this->transferService->transfer(
             $wallet->getId(),
             $systemWalletId,
-            $invoice->getAmount(),
+            $amount,
             'invoice-pay-' . $invoice->getOutTradeNo(),
             $invoice->getSubject() ?? ('Payment for invoice ' . $invoice->getOutTradeNo()),
         );
@@ -85,6 +86,7 @@ final class WalletGateway implements PaymentGatewayInterface
             throw new \RuntimeException(sprintf('No %s wallet found for payer.', $invoice->getCurrency()));
         }
 
+        $paidAmount = (int) ($options['payAmount'] ?? $invoice->getAmount());
         $transfer = $this->transferService->transfer(
             $systemWalletId,
             $wallet->getId(),
@@ -96,7 +98,7 @@ final class WalletGateway implements PaymentGatewayInterface
         return new PaymentRefundResult(
             invoice: $invoice,
             amount: $amount,
-            status: $amount >= ($invoice->getAmount() - $invoice->getRefundedAmount()) ? Invoice::STATUS_REFUNDED : Invoice::STATUS_PARTIAL_REFUNDED,
+            status: $amount >= ($paidAmount - $invoice->getRefundedAmount()) ? Invoice::STATUS_REFUNDED : Invoice::STATUS_PARTIAL_REFUNDED,
             refundId: $transfer->transaction->getUuid(),
             rawData: ['reason' => $reason, 'transactionId' => $transfer->transaction->getUuid()],
         );

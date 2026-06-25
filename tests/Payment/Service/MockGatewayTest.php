@@ -28,6 +28,9 @@ final class MockGatewayTest extends TestCase
         self::assertSame(Invoice::STATUS_PAID, $paid->status);
         self::assertSame('txn-1', $paid->payload['transactionId']);
 
+        $deducted = $gateway->pay($invoice, ['payAmount' => 700]);
+        self::assertSame(700, $deducted->payload['amount']);
+
         $request = new Request([], [], [], [], [], [], json_encode([
             'secret' => 'mock',
             'outTradeNo' => 'PAY-MOCK',
@@ -42,6 +45,7 @@ final class MockGatewayTest extends TestCase
 
         $refund = $gateway->refund($invoice, 500, 'test');
         self::assertSame(Invoice::STATUS_PARTIAL_REFUNDED, $refund->status);
+        self::assertSame(Invoice::STATUS_REFUNDED, $gateway->refund($invoice, 700, 'deducted', ['payAmount' => 700])->status);
         self::assertStringStartsWith('mock-refund-', $refund->refundId);
         self::assertSame('SUCCESS', $gateway->getNotifySuccessResponse($notify)->getContent());
     }
