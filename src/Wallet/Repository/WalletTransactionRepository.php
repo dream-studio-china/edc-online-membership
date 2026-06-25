@@ -57,4 +57,42 @@ class WalletTransactionRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    public function getTotalDeposited(): int
+    {
+        // Count all one-sided credits: deposits + adjustment deposits
+        $result = $this->createQueryBuilder('t')
+            ->select('COALESCE(SUM(t.amount), 0)')
+            ->where('t.type IN (:types)')
+            ->andWhere('t.status = :status')
+            ->setParameter('types', [WalletTransaction::TYPE_DEPOSIT, WalletTransaction::TYPE_ADJUSTMENT])
+            ->setParameter('status', WalletTransaction::STATUS_COMPLETED)
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        return (int) $result;
+    }
+
+    public function getExpectedBalance(int $walletId): int
+    {
+        $credits = $this->createQueryBuilder('t')
+            ->select('COALESCE(SUM(t.amount), 0)')
+            ->where('t.toWallet = :walletId')
+            ->andWhere('t.status = :status')
+            ->setParameter('walletId', $walletId)
+            ->setParameter('status', WalletTransaction::STATUS_COMPLETED)
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        $debits = $this->createQueryBuilder('t')
+            ->select('COALESCE(SUM(t.amount), 0)')
+            ->where('t.fromWallet = :walletId')
+            ->andWhere('t.status = :status')
+            ->setParameter('walletId', $walletId)
+            ->setParameter('status', WalletTransaction::STATUS_COMPLETED)
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        return (int) $credits - (int) $debits;
+    }
 }

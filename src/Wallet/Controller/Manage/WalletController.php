@@ -10,6 +10,7 @@ use App\Core\View\DetailApiViewMixin;
 use App\Core\View\ListApiViewMixin;
 use App\Core\View\UpdateApiViewMixin;
 use App\Wallet\Service\WalletService;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
@@ -21,10 +22,26 @@ class WalletController extends RestController
         CreateApiViewMixin, UpdateApiViewMixin, DeleteApiViewMixin;
 
     protected array $requiredCreateProperties = ['user', 'currency'];
-    protected array $acceptedCreateProperties = ['user', 'currency', 'balance', 'status', 'label'];
+    protected array $acceptedCreateProperties = ['user', 'currency', 'status', 'label'];
     protected array $acceptedUpdateProperties = ['status', 'label', 'currency'];
 
     public function __construct(
         protected readonly WalletService $service
     ) {}
+
+    #[Route('/balance', name: 'balance', methods: ['GET'])]
+    public function verifyBalanceAction(): Response
+    {
+        $result = $this->service->verifyBalance();
+
+        return $this->success($result, $result['matches'] ? 'Balance is consistent' : 'Balance MISMATCH detected');
+    }
+
+    #[Route('/reconcile', name: 'reconcile', methods: ['POST'])]
+    public function reconcileAction(): Response
+    {
+        $result = $this->service->reconcile();
+
+        return $this->success($result, sprintf('%d wallet(s) reconciled', $result['reconciled']));
+    }
 }
