@@ -48,7 +48,9 @@ Compared with plain generated boilerplate, it provides:
 - Invoice-based payment framework with gateway abstraction (mock, wallet, future providers).
 - Atomic wallet transfers with deadlock prevention, optimistic locking, and idempotency.
 - JWT authentication (RS256) with refresh token rotation and phone-based OTP login.
+- **Password self-registration** with user profile management and admin user CRUD.
 - Comprehensive design contracts for consistent new module creation.
+- **Wallet balance verification** and reconciliation — ensures `SUM(wallets) == SUM(deposits)` at all times.
 
 ## Features
 
@@ -58,12 +60,15 @@ Compared with plain generated boilerplate, it provides:
 - **Modular Architecture**: Core framework + Common (CMS) + Trade (E-Commerce) + Payment + Wallet + Wechat (Login + Pay) + Identity (Auth) modules.
 - **JWT Authentication**: RS256 access tokens, HMAC-SHA256 refresh token rotation with reuse detection.
 - **OTP Login**: Phone-based one-time password via Alibaba Cloud SMS, rate-limited.
+- **Password Registration**: Self-service sign-up with email/username/phone uniqueness validation.
+- **User Management**: App profile endpoints + admin CRUD with password management.
 - **Order State Machine**: Symfony Workflow for order lifecycle (draft → completed), with workflow API endpoints.
 - **Price Calculation Pipeline**: Pluggable calculators with priority ordering for e-commerce order pricing.
 - **Atomic Wallet Transfers**: Deadlock prevention (consistent lock ordering), optimistic locking, idempotency via reference ID.
+- **Wallet Accounting**: System-injected deposits with audit trail, balance verification (`SUM(wallets) == SUM(deposits)`), per-wallet reconciliation.
 - **OpenAPI Documentation**: NelmioApiDocBundle with `#[OA\*]` attributes, Swagger UI at `/api/doc`.
 - **System Introspection**: Entity metadata and route export endpoints (`/system/*`).
-- **Comprehensive Testing**: ~80+ test files, 917 tests, ~3150 assertions, 85.50% coverage.
+- **Comprehensive Testing**: ~100+ test files, 1019 tests, ~3489 assertions, 86.64% coverage.
 - **Docker Compose**: MySQL 8 + Mailpit for development.
 
 ## Tech Stack
@@ -103,15 +108,15 @@ See `composer.json` for the full dependency list.
 │   │   ├── Repository/
 │   │   └── Service/
 │   ├── Trade/                    # E-Commerce module
-│   │   ├── Controller/App/       #   Product, Order listings
+│   │   ├── Controller/App/       #   Product, Order, Specification listings
 │   │   ├── Controller/Manage/    #   Product, Specification, Order (CRUD + workflow)
 │   │   ├── Entity/               #   Product, Specification, Order, OrderItem
 │   │   ├── Service/              #   OrderService, price calculation pipeline
 │   │   └── Service/Pricing/      #   PriceCalculatorInterface + 3 implementations
 │   ├── Wallet/                   # Wallet module
-│   │   ├── Controller/Manage/    #   Wallet, Transaction, Transfer endpoints
+│   │   ├── Controller/Manage/    #   Wallet, Transaction, Transfer (deposit) endpoints
 │   │   ├── Entity/               #   Wallet, WalletTransaction
-│   │   └── Service/              #   TransferService (atomic transfers)
+│   │   └── Service/              #   TransferService (atomic transfers + deposits), WalletService (balance/reconcile)
 │   ├── Payment/                  # Payment module
 │   │   ├── Controller/App/       #   Invoice list/detail/pay
 │   │   ├── Controller/Manage/    #   Invoice create/cancel/refund/transitions
@@ -133,9 +138,12 @@ See `composer.json` for the full dependency list.
 │   │       └── Gateway/          #   WechatPayGateway
 │   └── Identity/                 # Authentication module
 │       ├── Controller/           #   AuthController, OtpController
+│       ├── Controller/App/       #   UserController (profile, change-password)
+│       ├── Controller/Manage/    #   UserController (admin CRUD)
+│       ├── Command/              #   CreateUserCommand (CLI)
 │       ├── Entity/               #   User, RefreshToken
 │       ├── Security/             #   JwtAuthenticator, TokenManager
-│       └── Service/              #   OtpService, SMS providers
+│       └── Service/              #   UserService (register, password management), OtpService, SMS providers
 ├── config/                       # Symfony configuration
 │   └── packages/                 #   Doctrine, Security, Workflow, Serializer, etc.
 ├── migrations/                   # Doctrine migrations (7 versions)
@@ -239,10 +247,10 @@ The app runs at `http://localhost:${APP_PORT:-8080}`.
 | **Core** | `App\Core` | Framework foundation | RestController, BaseService, View mixins, Expression parser |
 | **Common** | `App\Common` | CMS | Category (tree), Tag, Content, Comment (polymorphic), Page, Media, Setting (KV) |
 | **Trade** | `App\Trade` | E-Commerce | Product + Specification, Order (state machine), Price pipeline |
-| **Wallet** | `App\Wallet` | Payments | Balance (cents), Atomic transfers, Idempotency, Optimistic locking |
+| **Wallet** | `App\Wallet` | Payments | Balance (cents), Atomic transfers, System deposits, Idempotency, Optimistic locking, Balance verification + reconciliation |
 | **Payment** | `App\Payment` | Invoicing | Invoice (cents + workflow), Gateway abstraction (mock/wallet/wechat), Webhooks, Events |
 | **Wechat** | `App\Wechat` | WeChat integration | Mini Program/Official Account login, WeChat Pay V3, WechatUser (OneToOne→User) |
-| **Identity** | `App\Identity` | Authentication | JWT (RS256), OTP (SMS), Refresh token rotation |
+| **Identity** | `App\Identity` | Authentication | JWT (RS256), OTP (SMS), Refresh token rotation, Password registration, User profile/CRUD |
 
 ## API Endpoints
 
@@ -250,11 +258,22 @@ The app runs at `http://localhost:${APP_PORT:-8080}`.
 
 | Method | Path | Description |
 |--------|------|-------------|
+| **POST** | **`/api/auth/register`** | **Password self-registration → tokens** |
 | POST | `/api/auth/login` | Identifier + password login |
 | POST | `/api/auth/otp/request` | Request OTP via SMS |
 | POST | `/api/auth/otp/verify` | Verify OTP |
 | POST | `/api/auth/token/refresh` | Rotate refresh token |
 | POST | `/api/auth/logout` | Revoke tokens |
+
+### User (`/api/v1/app/users`, `/api/v1/manage/users`)
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/v1/app/users/me` | Current user profile |
+| PUT | `/api/v1/app/users/me` | Update own profile |
+| POST | `/api/v1/app/users/change-password` | Change own password |
+| GET/POST/PUT/DELETE | `/api/v1/manage/users[/{id}]` | Admin user CRUD |
+| POST | `/api/v1/manage/users/{id}/change-password` | Admin change any password |
 
 ### Common — App (public read-only)
 
@@ -285,6 +304,9 @@ Resources: `categories`, `contents`, `tags`, `comments`, `pages`, `media`, `sett
 | Method | Path | Description |
 |--------|------|-------------|
 | GET | `/api/v1/app/products` | List active products |
+| **GET** | **`/api/v1/app/specifications`** | **Browse all active specs** |
+| **GET** | **`/api/v1/app/specifications/by-product/{id}`** | **Specs by product** |
+| **GET** | **`/api/v1/app/specifications/{id}`** | **Spec detail** |
 | GET | `/api/v1/app/orders` | List user's orders |
 | GET/POST/PUT/DELETE | `/api/v1/manage/products[/{id}]` | Product CRUD |
 | GET/POST/PUT/DELETE | `/api/v1/manage/specifications[/{id}]` | Specification CRUD |
@@ -301,8 +323,11 @@ Resources: `categories`, `contents`, `tags`, `comments`, `pages`, `media`, `sett
 | Method | Path | Description |
 |--------|------|-------------|
 | GET/POST/PUT/DELETE | `/api/v1/manage/wallets[/{id}]` | Wallet CRUD |
+| **GET** | **`/api/v1/manage/wallets/balance`** | **Verify accounting invariant** |
+| **POST** | **`/api/v1/manage/wallets/reconcile`** | **Per-wallet reconciliation** |
 | GET | `/api/v1/manage/transactions` | List transactions |
-| POST | `/api/v1/manage/transfer` | Atomic transfer |
+| POST | `/api/v1/manage/transfers` | Atomic transfer |
+| **POST** | **`/api/v1/manage/transfers/deposit`** | **System deposit (funding)** |
 
 ### Payment
 
@@ -464,7 +489,7 @@ Run a single test:
 ./vendor/bin/phpunit tests/Core/Service/BaseServiceUnitTest.php
 ```
 
-With coverage (CI enforces 85% minimum):
+With coverage (CI enforces minimum coverage):
 
 ```bash
 XDEBUG_MODE=coverage ./vendor/bin/phpunit --coverage-text
