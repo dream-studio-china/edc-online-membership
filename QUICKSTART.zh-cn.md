@@ -1,8 +1,34 @@
 # Quick Start / 快速上手
 
-> 5-10 分钟完成本地可登录、可调用受保护接口的最小流程。
+> 5 分钟完成本地可登录、可调用受保护接口的最小流程。
 
-## 0) 环境要求
+## 方式 A：Docker（推荐）
+
+无需本地安装 PHP、Composer 或数据库，仅需 **Docker**。
+
+```bash
+# 1) 启动所有服务（app、nginx、PostgreSQL、Redis、Mailpit）
+docker compose up -d --build
+
+# 2) 执行数据库迁移
+docker compose exec app php bin/console doctrine:migrations:migrate --no-interaction
+
+# 3) 创建管理员
+docker compose exec app php bin/console app:identity:user:create admin@example.com admin 'P@ssw0rd' --admin
+
+# 4) 登录获取 token
+curl -s -X POST http://localhost:8080/api/auth/login \
+  -H 'Content-Type: application/json' \
+  -d '{"identifier":"admin@example.com","password":"P@ssw0rd"}'
+```
+
+应用地址：`http://localhost:8080`。Swagger 文档：`http://localhost:8080/api/doc`。
+
+---
+
+## 方式 B：本机 PHP
+
+环境要求
 
 - PHP `8.5`（建议 Homebrew）
 - Composer

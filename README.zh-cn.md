@@ -205,11 +205,17 @@ symfony server:start
 php -S 127.0.0.1:8000 -t public
 ```
 
-### 方式 B：使用 Docker 启动数据库
+### 方式 B：完整 Docker 部署
+
+本地开发环境，一键启动所有服务（app、nginx、PostgreSQL、Redis、Mailpit）：
 
 ```bash
-docker compose up -d
+docker compose up -d --build
+php bin/console doctrine:migrations:migrate
+php bin/console app:identity:user:create admin@example.com admin 'P@ssw0rd' --admin
 ```
+
+应用访问地址：`http://localhost:${APP_PORT:-8080}`。
 
 然后执行数据库迁移：
 
@@ -457,18 +463,54 @@ XDEBUG_MODE=coverage ./vendor/bin/phpunit --coverage-text
 
 `phpunit.dist.xml` 已配置 `APP_ENV=test` 以及 `KERNEL_CLASS=App\Kernel`。
 
+## Docker 部署
+
+### 快速开始（开发环境）
+
+```bash
+docker compose up -d --build
+docker compose exec app php bin/console doctrine:migrations:migrate
+docker compose exec app php bin/console app:identity:user:create admin@example.com admin 'P@ssw0rd' --admin
+# 访问 http://localhost:${APP_PORT:-8080}
+```
+
+### 生产环境
+
+```bash
+# 1) 创建密钥文件（不要提交到 Git）
+cat > .env.prod.local << 'EOF'
+APP_SECRET=你的生产密钥
+REFRESH_TOKEN_SECRET=你的刷新令牌密钥
+EOF
+
+# 2) 在主机上生成 JWT 密钥（通过卷挂载持久化）
+mkdir -p var/jwt
+openssl genpkey -algorithm RSA -out var/jwt/jwt_private.pem -pkeyopt rsa_keygen_bits:2048
+openssl rsa -pubout -in var/jwt/jwt_private.pem -out var/jwt/jwt_public.pem
+
+# 3) 启动服务
+docker compose --env-file .env.prod.local up -d --build
+
+# 4) 一次性初始化
+docker compose exec app php bin/console doctrine:migrations:migrate
+docker compose exec app php bin/console app:identity:user:create admin@example.com admin 'P@ssw0rd' --admin
+```
+
 ## Docker 说明
 
-仓库包含：
-
-- `compose.yaml` - PostgreSQL 16 服务
-- `compose.override.yaml` - 本机端口映射与 Mailpit
+| 文件 | 说明 |
+|------|------|
+| `compose.yaml` | 生产：app (PHP-FPM)、nginx、PostgreSQL 16、Redis 7、Mailpit |
+| `compose.override.yaml` | 开发：源码挂载 + 调试模式 + 端口暴露 |
+| `Dockerfile` | PHP 8.4-FPM Alpine 镜像 |
+| `.env.prod.local` | 需自行创建，放 `APP_SECRET` + `REFRESH_TOKEN_SECRET`（不提交） |
 
 默认端口：
 
-- PostgreSQL: `5432`
-- Mailpit SMTP: `1025`
-- Mailpit UI: `8025`
+- 应用：`${APP_PORT:-8080}`（通过 nginx）
+- PostgreSQL：`5432`（仅开发）
+- Mailpit SMTP：`1025`（仅开发）
+- Mailpit UI：`${MAILPIT_UI_PORT:-8025}`
 
 ## 常见问题
 

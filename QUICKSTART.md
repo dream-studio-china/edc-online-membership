@@ -1,6 +1,34 @@
 # Quick Start
 
-This Quick Start walks you through a minimal, runnable development setup: generating JWT keys, running migrations to prepare the database, creating an admin user, and testing authentication.
+This Quick Start walks you through a minimal, runnable development setup.
+
+## Option A: Docker (recommended)
+
+No PHP, Composer, or database setup required on your host.
+
+Prerequisites: **Docker** only.
+
+```bash
+# 1) Start all services (app, nginx, PostgreSQL, Redis, Mailpit)
+docker compose up -d --build
+
+# 2) Run database migration
+docker compose exec app php bin/console doctrine:migrations:migrate --no-interaction
+
+# 3) Create admin user
+docker compose exec app php bin/console app:identity:user:create admin@example.com admin 'P@ssw0rd' --admin
+
+# 4) Login and get token
+curl -s -X POST http://localhost:8080/api/auth/login \
+  -H 'Content-Type: application/json' \
+  -d '{"identifier":"admin@example.com","password":"P@ssw0rd"}'
+```
+
+App runs at `http://localhost:8080`. Swagger docs at `http://localhost:8080/api/doc`.
+
+---
+
+## Option B: Native PHP
 
 Prerequisites
  - PHP 8.5 (Homebrew is recommended on macOS)

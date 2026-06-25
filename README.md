@@ -205,17 +205,17 @@ or
 php -S 127.0.0.1:8000 -t public
 ```
 
-### Option B: Database with Docker Compose
+### Option B: Full Docker deployment
+
+For local development with all services (app, nginx, PostgreSQL, Redis, Mailpit):
 
 ```bash
-docker compose up -d
-```
-
-Then run DB migrations:
-
-```bash
+docker compose up -d --build
 php bin/console doctrine:migrations:migrate
+php bin/console app:identity:user:create admin@example.com admin 'P@ssw0rd' --admin
 ```
+
+The app runs at `http://localhost:${APP_PORT:-8080}`.
 
 ## Module Overview
 
@@ -459,33 +459,35 @@ XDEBUG_MODE=coverage ./vendor/bin/phpunit --coverage-text
 
 ## Docker Deployment
 
+### Quick start (development)
+
+```bash
+docker compose up -d --build
+docker compose exec app php bin/console doctrine:migrations:migrate
+docker compose exec app php bin/console app:identity:user:create admin@example.com admin 'P@ssw0rd' --admin
+# App at http://localhost:${APP_PORT:-8080}
+```
+
 ### Production
 
 ```bash
-# Build and start all services
-docker compose up -d
+# 1) Create env file with secrets (do NOT commit)
+cat > .env.prod.local << 'EOF'
+APP_SECRET=your-production-secret
+REFRESH_TOKEN_SECRET=your-refresh-token-secret
+EOF
 
-# Run database migration
+# 2) Generate JWT keys on host (persisted via volume mount)
+mkdir -p var/jwt
+openssl genpkey -algorithm RSA -out var/jwt/jwt_private.pem -pkeyopt rsa_keygen_bits:2048
+openssl rsa -pubout -in var/jwt/jwt_private.pem -out var/jwt/jwt_public.pem
+
+# 3) Start services
+docker compose --env-file .env.prod.local up -d --build
+
+# 4) One-time setup
 docker compose exec app php bin/console doctrine:migrations:migrate
-
-# Generate JWT keys (in app container)
-docker compose exec app mkdir -p var
-docker compose exec app php -r '
-  $key = openssl_pkey_new(["private_key_bits"=>2048,"private_key_type"=>OPENSSL_KEYTYPE_RSA]);
-  openssl_pkey_export($key, $priv);
-  file_put_contents("var/jwt_private.pem", $priv);
-  file_put_contents("var/jwt_public.pem", openssl_pkey_get_details($key)["key"]);
-'
-
-# Create admin user
 docker compose exec app php bin/console app:identity:user:create admin@example.com admin 'P@ssw0rd' --admin
-```
-
-### Development
-
-```bash
-# Dev mode overrides (mounts source, enables debug, exposes ports)
-docker compose -f compose.yaml -f compose.override.yaml up -d --build
 ```
 
 ### Services
@@ -500,17 +502,19 @@ docker compose -f compose.yaml -f compose.override.yaml up -d --build
 
 ## Docker Notes
 
-The repository includes:
-
-- `compose.yaml` - Production: app (PHP-FPM), nginx, PostgreSQL 16, Redis 7, Mailpit
-- `compose.override.yaml` - Dev overrides (source mounting, debug, exposed ports)
-- `Dockerfile` - PHP 8.4-FPM Alpine with required extensions
+| File | Purpose |
+|------|---------|
+| `compose.yaml` | Production: app (PHP-FPM), nginx, PostgreSQL 16, Redis 7, Mailpit |
+| `compose.override.yaml` | Dev: source mount + debug + exposed ports |
+| `Dockerfile` | PHP 8.4-FPM Alpine image |
+| `.env.prod.local` | Gitignored: `APP_SECRET` + `REFRESH_TOKEN_SECRET` (create yourself) |
 
 Default exposed ports:
 
-- PostgreSQL: `5432`
-- Mailpit SMTP: `1025`
-- Mailpit UI: `8025`
+- App: `${APP_PORT:-8080}` (via nginx)
+- PostgreSQL: `5432` (dev only)
+- Mailpit SMTP: `1025` (dev only)
+- Mailpit UI: `${MAILPIT_UI_PORT:-8025}`
 
 ## Troubleshooting
 
