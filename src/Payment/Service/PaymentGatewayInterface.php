@@ -14,8 +14,8 @@ use Symfony\Component\HttpFoundation\Response;
 interface PaymentGatewayInterface
 {
     public static function getName(): string;
-    public function pay(Invoice $invoice, array $options = []): PaymentResult;
+    public function pay(Invoice $invoice, int $amount, array $options = []): PaymentResult;
     public function notify(Request $request): PaymentNotifyResult;
-    public function refund(Invoice $invoice, int $amount, string $reason, array $options = []): PaymentRefundResult;
+    public function refund(Invoice $invoice, int $amount, int $paidAmount, string $reason, array $options = []): PaymentRefundResult;
     public function getNotifySuccessResponse(PaymentNotifyResult $result): Response;
 }

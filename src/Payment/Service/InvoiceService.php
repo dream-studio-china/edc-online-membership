@@ -67,13 +67,13 @@ class InvoiceService extends BaseService implements InvoiceServiceInterface
 
             $deduction = $this->deductionService->applyFromOptions($invoice, $options);
             $deductedAmount = $this->deductionService->sumAppliedAmount($invoice);
-            $payAmount = $invoice->getAmount() - $deductedAmount;
+            $gatewayAmount = $invoice->getAmount() - $deductedAmount;
 
-            if ($payAmount < 0) {
+            if ($gatewayAmount < 0) {
                 throw new InvoiceAmountMismatchException('Deduction amount exceeds invoice amount.');
             }
 
-            $effectivePayment = $payAmount === 0 ? Invoice::PAYMENT_WALLET : $payment;
+            $effectivePayment = $gatewayAmount === 0 ? Invoice::PAYMENT_WALLET : $payment;
             $invoice->setPayment($effectivePayment);
             if (isset($options['gateway'])) {
                 $invoice->setGateway((string) $options['gateway']);
@@ -84,12 +84,12 @@ class InvoiceService extends BaseService implements InvoiceServiceInterface
             $this->workflow->apply($invoice, 'start_pay');
             $this->getEntityManager()->flush();
 
-            if ($payAmount === 0) {
+            if ($gatewayAmount === 0) {
                 $payload = [
                     'deductionOnly' => true,
                     'deductionId' => $deduction?->getUuid(),
                     'transactionId' => $deduction?->getWalletTransactionId(),
-                    'payAmount' => 0,
+                    'gatewayAmount' => 0,
                 ];
                 $this->markPaid($invoice, new PaymentNotifyResult(
                     payment: Invoice::PAYMENT_WALLET,
@@ -112,7 +112,7 @@ class InvoiceService extends BaseService implements InvoiceServiceInterface
 
             try {
                 $gateway = $this->gatewayRegistry->get($payment);
-                $result = $gateway->pay($invoice, array_merge($options, ['payAmount' => $payAmount]));
+                $result = $gateway->pay($invoice, $gatewayAmount, $options);
             } catch (\Throwable $e) {
                 if ($deduction !== null) {
                     $this->deductionService->release($invoice, 'Gateway payment failed: ' . $e->getMessage());
@@ -129,7 +129,7 @@ class InvoiceService extends BaseService implements InvoiceServiceInterface
                     payment: $payment,
                     outTradeNo: $invoice->getOutTradeNo(),
                     status: Invoice::STATUS_PAID,
-                    amount: $payAmount,
+                    amount: $gatewayAmount,
                     currency: $invoice->getCurrency(),
                     transactionId: $payload['transactionId'] ?? null,
                     paidAt: new \DateTimeImmutable(),
@@ -254,7 +254,7 @@ class InvoiceService extends BaseService implements InvoiceServiceInterface
             if ($gatewayAmount > 0) {
                 $gateway = $this->gatewayRegistry->get($payment);
                 $gatewayPaidAmount = $invoice->getAmount() - $deductedAmount;
-                $result = $gateway->refund($invoice, $gatewayAmount, $reason, array_merge($options, ['payAmount' => $gatewayPaidAmount]));
+                $result = $gateway->refund($invoice, $gatewayAmount, $gatewayPaidAmount, $reason, $options);
                 $refundId = $result->refundId;
                 $rawData['gateway'] = $result->rawData;
             }

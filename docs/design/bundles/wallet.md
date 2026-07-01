@@ -2,7 +2,8 @@
 
 > The Wallet bundle (`src/Wallet/`) provides user wallets, transactions, atomic
 > wallet-to-wallet transfers with deadlock prevention and idempotency,
-> **system deposits**, **balance verification**, and **reconciliation**.
+> **system deposits**, **balance verification**, **reconciliation**, and
+> **wallet balance payment adjustments** for Payment invoices.
 
 ---
 
@@ -16,6 +17,7 @@ Wallet is a financial module for managing user balances:
 - **Deposit** endpoint for system-injected funding with audit trail
 - **Balance verification** — `GET /api/v1/manage/wallets/balance` checks invariant: `SUM(wallets) == SUM(deposits + adjustments)`
 - **Reconciliation** — `POST /api/v1/manage/wallets/reconcile` fixes per-wallet gaps
+- **Payment adjustment provider** — deducts wallet balance before an external Payment gateway handles the remaining invoice amount
 
 ### 1.1 Accounting Model
 
@@ -33,6 +35,7 @@ transfer (TYPE_TRANSFER)   → zero-sum between wallets (debit + credit)
 |--------|-------|---------|
 | `Wallet` | `wallet` | User balance per currency (cents), freeze support, optimistic locking |
 | `WalletTransaction` | `wallet_transaction` | Record of deposit/withdrawal/transfer/fee/refund/**adjustment** |
+| `WalletPaymentDeduction` | `wallet_payment_deduction` | Wallet-owned audit record for invoice wallet balance deductions |
 
 ---
 
@@ -47,6 +50,7 @@ src/Wallet/
 |-- Entity/
 |   |-- Wallet.php
 |   |-- WalletTransaction.php
+|   |-- WalletPaymentDeduction.php       # Payment adjustment audit record
 |-- Exception/
 |   |-- InsufficientFundsException.php
 |   |-- SameWalletTransferException.php
@@ -54,7 +58,11 @@ src/Wallet/
 |-- Repository/
 |   |-- WalletRepository.php             # + getTotalBalance()
 |   |-- WalletTransactionRepository.php  # + getTotalDeposited(), getExpectedBalance()
+|   |-- WalletPaymentDeductionRepository.php
 |-- Service/
+    |-- Payment/
+    |   |-- WalletBalanceAdjustmentProvider.php # Implements Payment adjustment provider
+    |   |-- WalletGateway.php                    # Implements Payment gateway
     |-- TransactionService.php
     |-- TransferResult.php               # Transfer result DTO
     |-- TransferService.php              # Core transfer + deposit logic
@@ -102,6 +110,55 @@ src/Wallet/
 **Unique constraint**: `referenceId` -- prevents duplicate transactions.
 
 **Methods**: `markCompleted()`, `markFailed()`
+
+### 3.3 WalletPaymentDeduction
+
+Wallet balance deduction for Payment invoices is owned by Wallet because the operation is implemented through wallet balance transfers and reversals.
+
+**Table**: `wallet_payment_deduction`
+
+**Purpose**: record a wallet balance amount applied to a Payment invoice before the selected gateway processes the remaining amount.
+
+| Field | Type | Detail |
+|-------|------|--------|
+| `id` | int | Auto-increment PK |
+| `uuid` | string(36) | Public stable identifier |
+| `invoiceId` | string(36) | Payment invoice uuid, stored as a lightweight cross-module reference |
+| `invoiceNo` | string(64) | Payment invoice `outTradeNo` for lookup/debugging |
+| `payerId` | int | User id of the payer at deduction time |
+| `wallet` | ManyToOne -> Wallet | Payer wallet used for deduction |
+| `systemWalletId` | int | System wallet id that receives deducted funds |
+| `amount` | int | Deduction amount in cents |
+| `currency` | string | Must equal invoice currency and wallet currency |
+| `status` | string | `pending`, `applied`, `released`, `refunded`, `failed` |
+| `walletTransactionId` | ?string | Transfer transaction uuid after deduction is applied |
+| `reversalTransactionId` | ?string | Transfer transaction uuid after release/refund |
+| `referenceId` | string | Idempotency key for the apply transfer |
+| `metadata` | JSON | Sanitized operational metadata |
+| `createdAt` | DateTimeImmutable | Creation timestamp |
+| `appliedAt` | ?DateTimeImmutable | Deduction applied timestamp |
+| `releasedAt` | ?DateTimeImmutable | Unpaid deduction release timestamp |
+| `refundedAt` | ?DateTimeImmutable | Paid invoice refund timestamp |
+
+**No ORM relation to Payment invoice**: Wallet stores `invoiceId` and `invoiceNo` as scalar references. This avoids a hard persistence dependency from Wallet to Payment entities while still allowing audit and lookup.
+
+**Unique constraints**:
+
+| Constraint | Requirement |
+|------------|-------------|
+| `uuid` | Unique |
+| `referenceId` | Unique |
+| `invoiceId` | Unique for first-phase one wallet deduction per invoice |
+
+**Status transitions**:
+
+```text
+pending -> applied -> released
+pending -> failed
+applied -> refunded
+```
+
+`released` means the invoice was not paid and the deducted wallet balance was returned. `refunded` means the invoice was paid and later fully refunded.
 
 ---
 
@@ -239,9 +296,147 @@ All exceptions extend `\RuntimeException`.
 
 ---
 
-## 7. API Endpoints
+## 7. Payment Integration
 
-### 7.1 Manage (Admin, ROLE_ADMIN)
+Wallet integrates with Payment through Payment-defined interfaces. Wallet owns wallet-specific behavior and data, while Payment owns invoice workflow and gateway orchestration.
+
+### 7.1 Dependency Direction
+
+| From | To | Allowed | Rule |
+|------|----|---------|------|
+| Wallet | Payment | Yes | Implement Payment gateway and adjustment provider interfaces |
+| Payment | Wallet | No | Payment must not import Wallet services or deduction entities |
+| Wallet | Trade | No | Wallet must not react to Trade orders directly |
+
+### 7.2 WalletGateway
+
+`WalletGateway` is a Payment gateway implementation owned by Wallet. It processes invoices that are paid entirely through wallet balance.
+
+**File**: `src/Wallet/Service/Payment/WalletGateway.php`
+
+**Contract**: implements `App\Payment\Service\PaymentGatewayInterface`
+
+Rules:
+
+| Rule | Requirement |
+|------|-------------|
+| WPG-1 | Gateway receives an explicit amount from Payment and transfers exactly that amount |
+| WPG-2 | Gateway must not inspect wallet deduction or adjustment options |
+| WPG-3 | Gateway uses `TransferServiceInterface::transfer()` from payer wallet to system wallet |
+| WPG-4 | Gateway refund transfers from system wallet back to payer wallet |
+| WPG-5 | Gateway references are stable and idempotent per invoice/refund attempt |
+
+`WalletGateway` is separate from wallet balance deduction. Wallet gateway pays the invoice through wallet as the selected payment method. Wallet balance deduction is a pre-payment adjustment that can be combined with another gateway.
+
+### 7.3 WalletBalanceAdjustmentProvider
+
+`WalletBalanceAdjustmentProvider` applies wallet balance as a Payment adjustment before gateway payment.
+
+**File**: `src/Wallet/Service/Payment/WalletBalanceAdjustmentProvider.php`
+
+**Contract**: implements `App\Payment\Service\Adjustment\PaymentAdjustmentProviderInterface`
+
+Provider name: `wallet_balance`
+
+Supported request options:
+
+| Input | Meaning |
+|-------|---------|
+| `walletAmount` | Shortcut amount in invoice currency |
+| `deduction.type = wallet_balance` | Structured adjustment request |
+| `deduction.amount` | Deduction amount in cents |
+| `deduction.currency` | Must equal invoice currency |
+| `systemWalletId` | System wallet receiving deducted funds |
+
+Provider responsibilities:
+
+| Responsibility | Detail |
+|----------------|--------|
+| `supports()` | Return true when `walletAmount > 0` or structured `deduction.type = wallet_balance` is present |
+| `apply()` | Transfer payer wallet balance to system wallet and persist `WalletPaymentDeduction` |
+| `applied()` | Return applied deduction as `PaymentAdjustmentResult` for Payment amount validation |
+| `release()` | Reverse applied deduction when invoice payment fails or is cancelled before paid |
+| `refund()` | Reverse applied deduction when paid invoice is refunded |
+
+The provider returns only generic Payment adjustment data to Payment:
+
+```php
+new PaymentAdjustmentResult(
+    provider: 'wallet_balance',
+    amount: $deduction->getAmount(),
+    currency: $deduction->getCurrency(),
+    referenceId: $deduction->getReferenceId(),
+    payload: [
+        'deductionId' => $deduction->getUuid(),
+    ],
+);
+```
+
+Wallet transaction ids may be stored in `WalletPaymentDeduction`, but Payment must not rely on them.
+
+### 7.4 Deduction Flow
+
+```text
+InvoiceService::pay(invoice, payment, options)
+  -> PaymentAdjustmentRegistry finds WalletBalanceAdjustmentProvider
+  -> WalletBalanceAdjustmentProvider::apply(context)
+     -> find payer wallet by payer id and invoice currency
+     -> transfer payer wallet -> system wallet
+     -> persist WalletPaymentDeduction as applied
+     -> return PaymentAdjustmentResult(amount=walletAmount)
+  -> Payment computes gatewayAmount = invoice.amount - adjustmentTotal
+  -> Payment calls selected gateway with explicit gatewayAmount
+```
+
+Full wallet deduction:
+
+```text
+walletAmount == invoice.amount
+  -> WalletBalanceAdjustmentProvider applies transfer
+  -> Payment marks invoice paid with payment = wallet
+  -> no external gateway is called
+```
+
+### 7.5 Release And Refund Flow
+
+Release before invoice is paid:
+
+```text
+gateway pay creation fails or invoice is cancelled
+  -> Payment calls WalletBalanceAdjustmentProvider::release(result, reason)
+  -> Wallet transfers system wallet -> payer wallet
+  -> WalletPaymentDeduction status becomes released
+```
+
+Refund after invoice is paid:
+
+```text
+InvoiceService::refund(full invoice amount)
+  -> Payment refunds external gateway amount first, if any
+  -> Payment calls WalletBalanceAdjustmentProvider::refund(result, reason)
+  -> Wallet transfers system wallet -> payer wallet
+  -> WalletPaymentDeduction status becomes refunded
+```
+
+First-phase wallet deductions only support full invoice refunds. Partial refund allocation between external gateway amount and wallet deduction is out of scope.
+
+### 7.6 Reference Ids
+
+Wallet deduction transfers MUST use stable idempotency references:
+
+```text
+invoice-adjustment-wallet-balance-{invoice.uuid}
+invoice-adjustment-wallet-balance-release-{invoice.uuid}
+invoice-adjustment-wallet-balance-refund-{invoice.uuid}
+```
+
+These references are passed to `TransferServiceInterface::transfer()` and stored on `WalletPaymentDeduction`.
+
+---
+
+## 8. API Endpoints
+
+### 8.1 Manage (Admin, ROLE_ADMIN)
 
 | Method | Path | Description |
 |--------|------|-------------|
@@ -258,7 +453,7 @@ All exceptions extend `\RuntimeException`.
 
 ---
 
-## 8. Optimistic Locking Contract
+## 9. Optimistic Locking Contract
 
 Wallets use `#[ORM\Version]` for optimistic concurrency control:
 
@@ -268,7 +463,7 @@ Wallets use `#[ORM\Version]` for optimistic concurrency control:
 
 ---
 
-## 9. Money Handling Contract
+## 10. Money Handling Contract
 
 Same contract as Trade module:
 
@@ -281,19 +476,21 @@ Same contract as Trade module:
 
 ---
 
-## 10. Database Migration
+## 11. Database Migration
 
 **Version**: `Version20250517000000`
 
-Creates `wallet` and `wallet_transaction` tables.
+Creates `wallet` and `wallet_transaction` tables. Payment adjustment support adds `wallet_payment_deduction` in the wallet deduction phase.
 
 ---
 
-## 11. Testing
+## 12. Testing
 
 | Suite | Tests |
 |-------|-------|
 | `tests/Wallet/Entity/` | Wallet, WalletTransaction unit tests |
 | `tests/Wallet/Service/WalletServiceTest.php` | **11 unit tests**: verifyBalance (match/mismatch/zero), reconcile (empty/balanced/excess/negative/idempotent/multi/skip-non-wallet/skip-no-id) |
 | `tests/Wallet/Service/TransferServiceTest.php` | **20 unit tests**: deposit (happy/wallet-not-found/frozen/idempotent/rollback/em-closed), transfer (happy/same-wallet/source-not-found/target-not-found/frozen/currency/insufficient/idempotent/deadlock/rollback/em-closed) |
+| `tests/Wallet/Service/Payment/WalletBalanceAdjustmentProviderTest.php` | Wallet deduction apply/applied/release/refund validation and idempotency |
+| `tests/Wallet/Service/Payment/WalletGatewayTest.php` | Wallet gateway pay/refund explicit amount handling |
 | `tests/Wallet/Integration/` | TransferService, wallet repository, transaction repository, API regression |

@@ -31,11 +31,10 @@ final class WechatPayGateway implements PaymentGatewayInterface
         return Invoice::PAYMENT_WECHAT;
     }
 
-    public function pay(Invoice $invoice, array $options = []): PaymentResult
+    public function pay(Invoice $invoice, int $amount, array $options = []): PaymentResult
     {
         $app = $this->wechatService->getPayApp();
         $tradeType = $invoice->getTradeType() ?? 'jsapi';
-        $amount = (int) ($options['payAmount'] ?? $invoice->getAmount());
 
         $body = [
             'mchid' => (string) $app->getMerchant()->getMerchantId(),
@@ -134,10 +133,9 @@ final class WechatPayGateway implements PaymentGatewayInterface
         }
     }
 
-    public function refund(Invoice $invoice, int $amount, string $reason, array $options = []): PaymentRefundResult
+    public function refund(Invoice $invoice, int $amount, int $paidAmount, string $reason, array $options = []): PaymentRefundResult
     {
         $app = $this->wechatService->getPayApp();
-        $paidAmount = (int) ($options['payAmount'] ?? $invoice->getAmount());
 
         $outRefundNo = 'REF' . $invoice->getOutTradeNo() . '_' . date('YmdHis');
         $body = [

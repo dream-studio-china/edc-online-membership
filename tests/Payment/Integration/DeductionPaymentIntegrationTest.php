@@ -104,7 +104,7 @@ final class DeductionPaymentIntegrationTest extends IntegrationKernelTestCase
 
         self::assertSame(Invoice::STATUS_PAID, $result->status);
         self::assertSame(Invoice::PAYMENT_WALLET, $invoice->getPayment());
-        self::assertSame(0, $result->payload['payAmount']);
+        self::assertSame(0, $result->payload['gatewayAmount']);
 
         $this->em->refresh($payerWallet);
         $this->em->refresh($systemWallet);
