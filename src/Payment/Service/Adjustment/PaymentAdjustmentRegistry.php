@@ -74,7 +74,7 @@ final class PaymentAdjustmentRegistry
     {
         $results = [];
         foreach ($this->applied($invoice) as $adjustment) {
-            $results[] = $this->provider($adjustment)->release($adjustment, $reason);
+            $results[] = $this->provider($adjustment)->release($invoice, $adjustment, $reason);
         }
 
         return $results;
@@ -85,7 +85,7 @@ final class PaymentAdjustmentRegistry
     {
         $results = [];
         foreach ($this->applied($invoice) as $adjustment) {
-            $results[] = $this->provider($adjustment)->refund($adjustment, $reason);
+            $results[] = $this->provider($adjustment)->refund($invoice, $adjustment, $reason);
         }
 
         return $results;

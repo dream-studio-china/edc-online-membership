@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Payment\Service\Gateway;
+namespace App\Wallet\Service\Payment;
 
 use App\Payment\DTO\PaymentNotifyResult;
 use App\Payment\DTO\PaymentRefundResult;

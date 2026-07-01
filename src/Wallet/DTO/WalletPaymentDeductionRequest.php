@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Payment\DTO;
+namespace App\Wallet\DTO;
 
-final readonly class DeductionRequest
+final readonly class WalletPaymentDeductionRequest
 {
     public function __construct(
         public string $type,

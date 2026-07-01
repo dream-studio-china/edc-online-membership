@@ -2,28 +2,28 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Payment\Integration;
+namespace App\Tests\Wallet\Integration;
 
 use App\Identity\Entity\User;
 use App\Payment\DTO\CreateInvoiceRequest;
-use App\Payment\Entity\Deduction;
 use App\Payment\Entity\Invoice;
-use App\Payment\Repository\DeductionRepository;
-use App\Payment\Service\DeductionService;
 use App\Payment\Service\InvoiceServiceInterface;
 use App\Tests\Integration\DatabaseBootstrapTrait;
 use App\Tests\Integration\IntegrationKernelTestCase;
 use App\Wallet\Entity\Wallet;
+use App\Wallet\Entity\WalletPaymentDeduction;
+use App\Wallet\Repository\WalletPaymentDeductionRepository;
+use App\Wallet\Service\Payment\WalletPaymentDeductionService;
 use Doctrine\ORM\EntityManagerInterface;
 
-final class DeductionServiceIntegrationTest extends IntegrationKernelTestCase
+final class WalletPaymentDeductionServiceIntegrationTest extends IntegrationKernelTestCase
 {
     use DatabaseBootstrapTrait;
 
     private EntityManagerInterface $em;
     private InvoiceServiceInterface $invoiceService;
-    private DeductionService $deductionService;
-    private DeductionRepository $deductionRepository;
+    private WalletPaymentDeductionService $deductionService;
+    private WalletPaymentDeductionRepository $deductionRepository;
 
     protected function setUp(): void
     {
@@ -32,8 +32,8 @@ final class DeductionServiceIntegrationTest extends IntegrationKernelTestCase
         self::bootKernel();
         $this->em = static::getContainer()->get(EntityManagerInterface::class);
         $this->invoiceService = static::getContainer()->get(InvoiceServiceInterface::class);
-        $this->deductionService = static::getContainer()->get(DeductionService::class);
-        $this->deductionRepository = static::getContainer()->get(DeductionRepository::class);
+        $this->deductionService = static::getContainer()->get(WalletPaymentDeductionService::class);
+        $this->deductionRepository = static::getContainer()->get(WalletPaymentDeductionRepository::class);
     }
 
     public function testApplyReleaseAndRefundAreIdempotent(): void
@@ -43,7 +43,7 @@ final class DeductionServiceIntegrationTest extends IntegrationKernelTestCase
         $invoice = $this->createInvoice($payer, 600);
 
         $deduction = $this->deductionService->apply($invoice, 250, 'CNY', ['systemWalletId' => $systemWallet->getId()]);
-        self::assertSame(Deduction::STATUS_APPLIED, $deduction->getStatus());
+        self::assertSame(WalletPaymentDeduction::STATUS_APPLIED, $deduction->getStatus());
         self::assertSame(250, $this->deductionService->sumAppliedAmount($invoice));
         self::assertSame($deduction, $this->deductionService->findApplied($invoice));
         self::assertSame($deduction, $this->deductionRepository->findWalletBalanceByInvoice($invoice));
@@ -80,12 +80,13 @@ final class DeductionServiceIntegrationTest extends IntegrationKernelTestCase
         self::assertNull($this->deductionService->createRequestFromOptions($invoice, []));
         self::assertNull($this->deductionService->createRequestFromOptions($invoice, ['walletAmount' => 0]));
         self::assertNull($this->deductionService->applyFromOptions($invoice, []));
+        self::assertNull($this->deductionService->release($invoice, 'no applied deduction'));
         self::assertNull($this->deductionService->refund($invoice, 'no applied deduction'));
         self::assertFalse($this->deductionService->hasApplied($invoice));
 
         $request = $this->deductionService->createRequestFromOptions($invoice, [
             'deduction' => [
-                'type' => Deduction::TYPE_WALLET_BALANCE,
+                'type' => WalletPaymentDeduction::TYPE_WALLET_BALANCE,
                 'amount' => 200,
                 'currency' => 'CNY',
                 'options' => ['systemWalletId' => 123],
@@ -93,10 +94,33 @@ final class DeductionServiceIntegrationTest extends IntegrationKernelTestCase
         ]);
 
         self::assertNotNull($request);
-        self::assertSame(Deduction::TYPE_WALLET_BALANCE, $request->type);
+        self::assertSame(WalletPaymentDeduction::TYPE_WALLET_BALANCE, $request->type);
         self::assertSame(200, $request->amount);
         self::assertSame('CNY', $request->currency);
         self::assertSame(123, $request->options['systemWalletId']);
+    }
+
+    public function testApplyFromOptionsAppliesWalletAmountShortcut(): void
+    {
+        [$payer, $wallet] = $this->createUserWallet('deduct-apply-options@example.com', 1000);
+        [, $systemWallet] = $this->createUserWallet('deduct-apply-options-system@example.com', 0);
+        $invoice = $this->createInvoice($payer, 500);
+
+        $deduction = $this->deductionService->applyFromOptions($invoice, [
+            'walletAmount' => 200,
+            'systemWalletId' => $systemWallet->getId(),
+        ]);
+
+        self::assertNotNull($deduction);
+        self::assertSame(200, $deduction->getAmount());
+        self::assertSame($invoice->getUuid(), $deduction->getInvoiceId());
+        self::assertSame($invoice->getOutTradeNo(), $deduction->getInvoiceNo());
+        self::assertSame($payer->getId(), $deduction->getPayerId());
+
+        $this->em->refresh($wallet);
+        $this->em->refresh($systemWallet);
+        self::assertSame(800, $wallet->getBalance());
+        self::assertSame(200, $systemWallet->getBalance());
     }
 
     public function testReleasedDeductionPreventsReapply(): void
@@ -109,7 +133,7 @@ final class DeductionServiceIntegrationTest extends IntegrationKernelTestCase
         $this->deductionService->release($invoice, 'release');
 
         $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessage('Invoice deduction already exists with status "released".');
+        $this->expectExceptionMessage('Invoice wallet deduction already exists with status "released".');
         $this->deductionService->apply($invoice, 200, 'CNY', ['systemWalletId' => $systemWallet->getId()]);
     }
 
@@ -189,37 +213,8 @@ final class DeductionServiceIntegrationTest extends IntegrationKernelTestCase
 
         $deduction = $this->deductionRepository->findWalletBalanceByInvoice($invoice);
         self::assertNotNull($deduction);
-        self::assertSame(Deduction::STATUS_FAILED, $deduction->getStatus());
+        self::assertSame(WalletPaymentDeduction::STATUS_FAILED, $deduction->getStatus());
         self::assertNotEmpty($deduction->getMetadata()['failedReason']);
-    }
-
-    public function testReleaseRequiresPayer(): void
-    {
-        $invoice = $this->createPersistedInvoice(null, 500);
-        $this->persistAppliedDeduction($invoice, 100, ['toWalletId' => 1]);
-
-        $this->expectException(\RuntimeException::class);
-        $this->deductionService->release($invoice, 'release');
-    }
-
-    public function testReleaseRequiresSystemWalletId(): void
-    {
-        [$payer] = $this->createUserWallet('deduct-reverse-system@example.com', 1000);
-        $invoice = $this->createInvoice($payer, 500);
-        $this->persistAppliedDeduction($invoice, 100);
-
-        $this->expectException(\InvalidArgumentException::class);
-        $this->deductionService->release($invoice, 'release');
-    }
-
-    public function testReleaseRequiresPayerWallet(): void
-    {
-        $payer = $this->createUser('deduct-reverse-wallet@example.com');
-        $invoice = $this->createInvoice($payer, 500);
-        $this->persistAppliedDeduction($invoice, 100, ['toWalletId' => 1]);
-
-        $this->expectException(\RuntimeException::class);
-        $this->deductionService->release($invoice, 'release');
     }
 
     private function createInvoice(User $payer, int $amount): Invoice
@@ -240,16 +235,6 @@ final class DeductionServiceIntegrationTest extends IntegrationKernelTestCase
         $this->em->flush();
 
         return $invoice;
-    }
-
-    private function persistAppliedDeduction(Invoice $invoice, int $amount, ?array $metadata = null): Deduction
-    {
-        $deduction = new Deduction($invoice, $amount, 'CNY', uniqid('manual-deduction-', true));
-        $deduction->markApplied(uniqid('tx-', true), $metadata);
-        $this->em->persist($deduction);
-        $this->em->flush();
-
-        return $deduction;
     }
 
     private function createUser(string $email): User

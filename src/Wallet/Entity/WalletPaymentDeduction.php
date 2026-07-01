@@ -2,20 +2,21 @@
 
 declare(strict_types=1);
 
-namespace App\Payment\Entity;
+namespace App\Wallet\Entity;
 
 use App\Core\Utils\UUID;
-use App\Payment\Repository\DeductionRepository;
+use App\Payment\Entity\Invoice;
+use App\Wallet\Repository\WalletPaymentDeductionRepository;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity(repositoryClass: DeductionRepository::class)]
-#[ORM\Table(name: 'payment_deduction')]
-#[ORM\UniqueConstraint(name: 'uniq_payment_deduction_uuid', columns: ['uuid'])]
-#[ORM\UniqueConstraint(name: 'uniq_payment_deduction_reference', columns: ['reference_id'])]
-#[ORM\UniqueConstraint(name: 'uniq_payment_deduction_invoice_type', columns: ['invoice_id', 'type'])]
-#[ORM\Index(name: 'idx_payment_deduction_invoice_status', columns: ['invoice_id', 'status'])]
+#[ORM\Entity(repositoryClass: WalletPaymentDeductionRepository::class)]
+#[ORM\Table(name: 'wallet_payment_deduction')]
+#[ORM\UniqueConstraint(name: 'uniq_wallet_payment_deduction_uuid', columns: ['uuid'])]
+#[ORM\UniqueConstraint(name: 'uniq_wallet_payment_deduction_reference', columns: ['reference_id'])]
+#[ORM\UniqueConstraint(name: 'uniq_wallet_payment_deduction_invoice_type', columns: ['invoice_id', 'type'])]
+#[ORM\Index(name: 'idx_wallet_payment_deduction_invoice_status', columns: ['invoice_id', 'status'])]
 #[ORM\HasLifecycleCallbacks]
-class Deduction
+class WalletPaymentDeduction
 {
     public const TYPE_WALLET_BALANCE = 'wallet_balance';
 
@@ -33,9 +34,21 @@ class Deduction
     #[ORM\Column(type: 'string', length: 36, unique: true)]
     private string $uuid;
 
-    #[ORM\ManyToOne(targetEntity: Invoice::class)]
-    #[ORM\JoinColumn(name: 'invoice_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
-    private Invoice $invoice;
+    #[ORM\Column(name: 'invoice_id', type: 'string', length: 36)]
+    private string $invoiceId;
+
+    #[ORM\Column(name: 'invoice_no', type: 'string', length: 64)]
+    private string $invoiceNo;
+
+    #[ORM\Column(name: 'payer_id', type: 'integer')]
+    private int $payerId;
+
+    #[ORM\ManyToOne(targetEntity: Wallet::class)]
+    #[ORM\JoinColumn(name: 'wallet_id', referencedColumnName: 'id', nullable: false, onDelete: 'RESTRICT')]
+    private Wallet $wallet;
+
+    #[ORM\Column(name: 'system_wallet_id', type: 'integer')]
+    private int $systemWalletId;
 
     #[ORM\Column(type: 'string', length: 30)]
     private string $type = self::TYPE_WALLET_BALANCE;
@@ -52,8 +65,8 @@ class Deduction
     #[ORM\Column(name: 'wallet_transaction_id', type: 'string', length: 64, nullable: true)]
     private ?string $walletTransactionId = null;
 
-    #[ORM\Column(name: 'refund_transaction_id', type: 'string', length: 64, nullable: true)]
-    private ?string $refundTransactionId = null;
+    #[ORM\Column(name: 'reversal_transaction_id', type: 'string', length: 64, nullable: true)]
+    private ?string $reversalTransactionId = null;
 
     #[ORM\Column(name: 'reference_id', type: 'string', length: 64, unique: true)]
     private string $referenceId;
@@ -73,10 +86,19 @@ class Deduction
     #[ORM\Column(name: 'refunded_at', type: 'datetime_immutable', nullable: true)]
     private ?\DateTimeImmutable $refundedAt = null;
 
-    public function __construct(Invoice $invoice, int $amount, string $currency, string $referenceId)
+    public function __construct(Invoice $invoice, Wallet $wallet, int $systemWalletId, int $amount, string $currency, string $referenceId)
     {
+        $payer = $invoice->getPayer();
+        if ($payer === null || $payer->getId() === null) {
+            throw new \InvalidArgumentException('Invoice payer is required for wallet payment deduction.');
+        }
+
         $this->uuid = UUID::v4();
-        $this->invoice = $invoice;
+        $this->invoiceId = $invoice->getUuid();
+        $this->invoiceNo = $invoice->getOutTradeNo();
+        $this->payerId = $payer->getId();
+        $this->wallet = $wallet;
+        $this->systemWalletId = $systemWalletId;
         $this->amount = $amount;
         $this->currency = strtoupper($currency);
         $this->referenceId = $referenceId;
@@ -85,13 +107,17 @@ class Deduction
 
     public function getId(): ?int { return $this->id; }
     public function getUuid(): string { return $this->uuid; }
-    public function getInvoice(): Invoice { return $this->invoice; }
+    public function getInvoiceId(): string { return $this->invoiceId; }
+    public function getInvoiceNo(): string { return $this->invoiceNo; }
+    public function getPayerId(): int { return $this->payerId; }
+    public function getWallet(): Wallet { return $this->wallet; }
+    public function getSystemWalletId(): int { return $this->systemWalletId; }
     public function getType(): string { return $this->type; }
     public function getAmount(): int { return $this->amount; }
     public function getCurrency(): string { return $this->currency; }
     public function getStatus(): string { return $this->status; }
     public function getWalletTransactionId(): ?string { return $this->walletTransactionId; }
-    public function getRefundTransactionId(): ?string { return $this->refundTransactionId; }
+    public function getReversalTransactionId(): ?string { return $this->reversalTransactionId; }
     public function getReferenceId(): string { return $this->referenceId; }
     public function getMetadata(): ?array { return $this->metadata; }
     public function getCreatedAt(): \DateTimeImmutable { return $this->createdAt; }
@@ -108,19 +134,19 @@ class Deduction
         return $this;
     }
 
-    public function markReleased(string $refundTransactionId, string $reason): self
+    public function markReleased(string $reversalTransactionId, string $reason): self
     {
         $this->status = self::STATUS_RELEASED;
-        $this->refundTransactionId = $refundTransactionId;
+        $this->reversalTransactionId = $reversalTransactionId;
         $this->releasedAt = new \DateTimeImmutable();
         $this->appendMetadata('releaseReason', $reason);
         return $this;
     }
 
-    public function markRefunded(string $refundTransactionId, string $reason): self
+    public function markRefunded(string $reversalTransactionId, string $reason): self
     {
         $this->status = self::STATUS_REFUNDED;
-        $this->refundTransactionId = $refundTransactionId;
+        $this->reversalTransactionId = $reversalTransactionId;
         $this->refundedAt = new \DateTimeImmutable();
         $this->appendMetadata('refundReason', $reason);
         return $this;

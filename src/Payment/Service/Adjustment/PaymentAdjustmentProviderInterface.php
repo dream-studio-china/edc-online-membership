@@ -19,7 +19,7 @@ interface PaymentAdjustmentProviderInterface
     /** @return PaymentAdjustmentResult[] */
     public function applied(Invoice $invoice): array;
 
-    public function release(PaymentAdjustmentResult $adjustment, string $reason): PaymentAdjustmentResult;
+    public function release(Invoice $invoice, PaymentAdjustmentResult $adjustment, string $reason): PaymentAdjustmentResult;
 
-    public function refund(PaymentAdjustmentResult $adjustment, string $reason): PaymentAdjustmentResult;
+    public function refund(Invoice $invoice, PaymentAdjustmentResult $adjustment, string $reason): PaymentAdjustmentResult;
 }

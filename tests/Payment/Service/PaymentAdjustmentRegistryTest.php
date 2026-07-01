@@ -53,12 +53,12 @@ final class RegistryTestAdjustmentProvider implements PaymentAdjustmentProviderI
         return $this->applied ? [$this->applied] : [];
     }
 
-    public function release(PaymentAdjustmentResult $adjustment, string $reason): PaymentAdjustmentResult
+    public function release(Invoice $invoice, PaymentAdjustmentResult $adjustment, string $reason): PaymentAdjustmentResult
     {
         return new PaymentAdjustmentResult($adjustment->provider, $adjustment->amount, $adjustment->currency, $adjustment->referenceId, ['status' => 'released']);
     }
 
-    public function refund(PaymentAdjustmentResult $adjustment, string $reason): PaymentAdjustmentResult
+    public function refund(Invoice $invoice, PaymentAdjustmentResult $adjustment, string $reason): PaymentAdjustmentResult
     {
         return new PaymentAdjustmentResult($adjustment->provider, $adjustment->amount, $adjustment->currency, $adjustment->referenceId, ['status' => 'refunded']);
     }

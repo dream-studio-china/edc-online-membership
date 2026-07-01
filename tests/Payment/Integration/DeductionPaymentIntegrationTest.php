@@ -7,14 +7,13 @@ namespace App\Tests\Payment\Integration;
 use App\Identity\Entity\User;
 use App\Payment\DTO\CreateInvoiceRequest;
 use App\Payment\DTO\PaymentNotifyResult;
-use App\Payment\Entity\Deduction;
 use App\Payment\Entity\Invoice;
 use App\Payment\Exception\InvoiceAmountMismatchException;
-use App\Payment\Service\DeductionService;
 use App\Payment\Service\InvoiceServiceInterface;
 use App\Tests\Integration\DatabaseBootstrapTrait;
 use App\Tests\Integration\IntegrationKernelTestCase;
 use App\Wallet\Entity\Wallet;
+use App\Wallet\Service\Payment\WalletPaymentDeductionService;
 use Doctrine\ORM\EntityManagerInterface;
 
 final class DeductionPaymentIntegrationTest extends IntegrationKernelTestCase
@@ -23,7 +22,7 @@ final class DeductionPaymentIntegrationTest extends IntegrationKernelTestCase
 
     private EntityManagerInterface $em;
     private InvoiceServiceInterface $invoiceService;
-    private DeductionService $deductionService;
+    private WalletPaymentDeductionService $deductionService;
 
     protected function setUp(): void
     {
@@ -32,7 +31,7 @@ final class DeductionPaymentIntegrationTest extends IntegrationKernelTestCase
         self::bootKernel();
         $this->em = static::getContainer()->get(EntityManagerInterface::class);
         $this->invoiceService = static::getContainer()->get(InvoiceServiceInterface::class);
-        $this->deductionService = static::getContainer()->get(DeductionService::class);
+        $this->deductionService = static::getContainer()->get(WalletPaymentDeductionService::class);
     }
 
     public function testWalletDeductionPlusMockPaymentAndFullRefund(): void
