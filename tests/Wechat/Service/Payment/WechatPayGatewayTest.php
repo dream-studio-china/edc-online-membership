@@ -11,7 +11,7 @@ use App\Payment\Entity\Invoice;
 use App\Payment\Exception\PaymentVerificationException;
 use App\Wechat\Entity\WechatUser;
 use App\Wechat\Repository\WechatUserRepository;
-use App\Wechat\Service\Gateway\WechatPayGateway;
+use App\Wechat\Service\Payment\WechatPayGateway;
 use App\Wechat\Service\WechatService;
 use EasyWeChat\Kernel\HttpClient\Response as WechatResponse;
 use EasyWeChat\MiniApp\Application as MiniApp;

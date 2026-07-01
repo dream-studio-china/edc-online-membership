@@ -19,7 +19,7 @@ src/Wechat/
 ├── Repository/
 │   └── WechatUserRepository.php
 ├── Service/
-│   ├── Gateway/
+│   ├── Payment/
 │   │   └── WechatPayGateway.php         # implements PaymentGatewayInterface
 │   ├── WechatAuthService.php            # 登录编排服务
 │   └── WechatService.php                # EasyWeChat 三合一工厂
@@ -38,7 +38,7 @@ tests/Wechat/
 │   └── WechatAuthServiceTest.php
 ├── Controller/
 │   └── LoginControllerTest.php
-└── Gateway/
+└── Service/Payment/
     └── WechatPayGatewayTest.php
 ```
 
@@ -567,7 +567,7 @@ services:
             $payPrivateKeyPath: '%env(WECHAT_PAY_PRIVATE_KEY)%'
             $payCertificatePath: '%env(WECHAT_PAY_CERTIFICATE)%'
 
-    App\Wechat\Service\Gateway\WechatPayGateway:
+    App\Wechat\Service\Payment\WechatPayGateway:
         arguments:
             $notifyUrl: '%env(WECHAT_PAY_NOTIFY_URL)%'
 ```
