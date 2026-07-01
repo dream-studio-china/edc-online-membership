@@ -31,7 +31,7 @@ $_ENV['APP_SECRET'] = 'sim_secret_32_bytes_long_key';
 $_ENV['JWT_PRIVATE_KEY_PATH'] = dirname(__DIR__, 2) . '/tests/Identity/Security/test_private.pem';
 $_ENV['JWT_PUBLIC_KEY_PATH'] = dirname(__DIR__, 2) . '/tests/Identity/Security/test_public.pem';
 $_ENV['JWT_PASSPHRASE'] = '';
-$_ENV['JWT_REFRESH_TOKEN_SECRET'] = 'sim_refresh_secret_32_bytes';
+$_ENV['REFRESH_TOKEN_SECRET'] = 'sim_refresh_secret_32_bytes';
 putenv('APP_ENV=test');
 putenv('DATABASE_URL=sqlite:///' . dirname(__DIR__, 2) . '/var/test.db');
 putenv('MESSENGER_TRANSPORT_DSN=doctrine://default');
@@ -41,7 +41,7 @@ putenv('APP_SECRET=sim_secret_32_bytes_long_key');
 putenv('JWT_PRIVATE_KEY_PATH=' . dirname(__DIR__, 2) . '/tests/Identity/Security/test_private.pem');
 putenv('JWT_PUBLIC_KEY_PATH=' . dirname(__DIR__, 2) . '/tests/Identity/Security/test_public.pem');
 putenv('JWT_PASSPHRASE=');
-putenv('JWT_REFRESH_TOKEN_SECRET=sim_refresh_secret_32_bytes');
+putenv('REFRESH_TOKEN_SECRET=sim_refresh_secret_32_bytes');
 
 @unlink(dirname(__DIR__, 2) . '/var/test.db');
 $kernel = new Kernel('test', false);
