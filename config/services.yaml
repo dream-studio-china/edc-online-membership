@@ -21,6 +21,8 @@ services:
                 - [ setTranslator, [ '@translator' ] ]
         App\Payment\Service\PaymentGatewayInterface:
             tags: ['payment.gateway']
+        App\Payment\Service\Adjustment\PaymentAdjustmentProviderInterface:
+            tags: ['payment.adjustment_provider']
 
     App\:
         resource: '../src/'

@@ -376,9 +376,9 @@ interface PaymentAdjustmentProviderInterface
     /** @return PaymentAdjustmentResult[] */
     public function applied(Invoice $invoice): array;
 
-    public function release(PaymentAdjustmentResult $adjustment, string $reason): void;
+    public function release(PaymentAdjustmentResult $adjustment, string $reason): PaymentAdjustmentResult;
 
-    public function refund(PaymentAdjustmentResult $adjustment, string $reason): void;
+    public function refund(PaymentAdjustmentResult $adjustment, string $reason): PaymentAdjustmentResult;
 }
 ```
 
