@@ -16,7 +16,7 @@ use App\Wallet\Entity\Wallet;
 use App\Wallet\Service\Payment\WalletPaymentDeductionService;
 use Doctrine\ORM\EntityManagerInterface;
 
-final class DeductionPaymentIntegrationTest extends IntegrationKernelTestCase
+final class PaymentAdjustmentIntegrationTest extends IntegrationKernelTestCase
 {
     use DatabaseBootstrapTrait;
 

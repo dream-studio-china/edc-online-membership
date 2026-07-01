@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Payment\Service;
+namespace App\Tests\Wallet\Service\Payment;
 
 use App\Payment\DTO\PaymentAdjustmentContext;
 use App\Payment\DTO\PaymentAdjustmentResult;
