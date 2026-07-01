@@ -275,6 +275,36 @@ final class WechatPayGatewayTest extends TestCase
         self::assertSame('weixin://pay/native', $result->payUrl);
     }
 
+    public function testPayNativeFallsBackToPaymentWhenSubjectAndDescriptionAreNull(): void
+    {
+        $payApp = $this->createMock(PayApp::class);
+        $merchant = $this->createMock(Merchant::class);
+        $merchant->method('getMerchantId')->willReturn(999);
+        $payApp->method('getMerchant')->willReturn($merchant);
+
+        $clientResponse = $this->createMock(WechatResponse::class);
+        $clientResponse->method('toArray')->willReturn(['code_url' => 'weixin://pay/fallback']);
+
+        $payClient = $this->createMock(\EasyWeChat\Pay\Client::class);
+        $payClient->method('postJson')->willReturn($clientResponse);
+        $payApp->method('getClient')->willReturn($payClient);
+
+        $this->wechatService->method('getPayApp')->willReturn($payApp);
+
+        $invoice = $this->createMock(Invoice::class);
+        $invoice->method('getTradeType')->willReturn('native');
+        $invoice->method('getAmount')->willReturn(300);
+        $invoice->method('getCurrency')->willReturn('CNY');
+        $invoice->method('getSubject')->willReturn(null);
+        $invoice->method('getDescription')->willReturn(null);
+        $invoice->method('getOutTradeNo')->willReturn('TXN_NULL_SUBJECT');
+
+        $result = $this->gateway->pay($invoice, 300);
+
+        self::assertSame(Invoice::STATUS_PAYING, $result->status);
+        self::assertSame('weixin://pay/fallback', $result->payUrl);
+    }
+
     public function testRefundSuccess(): void
     {
         $payApp = $this->createMock(PayApp::class);
