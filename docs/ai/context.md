@@ -1,6 +1,6 @@
 # CRUD Skeleton - Full Codebase Context
 
-> Auto-generated context snapshot. Last updated: 2025-06-26
+> Context snapshot. Last updated: 2026-07-02
 
 ---
 
@@ -10,7 +10,7 @@
 - **PHP 8.4+**, Doctrine ORM 3.6, MySQL 8 (Docker), SQLite (tests)
 - JWT authentication (RS256), OTP/SMS login, WeChat Mini Program / Official Account login
 - Expression-based dynamic query engine (`@filter`, `@sort`, `@dql`)
-- Modular architecture: **Core** (framework), **Common** (CMS), **Identity** (auth), **Trade** (e-commerce), **Payment** (invoices), **Wallet** (balances), **Wechat** (login + pay)
+- Modular architecture: **Core** (framework), **Common** (CMS), **Identity** (auth), **Trade** (e-commerce), **Payment** (invoices), **Wallet** (balances), **Wechat** (login + pay), **Storage** (file upload drivers)
 - EasyWeChat 6.x integration (Mini Program, Official Account OAuth, WeChat Pay V3)
 - NelmioApiDoc (Swagger at `/api/doc`), PHPUnit 12.5, Docker Compose (5 services)
 - MkDocs Material + GitHub Pages documentation
@@ -56,32 +56,41 @@
 │
 ├── src/Payment/                  # Payment module
 │   ├── Entity/Invoice.php              # Payment invoice (pending→paying→paid→refunded)
-│   ├── DTO/                            # PaymentResult, PaymentNotifyResult, PaymentRefundResult
+│   ├── DTO/                            # PaymentResult, PaymentNotifyResult, PaymentRefundResult, PaymentAdjustmentContext, PaymentAdjustmentResult
 │   ├── Event/                          # InvoicePaidEvent, InvoiceRefundedEvent, etc.
-│   ├── Service/PaymentGatewayInterface.php  # Gateway contract (pay, notify, refund)
-│   ├── Service/Gateway/               # MockGateway, WalletGateway, WechatPayGateway (auto-registered)
-│   ├── Service/PaymentGatewayRegistry.php  # #[AutowireIterator('payment.gateway')] registry
+│   ├── Service/PaymentGatewayInterface.php  # Gateway contract (pay(explicit amount), notify, refund(explicit amount))
+│   ├── Service/Adjustment/PaymentAdjustmentProviderInterface.php  # Adjustments before gateway payment (implemented by Wallet)
+│   ├── Service/Adjustment/PaymentAdjustmentRegistry.php  # #[AutowireIterator('payment.adjustment_provider')] registry
+│   ├── Service/Gateway/MockGateway.php       # Deterministic test gateway (only gateway remaining in Payment)
+│   ├── Service/PaymentGatewayRegistry.php    # #[AutowireIterator('payment.gateway')] registry
 │   └── Controller/App/ + Manage/ + Webhook/
 │
 ├── src/Wallet/                   # Wallet module
-│   ├── Entity/                   # Wallet (balance, optimistic locking), WalletTransaction
-│   ├── Service/TransferService.php     # Atomic transfer + deposit with deadlock prevention + idempotency
+│   ├── Entity/                   # Wallet, WalletTransaction, WalletPaymentDeduction
+│   ├── Repository/               # + WalletPaymentDeductionRepository
+│   ├── Service/TransferService.php     # Atomic transfer + deposit
 │   ├── Service/WalletService.php       # verifyBalance() + reconcile()
+│   ├── Service/Payment/WalletGateway.php              # Implements PaymentGatewayInterface
+│   ├── Service/Payment/WalletBalanceAdjustmentProvider.php  # Wallet deduction as Payment adjustment provider
+│   ├── Service/Payment/WalletPaymentDeductionService.php    # Wallet-owned deduction lifecycle
+│   ├── DTO/WalletPaymentDeductionRequest.php
 │   └── Controller/Manage/
-│       ├── TransferController.php      # transfer + deposit endpoints
-│       └── WalletController.php        # CRUD + balance + reconcile
 │
 ├── src/Wechat/                   # WeChat module
-│   ├── Entity/WechatUser.php           # OneToOne→User (openid, unionid, sessionKey, profile)
+│   ├── Entity/WechatUser.php           # OneToOne→User
 │   ├── Repository/WechatUserRepository.php
-│   ├── Service/WechatService.php       # EasyWeChat factory (MiniApp, OfficialAccount, Pay)
-│   ├── Service/WechatAuthService.php   # Login orchestration (code2Session/OAuth→User→JWT)
-│   ├── Service/WechatUserService.php   # CRUD service (extends BaseService)
-│   ├── Service/Gateway/WechatPayGateway.php  # implements PaymentGatewayInterface
+│   ├── Service/WechatService.php       # EasyWeChat factory
+│   ├── Service/WechatAuthService.php   # Login orchestration
+│   ├── Service/WechatUserService.php   # CRUD service
+│   ├── Service/Payment/WechatPayGateway.php  # implements PaymentGatewayInterface
 │   └── Controller/
-│       ├── LoginController.php         # /api/wechat/* (miniapp login, oauth, phone binding)
-│       ├── App/WechatUserController.php      # User-scoped CRUD
-│       └── Manage/WechatUserController.php   # Admin CRUD
+│
+├── src/Storage/                  # Storage module (pluggable file upload drivers)
+│   ├── Service/MediaStorageInterface.php       # Driver contract (store/delete)
+│   ├── Service/MediaStorageRegistry.php        # Tagged iterator collection
+│   ├── Service/LocalStorage.php                # Local filesystem (public/uploads/)
+│   ├── Service/QiniuStorage.php                # Qiniu Kodo cloud storage
+│   └── Resources/config/services_storage.yaml
 │
 ├── config/
 │   ├── services.yaml             # Service wiring + import src/Wechat/ + exclusions
@@ -268,14 +277,38 @@ Invoice (pending→paying→paid→refunded)
 ```php
 interface PaymentGatewayInterface {
     static getName(): string;           // e.g. 'wallet', 'wechat', 'mock'
-    pay(Invoice, array $options): PaymentResult;
+    pay(Invoice, int $amount, array $options): PaymentResult;
     notify(Request $request): PaymentNotifyResult;
-    refund(Invoice, int $amount, string $reason, array $options): PaymentRefundResult;
+    refund(Invoice, int $amount, int $paidAmount, string $reason, array $options): PaymentRefundResult;
     getNotifySuccessResponse(PaymentNotifyResult $result): Response;
 }
 ```
 
-All implementations auto-tagged `payment.gateway` via `_instanceof` rule. `PaymentGatewayRegistry` uses `#[AutowireIterator('payment.gateway')]` for auto-discovery. Webhook route: `/api/payment/notify/{payment}` (PUBLIC_ACCESS, gateway validates own signature).
+Gateways receive **explicit payment/refund amounts** and MUST NOT inspect deduction or adjustment options. `Invoice::amount` remains the gross business payable amount; the gateway amount is computed by `InvoiceService` after applying payment adjustments.
+
+Gateways are auto-tagged `payment.gateway` via `_instanceof` rule. `PaymentGatewayRegistry` uses `#[AutowireIterator('payment.gateway')]` for auto-discovery.
+
+### 8.2.1 Payment Adjustment Providers
+
+Payment defines `PaymentAdjustmentProviderInterface` — a pre-payment hook that reduces the amount a gateway must process. Implementations live in the owning module (e.g., Wallet provides `WalletBalanceAdjustmentProvider` for wallet balance deduction). Providers are auto-tagged `payment.adjustment_provider` and collected by `PaymentAdjustmentRegistry`.
+
+| Provider | Module | Description |
+|----------|--------|-------------|
+| `wallet_balance` | Wallet | Wallet balance deduction before gateway payment |
+| (future) coupons / points | Coupon / Loyalty modules | Other deduction types through the same extension point |
+
+`InvoiceService` orchestrates adjustment providers and gateways without knowing deduction internals:
+1. Apply registered adjustments → total applied amount
+2. Compute `gatewayAmount = invoice.amount - adjustmentAmount`
+3. Call gateway with explicit amount
+
+### 8.2.2 First-Phase Gateways
+
+| Gateway | Module | Purpose |
+|---------|--------|---------|
+| `mock` | Payment (`Service/Gateway/MockGateway.php`) | Deterministic test/development gateway |
+| `wallet` | Wallet (`Service/Payment/WalletGateway.php`) | Internal wallet balance payment |
+| `wechat` | Wechat (`Service/Payment/WechatPayGateway.php`) | WeChat Pay V3 adapter |
 
 ### 8.3 Payment Endpoints
 
@@ -322,9 +355,10 @@ New users get random password (cannot password-login), synthetic email/username 
 ### 9.3 WechatPayGateway
 
 Implements `PaymentGatewayInterface` with `getName() → 'wechat'`:
-- **pay()**: JSAPI (requires payer openid from WechatUser) or Native (QR code)
+- **File**: `src/Wechat/Service/Payment/WechatPayGateway.php`
+- **pay()**: JSAPI (requires payer openid from WechatUser) or Native (QR code) — receives explicit `$amount`
 - **notify()**: EasyWeChat server + validator, signature verification
-- **refund()**: Creates refund via WeChat Pay V3 API
+- **refund()**: Creates refund via WeChat Pay V3 API — receives explicit `$paidAmount` for `total`
 - Auto-registered as `payment.gateway` via `_instanceof` rule
 
 ### 9.4 WechatUser CRUD Controllers
@@ -367,6 +401,8 @@ Placed in `src/Core/Controller/System/` (framework layer). NelmioApiDoc path_pat
 | **Balance audit** | Wallet | `GET /wallets/balance` checks `SUM(wallets) == SUM(deposits)`; `POST /wallets/reconcile` fixes per-wallet gaps with `TYPE_ADJUSTMENT` |
 | **Idempotent deposit** | Wallet | `POST /transfers/deposit` with `referenceId` — duplicate requests return existing transaction |
 | **Gateway registry** | Payment | `#[AutowireIterator]` + `_instanceof` auto-tags all `PaymentGatewayInterface` implementations |
+| **Adjustment provider registry** | Payment | `#[AutowireIterator]` + `_instanceof` for `PaymentAdjustmentProviderInterface` — wallet deduction is a Wallet-owned provider |
+| **Deduction owned by Wallet** | Wallet | Wallet balance deduction lives in Wallet (`WalletPaymentDeduction` entity, `WalletPaymentDeductionService`, `WalletBalanceAdjustmentProvider`). Payment owns only the generic adjustment contract |
 | **OneToOne extension** | Wechat | `WechatUser` extends User identity without modifying User entity |
 | **System introspection** | Core | Entity metadata + route export via `/system/*` endpoints |
 
@@ -419,6 +455,7 @@ Enriches all endpoints (90+):
 | 20250620000000 | `trade_product`, `trade_specification`, `trade_order`, `trade_order_item` |
 | 20250621000000 | Added to `trade_order`: `paid_at`, `refunded_at`, `fulfilled_at`, `payment_method`, `tracking_number`, `shipping_address`, `refund_reason` |
 | 20250624223701 | `payment_invoice`, `wechat_user`, `messenger_messages` |
+| 20260626000000 | `wallet_payment_deduction` (wallet-owned deduction audit, scalar invoice references, FK to `wallet`) |
 
 ## 14. Documentation Assets
 
@@ -437,6 +474,8 @@ Enriches all endpoints (90+):
 | `docs/design/bundles/wallet.md` | Wallet module design |
 | `docs/design/bundles/identity.md` | Auth module design |
 | `docs/design/bundles/wechat.md` | WeChat module design (Mini Program, Official Account, Pay) |
+| `docs/design/bundles/payment.md` | Payment module design (invoice, gateway, adjustment providers, deduction) |
+| `docs/design/bundles/storage.md` | Storage module design (pluggable file upload drivers) |
 | `docs/ai/context.md` | This file — AI context snapshot |
 | `mkdocs.yml` | MkDocs Material site config |
 | `scripts/tests/simulate-trade.php` | Generates 100 orders across all 8 statuses into `var/test.db` |
@@ -446,16 +485,16 @@ Enriches all endpoints (90+):
 
 - **Framework**: PHPUnit 12.5
 - **DB**: SQLite `var/test.db` in test environment
-- **Coverage**: 80% minimum (enforced in CI), currently **86.64% lines**
-- **Test count**: **1019 tests**, **~3489 assertions**
+- **Coverage**: 80% minimum (enforced in CI), currently **87.83% lines**
+- **Test count**: **1069 tests**, **~3666 assertions**
 - **Local PHP note**: default `php` may point to PHP 7.4; use Homebrew PHP 8.5 at `/opt/homebrew/opt/php/bin/php` for local Symfony/PHPUnit commands.
 - **Key test groups**:
-  - `tests/Wechat/`: 59 tests (Entity, Service, AuthService, Gateway, Controller, Repository)
+  - `tests/Wechat/`: 59 tests (Entity, Service, AuthService, Payment/Gateway, Controller, Repository)
   - `tests/Trade/`: 171 tests (Entity, Service, Pricing, Integration, EventListener, Workflow API)
-  - `tests/Wallet/`: **94 tests** (Entity, Integration, Transfer Service, **WalletService**, API regression)
+  - `tests/Wallet/`: ~105 tests (Entity, Integration, Transfer Service, WalletService, Payment/Gateway, API regression)
   - `tests/Common/`: 68 tests (Entity, Integration, Batch update)
-  - `tests/Identity/`: **92 tests** (Auth, OTP, Token, Black box, **UserService**, **UserController**, **UserApiIntegration**)
-  - `tests/Payment/`: Integration tests for Invoice + Gateway
+  - `tests/Identity/`: 92 tests (Auth, OTP, Token, Black box, UserService, UserController, UserApiIntegration)
+  - `tests/Payment/`: ~60 tests (Gateway, Registry, Adjustment/Provider, Invoice, Multi-gateway integration)
   - `tests/Integration/`: ~20 cross-module tests
   - `tests/Core/`: BaseService, RestController, Parser, Serializer, Utils, System controllers
 
@@ -512,9 +551,13 @@ Requires `.env.prod.local` copied from `.env.prod.example` with `APP_SECRET`, `R
 ## 19. Service Container Wiring
 
 - Default: all `src/` classes autowired/autoconfigured
-- Explicit exclusions: `FlatNormalizer`, EventListener classes (except `OpenApiEnricherListener`), Auth/Otp controllers, TokenManager, AliyunSmsProvider, RedisOtpStorage, **WechatService, WechatPayGateway**
+- Explicit exclusions: `FlatNormalizer`, EventListener classes (except `OpenApiEnricherListener`), Auth/Otp controllers, TokenManager, AliyunSmsProvider, RedisOtpStorage, **WechatService, `src/Wechat/Service/Payment/WechatPayGateway.php`**
 - `OpenApiEnricherListener`: registered with `kernel.event_listener` tag on `kernel.response` (priority -10)
 - `RestController` subclasses get `RequestStack`, `SerializerInterface`, `TranslatorInterface` via `#[Required]` setter injection
 - `PaymentGatewayInterface` implementations auto-tagged `payment.gateway`, collected via `#[AutowireIterator]`
+- `PaymentAdjustmentProviderInterface` implementations auto-tagged `payment.adjustment_provider`, collected via `#[AutowireIterator]`
+- `MediaStorageInterface` implementations auto-tagged `media.storage`, collected via `#[AutowireIterator]`
 - `PriceCalculatorInterface` implementations auto-tagged `trade.price_calculator`, sorted by `getPriority()`
 - `WechatService` explicitly defined in `services_wechat.yaml` with `%env()` parameter bindings
+- `WechatPayGateway` explicitly defined in `services_wechat.yaml` (excluded from global autowiring scan)
+- `WalletGateway` autowired in Wallet via `PaymentGatewayInterface` tag (no explicit exclusion needed)
