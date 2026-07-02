@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Payment\Service\Gateway;
+namespace App\Wallet\Service\Payment;
 
 use App\Payment\DTO\PaymentNotifyResult;
 use App\Payment\DTO\PaymentRefundResult;
@@ -30,7 +30,7 @@ final class WalletGateway implements PaymentGatewayInterface
         return Invoice::PAYMENT_WALLET;
     }
 
-    public function pay(Invoice $invoice, array $options = []): PaymentResult
+    public function pay(Invoice $invoice, int $amount, array $options = []): PaymentResult
     {
         $systemWalletId = (int) ($options['systemWalletId'] ?? $this->systemWalletId ?? 0);
         if ($systemWalletId <= 0) {
@@ -44,11 +44,10 @@ final class WalletGateway implements PaymentGatewayInterface
         if ($wallet === null || $wallet->getId() === null) {
             throw new \RuntimeException(sprintf('No %s wallet found for payer.', $invoice->getCurrency()));
         }
-
         $result = $this->transferService->transfer(
             $wallet->getId(),
             $systemWalletId,
-            $invoice->getAmount(),
+            $amount,
             'invoice-pay-' . $invoice->getOutTradeNo(),
             $invoice->getSubject() ?? ('Payment for invoice ' . $invoice->getOutTradeNo()),
         );
@@ -70,7 +69,7 @@ final class WalletGateway implements PaymentGatewayInterface
         throw new PaymentVerificationException('Wallet gateway does not accept external notify callbacks.');
     }
 
-    public function refund(Invoice $invoice, int $amount, string $reason, array $options = []): PaymentRefundResult
+    public function refund(Invoice $invoice, int $amount, int $paidAmount, string $reason, array $options = []): PaymentRefundResult
     {
         $systemWalletId = (int) ($options['systemWalletId'] ?? $this->systemWalletId ?? 0);
         if ($systemWalletId <= 0) {
@@ -96,7 +95,7 @@ final class WalletGateway implements PaymentGatewayInterface
         return new PaymentRefundResult(
             invoice: $invoice,
             amount: $amount,
-            status: $amount >= ($invoice->getAmount() - $invoice->getRefundedAmount()) ? Invoice::STATUS_REFUNDED : Invoice::STATUS_PARTIAL_REFUNDED,
+            status: $amount >= ($paidAmount - $invoice->getRefundedAmount()) ? Invoice::STATUS_REFUNDED : Invoice::STATUS_PARTIAL_REFUNDED,
             refundId: $transfer->transaction->getUuid(),
             rawData: ['reason' => $reason, 'transactionId' => $transfer->transaction->getUuid()],
         );

@@ -9,6 +9,7 @@ use App\Payment\Entity\Invoice;
 use App\Tests\Integration\DatabaseBootstrapTrait;
 use App\Tests\Integration\IntegrationWebTestCase;
 use App\Trade\Entity\Order;
+use App\Wallet\Entity\Wallet;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Component\HttpFoundation\Response;
@@ -74,6 +75,46 @@ final class TradePaymentIntegrationTest extends IntegrationWebTestCase
         self::assertSame(Invoice::STATUS_REFUNDED, $order->getPaymentStatus());
     }
 
+    public function testOrderPaymentWithWalletDeductionAndMockRemainder(): void
+    {
+        $productId = $this->createProduct();
+        $specId = $this->createSpecification($productId);
+        $user = $this->currentUser();
+        $userWallet = $this->createWallet($user, 5000);
+        $systemUser = $this->createSystemUser('trade-deduct-system@example.com');
+        $systemWallet = $this->createWallet($systemUser, 0);
+
+        [, $content] = $this->jsonRequest('POST', '/api/v1/manage/orders', [
+            'user' => $user->getId(),
+            'items' => [['specificationId' => $specId, 'quantity' => 2]],
+            'currency' => 'CNY',
+        ]);
+        $orderId = (int) $content['data']['id'];
+
+        $this->jsonRequest('POST', "/api/v1/manage/orders/{$orderId}/do/submit");
+        $this->jsonRequest('POST', "/api/v1/manage/orders/{$orderId}/do/confirm");
+
+        [$response] = $this->jsonRequest('POST', "/api/v1/manage/orders/{$orderId}/payment", [
+            'payment' => Invoice::PAYMENT_MOCK,
+            'walletAmount' => 1000,
+            'systemWalletId' => $systemWallet->getId(),
+            'autoPaid' => true,
+        ]);
+        self::assertSame(Response::HTTP_OK, $response->getStatusCode());
+
+        $this->em->clear();
+        $order = $this->em->getRepository(Order::class)->find($orderId);
+        self::assertInstanceOf(Order::class, $order);
+        self::assertSame(Order::STATUS_PAID, $order->getStatus());
+        self::assertSame(Invoice::PAYMENT_MOCK, $order->getPaymentMethod());
+        self::assertSame(Invoice::STATUS_PAID, $order->getPaymentStatus());
+
+        $userWallet = $this->em->getRepository(Wallet::class)->find($userWallet->getId());
+        $systemWallet = $this->em->getRepository(Wallet::class)->find($systemWallet->getId());
+        self::assertSame(4000, $userWallet->getBalance());
+        self::assertSame(1000, $systemWallet->getBalance());
+    }
+
     private function createProduct(): int
     {
         [, $content] = $this->jsonRequest('POST', '/api/v1/manage/products', ['name' => 'Payment Product', 'status' => 'active']);
@@ -102,5 +143,30 @@ final class TradePaymentIntegrationTest extends IntegrationWebTestCase
         $user = $this->em->getRepository(User::class)->findOneBy(['email' => 'testauth@example.com']);
         self::assertInstanceOf(User::class, $user);
         return $user;
+    }
+
+    private function createSystemUser(string $email): User
+    {
+        $user = new User();
+        $user->setEmail($email);
+        $user->setUsername(strstr($email, '@', true));
+        $user->setPassword('password');
+        $user->setRoles(['ROLE_ADMIN']);
+        $this->em->persist($user);
+        $this->em->flush();
+        return $user;
+    }
+
+    private function createWallet(User $user, int $balance): Wallet
+    {
+        $wallet = new Wallet($user, 'CNY');
+        $this->em->persist($wallet);
+        $this->em->flush();
+        $this->em->getConnection()->executeStatement('UPDATE wallet SET balance = :balance WHERE id = :id', [
+            'balance' => $balance,
+            'id' => $wallet->getId(),
+        ]);
+        $this->em->refresh($wallet);
+        return $wallet;
     }
 }

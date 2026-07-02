@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Wechat\Service\Gateway;
+namespace App\Wechat\Service\Payment;
 
 use App\Payment\DTO\PaymentNotifyResult;
 use App\Payment\DTO\PaymentRefundResult;
@@ -31,7 +31,7 @@ final class WechatPayGateway implements PaymentGatewayInterface
         return Invoice::PAYMENT_WECHAT;
     }
 
-    public function pay(Invoice $invoice, array $options = []): PaymentResult
+    public function pay(Invoice $invoice, int $amount, array $options = []): PaymentResult
     {
         $app = $this->wechatService->getPayApp();
         $tradeType = $invoice->getTradeType() ?? 'jsapi';
@@ -43,7 +43,7 @@ final class WechatPayGateway implements PaymentGatewayInterface
             'description' => $invoice->getSubject() ?? $invoice->getDescription() ?? 'Payment',
             'notify_url' => $this->notifyUrl,
             'amount' => [
-                'total' => $invoice->getAmount(),
+                'total' => $amount,
                 'currency' => $invoice->getCurrency(),
             ],
         ];
@@ -133,7 +133,7 @@ final class WechatPayGateway implements PaymentGatewayInterface
         }
     }
 
-    public function refund(Invoice $invoice, int $amount, string $reason, array $options = []): PaymentRefundResult
+    public function refund(Invoice $invoice, int $amount, int $paidAmount, string $reason, array $options = []): PaymentRefundResult
     {
         $app = $this->wechatService->getPayApp();
 
@@ -144,7 +144,7 @@ final class WechatPayGateway implements PaymentGatewayInterface
             'reason' => $reason,
             'amount' => [
                 'refund' => $amount,
-                'total' => $invoice->getAmount(),
+                'total' => $paidAmount,
                 'currency' => $invoice->getCurrency(),
             ],
         ];
@@ -153,7 +153,7 @@ final class WechatPayGateway implements PaymentGatewayInterface
         $result = $response->toArray(false);
 
         $refundStatus = match ($result['status'] ?? '') {
-            'SUCCESS' => ($amount >= $invoice->getAmount() - $invoice->getRefundedAmount())
+            'SUCCESS' => ($amount >= $paidAmount - $invoice->getRefundedAmount())
                 ? Invoice::STATUS_REFUNDED
                 : Invoice::STATUS_PARTIAL_REFUNDED,
             default => $invoice->getStatus(),

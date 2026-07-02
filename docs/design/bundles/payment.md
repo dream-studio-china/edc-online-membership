@@ -16,6 +16,7 @@ The Payment module provides a unified invoice abstraction for all payment flows:
 |------------|---------|
 | Invoice creation | Represent a payable business document independent of payment provider |
 | Gateway dispatch | Route pay/notify/refund actions to a named gateway adapter |
+| Payment adjustments | Allow other modules to apply pre-payment adjustments before gateway payment |
 | State management | Enforce legal invoice status transitions |
 | Webhook handling | Verify provider callbacks and update invoices idempotently |
 | Cross-module events | Notify business modules such as Trade when invoices are paid/refunded |
@@ -31,6 +32,8 @@ The first phase MUST NOT include concrete Fuiou/Huifu integration code.
 | POS device management | Provider-specific operational module, not core invoice framework |
 | Auto withdraw / settlement | Finance and settlement concern, not first-phase payment collection |
 | Split settlement / fees | Requires accounting design beyond invoice payment |
+| Multi-invoice aggregate payment | Too much orchestration complexity for first phase; use one invoice with adjustments instead |
+| Multiple adjustment types | First adjustment implementation only supports wallet balance deduction for a specific currency |
 | Payment requisition | Outbound payment approval workflow, separate from collection invoices |
 
 ### 1.3 Legacy Reference
@@ -70,9 +73,12 @@ src/Payment/
 |-- Service/InvoiceServiceInterface.php
 |-- Service/PaymentGatewayInterface.php
 |-- Service/PaymentGatewayRegistry.php
+|-- Service/Adjustment/PaymentAdjustmentProviderInterface.php
+|-- Service/Adjustment/PaymentAdjustmentRegistry.php
 |-- Service/Gateway/MockGateway.php
-|-- Service/Gateway/WalletGateway.php
 |-- DTO/CreateInvoiceRequest.php
+|-- DTO/PaymentAdjustmentContext.php
+|-- DTO/PaymentAdjustmentResult.php
 |-- DTO/PaymentResult.php
 |-- DTO/PaymentNotifyResult.php
 |-- DTO/PaymentRefundResult.php
@@ -92,12 +98,15 @@ src/Payment/
 |------|----|---------|------|
 | Payment | Core | Yes | BaseService, RestController, serializer, events |
 | Payment | Identity | Yes | Optional payer relation or current user lookup |
-| Payment | Wallet | Yes | Only for `WalletGateway`; depend on service interfaces |
+| Payment | Wallet | No | Payment defines extension points but MUST NOT import wallet services or entities |
 | Payment | Trade | No | Payment MUST NOT import Trade services or entities |
 | Trade | Payment | Yes | Trade consumes `InvoiceServiceInterface` and Payment events |
+| Wallet | Payment | Yes | Wallet may provide payment gateways and adjustment providers |
 | Gateway adapters | Payment | Yes | Implement `PaymentGatewayInterface` |
+| Adjustment providers | Payment | Yes | Implement `PaymentAdjustmentProviderInterface` |
 
 Payment is a generic collection module. Business modules decide how to react to invoice events.
+Wallet balance deduction belongs to Wallet as a provider implementation. Payment only orchestrates generic adjustments.
 
 ---
 
@@ -168,6 +177,7 @@ Only `SCENE_ORDER` is required in the first phase. Other scene constants exist t
 ```php
 public const PAYMENT_MOCK = 'mock';
 public const PAYMENT_WALLET = 'wallet';
+public const PAYMENT_WECHAT = 'wechat';
 ```
 
 Provider constants such as `fuiou`, `fuiou-pos`, `huifu`, and `huifu-pos` are reserved for future adapters. They MUST NOT be used until concrete adapters exist.
@@ -188,6 +198,12 @@ Provider constants such as `fuiou`, `fuiou-pos`, `huifu`, and `huifu-pos` are re
 
 All invoice amounts MUST be stored as integer cents.
 
+`Invoice::amount` MUST represent the gross business payable amount, not the external gateway charge amount. If pre-payment adjustments are applied, the gateway charge amount is computed as:
+
+```text
+gatewayPayAmount = invoice.amount - sum(applied adjustments)
+```
+
 | Direction | Format |
 |-----------|--------|
 | Entity storage | int cents |
@@ -196,6 +212,34 @@ All invoice amounts MUST be stored as integer cents.
 | Provider payload | provider-specific, converted at gateway boundary |
 
 Gateway adapters are responsible for converting cents into provider formats such as yuan decimal strings or fen integers.
+
+### 3.8 Adjustment Domain Boundary
+
+Payment does not own wallet deduction internals. Payment owns only the invoice and the generic adjustment contract used to reduce the amount that must be processed by a gateway.
+
+Wallet balance deduction is a Wallet module concern because it is implemented through wallet balance transfer and reversal. The Wallet module MAY persist its own deduction entity, for example `WalletPaymentDeduction`, with wallet transaction ids, idempotency references, and operational metadata.
+
+Business modules such as Trade should continue to react to invoice events and should not know adjustment or deduction internals.
+
+First-phase implementation supports only one wallet balance deduction per invoice and per currency through a Wallet-provided adjustment provider.
+
+#### Adjustment Result Contract
+
+An applied adjustment returned to Payment MUST expose only generic payment-facing fields:
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `provider` | string | Yes | Adjustment provider name, e.g. `wallet_balance` |
+| `amount` | int | Yes | Applied amount in cents |
+| `currency` | string | Yes | Must equal invoice currency |
+| `referenceId` | string | Yes | Provider idempotency reference |
+| `payload` | array | No | Sanitized metadata safe to store on invoice extra data |
+
+Payment MUST NOT require wallet transaction ids or wallet entity references in the generic adjustment result. Those details belong to Wallet.
+
+#### Full Wallet Deduction
+
+When adjustments cover the full invoice amount, no external provider gateway should be called. Payment MAY record `invoice.payment = wallet` when the only adjustment is wallet balance deduction, and can mark the invoice paid after the adjustment is applied successfully.
 
 ---
 
@@ -308,11 +352,70 @@ interface InvoiceServiceInterface extends BaseServiceInterface
 | Apply workflow transitions | Use `state_machine.invoice`, never direct status writes |
 | Call gateway registry | Resolve named gateway for pay/refund |
 | Handle notify result | Find invoice by `outTradeNo` or transaction id and update safely |
+| Apply adjustments | Apply registered payment adjustments before gateway payment request |
+| Calculate gateway pay amount | Use `invoice.amount - appliedAdjustmentAmount` as provider charge amount |
 | Persist provider snapshots | Store sanitized notify/refund data in `extraData` |
 | Dispatch events | Emit invoice domain events after successful state changes |
 | Maintain idempotency | Treat duplicate terminal callbacks as successful no-ops |
 
-### 5.3 DTOs
+### 5.3 Payment Adjustment Provider Responsibilities
+
+**File**: `src/Payment/Service/Adjustment/PaymentAdjustmentProviderInterface.php`
+
+PaymentAdjustmentProviderInterface is the extension point for modules that can reduce the amount handled by the selected payment gateway. Payment defines the interface and orchestration rules. Provider implementations live in the owning module, such as Wallet.
+
+```php
+interface PaymentAdjustmentProviderInterface
+{
+    public static function getName(): string;
+
+    public function supports(Invoice $invoice, string $payment, array $options): bool;
+
+    public function apply(PaymentAdjustmentContext $context): PaymentAdjustmentResult;
+
+    /** @return PaymentAdjustmentResult[] */
+    public function applied(Invoice $invoice): array;
+
+    public function release(Invoice $invoice, PaymentAdjustmentResult $adjustment, string $reason): PaymentAdjustmentResult;
+
+    public function refund(Invoice $invoice, PaymentAdjustmentResult $adjustment, string $reason): PaymentAdjustmentResult;
+}
+```
+
+| Responsibility | Detail |
+|----------------|--------|
+| Detect applicability | Decide whether request options ask for this adjustment |
+| Validate request | Reject invalid amount, currency, payer, or provider-specific configuration |
+| Apply adjustment | Perform provider-owned mutation, such as wallet transfer |
+| Query applied adjustments | Return applied generic adjustment results for notify/refund validation |
+| Enforce idempotency | Use stable provider reference ids such as `invoice-adjustment-{provider}-{invoice.uuid}` |
+| Release adjustment | Reverse an applied adjustment when gateway payment creation fails or unpaid invoice is cancelled |
+| Refund adjustment | Reverse an applied adjustment when a paid invoice is refunded |
+| Hide internals | Return only generic amount/reference/payload data to Payment |
+
+First phase MUST support only one wallet balance adjustment per invoice. Future adjustment types such as coupons or points must be added through the same provider interface and should not require gateway changes.
+
+`InvoiceService` MUST obtain applied adjustment totals through providers or the adjustment registry. It MUST NOT query wallet deduction entities directly.
+
+### 5.4 Payment Adjustment Flow
+
+Invoice payment with adjustments follows this sequence:
+
+```text
+InvoiceService::pay(invoice, payment, options)
+  -> PaymentAdjustmentRegistry resolves applicable providers
+  -> apply each provider and collect PaymentAdjustmentResult values
+  -> compute gatewayAmount = invoice.amount - appliedAdjustmentAmount
+  -> if gatewayAmount == 0: mark invoice paid without calling an external gateway
+  -> if gatewayAmount > 0: call gateway->pay(invoice, gatewayAmount, options)
+  -> gateway returns PaymentResult
+  -> provider notify later confirms gatewayAmount
+  -> InvoiceService::markPaid() verifies notify amount plus applied adjustments covers invoice.amount
+```
+
+If an adjustment succeeds but gateway payment creation fails, InvoiceService MUST call `PaymentAdjustmentProviderInterface::release()` before surfacing the error.
+
+### 5.5 DTOs
 
 #### CreateInvoiceRequest
 
@@ -332,6 +435,43 @@ final readonly class CreateInvoiceRequest
     ) {}
 }
 ```
+
+#### PaymentAdjustmentContext
+
+```php
+final readonly class PaymentAdjustmentContext
+{
+    public function __construct(
+        public Invoice $invoice,
+        public string $payment,
+        public int $invoiceAmount,
+        public string $currency,
+        public array $options = [],
+    ) {}
+}
+```
+
+#### PaymentAdjustmentResult
+
+```php
+final readonly class PaymentAdjustmentResult
+{
+    public function __construct(
+        public string $provider,
+        public int $amount,
+        public string $currency,
+        public string $referenceId,
+        public array $payload = [],
+    ) {}
+}
+```
+
+First-phase wallet adjustment values:
+
+| Field | Valid Value |
+|-------|-------------|
+| `provider` | `wallet_balance` |
+| `currency` | Same as invoice currency |
 
 #### PaymentResult
 
@@ -396,26 +536,47 @@ interface PaymentGatewayInterface
 {
     public static function getName(): string;
 
-    public function pay(Invoice $invoice, array $options = []): PaymentResult;
+    public function pay(Invoice $invoice, int $amount, array $options = []): PaymentResult;
 
     public function notify(Request $request): PaymentNotifyResult;
 
-    public function refund(Invoice $invoice, int $amount, string $reason, array $options = []): PaymentRefundResult;
+    public function refund(Invoice $invoice, int $amount, int $paidAmount, string $reason, array $options = []): PaymentRefundResult;
 
     public function getNotifySuccessResponse(PaymentNotifyResult $result): Response;
 }
 ```
 
-### 6.2 Gateway Registry
+Gateway adapters MUST treat the explicit `$amount` argument as the amount to process. They MUST NOT derive the payable amount from `Invoice::amount` when an explicit amount is provided, and MUST NOT inspect adjustment or deduction options.
 
-Gateway implementations MUST be registered through a tagged iterator.
+For payment:
+
+```php
+$gateway->pay($invoice, $gatewayAmount, $options);
+```
+
+For refund:
+
+```php
+$gateway->refund($invoice, $gatewayRefundAmount, $gatewayPaidAmount, $reason, $options);
+```
+
+`Invoice::amount` remains the gross business payable amount. The gateway payment/refund amounts are computed by `InvoiceService` after applying generic payment adjustments.
+
+### 6.2 Gateway And Adjustment Registration
+
+Gateway and adjustment provider implementations MUST be registered through tagged iterators.
 
 ```yaml
 services:
-    App\Payment\Service\Gateway\:
-        resource: '../src/Payment/Service/Gateway/'
-        tags: ['payment.gateway']
+    _instanceof:
+        App\Payment\Service\PaymentGatewayInterface:
+            tags: ['payment.gateway']
+
+        App\Payment\Service\Adjustment\PaymentAdjustmentProviderInterface:
+            tags: ['payment.adjustment_provider']
 ```
+
+Gateway implementations may live in Payment for generic/provider adapters, in Wallet for internal wallet payment, or in provider modules such as Wechat. Registration is based on the interface tag, not a single namespace scan.
 
 ```php
 final class PaymentGatewayRegistry
@@ -431,12 +592,31 @@ final class PaymentGatewayRegistry
 }
 ```
 
+```php
+final class PaymentAdjustmentRegistry
+{
+    /** @param iterable<PaymentAdjustmentProviderInterface> $providers */
+    public function __construct(iterable $providers) {}
+
+    /** @return PaymentAdjustmentProviderInterface[] */
+    public function applicable(Invoice $invoice, string $payment, array $options): array {}
+
+    /** @return PaymentAdjustmentResult[] */
+    public function applied(Invoice $invoice): array {}
+}
+```
+
 ### 6.3 First-Phase Gateways
 
 | Gateway | Purpose | Required |
 |---------|---------|----------|
 | `mock` | Deterministic test/development gateway | Yes |
-| `wallet` | Internal wallet balance payment | Yes if Wallet module remains payment-capable |
+| `wallet` | Internal wallet balance payment implemented in Wallet module and tagged as `payment.gateway` | Yes if Wallet module remains payment-capable |
+| `wechat` | WeChat Pay adapter implemented in Wechat module and tagged as `payment.gateway` | Optional/provider-dependent |
+
+`mock` is a fake external gateway for tests and local development. It does not move wallet funds and must not be treated as wallet payment. It simulates provider pay/notify/refund behavior and is useful for validating invoice workflow, adjustments, and Trade integration without real provider credentials.
+
+When used with adjustments, `mock` notify amount MUST equal the explicit gateway payment amount, not the invoice gross amount.
 
 ### 6.4 Future Provider Gateways
 
@@ -497,10 +677,12 @@ Every gateway notify parser MUST verify:
 |-------|-------------|
 | Signature | Required for external gateways |
 | Merchant id | Must match configured merchant |
-| Amount | Must equal invoice amount for pay callbacks |
+| Amount | Must equal expected gateway pay amount: `invoice.amount - appliedAdjustmentAmount` |
 | Currency | Must match invoice currency when provider sends it |
 | Trade number | Must map to invoice `outTradeNo` |
 | Transaction id | Must be stored when success is confirmed |
+
+For invoices with applied adjustments, webhook amount verification MUST be performed by `InvoiceService::markPaid()`, not by business modules. Business modules should receive only the final `InvoicePaidEvent`.
 
 ---
 
@@ -566,6 +748,8 @@ Trade `Order` SHOULD store lightweight invoice references only:
 
 Trade MUST NOT require an ORM `ManyToOne` relation to `Payment\Entity\Invoice` in the first phase.
 
+Trade MUST NOT model or persist adjustment internals. When wallet balance deduction is used, Payment still emits a normal `InvoicePaidEvent` after `invoice.amount` is fully covered by gateway payment plus applied adjustments.
+
 ### 9.3 Payment Request Flow
 
 ```
@@ -591,17 +775,22 @@ Provider webhook or wallet success
   -> OrderService persists paidAt/paymentMethod/paymentStatus
 ```
 
+For invoices with adjustments, Trade still validates `invoice.amount == order.totalAmount`. Adjustments are internal to payment orchestration and should not alter Trade's amount comparison.
+
 ### 9.5 Refund Flow
 
 ```
 POST /api/v1/manage/orders/{id}/refund
   -> Trade validates order can refund
   -> Trade calls InvoiceServiceInterface::refund()
-  -> Payment gateway performs refund or mock refund
+  -> Payment gateway refunds external pay amount
+  -> Payment adjustment providers refund applied adjustments when present
   -> invoice workflow partial_refund/refund
   -> dispatch InvoiceRefundedEvent
   -> Trade listener applies order refund transition when full refund is confirmed
 ```
+
+First-phase wallet adjustment support SHOULD only allow full invoice refund when an adjustment exists. Partial refund allocation between gateway payment and wallet deduction is explicitly out of scope.
 
 ### 9.6 Trade Listener Contract
 
@@ -653,7 +842,45 @@ Trade MAY expose convenience routes that call Payment services:
 | POST | `/api/v1/manage/orders/{id}/payment` | Admin create/start order payment |
 | POST | `/api/v1/manage/orders/{id}/refund` | Refund order through linked invoice |
 
-### 10.4 Response Envelope
+### 10.4 Adjustment Request Payload
+
+Payment endpoints MAY accept adjustment options and pass them to registered adjustment providers. First phase supports only one wallet balance deduction in the invoice currency, implemented by the Wallet module.
+
+Shortcut payload for App clients:
+
+```json
+{
+  "payment": "wechat",
+  "walletAmount": 3000,
+  "tradeType": "jsapi"
+}
+```
+
+Structured payload for future extensibility:
+
+```json
+{
+  "payment": "wechat",
+  "deduction": {
+    "type": "wallet_balance",
+    "amount": 3000,
+    "currency": "CNY"
+  },
+  "tradeType": "jsapi"
+}
+```
+
+Rules:
+
+| Rule | Requirement |
+|------|-------------|
+| ADJ-API-1 | Wallet adjustment provider may accept `walletAmount` or structured `deduction.type = wallet_balance` |
+| ADJ-API-2 | Adjustment amount must be `> 0` and `<= invoice.amount` |
+| ADJ-API-3 | Adjustment currency must equal invoice currency |
+| ADJ-API-4 | Full wallet deduction sets `invoice.payment = wallet` and skips external gateway calls |
+| ADJ-API-5 | Partial wallet deduction keeps requested external `payment` and passes the remaining explicit amount to the gateway |
+
+### 10.5 Response Envelope
 
 All Payment API endpoints MUST use the standard response envelope:
 
@@ -678,10 +905,14 @@ Webhook endpoints are the exception: they MAY return provider-required raw text/
 ```yaml
 payment:
     default_currency: 'CNY'
+    system_wallet_id: 0
     gateways:
         mock:
             enabled: true
         wallet:
+            enabled: true
+    adjustments:
+        wallet_balance:
             enabled: true
 ```
 
@@ -718,9 +949,28 @@ Payment mutations MUST be managed in the service layer.
 | Operation | Transaction Boundary |
 |-----------|----------------------|
 | Create invoice | `InvoiceService::createInvoice()` |
+| Apply payment adjustments | `PaymentAdjustmentProviderInterface::apply()` using provider-owned idempotency |
 | Start wallet payment | `InvoiceService::pay()` and `WalletGateway` transfer service |
 | Handle webhook | `InvoiceService::handleNotifyResult()` |
-| Refund invoice | `InvoiceService::refund()` |
+| Refund invoice | `InvoiceService::refund()` plus adjustment provider refunds when adjustments exist |
+
+### 12.1.1 Adjustment Transaction Rules
+
+| Scenario | Rule |
+|----------|------|
+| Adjustment applied, gateway pay succeeds | Keep adjustment applied; invoice remains `paying` until notify or immediate paid result |
+| Adjustment applied, gateway pay creation fails | Call the provider `release()` before returning error |
+| Full wallet deduction | Mark invoice paid with `payment = wallet`; do not call external gateway |
+| Paid invoice refund | Refund external gateway pay amount first, then refund wallet deduction |
+| Unpaid invoice cancel | Release applied adjustments |
+
+Wallet adjustment transfer reference ids MUST be stable and idempotent. Recommended first-phase references:
+
+```text
+invoice-adjustment-wallet-balance-{invoice.uuid}
+invoice-adjustment-wallet-balance-release-{invoice.uuid}
+invoice-adjustment-wallet-balance-refund-{invoice.uuid}
+```
 
 ### 12.2 Cross-Module Consistency
 
@@ -843,6 +1093,7 @@ Provider account modules MUST NOT be required for generic invoice payment.
 | `InvoiceTest` | Status constants, timestamps, amount/refund getters, `__toString()` |
 | `PaymentGatewayRegistryTest` | Resolve gateway, unknown gateway exception, names list |
 | `InvoiceServiceTest` | Create invoice, pay, mark paid, cancel, refund validation |
+| `PaymentAdjustmentProviderTest` | Apply/release/refund adjustment validation and idempotency |
 | `MockGatewayTest` | Pay/notify/refund deterministic behavior |
 | `WalletGatewayTest` | Wallet transfer success/failure mapping |
 
@@ -854,6 +1105,7 @@ Provider account modules MUST NOT be required for generic invoice payment.
 | `PaymentWebhookIntegrationTest` | Webhook success, invalid signature, duplicate notify |
 | `TradePaymentIntegrationTest` | Order payment creates invoice and paid event updates order |
 | `TradeRefundIntegrationTest` | Order refund through invoice updates both modules |
+| `PaymentAdjustmentIntegrationTest` | Wallet balance deduction plus mock/external payment amount marks invoice/order paid |
 
 ### 16.3 Regression Cases
 
@@ -864,6 +1116,12 @@ Provider account modules MUST NOT be required for generic invoice payment.
 | Refund more than paid | Rejected |
 | Pay cancelled invoice | Rejected |
 | Unknown gateway | 400 warning for API, provider failure response for webhook |
+| Adjustment currency mismatch | Rejected before wallet transfer |
+| Adjustment amount exceeds invoice amount | Rejected before wallet transfer |
+| Wallet adjustment + mock payment | Mock notify amount must equal remaining explicit gateway amount |
+| Full wallet deduction | Invoice payment is `wallet` and no external gateway is called |
+| Gateway pay failure after adjustment | Adjustment is released via provider reversal |
+| Adjusted invoice full refund | External payment amount and wallet deduction are both refunded |
 
 ---
 
@@ -884,21 +1142,33 @@ Provider account modules MUST NOT be required for generic invoice payment.
 
 ### Phase 2: Wallet Gateway and Trade Integration
 
-1. Add `WalletGateway` using `TransferServiceInterface`.
+1. Add Wallet-owned `WalletGateway` using `TransferServiceInterface`.
 2. Add lightweight invoice reference fields to `Trade\Entity\Order`.
 3. Add Trade payment convenience endpoint.
 4. Add `OrderInvoiceListener` for invoice paid/refunded events.
 5. Replace direct wallet payment route with Payment-backed path or keep direct path temporarily behind explicit compatibility.
 6. Add Trade payment integration tests.
 
-### Phase 3: Provider Adapter Readiness
+### Phase 3: Payment Adjustments and Wallet Balance Deduction
+
+1. Add `PaymentAdjustmentProviderInterface`, `PaymentAdjustmentRegistry`, `PaymentAdjustmentContext`, and `PaymentAdjustmentResult` under Payment.
+2. Add Wallet-owned wallet balance adjustment provider for first-phase `wallet_balance` deduction in invoice currency.
+3. Let Wallet own any wallet deduction entity/repository required for audit, idempotency, wallet transaction ids, release, and refund reversal.
+4. Update `InvoiceService::pay()` to apply registered adjustments before gateway payment and pass the explicit remaining amount to gateways.
+5. Update `InvoiceService::markPaid()` to verify `notify.amount == invoice.amount - appliedAdjustmentAmount`.
+6. Update `InvoiceService::refund()` to refund external gateway amount and ask adjustment providers to refund their applied adjustments for full refunds.
+7. Update gateway interfaces and implementations so `MockGateway`, `WalletGateway`, `WechatPayGateway`, and provider gateways receive explicit amounts and do not read `$options['payAmount']`.
+8. Update Trade payment convenience endpoints to accept `walletAmount` and structured `deduction` payloads as Wallet adjustment input.
+9. Add adjustment unit and integration tests.
+
+### Phase 4: Provider Adapter Readiness
 
 1. Define provider config schema for external gateways.
 2. Add abstract signer/parser client patterns if needed.
 3. Add provider adapter tests with fake payloads.
 4. Document required certification/manual verification steps.
 
-### Phase 4: Fuiou/Huifu Providers
+### Phase 5: Fuiou/Huifu Providers
 
 This phase is intentionally out of first implementation scope.
 
@@ -925,6 +1195,10 @@ Do not migrate account onboarding, POS management, or auto withdraw in this phas
 | Should provider gateway update Order directly? | No, events only |
 | Should Fuiou/Huifu be standalone bundles? | No, future gateway adapters under Payment |
 | Should PaymentRequisition be included? | No, separate Finance/Approval module later |
+| Should wallet balance deduction be owned by Payment? | No, Wallet owns wallet deduction internals and implements Payment adjustment provider |
+| Which adjustment type is implemented first? | Only `wallet_balance` for the invoice currency |
+| How should full wallet deduction be recorded? | Set `invoice.payment = wallet` and mark invoice paid after deduction applies |
+| Should deducted invoices support partial refund first? | No, only full refund until allocation rules are designed |
 
 ---
 
@@ -940,5 +1214,6 @@ The Payment module design is implemented when:
 | Webhook | Updates invoice through service, not controller logic |
 | Events | Invoice paid/refunded/cancelled events dispatched |
 | Trade integration | Order can be paid through invoice event flow |
+| Adjustment | Payment supports generic adjustment providers; Wallet supports first-phase `wallet_balance` deduction without gateway `payAmount` coupling |
 | Tests | Unit and integration tests cover idempotency and invalid transitions |
 | CI | Coverage remains at or above required threshold |

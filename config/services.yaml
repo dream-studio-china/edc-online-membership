@@ -21,6 +21,8 @@ services:
                 - [ setTranslator, [ '@translator' ] ]
         App\Payment\Service\PaymentGatewayInterface:
             tags: ['payment.gateway']
+        App\Payment\Service\Adjustment\PaymentAdjustmentProviderInterface:
+            tags: ['payment.adjustment_provider']
 
     App\:
         resource: '../src/'
@@ -33,7 +35,7 @@ services:
             - '../src/Identity/Sms/AliyunSmsProvider.php'
             - '../src/Identity/Service/RedisOtpStorage.php'
             - '../src/Wechat/Service/WechatService.php'
-            - '../src/Wechat/Service/Gateway/WechatPayGateway.php'
+            - '../src/Wechat/Service/Payment/WechatPayGateway.php'
 
     App\Core\EventListener\OpenApiEnricherListener:
         tags:

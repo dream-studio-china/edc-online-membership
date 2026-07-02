@@ -11,7 +11,7 @@ use App\Payment\Entity\Invoice;
 use App\Payment\Exception\PaymentVerificationException;
 use App\Wechat\Entity\WechatUser;
 use App\Wechat\Repository\WechatUserRepository;
-use App\Wechat\Service\Gateway\WechatPayGateway;
+use App\Wechat\Service\Payment\WechatPayGateway;
 use App\Wechat\Service\WechatService;
 use EasyWeChat\Kernel\HttpClient\Response as WechatResponse;
 use EasyWeChat\MiniApp\Application as MiniApp;
@@ -60,7 +60,7 @@ final class WechatPayGatewayTest extends TestCase
         self::expectException(\InvalidArgumentException::class);
         self::expectExceptionMessage('Unsupported WeChat trade type');
 
-        $this->gateway->pay($invoice);
+        $this->gateway->pay($invoice, 100);
     }
 
     public function testPayJsapiWithoutWechatUserThrows(): void
@@ -77,7 +77,7 @@ final class WechatPayGatewayTest extends TestCase
         self::expectException(\RuntimeException::class);
         self::expectExceptionMessage('WeChat user not found');
 
-        $this->gateway->pay($invoice);
+        $this->gateway->pay($invoice, 100);
     }
 
     public function testNotifyThrowsOnSignatureFailure(): void
@@ -174,7 +174,7 @@ final class WechatPayGatewayTest extends TestCase
         $invoice->method('getDescription')->willReturn(null);
         $invoice->method('getOutTradeNo')->willReturn('TXN_NATIVE');
 
-        $result = $this->gateway->pay($invoice);
+        $result = $this->gateway->pay($invoice, 100);
 
         self::assertInstanceOf(PaymentResult::class, $result);
         self::assertSame(Invoice::STATUS_PAYING, $result->status);
@@ -234,7 +234,7 @@ final class WechatPayGatewayTest extends TestCase
         $invoice->method('getOutTradeNo')->willReturn('TXN_JSAPI');
         $invoice->method('getPayer')->willReturn($payer);
 
-        $result = $this->gateway->pay($invoice);
+        $result = $this->gateway->pay($invoice, 100);
 
         self::assertInstanceOf(PaymentResult::class, $result);
         self::assertSame(Invoice::STATUS_PAYING, $result->status);
@@ -269,10 +269,40 @@ final class WechatPayGatewayTest extends TestCase
         $invoice->method('getDescription')->willReturn('Fallback description');
         $invoice->method('getOutTradeNo')->willReturn('TXN_DESC');
 
-        $result = $this->gateway->pay($invoice);
+        $result = $this->gateway->pay($invoice, 200);
 
         self::assertSame(Invoice::STATUS_PAYING, $result->status);
         self::assertSame('weixin://pay/native', $result->payUrl);
+    }
+
+    public function testPayNativeFallsBackToPaymentWhenSubjectAndDescriptionAreNull(): void
+    {
+        $payApp = $this->createMock(PayApp::class);
+        $merchant = $this->createMock(Merchant::class);
+        $merchant->method('getMerchantId')->willReturn(999);
+        $payApp->method('getMerchant')->willReturn($merchant);
+
+        $clientResponse = $this->createMock(WechatResponse::class);
+        $clientResponse->method('toArray')->willReturn(['code_url' => 'weixin://pay/fallback']);
+
+        $payClient = $this->createMock(\EasyWeChat\Pay\Client::class);
+        $payClient->method('postJson')->willReturn($clientResponse);
+        $payApp->method('getClient')->willReturn($payClient);
+
+        $this->wechatService->method('getPayApp')->willReturn($payApp);
+
+        $invoice = $this->createMock(Invoice::class);
+        $invoice->method('getTradeType')->willReturn('native');
+        $invoice->method('getAmount')->willReturn(300);
+        $invoice->method('getCurrency')->willReturn('CNY');
+        $invoice->method('getSubject')->willReturn(null);
+        $invoice->method('getDescription')->willReturn(null);
+        $invoice->method('getOutTradeNo')->willReturn('TXN_NULL_SUBJECT');
+
+        $result = $this->gateway->pay($invoice, 300);
+
+        self::assertSame(Invoice::STATUS_PAYING, $result->status);
+        self::assertSame('weixin://pay/fallback', $result->payUrl);
     }
 
     public function testRefundSuccess(): void
@@ -297,7 +327,7 @@ final class WechatPayGatewayTest extends TestCase
         $invoice->method('getRefundedAmount')->willReturn(0);
         $invoice->method('getStatus')->willReturn(Invoice::STATUS_PAID);
 
-        $result = $this->gateway->refund($invoice, 100, 'Customer request');
+        $result = $this->gateway->refund($invoice, 100, 200, 'Customer request');
 
         self::assertInstanceOf(PaymentRefundResult::class, $result);
         self::assertSame(100, $result->amount);
@@ -327,7 +357,7 @@ final class WechatPayGatewayTest extends TestCase
         $invoice->method('getRefundedAmount')->willReturn(100);
         $invoice->method('getStatus')->willReturn(Invoice::STATUS_PAID);
 
-        $result = $this->gateway->refund($invoice, 400, 'Full refund');
+        $result = $this->gateway->refund($invoice, 400, 500, 'Full refund');
 
         self::assertSame(400, $result->amount);
         self::assertSame(Invoice::STATUS_REFUNDED, $result->status);
@@ -352,7 +382,7 @@ final class WechatPayGatewayTest extends TestCase
         $invoice->method('getRefundedAmount')->willReturn(0);
         $invoice->method('getStatus')->willReturn(Invoice::STATUS_PAID);
 
-        $result = $this->gateway->refund($invoice, 100, 'Processing');
+        $result = $this->gateway->refund($invoice, 100, 300, 'Processing');
 
         self::assertSame(Invoice::STATUS_PAID, $result->status);
     }

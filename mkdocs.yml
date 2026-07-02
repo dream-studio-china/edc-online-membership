@@ -63,6 +63,8 @@ nav:
   - Research:
       - EasyWeChat 6.x Usage: research/easywechat-6.x-usage.md
       - Huifu Payment API: research/huifu-payment-api.md
+  - Issues:
+      - Architecture Review 2026-06-26: issues/architecture-review-2026-06-26.md
   - AI Context: ai/context.md
   - API Reference: openapi/endpoints.yaml
 

@@ -20,7 +20,7 @@ final class MockGateway implements PaymentGatewayInterface
         return Invoice::PAYMENT_MOCK;
     }
 
-    public function pay(Invoice $invoice, array $options = []): PaymentResult
+    public function pay(Invoice $invoice, int $amount, array $options = []): PaymentResult
     {
         $status = !empty($options['autoPaid']) ? Invoice::STATUS_PAID : Invoice::STATUS_PAYING;
         return new PaymentResult(
@@ -30,6 +30,7 @@ final class MockGateway implements PaymentGatewayInterface
             payload: [
                 'gateway' => self::getName(),
                 'outTradeNo' => $invoice->getOutTradeNo(),
+                'amount' => $amount,
                 'transactionId' => $options['transactionId'] ?? 'mock-' . $invoice->getOutTradeNo(),
             ],
             message: 'Mock payment created',
@@ -55,14 +56,14 @@ final class MockGateway implements PaymentGatewayInterface
         );
     }
 
-    public function refund(Invoice $invoice, int $amount, string $reason, array $options = []): PaymentRefundResult
+    public function refund(Invoice $invoice, int $amount, int $paidAmount, string $reason, array $options = []): PaymentRefundResult
     {
         return new PaymentRefundResult(
             invoice: $invoice,
             amount: $amount,
-            status: $amount >= ($invoice->getAmount() - $invoice->getRefundedAmount()) ? Invoice::STATUS_REFUNDED : Invoice::STATUS_PARTIAL_REFUNDED,
+            status: $amount >= ($paidAmount - $invoice->getRefundedAmount()) ? Invoice::STATUS_REFUNDED : Invoice::STATUS_PARTIAL_REFUNDED,
             refundId: $options['refundId'] ?? 'mock-refund-' . $invoice->getOutTradeNo() . '-' . ($invoice->getRefundedAmount() + $amount),
-            rawData: ['reason' => $reason, 'amount' => $amount],
+            rawData: ['reason' => $reason, 'amount' => $amount, 'paidAmount' => $paidAmount],
         );
     }
 

@@ -81,6 +81,7 @@ final class InvoiceServiceIntegrationTest extends IntegrationKernelTestCase
 
         $partial = $this->service->refund($invoice, 500, 'partial');
         self::assertSame(Invoice::STATUS_PARTIAL_REFUNDED, $partial->status);
+        self::assertSame(1200, $partial->rawData['gateway']['paidAmount']);
         self::assertSame(500, $invoice->getRefundedAmount());
 
         $full = $this->service->refund($invoice, 700, 'full');
@@ -110,7 +111,88 @@ final class InvoiceServiceIntegrationTest extends IntegrationKernelTestCase
         $registry = static::getContainer()->get(PaymentGatewayRegistry::class);
         self::assertTrue($registry->has(Invoice::PAYMENT_MOCK));
         self::assertTrue($registry->has(Invoice::PAYMENT_WALLET));
+        self::assertTrue($registry->has(Invoice::PAYMENT_WECHAT));
         self::assertContains(Invoice::PAYMENT_MOCK, $registry->names());
+        self::assertContains(Invoice::PAYMENT_WECHAT, $registry->names());
+    }
+
+    public function testHandleNotifyResultFailed(): void
+    {
+        $invoice = $this->service->createInvoice(new CreateInvoiceRequest('manual', 'src-5', Invoice::SCENE_DEPOSIT, 100));
+        $failed = $this->service->handleNotifyResult(new PaymentNotifyResult(
+            payment: Invoice::PAYMENT_MOCK,
+            outTradeNo: $invoice->getOutTradeNo(),
+            status: Invoice::STATUS_FAILED,
+            amount: 100,
+            currency: 'CNY',
+        ));
+        self::assertSame(Invoice::STATUS_FAILED, $failed->getStatus());
+    }
+
+    public function testMarkPaidOnCancelledInvoiceThrows(): void
+    {
+        $invoice = $this->service->createInvoice(new CreateInvoiceRequest('manual', 'src-6', Invoice::SCENE_DEPOSIT, 100));
+        $this->service->cancel($invoice);
+        self::assertSame(Invoice::STATUS_CANCELLED, $invoice->getStatus());
+
+        $this->expectException(\App\Payment\Exception\InvoiceInvalidTransitionException::class);
+        $this->service->markPaid($invoice, new PaymentNotifyResult(Invoice::PAYMENT_MOCK, $invoice->getOutTradeNo(), Invoice::STATUS_PAID, 100));
+    }
+
+    public function testMarkFailedOnPaidInvoiceReturnsEarly(): void
+    {
+        $payer = $this->createUser('paid-failed@example.com');
+        $invoice = $this->service->createInvoice(new CreateInvoiceRequest('manual', 'src-7', Invoice::SCENE_DEPOSIT, 100, payer: $payer));
+        $this->service->pay($invoice, Invoice::PAYMENT_MOCK);
+        $this->service->markPaid($invoice, new PaymentNotifyResult(Invoice::PAYMENT_MOCK, $invoice->getOutTradeNo(), Invoice::STATUS_PAID, 100));
+
+        $result = $this->service->markFailed($invoice, new PaymentNotifyResult(Invoice::PAYMENT_MOCK, $invoice->getOutTradeNo(), Invoice::STATUS_FAILED, 100));
+        self::assertSame(Invoice::STATUS_PAID, $result->getStatus());
+    }
+
+    public function testRefundRejectsNonPositiveAmount(): void
+    {
+        $payer = $this->createUser('refund-zero@example.com');
+        $invoice = $this->service->createInvoice(new CreateInvoiceRequest('manual', 'src-8', Invoice::SCENE_DEPOSIT, 100, payer: $payer));
+        $this->service->pay($invoice, Invoice::PAYMENT_MOCK);
+        $this->service->markPaid($invoice, new PaymentNotifyResult(Invoice::PAYMENT_MOCK, $invoice->getOutTradeNo(), Invoice::STATUS_PAID, 100));
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->service->refund($invoice, 0, 'zero');
+    }
+
+    public function testRefundRejectsInvalidInvoiceStatus(): void
+    {
+        $invoice = $this->service->createInvoice(new CreateInvoiceRequest('manual', 'src-9', Invoice::SCENE_DEPOSIT, 100));
+
+        $this->expectException(\App\Payment\Exception\InvoiceInvalidTransitionException::class);
+        $this->service->refund($invoice, 50, 'pending');
+    }
+
+    public function testRefundRejectsAmountExceedingRemaining(): void
+    {
+        $payer = $this->createUser('refund-excess@example.com');
+        $invoice = $this->service->createInvoice(new CreateInvoiceRequest('manual', 'src-10', Invoice::SCENE_DEPOSIT, 100, payer: $payer));
+        $this->service->pay($invoice, Invoice::PAYMENT_MOCK);
+        $this->service->markPaid($invoice, new PaymentNotifyResult(Invoice::PAYMENT_MOCK, $invoice->getOutTradeNo(), Invoice::STATUS_PAID, 100));
+        $this->service->refund($invoice, 30, 'partial');
+        self::assertSame(30, $invoice->getRefundedAmount());
+
+        $this->expectException(\App\Payment\Exception\InvoiceAmountMismatchException::class);
+        $this->service->refund($invoice, 80, 'exceeds remaining');
+    }
+
+    public function testHandleNotifyResultRejectsUnsupportedStatus(): void
+    {
+        $invoice = $this->service->createInvoice(new CreateInvoiceRequest('manual', 'src-11', Invoice::SCENE_DEPOSIT, 100));
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->service->handleNotifyResult(new PaymentNotifyResult(
+            payment: Invoice::PAYMENT_MOCK,
+            outTradeNo: $invoice->getOutTradeNo(),
+            status: 'unknown',
+            amount: 100,
+        ));
     }
 
     private function createUser(string $email): User

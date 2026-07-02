@@ -84,6 +84,23 @@ final class WalletGatewayIntegrationTest extends IntegrationKernelTestCase
         $gateway->notify(new \Symfony\Component\HttpFoundation\Request());
     }
 
+    public function testGetNotifySuccessResponseReturnsTextResponse(): void
+    {
+        $gateway = static::getContainer()->get(PaymentGatewayRegistry::class)->get(Invoice::PAYMENT_WALLET);
+        $result = new \App\Payment\DTO\PaymentNotifyResult(
+            payment: Invoice::PAYMENT_WALLET,
+            outTradeNo: 'TEST001',
+            status: Invoice::STATUS_PAID,
+            amount: 100,
+            responseBody: 'OK',
+        );
+
+        $response = $gateway->getNotifySuccessResponse($result);
+
+        self::assertSame(200, $response->getStatusCode());
+        self::assertSame('OK', $response->getContent());
+    }
+
     /** @return array{User, Wallet} */
     private function createUserWallet(string $email, int $balance): array
     {
