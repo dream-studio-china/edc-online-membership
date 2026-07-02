@@ -9,6 +9,7 @@ use App\Core\Service\BaseService;
 use App\Core\View\ApiView;
 use App\Core\View\DetailApiViewMixin;
 use App\Core\View\ListApiViewMixin;
+use App\Payment\Service\InvoiceServiceInterface;
 use App\Trade\Entity\Order;
 use App\Trade\Service\OrderServiceInterface;
 use Symfony\Component\DependencyInjection\Attribute\Target;
@@ -29,6 +30,7 @@ class OrderController extends RestController
         protected readonly OrderServiceInterface $service,
         #[Target('state_machine.order')]
         protected readonly WorkflowInterface $workflow,
+        private readonly InvoiceServiceInterface $invoiceService,
     ) {
     }
 
@@ -296,6 +298,9 @@ class OrderController extends RestController
             $content = json_decode($request->getContent(), true);
 
             $this->service->wrapInTransaction(function ($em) use ($entity, $content, $transition) {
+                if ($transition === 'cancel') {
+                    $this->cancelLinkedInvoice($entity);
+                }
                 if ($content) {
                     $this->service->update($entity, $content);
                 }
@@ -307,5 +312,17 @@ class OrderController extends RestController
         }
 
         return $this->success();
+    }
+
+    private function cancelLinkedInvoice(Order $order): void
+    {
+        $invoiceId = $order->getInvoiceId();
+        if ($invoiceId === null) {
+            return;
+        }
+        $invoice = $this->invoiceService->get(['uuid' => $invoiceId]);
+        if ($invoice instanceof \App\Payment\Entity\Invoice) {
+            $this->invoiceService->cancel($invoice, 'Order cancelled.');
+        }
     }
 }

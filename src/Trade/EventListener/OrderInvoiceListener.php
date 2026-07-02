@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Trade\EventListener;
 
 use App\Payment\Entity\Invoice;
+use App\Payment\Event\InvoiceCancelledEvent;
+use App\Payment\Event\InvoiceFailedEvent;
 use App\Payment\Event\InvoicePaidEvent;
 use App\Payment\Event\InvoiceRefundedEvent;
 use App\Trade\Entity\Order;
@@ -28,6 +30,8 @@ final class OrderInvoiceListener implements EventSubscriberInterface
         return [
             InvoicePaidEvent::class => 'onInvoicePaid',
             InvoiceRefundedEvent::class => 'onInvoiceRefunded',
+            InvoiceCancelledEvent::class => 'onInvoiceCancelled',
+            InvoiceFailedEvent::class => 'onInvoiceFailed',
         ];
     }
 
@@ -71,6 +75,30 @@ final class OrderInvoiceListener implements EventSubscriberInterface
             $order->setRefundedAt($invoice->getRefundedAt() ?? new \DateTimeImmutable());
             $this->workflow->apply($order, 'refund');
         }
+        $this->orderService->update($order, []);
+    }
+
+    public function onInvoiceCancelled(InvoiceCancelledEvent $event): void
+    {
+        $invoice = $event->getInvoice();
+        $order = $this->findOrder($invoice);
+        if (!$order instanceof Order) {
+            return;
+        }
+
+        $order->setPaymentStatus($invoice->getStatus());
+        $this->orderService->update($order, []);
+    }
+
+    public function onInvoiceFailed(InvoiceFailedEvent $event): void
+    {
+        $invoice = $event->getInvoice();
+        $order = $this->findOrder($invoice);
+        if (!$order instanceof Order) {
+            return;
+        }
+
+        $order->setPaymentStatus($invoice->getStatus());
         $this->orderService->update($order, []);
     }
 
