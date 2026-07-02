@@ -316,13 +316,6 @@ class OrderController extends RestController
 
     private function cancelLinkedInvoice(Order $order): void
     {
-        $invoiceId = $order->getInvoiceId();
-        if ($invoiceId === null) {
-            return;
-        }
-        $invoice = $this->invoiceService->get(['uuid' => $invoiceId]);
-        if ($invoice instanceof \App\Payment\Entity\Invoice) {
-            $this->invoiceService->cancel($invoice, 'Order cancelled.');
-        }
+        $this->service->cancel($order);
     }
 }
