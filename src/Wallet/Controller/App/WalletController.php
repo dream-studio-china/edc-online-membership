@@ -10,6 +10,7 @@ use App\Core\View\DetailApiViewMixin;
 use App\Core\View\ListApiViewMixin;
 use App\Identity\Entity\User;
 use App\Wallet\Service\WalletService;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
@@ -28,5 +29,16 @@ class WalletController extends RestController
         $user = $this->getUser();
 
         return $user instanceof User ? ['user' => $user] : ['id' => -1];
+    }
+
+    #[Route('/balance', name: 'balance', methods: ['GET'])]
+    public function verifyBalanceAction(): Response
+    {
+        $user = $this->getUser();
+        \assert($user instanceof User);
+
+        $result = $this->service->verifyBalanceForUser($user);
+
+        return $this->success($result, $result['matches'] ? 'Balance is consistent' : 'Balance MISMATCH detected');
     }
 }

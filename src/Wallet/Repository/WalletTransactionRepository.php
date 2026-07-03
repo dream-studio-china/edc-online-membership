@@ -73,6 +73,23 @@ class WalletTransactionRepository extends ServiceEntityRepository
         return (int) $result;
     }
 
+    public function getTotalDepositedForUser(int $userId): int
+    {
+        $result = $this->createQueryBuilder('t')
+            ->select('COALESCE(SUM(t.amount), 0)')
+            ->innerJoin('t.toWallet', 'w')
+            ->where('t.type IN (:types)')
+            ->andWhere('t.status = :status')
+            ->andWhere('w.user = :userId')
+            ->setParameter('types', [WalletTransaction::TYPE_DEPOSIT, WalletTransaction::TYPE_ADJUSTMENT])
+            ->setParameter('status', WalletTransaction::STATUS_COMPLETED)
+            ->setParameter('userId', $userId)
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        return (int) $result;
+    }
+
     public function getExpectedBalance(int $walletId): int
     {
         $credits = $this->createQueryBuilder('t')

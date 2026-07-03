@@ -5,6 +5,7 @@ namespace App\Common\Controller\App;
 use App\Common\Service\MediaServiceInterface;
 use App\Core\Controller\RestController;
 use App\Core\View\ApiView;
+use App\Core\View\DeleteApiViewMixin;
 use App\Core\View\DetailApiViewMixin;
 use App\Core\View\ListApiViewMixin;
 use App\Identity\Entity\User;
@@ -17,7 +18,7 @@ use Symfony\Component\Validator\Exception\ValidatorException;
 #[Route('/app/media', name: 'app-media-')]
 class MediaController extends RestController
 {
-    use ApiView, DetailApiViewMixin, ListApiViewMixin;
+    use ApiView, DetailApiViewMixin, ListApiViewMixin, DeleteApiViewMixin;
 
     public function __construct(
         protected readonly MediaServiceInterface $service

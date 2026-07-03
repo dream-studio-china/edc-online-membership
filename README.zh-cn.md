@@ -224,6 +224,95 @@ REFRESH_TOKEN_SECRET=change-this-secret
 
 生产环境请不要在仓库中提交明文密钥。使用真实系统环境变量，或通过 `docker compose --env-file .env.prod.local` 提供。
 
+### 媒体存储与七牛
+
+媒体上传通过 `App\Storage\Service\MediaStorageInterface` 支持多种存储驱动。
+
+| 驱动 | 状态 | 说明 |
+|------|------|------|
+| `local` | 内置 | 默认驱动。文件保存到 `public/uploads/{YYYYMM}/...`，返回 `/uploads/...` 路径。 |
+| `qiniu` | 可选 | 七牛 Kodo 驱动。需要安装七牛 PHP SDK，并在 `common_setting` 中配置密钥。 |
+
+默认上传驱动通过以下环境变量控制：
+
+```dotenv
+MEDIA_STORAGE_DEFAULT=local
+```
+
+上传时可以通过 multipart 表单字段 `storage` 指定驱动：
+
+```bash
+curl -X POST http://localhost:8080/api/v1/manage/media/upload \
+  -H "Authorization: Bearer <token>" \
+  -F "file=@/path/to/photo.jpg" \
+  -F "storage=qiniu"
+```
+
+#### 启用七牛
+
+七牛 SDK 默认不作为项目依赖安装。只有实际使用 `storage=qiniu` 的部署环境才需要安装：
+
+```bash
+composer require qiniu/php-sdk
+```
+
+Docker 环境：
+
+```bash
+docker compose exec app composer require qiniu/php-sdk
+```
+
+生产 compose 命令需要带上生产 compose 文件和 env 文件：
+
+```bash
+docker compose -f compose.yaml -f compose.prod.yaml --env-file .env.prod.local exec app composer require qiniu/php-sdk
+```
+
+七牛配置从 `common_setting` 读取，不从 `.env` 读取。使用前需要创建以下配置：
+
+| Key | Value |
+|-----|-------|
+| `qiniu.access_key` | 七牛 access key |
+| `qiniu.secret_key` | 七牛 secret key |
+| `qiniu.bucket` | Bucket 名称 |
+| `qiniu.domain` | Bucket 公开访问域名，例如 `https://cdn.example.com` |
+
+可以使用命令创建缺失的配置项；已有配置不会被覆盖：
+
+```bash
+php bin/console app:storage:qiniu:settings:init \
+  --access-key=<access-key> \
+  --secret-key=<secret-key> \
+  --bucket=<bucket> \
+  --domain=https://cdn.example.com
+```
+
+Docker 环境：
+
+```bash
+docker compose exec app php bin/console app:storage:qiniu:settings:init \
+  --access-key=<access-key> \
+  --secret-key=<secret-key> \
+  --bucket=<bucket> \
+  --domain=https://cdn.example.com
+```
+
+也可以通过管理端 settings API 创建配置：
+
+```bash
+curl -X POST http://localhost:8080/api/v1/manage/settings \
+  -H "Authorization: Bearer <admin-token>" \
+  -H "Content-Type: application/json" \
+  -d '[
+    {"key":"qiniu.access_key","value":"<access-key>","type":"string","groupName":"storage","label":"Qiniu Access Key"},
+    {"key":"qiniu.secret_key","value":"<secret-key>","type":"string","groupName":"storage","label":"Qiniu Secret Key"},
+    {"key":"qiniu.bucket","value":"<bucket>","type":"string","groupName":"storage","label":"Qiniu Bucket"},
+    {"key":"qiniu.domain","value":"https://cdn.example.com","type":"string","groupName":"storage","label":"Qiniu Domain"}
+  ]'
+```
+
+如果未安装 SDK 却使用 `storage=qiniu`，API 会返回明确错误，提示安装 `qiniu/php-sdk`。
+
 ## 本地运行
 
 ### 方式 A：本机运行 Symfony

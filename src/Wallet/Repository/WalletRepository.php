@@ -63,4 +63,16 @@ class WalletRepository extends ServiceEntityRepository
 
         return (int) $result;
     }
+
+    public function getTotalBalanceForUser(int $userId): int
+    {
+        $result = $this->createQueryBuilder('w')
+            ->select('COALESCE(SUM(w.balance), 0)')
+            ->where('w.user = :userId')
+            ->setParameter('userId', $userId)
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        return (int) $result;
+    }
 }

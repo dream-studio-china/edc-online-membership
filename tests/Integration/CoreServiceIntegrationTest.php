@@ -37,6 +37,39 @@ final class CoreServiceIntegrationTest extends IntegrationKernelTestCase
         self::assertNotEmpty($result['parameters']);
     }
 
+    public function testExpressionServiceBuildsRegexpFilter(): void
+    {
+        $service = new ExpressionService();
+
+        $result = $service->buildFilter(
+            "entity.getTitle() matches 'paper'",
+            Content::class,
+            ['entity' => ''],
+            $this->em
+        );
+
+        self::assertArrayHasKey('qb', $result);
+        self::assertStringContainsString('REGEXP', $result['qb']->getDQL());
+        self::assertStringContainsString('REGEXP', $result['qb']->getQuery()->getSQL());
+    }
+
+    public function testCustomDqlFunctionsAreRegistered(): void
+    {
+        $randSql = $this->em
+            ->createQuery('SELECT RAND() FROM ' . Content::class . ' content')
+            ->getSQL();
+        $seededRandSql = $this->em
+            ->createQuery('SELECT RAND(1) FROM ' . Content::class . ' content')
+            ->getSQL();
+        $dateFormatSql = $this->em
+            ->createQuery("SELECT DATE_FORMAT(content.createdAt, '%Y-%m') FROM " . Content::class . ' content')
+            ->getSQL();
+
+        self::assertStringContainsString('RAND()', $randSql);
+        self::assertStringContainsString('RAND(1)', $seededRandSql);
+        self::assertStringContainsString('DATE_FORMAT', $dateFormatSql);
+    }
+
     public function testExpressionDqlParserValidateFragmentsWithDoctrineMetadata(): void
     {
         $parser = new ExpressionDqlParser();

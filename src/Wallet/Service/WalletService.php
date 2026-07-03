@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Wallet\Service;
 
 use App\Core\Service\BaseService;
+use App\Identity\Entity\User;
 use App\Wallet\Entity\Wallet;
 use App\Wallet\Entity\WalletTransaction;
 use App\Wallet\Repository\WalletTransactionRepository;
@@ -24,6 +25,21 @@ class WalletService extends BaseService
         $totalBalance = $this->rep->getTotalBalance();
         $totalDeposited = $this->transactionRepo->getTotalDeposited();
         $walletCount = $this->rep->count([]);
+
+        return [
+            'totalBalance' => $totalBalance,
+            'totalDeposited' => $totalDeposited,
+            'discrepancy' => $totalDeposited - $totalBalance,
+            'matches' => $totalBalance === $totalDeposited,
+            'walletCount' => $walletCount,
+        ];
+    }
+
+    public function verifyBalanceForUser(User $user): array
+    {
+        $totalBalance = $this->rep->getTotalBalanceForUser((int) $user->getId());
+        $totalDeposited = $this->transactionRepo->getTotalDepositedForUser((int) $user->getId());
+        $walletCount = $this->rep->count(['user' => $user]);
 
         return [
             'totalBalance' => $totalBalance,

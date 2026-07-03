@@ -24,6 +24,13 @@ doctrine:
                 dir: '%kernel.project_dir%/src'
                 prefix: 'App'
                 alias: App
+        dql:
+            string_functions:
+                regexp: DoctrineExtensions\Query\Mysql\Regexp
+            numeric_functions:
+                rand: DoctrineExtensions\Query\Mysql\Rand
+            datetime_functions:
+                date_format: DoctrineExtensions\Query\Mysql\DateFormat
         controller_resolver:
             auto_mapping: false
 
