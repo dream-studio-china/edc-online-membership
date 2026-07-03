@@ -83,6 +83,8 @@ class OpenApiEnricherListener
         '/api/v1/app/media' => ['summary' => ['get' => 'List my media'], 'desc' => ['get' => 'User-scoped media list. Returns only files owned by the authenticated user.']],
         '/api/v1/app/media/upload' => ['summary' => ['post' => 'Upload my media file'], 'desc' => ['post' => 'Authenticated multipart upload endpoint for the current user. Send the binary file in form field file. Optionally send storage=local or storage=qiniu to select the storage driver; if omitted, media.storage.default / MEDIA_STORAGE_DEFAULT is used. Optional metadata fields alt, title, width, and height are persisted on the Media entity. Local uploads are stored under public/uploads/{YYYYMM}/ and return a root-relative /uploads/... URL. Qiniu uploads require qiniu.* settings and qiniu/php-sdk to be installed on the server. Invalid files are rejected before any storage driver call.']],
         '/api/v1/app/media/{id}' => ['summary' => ['get' => 'Get my media'], 'desc' => ['get' => 'User-scoped media detail. Returns 404 when the media does not belong to the authenticated user.']],
+        '/api/v1/public/media' => ['summary' => ['get' => 'List public media'], 'desc' => ['get' => 'Anonymous read-only media list. Returns only ownerless media where user IS NULL.']],
+        '/api/v1/public/media/{id}' => ['summary' => ['get' => 'Get public media'], 'desc' => ['get' => 'Anonymous read-only media detail. Returns 404 for user-owned media because public media is limited to user IS NULL.']],
         '/api/v1/app/settings' => ['summary' => ['get' => 'List settings (public)']],
         '/api/v1/app/settings/{id}' => ['summary' => ['get' => 'Get setting (public)']],
 
@@ -208,6 +210,10 @@ class OpenApiEnricherListener
                                 'default' => 'local',
                                 'description' => 'Storage driver name. Omit to use media.storage.default / MEDIA_STORAGE_DEFAULT.',
                             ],
+                            'category' => [
+                                'type' => 'integer',
+                                'description' => 'Optional common_category id to bind to the media. Invalid ids return Category is not found.',
+                            ],
                             'alt' => ['type' => 'string', 'description' => 'Alternative text for images.'],
                             'title' => ['type' => 'string', 'description' => 'Display title.'],
                             'width' => ['type' => 'integer', 'description' => 'Optional explicit width. Images are auto-detected when omitted.'],
@@ -245,7 +251,7 @@ class OpenApiEnricherListener
         if (str_starts_with($opId, 'wechat-')) return 'Wechat';
 
         // Extract resource name: {scope}-{resource} or {scope}-{resource}-{action}
-        if (preg_match('/(?:manage|app)-([a-z][a-z0-9_]*)(?:-|$)/', $opId, $m)) {
+        if (preg_match('/(?:manage|app|public)-([a-z][a-z0-9_]*)(?:-|$)/', $opId, $m)) {
             $resource = $m[1];
 
             // Map resource names to display names (supports both singular and plural forms)

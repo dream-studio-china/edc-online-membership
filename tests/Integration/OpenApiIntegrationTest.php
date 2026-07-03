@@ -25,6 +25,10 @@ final class OpenApiIntegrationTest extends IntegrationWebTestCase
         self::assertSame(['Wechat'], $doc['paths']['/api/wechat/miniapp/login']['post']['tags'] ?? null);
         self::assertSame(['Wechat'], $doc['paths']['/api/wechat/miniapp/phone']['post']['tags'] ?? null);
         self::assertSame(['Payment'], $doc['paths']['/api/payment/notify/{payment}']['post']['tags'] ?? null);
+        self::assertSame(['Media'], $doc['paths']['/api/v1/public/media']['get']['tags'] ?? null);
+        self::assertSame(['Media'], $doc['paths']['/api/v1/public/media/{id}']['get']['tags'] ?? null);
+        self::assertSame('List public media', $doc['paths']['/api/v1/public/media']['get']['summary'] ?? null);
+        self::assertStringContainsString('ownerless media', $doc['paths']['/api/v1/public/media']['get']['description'] ?? '');
 
         $upload = $doc['paths']['/api/v1/app/media/upload']['post'] ?? [];
         self::assertSame(['Media'], $upload['tags'] ?? null);
@@ -33,5 +37,10 @@ final class OpenApiIntegrationTest extends IntegrationWebTestCase
         self::assertSame(['file'], $upload['requestBody']['content']['multipart/form-data']['schema']['required'] ?? null);
         self::assertSame('binary', $upload['requestBody']['content']['multipart/form-data']['schema']['properties']['file']['format'] ?? null);
         self::assertSame(['local', 'qiniu'], $upload['requestBody']['content']['multipart/form-data']['schema']['properties']['storage']['enum'] ?? null);
+        self::assertSame('integer', $upload['requestBody']['content']['multipart/form-data']['schema']['properties']['category']['type'] ?? null);
+
+        $mediaSchema = $doc['components']['schemas']['Media']['properties'] ?? [];
+        self::assertSame(['local', 'qiniu'], $mediaSchema['storage']['enum'] ?? null);
+        self::assertSame('#/components/schemas/CategoryRef', $mediaSchema['category']['$ref'] ?? null);
     }
 }

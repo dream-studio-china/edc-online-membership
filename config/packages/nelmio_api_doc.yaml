@@ -399,6 +399,9 @@ nelmio_api_doc:
                         mimeType: { type: string, example: 'image/jpeg' }
                         size: { type: integer, example: 2048576 }
                         path: { type: string, example: '/uploads/2025/photo.jpg' }
+                        storage: { type: string, enum: [local, qiniu], example: local }
+                        user: { $ref: '#/components/schemas/UserRef' }
+                        category: { $ref: '#/components/schemas/CategoryRef' }
                         alt: { type: string, nullable: true }
                         title: { type: string, nullable: true }
                         width: { type: integer, nullable: true }
@@ -415,8 +418,13 @@ nelmio_api_doc:
                         mimeType: { type: string, example: 'image/jpeg' }
                         size: { type: integer, example: 2048576 }
                         path: { type: string, example: '/uploads/2025/photo.jpg' }
+                        storage: { type: string, enum: [local, qiniu], example: local }
+                        user: { type: integer, description: 'Optional owner user ID', example: 1 }
+                        category: { type: integer, description: 'Optional media category ID', example: 1 }
                         alt: { type: string }
                         title: { type: string }
+                        width: { type: integer }
+                        height: { type: integer }
 
                 # ---- Common: Setting ----
                 Setting:
