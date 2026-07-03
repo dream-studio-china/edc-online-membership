@@ -21,5 +21,17 @@ final class OpenApiIntegrationTest extends IntegrationWebTestCase
         self::assertSame('3.1.0', $doc['openapi'] ?? null);
         self::assertArrayHasKey('/api/v1/manage/contents', $doc['paths'] ?? []);
         self::assertArrayHasKey('/api/v1/manage/contents/{id}', $doc['paths'] ?? []);
+
+        self::assertSame(['Wechat'], $doc['paths']['/api/wechat/miniapp/login']['post']['tags'] ?? null);
+        self::assertSame(['Wechat'], $doc['paths']['/api/wechat/miniapp/phone']['post']['tags'] ?? null);
+        self::assertSame(['Payment'], $doc['paths']['/api/payment/notify/{payment}']['post']['tags'] ?? null);
+
+        $upload = $doc['paths']['/api/v1/app/media/upload']['post'] ?? [];
+        self::assertSame(['Media'], $upload['tags'] ?? null);
+        self::assertSame('Upload my media file', $upload['summary'] ?? null);
+        self::assertStringContainsString('Authenticated multipart upload endpoint', $upload['description'] ?? '');
+        self::assertSame(['file'], $upload['requestBody']['content']['multipart/form-data']['schema']['required'] ?? null);
+        self::assertSame('binary', $upload['requestBody']['content']['multipart/form-data']['schema']['properties']['file']['format'] ?? null);
+        self::assertSame(['local', 'qiniu'], $upload['requestBody']['content']['multipart/form-data']['schema']['properties']['storage']['enum'] ?? null);
     }
 }

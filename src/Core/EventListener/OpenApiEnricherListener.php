@@ -18,6 +18,9 @@ class OpenApiEnricherListener
         '/api/auth/otp/verify' => ['summary' => ['post' => 'Verify OTP code'], 'desc' => ['post' => 'Verifies 6-digit code. login→tokens, verify_phone→marks verified. Max 5 attempts.']],
         '/api/auth/token/refresh' => ['summary' => ['post' => 'Refresh access token'], 'desc' => ['post' => 'Rotates refresh token. Reuse detection revokes ALL user tokens.']],
         '/api/auth/logout' => ['summary' => ['post' => 'Logout — revoke tokens']],
+        '/api/wechat/miniapp/login' => ['tag' => 'Wechat', 'summary' => ['post' => 'WeChat Mini Program login'], 'desc' => ['post' => 'Exchange WeChat Mini Program js_code for openid/unionid, create or find the local User, and return JWT access and refresh tokens.']],
+        '/api/wechat/miniapp/phone' => ['tag' => 'Wechat', 'summary' => ['post' => 'Bind WeChat Mini Program phone'], 'desc' => ['post' => 'Authenticated endpoint. Exchange WeChat getPhoneNumber code for the current user phone number and mark it verified.']],
+        '/api/payment/notify/{payment}' => ['tag' => 'Payment', 'summary' => ['post' => 'Payment gateway notify callback'], 'desc' => ['post' => 'Public payment provider webhook endpoint. The {payment} path selects the registered payment gateway (for example wechat, wallet, mock). The gateway verifies the callback signature/payload and InvoiceService applies the notify result.']],
 
         '/api/v1/manage/products' => ['summary' => ['get' => 'List all products', 'post' => 'Create product(s)'], 'desc' => ['get' => 'Paginated. Supports @filter, @dql, @order, @select, @sort, @expands, @display.', 'post' => 'Single object or array for batch. ROLE_ADMIN.']],
         '/api/v1/manage/products/batch-update' => ['summary' => ['post' => 'Batch update/upsert products']],
@@ -60,6 +63,7 @@ class OpenApiEnricherListener
         '/api/v1/manage/pages/batch-update' => ['summary' => ['post' => 'Batch update pages']],
         '/api/v1/manage/pages/{id}' => ['summary' => ['get' => 'Get page', 'put' => 'Update page', 'delete' => 'Delete page']],
         '/api/v1/manage/media' => ['summary' => ['get' => 'List media', 'post' => 'Create media']],
+        '/api/v1/manage/media/upload' => ['summary' => ['post' => 'Upload media file'], 'desc' => ['post' => 'Admin multipart upload endpoint. Reuses the same storage flow as the App endpoint, but Manage media listing/detail is not user-scoped. Use form field storage to select local or qiniu.']],
         '/api/v1/manage/media/batch-update' => ['summary' => ['post' => 'Batch update media']],
         '/api/v1/manage/media/{id}' => ['summary' => ['get' => 'Get media', 'put' => 'Update media', 'delete' => 'Delete media']],
         '/api/v1/manage/settings' => ['summary' => ['get' => 'List settings', 'post' => 'Create setting']],
@@ -76,8 +80,9 @@ class OpenApiEnricherListener
         '/api/v1/app/comments/{id}' => ['summary' => ['get' => 'Get comment (public)']],
         '/api/v1/app/pages' => ['summary' => ['get' => 'List published pages (public)']],
         '/api/v1/app/pages/{id}' => ['summary' => ['get' => 'Get page (public)']],
-        '/api/v1/app/media' => ['summary' => ['get' => 'List media (public)']],
-        '/api/v1/app/media/{id}' => ['summary' => ['get' => 'Get media (public)']],
+        '/api/v1/app/media' => ['summary' => ['get' => 'List my media'], 'desc' => ['get' => 'User-scoped media list. Returns only files owned by the authenticated user.']],
+        '/api/v1/app/media/upload' => ['summary' => ['post' => 'Upload my media file'], 'desc' => ['post' => 'Authenticated multipart upload endpoint for the current user. Send the binary file in form field file. Optionally send storage=local or storage=qiniu to select the storage driver; if omitted, media.storage.default / MEDIA_STORAGE_DEFAULT is used. Optional metadata fields alt, title, width, and height are persisted on the Media entity. Local uploads are stored under public/uploads/{YYYYMM}/ and return a root-relative /uploads/... URL. Qiniu uploads require qiniu.* settings and qiniu/php-sdk to be installed on the server. Invalid files are rejected before any storage driver call.']],
+        '/api/v1/app/media/{id}' => ['summary' => ['get' => 'Get my media'], 'desc' => ['get' => 'User-scoped media detail. Returns 404 when the media does not belong to the authenticated user.']],
         '/api/v1/app/settings' => ['summary' => ['get' => 'List settings (public)']],
         '/api/v1/app/settings/{id}' => ['summary' => ['get' => 'Get setting (public)']],
 
@@ -143,6 +148,7 @@ class OpenApiEnricherListener
             ['name' => 'Pages', 'description' => 'Standalone page management'],
             ['name' => 'Media', 'description' => 'File metadata management'],
             ['name' => 'Settings', 'description' => 'Key-value configuration'],
+            ['name' => 'Payment', 'description' => 'Payment invoices, gateways, refunds, and provider callbacks'],
             ['name' => 'Wallet', 'description' => 'Balance, transactions, atomic transfers'],
             ['name' => 'System', 'description' => 'Entity metadata introspection and route listing'],
             ['name' => 'Wechat', 'description' => 'WeChat Mini Program / Official Account login and WeChat Pay'],
@@ -154,11 +160,10 @@ class OpenApiEnricherListener
             // Pick the first operation to get the operationId (same route for all methods)
             $firstOp = null;
             foreach ($methods as $op) { if (is_array($op)) { $firstOp = $op; break; } }
-            $tag = $this->detectTag($firstOp ?? []);
-            if ($tag === null) continue;
-
             // Apply explicit overrides from META map (for custom summaries/descriptions)
             $meta = self::META[$path] ?? null;
+            $tag = $meta['tag'] ?? $this->detectTag($firstOp ?? []);
+            if ($tag === null) continue;
 
             foreach ($methods as $method => &$op) {
                 if (!is_array($op)) continue;
@@ -166,6 +171,9 @@ class OpenApiEnricherListener
                 $this->ensureTag($spec['tags'], $tag);
                 if ($meta && isset($meta['summary'][$method])) $op['summary'] = $meta['summary'][$method];
                 if ($meta && isset($meta['desc'][$method])) $op['description'] = $meta['desc'][$method];
+                if ($method === 'post' && in_array($path, ['/api/v1/app/media/upload', '/api/v1/manage/media/upload'], true)) {
+                    $op['requestBody'] = $this->mediaUploadRequestBody();
+                }
             }
             unset($op);
         }
@@ -177,6 +185,41 @@ class OpenApiEnricherListener
         $spec['tags'] = array_values(array_filter($spec['tags'], fn($t) => !in_array($t['name'], $genericTags, true)));
 
         return $spec;
+    }
+
+    private function mediaUploadRequestBody(): array
+    {
+        return [
+            'required' => true,
+            'content' => [
+                'multipart/form-data' => [
+                    'schema' => [
+                        'type' => 'object',
+                        'required' => ['file'],
+                        'properties' => [
+                            'file' => [
+                                'type' => 'string',
+                                'format' => 'binary',
+                                'description' => 'File to upload. Default allowlist: image/jpeg, image/png, image/gif, image/webp, application/pdf. Default max size: 10 MB.',
+                            ],
+                            'storage' => [
+                                'type' => 'string',
+                                'enum' => ['local', 'qiniu'],
+                                'default' => 'local',
+                                'description' => 'Storage driver name. Omit to use media.storage.default / MEDIA_STORAGE_DEFAULT.',
+                            ],
+                            'alt' => ['type' => 'string', 'description' => 'Alternative text for images.'],
+                            'title' => ['type' => 'string', 'description' => 'Display title.'],
+                            'width' => ['type' => 'integer', 'description' => 'Optional explicit width. Images are auto-detected when omitted.'],
+                            'height' => ['type' => 'integer', 'description' => 'Optional explicit height. Images are auto-detected when omitted.'],
+                        ],
+                    ],
+                    'encoding' => [
+                        'file' => ['contentType' => 'application/octet-stream'],
+                    ],
+                ],
+            ],
+        ];
     }
 
     /**
