@@ -737,4 +737,4 @@ docker compose -f compose.yaml -f compose.prod.yaml --env-file .env.prod.local e
 
 ## 许可证
 
-MIT。详见 [LICENSE](LICENSE)。
+Apache-2.0。详见 [LICENSE](LICENSE)。

@@ -744,4 +744,4 @@ Check serializer service wiring and request parameters like `@display`, `@expand
 
 ## License
 
-MIT. See [LICENSE](LICENSE) for details.
+Apache-2.0. See [LICENSE](LICENSE) for details.
