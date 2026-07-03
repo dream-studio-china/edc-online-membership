@@ -53,6 +53,7 @@ class OrderController extends RestController
 
         $currency = $content['currency'] ?? 'CNY';
         $notes = $content['notes'] ?? null;
+        $metadata = isset($content['metadata']) && is_array($content['metadata']) ? $content['metadata'] : null;
         $user = $this->getUser();
 
         try {
@@ -64,6 +65,7 @@ class OrderController extends RestController
                 $result->totalAmount,
                 $currency,
                 $notes,
+                $metadata,
             );
 
             return $this->success($order, 'Order created', 201);

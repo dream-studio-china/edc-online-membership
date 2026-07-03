@@ -589,10 +589,20 @@ final class TradeApiIntegrationTest extends WebTestCase
                 ['specificationId' => $specId, 'quantity' => 4],
             ],
             'notes' => 'App order',
+            'metadata' => [
+                'receiver' => [
+                    'name' => 'Zhang San',
+                    'phone' => '13800138000',
+                    'address' => 'Nanshan, Shenzhen',
+                ],
+            ],
         ]);
 
         self::assertSame(Response::HTTP_CREATED, $response->getStatusCode());
         self::assertSame(10000, $content['data']['totalAmount']);
+        self::assertSame('Zhang San', $content['data']['metadata']['receiver']['name']);
+        self::assertSame('13800138000', $content['data']['metadata']['receiver']['phone']);
+        self::assertSame('Nanshan, Shenzhen', $content['data']['metadata']['receiver']['address']);
     }
 
     public function testAppOrderList(): void

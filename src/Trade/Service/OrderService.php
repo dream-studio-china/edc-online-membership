@@ -47,9 +47,9 @@ class OrderService extends BaseService implements OrderServiceInterface
         return PriceCalculationResult::fromContext($context);
     }
 
-    public function createOrder(array $calculatedItems, mixed $user, int $totalAmount, string $currency = 'CNY', ?string $notes = null): Order
+    public function createOrder(array $calculatedItems, mixed $user, int $totalAmount, string $currency = 'CNY', ?string $notes = null, ?array $metadata = null): Order
     {
-        return $this->wrapInTransaction(function () use ($calculatedItems, $user, $totalAmount, $currency, $notes) {
+        return $this->wrapInTransaction(function () use ($calculatedItems, $user, $totalAmount, $currency, $notes, $metadata) {
             $order = new Order();
             if ($user instanceof User) {
                 $order->setUser($user);
@@ -59,6 +59,7 @@ class OrderService extends BaseService implements OrderServiceInterface
             $order->setTotalAmount($totalAmount);
             $order->setCurrency($currency);
             $order->setNotes($notes);
+            $order->setMetadata($metadata);
 
             foreach ($calculatedItems as $item) {
                 $orderItem = new OrderItem();
