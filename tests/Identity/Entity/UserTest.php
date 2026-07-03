@@ -105,4 +105,16 @@ final class UserTest extends TestCase
 
         self::assertNull($user->getId());
     }
+
+    public function testToStringUsesUsernameThenEmail(): void
+    {
+        $user = new User();
+        $user->setEmail('User@Example.COM');
+
+        self::assertSame('user@example.com', (string) $user);
+
+        $user->setUsername('DisplayName');
+
+        self::assertSame('displayname', (string) $user);
+    }
 }
