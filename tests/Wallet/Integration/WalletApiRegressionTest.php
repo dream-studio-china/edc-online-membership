@@ -103,6 +103,15 @@ final class WalletApiRegressionTest extends IntegrationWebTestCase
         $em->persist($otherTx);
         $em->flush();
 
+        $em->createQuery('UPDATE App\Wallet\Entity\Wallet w SET w.balance = :balance WHERE w.id = :id')
+            ->setParameter('balance', 1200)
+            ->setParameter('id', $aliceWallet->getId())
+            ->execute();
+        $em->createQuery('UPDATE App\Wallet\Entity\Wallet w SET w.balance = :balance WHERE w.id = :id')
+            ->setParameter('balance', 3400)
+            ->setParameter('id', $bobWallet->getId())
+            ->execute();
+
         $client = $this->createClientForUser($alice);
 
         $client->request('GET', '/api/v1/app/wallets');
@@ -122,6 +131,15 @@ final class WalletApiRegressionTest extends IntegrationWebTestCase
 
         $client->request('GET', '/api/v1/app/transactions/' . $otherTx->getId());
         self::assertSame(404, $client->getResponse()->getStatusCode());
+
+        $client->request('GET', '/api/v1/app/wallets/balance');
+        self::assertSame(200, $client->getResponse()->getStatusCode(), (string) $client->getResponse()->getContent());
+        $balance = json_decode((string) $client->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR);
+        self::assertSame(1200, $balance['data']['totalBalance']);
+        self::assertSame(1200, $balance['data']['totalDeposited']);
+        self::assertSame(0, $balance['data']['discrepancy']);
+        self::assertTrue($balance['data']['matches']);
+        self::assertSame(1, $balance['data']['walletCount']);
     }
 
     public function testWalletCreateDuplicateCurrencyFails(): void
