@@ -14,10 +14,10 @@ class Setting
     #[ORM\Column(type: 'integer')]
     private ?int $id = null;
 
-    #[ORM\Column(type: 'string', length: 255, unique: true)]
+    #[ORM\Column(name: '`key`', type: 'string', length: 255, unique: true)]
     private string $key;
 
-    #[ORM\Column(type: 'text', nullable: true)]
+    #[ORM\Column(name: '`value`', type: 'text', nullable: true)]
     private ?string $value = null;
 
     #[ORM\Column(type: 'string', length: 50, options: ['default' => 'string'])]
