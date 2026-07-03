@@ -65,4 +65,4 @@ docker compose exec app php bin/console app:identity:user:create admin@example.c
 
 ## License
 
-MIT
+Apache-2.0
