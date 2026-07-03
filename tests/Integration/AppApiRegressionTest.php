@@ -2,6 +2,7 @@
 
 namespace App\Tests\Integration;
 
+use App\Identity\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 
 final class AppApiRegressionTest extends IntegrationWebTestCase
@@ -160,10 +161,15 @@ final class AppApiRegressionTest extends IntegrationWebTestCase
     public function testAppMediaListAndDetail(): void
     {
         $client = static::createAuthenticatedClient();
+        $user = $client->getContainer()->get(EntityManagerInterface::class)
+            ->getRepository(User::class)
+            ->findOneBy(['email' => 'testauth@example.com']);
+        self::assertInstanceOf(User::class, $user);
 
         $client->request('POST', '/api/v1/manage/media', server: ['CONTENT_TYPE' => 'application/json'], content: json_encode([
             'filename' => 'hero.jpg', 'originalFilename' => 'DSC001.jpg', 'mimeType' => 'image/jpeg',
             'size' => 50000, 'path' => '/uploads/hero.jpg', 'alt' => 'Hero image', 'title' => 'Hero', 'width' => 1920, 'height' => 1080,
+            'user' => $user->getId(),
         ], JSON_THROW_ON_ERROR));
         $created = json_decode((string) $client->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR);
         $id = $created['data']['id'];

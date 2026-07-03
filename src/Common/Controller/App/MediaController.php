@@ -7,7 +7,11 @@ use App\Core\Controller\RestController;
 use App\Core\View\ApiView;
 use App\Core\View\DetailApiViewMixin;
 use App\Core\View\ListApiViewMixin;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Validator\Exception\ValidatorException;
 
 #[Route('/app/media', name: 'app-media-')]
 class MediaController extends RestController
@@ -17,4 +21,32 @@ class MediaController extends RestController
     public function __construct(
         protected readonly MediaServiceInterface $service
     ) {}
+
+    protected function commonFilter(): array
+    {
+        return ['user' => $this->getUser()];
+    }
+
+    #[Route('/upload', name: 'upload', methods: ['POST'])]
+    public function uploadAction(Request $request): Response
+    {
+        $file = $request->files->get('file');
+        if (!$file instanceof UploadedFile) {
+            return $this->warning('Uploaded file is required', 400, '', 400);
+        }
+
+        try {
+            $media = $this->service->createFromUpload(
+                $file,
+                $request->request->get('storage'),
+                $request->request->all(),
+            );
+        } catch (ValidatorException|\RuntimeException $exception) {
+            return $this->warning($exception->getMessage(), 400, '', 400);
+        } catch (\Throwable $exception) {
+            return $this->warning($exception->getMessage() ?: 'Upload failed', 500, '', 500);
+        }
+
+        return $this->success($media, 'Uploaded', 201);
+    }
 }

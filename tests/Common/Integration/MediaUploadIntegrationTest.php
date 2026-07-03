@@ -1,0 +1,317 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Tests\Common\Integration;
+
+use App\Common\Entity\Media;
+use App\Common\Service\MediaService;
+use App\Tests\Integration\DatabaseBootstrapTrait;
+use App\Tests\Integration\IntegrationWebTestCase;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\Validator\Exception\ValidatorException;
+
+final class MediaUploadIntegrationTest extends IntegrationWebTestCase
+{
+    use DatabaseBootstrapTrait;
+
+    private EntityManagerInterface $em;
+    private string $uploadRoot;
+    private string $tempRoot;
+
+    protected function setUp(): void
+    {
+        $this->bootTestDatabase();
+
+        self::ensureKernelShutdown();
+        $client = static::createClient();
+        $container = $client->getContainer();
+
+        $this->em = $container->get(EntityManagerInterface::class);
+        $this->uploadRoot = dirname(__DIR__, 3) . '/public/uploads';
+        $this->tempRoot = sys_get_temp_dir() . '/crud-media-upload-test-' . bin2hex(random_bytes(4));
+        mkdir($this->tempRoot, 0775, true);
+
+        $this->em->createQuery('DELETE FROM App\\Common\\Entity\\Media')->execute();
+        $this->removeDirectory($this->uploadRoot);
+        self::ensureKernelShutdown();
+    }
+
+    protected function tearDown(): void
+    {
+        $this->removeDirectory($this->tempRoot);
+        $this->removeDirectory($this->uploadRoot);
+        self::ensureKernelShutdown();
+    }
+
+    public function testManageUploadStoresMediaAndDeleteRemovesFile(): void
+    {
+        $client = static::createAuthenticatedClient();
+
+        $client->request(
+            'POST',
+            '/api/v1/manage/media/upload',
+            ['alt' => 'Alt text', 'title' => 'Image title'],
+            ['file' => $this->uploadedPng('manage.png')],
+        );
+
+        self::assertSame(201, $client->getResponse()->getStatusCode(), (string) $client->getResponse()->getContent());
+        $created = $this->decodeResponse($client->getResponse()->getContent());
+
+        self::assertSame('Uploaded', $created['message']);
+        self::assertSame('local', $created['data']['storage']);
+        self::assertSame('image/png', $created['data']['mimeType']);
+        self::assertSame('Alt text', $created['data']['alt']);
+        self::assertSame('Image title', $created['data']['title']);
+        self::assertSame(1, $created['data']['width']);
+        self::assertSame(1, $created['data']['height']);
+
+        $storedPath = $this->uploadRoot . str_replace('/uploads', '', $created['data']['path']);
+        self::assertFileExists($storedPath);
+
+        $client->request('DELETE', '/api/v1/manage/media/' . $created['data']['id']);
+
+        self::assertSame(204, $client->getResponse()->getStatusCode());
+        self::assertFileDoesNotExist($storedPath);
+    }
+
+    public function testAppUploadStoresPdfWithoutDimensions(): void
+    {
+        $client = static::createAuthenticatedClient();
+
+        $client->request(
+            'POST',
+            '/api/v1/app/media/upload',
+            ['storage' => 'local'],
+            ['file' => $this->uploadedPdf('document.pdf')],
+        );
+
+        self::assertSame(201, $client->getResponse()->getStatusCode(), (string) $client->getResponse()->getContent());
+        $created = $this->decodeResponse($client->getResponse()->getContent());
+
+        self::assertSame('application/pdf', $created['data']['mimeType']);
+        self::assertNull($created['data']['width']);
+        self::assertNull($created['data']['height']);
+    }
+
+    public function testUploadRequiresFile(): void
+    {
+        $client = static::createAuthenticatedClient();
+
+        $client->request('POST', '/api/v1/manage/media/upload');
+
+        self::assertSame(400, $client->getResponse()->getStatusCode());
+        $data = $this->decodeResponse($client->getResponse()->getContent());
+        self::assertSame('Uploaded file is required', $data['message']);
+    }
+
+    public function testAppUploadRequiresFile(): void
+    {
+        $client = static::createAuthenticatedClient();
+
+        $client->request('POST', '/api/v1/app/media/upload');
+
+        self::assertSame(400, $client->getResponse()->getStatusCode());
+        $data = $this->decodeResponse($client->getResponse()->getContent());
+        self::assertSame('Uploaded file is required', $data['message']);
+    }
+
+    public function testUploadRejectsUnknownStorage(): void
+    {
+        $client = static::createAuthenticatedClient();
+
+        $client->request(
+            'POST',
+            '/api/v1/app/media/upload',
+            ['storage' => 'missing'],
+            ['file' => $this->uploadedPng('missing.png')],
+        );
+
+        self::assertSame(400, $client->getResponse()->getStatusCode(), (string) $client->getResponse()->getContent());
+        $data = $this->decodeResponse($client->getResponse()->getContent());
+        self::assertStringContainsString('Unknown media storage driver', $data['message']);
+    }
+
+    public function testManageUploadRejectsUnknownStorage(): void
+    {
+        $client = static::createAuthenticatedClient();
+
+        $client->request(
+            'POST',
+            '/api/v1/manage/media/upload',
+            ['storage' => 'missing'],
+            ['file' => $this->uploadedPng('missing-manage.png')],
+        );
+
+        self::assertSame(400, $client->getResponse()->getStatusCode(), (string) $client->getResponse()->getContent());
+        $data = $this->decodeResponse($client->getResponse()->getContent());
+        self::assertStringContainsString('Unknown media storage driver', $data['message']);
+    }
+
+    public function testMediaServiceRejectsInvalidUploads(): void
+    {
+        self::bootKernel();
+        /** @var MediaService $service */
+        $service = static::getContainer()->get(MediaService::class);
+
+        $this->expectException(ValidatorException::class);
+        $this->expectExceptionMessage('Uploaded file MIME type is not allowed');
+
+        $service->createFromUpload($this->uploadedText('text.txt'));
+    }
+
+    public function testMediaServiceRejectsEmptyFiles(): void
+    {
+        self::bootKernel();
+        /** @var MediaService $service */
+        $service = static::getContainer()->get(MediaService::class);
+
+        $this->expectException(ValidatorException::class);
+        $this->expectExceptionMessage('Uploaded file is empty');
+
+        $service->createFromUpload($this->uploadedEmptyPng('empty.png'));
+    }
+
+    public function testMediaServiceRejectsInvalidUploadError(): void
+    {
+        self::bootKernel();
+        /** @var MediaService $service */
+        $service = static::getContainer()->get(MediaService::class);
+        $source = $this->tempRoot . '/error.png';
+        file_put_contents($source, $this->pngBytes());
+
+        $this->expectException(ValidatorException::class);
+        $this->expectExceptionMessage('Uploaded file is invalid');
+
+        $service->createFromUpload(new UploadedFile($source, 'error.png', 'image/png', UPLOAD_ERR_CANT_WRITE, true));
+    }
+
+    public function testMediaServiceRejectsOversizedFile(): void
+    {
+        self::bootKernel();
+        /** @var MediaService $service */
+        $service = static::getContainer()->get(MediaService::class);
+        $source = $this->tempRoot . '/large.png';
+        file_put_contents($source, $this->pngBytes() . str_repeat('a', 10485761));
+
+        $this->expectException(ValidatorException::class);
+        $this->expectExceptionMessage('Uploaded file is too large');
+
+        $service->createFromUpload(new UploadedFile($source, 'large.png', 'image/png', null, true));
+    }
+
+    public function testMediaServiceAcceptsInvalidImageWithoutDimensions(): void
+    {
+        self::bootKernel();
+        /** @var MediaService $service */
+        $service = static::getContainer()->get(MediaService::class);
+        $source = $this->tempRoot . '/invalid-image.png';
+        file_put_contents($source, 'not actually an image');
+
+        $media = $service->createFromUpload(new class($source) extends UploadedFile {
+            public function __construct(string $path)
+            {
+                parent::__construct($path, 'invalid-image.png', 'image/png', null, true);
+            }
+
+            public function getMimeType(): ?string
+            {
+                return 'image/png';
+            }
+        });
+
+        self::assertNull($media->getWidth());
+        self::assertNull($media->getHeight());
+    }
+
+    public function testMediaServiceRemoveReturnsFalseForUnknownMedia(): void
+    {
+        self::bootKernel();
+        /** @var MediaService $service */
+        $service = static::getContainer()->get(MediaService::class);
+
+        self::assertFalse($service->remove(null));
+    }
+
+    public function testMediaServiceRemoveIgnoresStorageDeleteFailure(): void
+    {
+        self::bootKernel();
+        /** @var MediaService $service */
+        $service = static::getContainer()->get(MediaService::class);
+        /** @var EntityManagerInterface $em */
+        $em = static::getContainer()->get(EntityManagerInterface::class);
+
+        $media = new Media('remote.png', 'remote.png', 'image/png', 10, 'https://cdn.example.com/remote.png', 'qiniu');
+        $em->persist($media);
+        $em->flush();
+        $id = $media->getId();
+
+        self::assertTrue($service->remove($media));
+        self::assertNull($em->getRepository(Media::class)->find($id));
+    }
+
+    /** @return array<string, mixed> */
+    private function decodeResponse(string|false $content): array
+    {
+        self::assertIsString($content);
+
+        return json_decode($content, true, 512, JSON_THROW_ON_ERROR);
+    }
+
+    private function uploadedPng(string $name): UploadedFile
+    {
+        $source = $this->tempRoot . '/' . $name;
+        file_put_contents($source, $this->pngBytes());
+
+        return new UploadedFile($source, $name, 'image/png', null, true);
+    }
+
+    private function uploadedEmptyPng(string $name): UploadedFile
+    {
+        $source = $this->tempRoot . '/' . $name;
+        touch($source);
+
+        return new UploadedFile($source, $name, 'image/png', null, true);
+    }
+
+    private function uploadedPdf(string $name): UploadedFile
+    {
+        $source = $this->tempRoot . '/' . $name;
+        file_put_contents($source, "%PDF-1.4\n1 0 obj\n<<>>\nendobj\ntrailer\n<<>>\n%%EOF\n");
+
+        return new UploadedFile($source, $name, 'application/pdf', null, true);
+    }
+
+    private function uploadedText(string $name): UploadedFile
+    {
+        $source = $this->tempRoot . '/' . $name;
+        file_put_contents($source, 'plain text');
+
+        return new UploadedFile($source, $name, 'text/plain', null, true);
+    }
+
+    private function pngBytes(): string
+    {
+        return base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/p9sAAAAASUVORK5CYII=', true);
+    }
+
+    private function removeDirectory(string $path): void
+    {
+        if (!is_dir($path)) {
+            return;
+        }
+
+        $items = scandir($path) ?: [];
+        foreach ($items as $item) {
+            if ($item === '.' || $item === '..') {
+                continue;
+            }
+
+            $itemPath = $path . DIRECTORY_SEPARATOR . $item;
+            is_dir($itemPath) ? $this->removeDirectory($itemPath) : unlink($itemPath);
+        }
+
+        rmdir($path);
+    }
+}

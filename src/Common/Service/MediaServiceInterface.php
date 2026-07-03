@@ -2,6 +2,11 @@
 
 namespace App\Common\Service;
 
+use App\Common\Entity\Media;
 use App\Core\Service\BaseServiceInterface;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
-interface MediaServiceInterface extends BaseServiceInterface {}
+interface MediaServiceInterface extends BaseServiceInterface
+{
+    public function createFromUpload(UploadedFile $file, ?string $storage = null, array $meta = []): Media;
+}
