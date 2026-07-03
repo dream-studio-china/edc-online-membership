@@ -9,6 +9,7 @@ use App\Common\Controller\Manage\MediaController as ManageMediaController;
 use App\Common\Entity\Media;
 use App\Common\Service\MediaService;
 use App\Common\Service\MediaServiceInterface;
+use App\Identity\Entity\User;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
@@ -41,7 +42,7 @@ final class MediaControllerUploadTest extends TestCase
     public function testAppUploadReturns500ForUnexpectedError(): void
     {
         $service = new class implements MediaServiceInterface {
-            public function createFromUpload(UploadedFile $file, ?string $storage = null, array $meta = []): Media
+            public function createFromUpload(UploadedFile $file, ?string $storage = null, array $meta = [], ?User $owner = null): Media
             {
                 throw new \LogicException('unexpected app failure');
             }
@@ -53,7 +54,12 @@ final class MediaControllerUploadTest extends TestCase
             public function remove($object): bool { return false; }
         };
 
-        $controller = new AppMediaController($service);
+        $controller = new class($service) extends AppMediaController {
+            protected function uploadOwner(): ?User
+            {
+                return null;
+            }
+        };
         $this->configureController($controller);
 
         $response = $controller->uploadAction($this->requestWithFile());
@@ -68,10 +74,10 @@ final class MediaControllerUploadTest extends TestCase
         $service = new class extends MediaService {
             public function __construct() {}
 
-            public function createFromUpload(UploadedFile $file, ?string $storage = null, array $meta = []): Media
-            {
-                throw new \LogicException('unexpected manage failure');
-            }
+        public function createFromUpload(UploadedFile $file, ?string $storage = null, array $meta = [], ?User $owner = null): Media
+        {
+            throw new \LogicException('unexpected manage failure');
+        }
         };
 
         $controller = new ManageMediaController($service);

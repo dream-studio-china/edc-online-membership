@@ -28,7 +28,7 @@ class MediaService extends BaseService implements MediaServiceInterface
         parent::__construct($container, Media::class);
     }
 
-    public function createFromUpload(UploadedFile $file, ?string $storage = null, array $meta = []): Media
+    public function createFromUpload(UploadedFile $file, ?string $storage = null, array $meta = [], ?User $owner = null): Media
     {
         $this->validateUpload($file);
 
@@ -51,8 +51,8 @@ class MediaService extends BaseService implements MediaServiceInterface
             $storageName,
         );
 
-        if ($this->user instanceof User) {
-            $media->setUser($this->user);
+        if ($owner instanceof User) {
+            $media->setUser($owner);
         }
 
         $media

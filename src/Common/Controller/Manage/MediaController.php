@@ -9,6 +9,7 @@ use App\Core\View\DeleteApiViewMixin;
 use App\Core\View\DetailApiViewMixin;
 use App\Core\View\ListApiViewMixin;
 use App\Core\View\UpdateApiViewMixin;
+use App\Identity\Entity\User;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
@@ -32,5 +33,10 @@ class MediaController extends AppMediaController
     protected function commonFilter(): array
     {
         return [];
+    }
+
+    protected function uploadOwner(): ?User
+    {
+        return null;
     }
 }

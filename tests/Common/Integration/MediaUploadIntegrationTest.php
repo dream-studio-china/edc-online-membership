@@ -5,11 +5,14 @@ declare(strict_types=1);
 namespace App\Tests\Common\Integration;
 
 use App\Common\Entity\Media;
+use App\Common\Service\MediaServiceInterface;
 use App\Common\Service\MediaService;
+use App\Identity\Entity\User;
 use App\Tests\Integration\DatabaseBootstrapTrait;
 use App\Tests\Integration\IntegrationWebTestCase;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Validator\Exception\ValidatorException;
 
 final class MediaUploadIntegrationTest extends IntegrationWebTestCase
@@ -70,6 +73,10 @@ final class MediaUploadIntegrationTest extends IntegrationWebTestCase
         $storedPath = $this->uploadRoot . str_replace('/uploads', '', $created['data']['path']);
         self::assertFileExists($storedPath);
 
+        /** @var Media $media */
+        $media = $this->em->getRepository(Media::class)->find($created['data']['id']);
+        self::assertNull($media->getUser());
+
         $client->request('DELETE', '/api/v1/manage/media/' . $created['data']['id']);
 
         self::assertSame(204, $client->getResponse()->getStatusCode());
@@ -93,6 +100,56 @@ final class MediaUploadIntegrationTest extends IntegrationWebTestCase
         self::assertSame('application/pdf', $created['data']['mimeType']);
         self::assertNull($created['data']['width']);
         self::assertNull($created['data']['height']);
+
+        /** @var Media $media */
+        $media = $this->em->getRepository(Media::class)->find($created['data']['id']);
+        /** @var User $user */
+        $user = $this->em->getRepository(User::class)->findOneBy(['email' => 'testauth@example.com']);
+        self::assertSame($user->getId(), $media->getUser()?->getId());
+
+        $client->request('GET', '/api/v1/app/media');
+        self::assertSame(200, $client->getResponse()->getStatusCode(), (string) $client->getResponse()->getContent());
+        $list = $this->decodeResponse($client->getResponse()->getContent());
+        self::assertCount(1, $list['data']);
+        self::assertSame($created['data']['id'], $list['data'][0]['id']);
+
+        $client->request('GET', '/api/v1/app/media/' . $created['data']['id']);
+        self::assertSame(200, $client->getResponse()->getStatusCode(), (string) $client->getResponse()->getContent());
+        $detail = $this->decodeResponse($client->getResponse()->getContent());
+        self::assertSame($created['data']['id'], $detail['data']['id']);
+    }
+
+    public function testUploadHandlesUnexpectedStorageFailure(): void
+    {
+        $client = static::createClient();
+        $container = $client->getContainer();
+        $controller = new class(new class implements MediaServiceInterface {
+            public function createFromUpload(UploadedFile $file, ?string $storage = null, array $meta = [], ?User $owner = null): Media
+            {
+                throw new \Error('Unexpected upload failure');
+            }
+
+            public function get($object, bool $directly = false): ?object { return null; }
+            public function list($object = null, $order = null, bool $disableRequest = true): array { return []; }
+            public function new(): object { return new \stdClass(); }
+            public function update($object, ?array $data = null, bool $noFlush = false): object { return new \stdClass(); }
+            public function remove($object): bool { return false; }
+        }) extends \App\Common\Controller\App\MediaController {
+            protected function uploadOwner(): ?User
+            {
+                return null;
+            }
+        };
+        $controller->setSerializer($container->get('serializer'));
+        $controller->setTranslator($container->get('translator'));
+        $controller->setRequestStack($container->get('request_stack'));
+
+        $request = new Request(files: ['file' => $this->uploadedPng('unexpected.png')]);
+        $response = $controller->uploadAction($request);
+        $data = $this->decodeResponse($response->getContent());
+
+        self::assertSame(500, $response->getStatusCode());
+        self::assertSame('Unexpected upload failure', $data['message']);
     }
 
     public function testUploadRequiresFile(): void

@@ -7,6 +7,7 @@ use App\Core\Controller\RestController;
 use App\Core\View\ApiView;
 use App\Core\View\DetailApiViewMixin;
 use App\Core\View\ListApiViewMixin;
+use App\Identity\Entity\User;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -40,6 +41,7 @@ class MediaController extends RestController
                 $file,
                 $request->request->get('storage'),
                 $request->request->all(),
+                $this->uploadOwner(),
             );
         } catch (ValidatorException|\RuntimeException $exception) {
             return $this->warning($exception->getMessage(), 400, '', 400);
@@ -48,5 +50,12 @@ class MediaController extends RestController
         }
 
         return $this->success($media, 'Uploaded', 201);
+    }
+
+    protected function uploadOwner(): ?User
+    {
+        $user = $this->getUser();
+
+        return $user instanceof User ? $user : null;
     }
 }
