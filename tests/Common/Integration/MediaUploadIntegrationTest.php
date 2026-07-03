@@ -160,6 +160,43 @@ final class MediaUploadIntegrationTest extends IntegrationWebTestCase
         self::assertSame($created['data']['id'], $detail['data']['id']);
     }
 
+    public function testAppDeleteRemovesOnlyOwnUploadedMedia(): void
+    {
+        $client = static::createAuthenticatedClient();
+
+        $client->request(
+            'POST',
+            '/api/v1/app/media/upload',
+            ['storage' => 'local'],
+            ['file' => $this->uploadedPng('own-delete.png')],
+        );
+
+        self::assertSame(201, $client->getResponse()->getStatusCode(), (string) $client->getResponse()->getContent());
+        $created = $this->decodeResponse($client->getResponse()->getContent());
+        $storedPath = $this->uploadRoot . str_replace('/uploads', '', $created['data']['path']);
+        self::assertFileExists($storedPath);
+
+        $otherUser = new User();
+        $otherUser->setEmail('other-media-owner@example.com');
+        $otherUser->setUsername('other-media-owner');
+        $otherUser->setPassword('test-password');
+        $otherMedia = new Media('other.png', 'other.png', 'image/png', 10, '/uploads/other.png');
+        $otherMedia->setUser($otherUser);
+        $this->em->persist($otherUser);
+        $this->em->persist($otherMedia);
+        $this->em->flush();
+        $otherMediaId = $otherMedia->getId();
+
+        $client->request('DELETE', '/api/v1/app/media/' . $otherMediaId);
+        self::assertSame(404, $client->getResponse()->getStatusCode(), (string) $client->getResponse()->getContent());
+        self::assertNotNull($this->em->getRepository(Media::class)->find($otherMediaId));
+
+        $client->request('DELETE', '/api/v1/app/media/' . $created['data']['id']);
+        self::assertSame(204, $client->getResponse()->getStatusCode(), (string) $client->getResponse()->getContent());
+        self::assertNull($this->em->getRepository(Media::class)->find($created['data']['id']));
+        self::assertFileDoesNotExist($storedPath);
+    }
+
     public function testUploadHandlesUnexpectedStorageFailure(): void
     {
         $client = static::createClient();
