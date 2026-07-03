@@ -1,6 +1,6 @@
 # CRUD Skeleton - Full Codebase Context
 
-> Context snapshot. Last updated: 2026-07-02
+> Context snapshot. Last updated: 2026-07-03
 
 ---
 
@@ -40,7 +40,7 @@
 │   └── Controller/App/ + Manage/
 │
 ├── src/Identity/                 # Authentication & Identity
-│   ├── Entity/User.php, RefreshToken.php
+│   ├── Entity/User.php, RefreshToken.php     # User has __toString(): username fallback to email
 │   ├── Security/JwtAuthenticator.php, TokenManager.php
 │   ├── Service/OtpService.php, UserService.php, SMS providers
 │   ├── Command/CreateUserCommand.php
@@ -89,25 +89,25 @@
 │   ├── Service/MediaStorageInterface.php       # Driver contract (store/delete)
 │   ├── Service/MediaStorageRegistry.php        # Tagged iterator collection
 │   ├── Service/LocalStorage.php                # Local filesystem (public/uploads/)
-│   ├── Service/QiniuStorage.php                # Qiniu Kodo cloud storage
+│   ├── Service/QiniuStorage.php                # Qiniu Kodo cloud storage (optional SDK)
 │   └── Resources/config/services_storage.yaml
 │
 ├── config/
-│   ├── services.yaml             # Service wiring + import src/Wechat/ + exclusions
+│   ├── services.yaml             # Service wiring + imports src/*/Resources/config + exclusions
 │   ├── routes.yaml               # Route imports (wechat, wechat_app, wechat_manage added)
 │   └── packages/
 │       ├── nelmio_api_doc.yaml   # OpenAPI 3.1 config: System + Wechat tags
 │       ├── security.yaml         # PUBLIC_ACCESS: /system/*, /api/wechat/miniapp/login, oauth/*
 │       ├── workflow.yaml         # Order state machine (draft→completed)
 │       └── ...
-├── migrations/                   # 7 Doctrine migrations (latest added wechat_user, payment_invoice)
+├── migrations/                   # Doctrine migrations (latest adds media storage + owner)
 ├── docs/
 │   ├── ai/context.md             # This file
 │   ├── design/                   # Design contracts
 │   │   └── bundles/              # Per-module design docs (core, common, trade, wallet, identity, wechat)
 │   └── openapi/endpoints.yaml
 ├── scripts/tests/                # Test scripts
-├── tests/                        # ~922 PHPUnit tests, ~3177 assertions
+├── tests/                        # 1115 PHPUnit tests, ~3850 assertions
 ├── mkdocs.yml                    # MkDocs Material config
 ├── compose.yaml                  # Production deployment: app (PHP-FPM), nginx, MySQL, Redis, Mailpit
 ├── compose.override.yaml         # Dev overrides (source mount, debug, exposed ports)
@@ -370,6 +370,35 @@ Implements `PaymentGatewayInterface` with `getName() → 'wechat'`:
 
 When `$this->getUser()` returns null in App controllers, `commonFilter()` returns `['id' => -1]` to block all records (security: unauthenticated users see nothing).
 
+## 9.5 Storage Module
+
+Storage is an infrastructure module under `src/Storage/`. Common/Media depends only on `MediaStorageInterface` and `MediaStorageRegistry`; Storage does not depend on Common entities or controllers.
+
+### 9.5.1 Drivers
+
+| Driver | Class | Configuration | Notes |
+|--------|-------|---------------|-------|
+| `local` | `App\Storage\Service\LocalStorage` | `media.local.upload_path`, `media.local.base_url` | Always available. Stores under `public/uploads/{YYYYMM}/{random}.{ext}` and returns `/uploads/...` URLs. |
+| `qiniu` | `App\Storage\Service\QiniuStorage` | `common_setting` keys | Optional. Reads `qiniu.access_key`, `qiniu.secret_key`, `qiniu.bucket`, `qiniu.domain` at runtime. |
+
+Qiniu SDK note: `qiniu/php-sdk` is intentionally not required by `composer.json` because v7.14 emits PHP 8.5 vendor deprecations. `QiniuStorage` checks for `Qiniu\Auth`, `Qiniu\Storage\UploadManager`, and `Qiniu\Storage\BucketManager` only when `storage=qiniu` is used; if missing, it throws a clear runtime error. Server deployments that need Qiniu may install it locally with `composer require qiniu/php-sdk`.
+
+### 9.5.2 Media Upload Flow
+
+| Endpoint | Method | Auth | Description |
+|----------|--------|------|-------------|
+| `/api/v1/app/media/upload` | POST multipart | ROLE_USER | Upload current user's media. App media list/detail is scoped by `['user' => $this->getUser()]`. |
+| `/api/v1/manage/media/upload` | POST multipart | ROLE_ADMIN | Admin upload endpoint, reuses App upload action via inheritance. Manage media CRUD uses no common filter. |
+
+Multipart fields:
+- `file`: required uploaded file
+- `storage`: optional driver name, defaults to `MEDIA_STORAGE_DEFAULT` / `media.storage.default` (`local`)
+- `alt`, `title`, `width`, `height`: optional metadata
+
+`MediaService::createFromUpload()` validates file presence/size/MIME, resolves the selected storage driver, stores the physical file, persists `Common\Entity\Media`, and assigns the current authenticated `User` when available. `MediaService::remove()` best-effort deletes the physical file via the media's stored driver before removing the entity.
+
+`Media` now stores `storage` and nullable owner `user` (`ManyToOne User`, `ON DELETE SET NULL`).
+
 ## 10. System Introspection Endpoints
 
 | Endpoint | Method | Description |
@@ -404,6 +433,8 @@ Placed in `src/Core/Controller/System/` (framework layer). NelmioApiDoc path_pat
 | **Adjustment provider registry** | Payment | `#[AutowireIterator]` + `_instanceof` for `PaymentAdjustmentProviderInterface` — wallet deduction is a Wallet-owned provider |
 | **Deduction owned by Wallet** | Wallet | Wallet balance deduction lives in Wallet (`WalletPaymentDeduction` entity, `WalletPaymentDeductionService`, `WalletBalanceAdjustmentProvider`). Payment owns only the generic adjustment contract |
 | **OneToOne extension** | Wechat | `WechatUser` extends User identity without modifying User entity |
+| **Storage driver registry** | Storage | `MediaStorageInterface` implementations are tagged `media.storage`; callers select driver with multipart `storage` field |
+| **Media ownership** | Common | App media endpoints are user-scoped via `commonFilter()`. Manage media endpoints inherit App upload code but override `commonFilter()` to `[]` |
 | **System introspection** | Core | Entity metadata + route export via `/system/*` endpoints |
 
 ## 12. API Documentation System
@@ -444,7 +475,7 @@ Enriches all endpoints (90+):
 
 42+ named schemas across 11 tags (Auth, Products, Orders, Categories, Tags, Contents, Comments, Pages, Media, Settings, Wallet, System, Wechat). Each with field-level type, description, enum, and example values. `path_patterns` includes both `^/api` and `^/system`.
 
-## 13. Database Tables (7 Migrations)
+## 13. Database Tables (9 Migrations)
 
 | Version | Tables |
 |---------|--------|
@@ -456,6 +487,7 @@ Enriches all endpoints (90+):
 | 20250621000000 | Added to `trade_order`: `paid_at`, `refunded_at`, `fulfilled_at`, `payment_method`, `tracking_number`, `shipping_address`, `refund_reason` |
 | 20250624223701 | `payment_invoice`, `wechat_user`, `messenger_messages` |
 | 20260626000000 | `wallet_payment_deduction` (wallet-owned deduction audit, scalar invoice references, FK to `wallet`) |
+| 20260703000000 | Added to `common_media`: `storage`, nullable `user_id` FK to `users` |
 
 ## 14. Documentation Assets
 
@@ -485,9 +517,10 @@ Enriches all endpoints (90+):
 
 - **Framework**: PHPUnit 12.5
 - **DB**: SQLite `var/test.db` in test environment
-- **Coverage**: 80% minimum (enforced in CI), currently **87.83% lines**
-- **Test count**: **1069 tests**, **~3666 assertions**
-- **Local PHP note**: default `php` may point to PHP 7.4; use Homebrew PHP 8.5 at `/opt/homebrew/opt/php/bin/php` for local Symfony/PHPUnit commands.
+- **Coverage**: 80% minimum (enforced in CI), currently **88.37% lines** (`4481/5071`) from latest local Xdebug run
+- **Test count**: **1115 tests**, **~3850 assertions**
+- **Local PHP note**: default `php` may point to PHP 7.4; use Homebrew PHP 8.5 at `/opt/homebrew/opt/php@8.5/bin/php` for local Symfony/PHPUnit commands.
+- **Storage/upload coverage**: new Storage + Media upload functionality is covered by real local-upload integration tests (`POST /api/v1/manage/media/upload` writes to `public/uploads`, then delete removes the file). Related code coverage is ~97.5% lines.
 - **Key test groups**:
   - `tests/Wechat/`: 59 tests (Entity, Service, AuthService, Payment/Gateway, Controller, Repository)
   - `tests/Trade/`: 171 tests (Entity, Service, Pricing, Integration, EventListener, Workflow API)
@@ -515,6 +548,9 @@ Enriches all endpoints (90+):
 | `MESSENGER_TRANSPORT_DSN` | Async transport |
 | `DEFAULT_URI` | Base URL for CLI contexts |
 | `MAILER_DSN` | Mailer transport |
+| `MEDIA_STORAGE_DEFAULT` | Default media storage driver (`local` by default) |
+
+Qiniu configuration is intentionally **not** environment-variable based. Configure these records in `common_setting` when `storage=qiniu` is needed: `qiniu.access_key`, `qiniu.secret_key`, `qiniu.bucket`, `qiniu.domain`.
 
 ## 17. Docker Deployment
 
@@ -551,12 +587,12 @@ Requires `.env.prod.local` copied from `.env.prod.example` with `APP_SECRET`, `R
 ## 19. Service Container Wiring
 
 - Default: all `src/` classes autowired/autoconfigured
-- Explicit exclusions: `FlatNormalizer`, EventListener classes (except `OpenApiEnricherListener`), Auth/Otp controllers, TokenManager, AliyunSmsProvider, RedisOtpStorage, **WechatService, `src/Wechat/Service/Payment/WechatPayGateway.php`**
+- Explicit exclusions: `FlatNormalizer`, EventListener classes (except `OpenApiEnricherListener`), Auth/Otp controllers, TokenManager, AliyunSmsProvider, RedisOtpStorage, **Storage concrete drivers**, **WechatService, `src/Wechat/Service/Payment/WechatPayGateway.php`**
 - `OpenApiEnricherListener`: registered with `kernel.event_listener` tag on `kernel.response` (priority -10)
 - `RestController` subclasses get `RequestStack`, `SerializerInterface`, `TranslatorInterface` via `#[Required]` setter injection
 - `PaymentGatewayInterface` implementations auto-tagged `payment.gateway`, collected via `#[AutowireIterator]`
 - `PaymentAdjustmentProviderInterface` implementations auto-tagged `payment.adjustment_provider`, collected via `#[AutowireIterator]`
-- `MediaStorageInterface` implementations auto-tagged `media.storage`, collected via `#[AutowireIterator]`
+- `MediaStorageInterface` implementations tagged `media.storage`, collected via `#[AutowireIterator]`; `LocalStorage`/`QiniuStorage` are explicitly wired in `src/Storage/Resources/config/services_storage.yaml` because they need scalar/config/repository constructor arguments
 - `PriceCalculatorInterface` implementations auto-tagged `trade.price_calculator`, sorted by `getPriority()`
 - `WechatService` explicitly defined in `services_wechat.yaml` with `%env()` parameter bindings
 - `WechatPayGateway` explicitly defined in `services_wechat.yaml` (excluded from global autowiring scan)
