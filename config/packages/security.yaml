@@ -49,6 +49,9 @@ security:
         # Public user self-registration
         - { path: ^/api/auth/register$, roles: PUBLIC_ACCESS }
 
+        # Public read-only APIs
+        - { path: ^/api/v1/public, methods: [GET], roles: PUBLIC_ACCESS }
+
         # All remaining API endpoints require authentication
         # Manage endpoints require admin role
         - { path: ^/api/v1/manage, roles: ROLE_ADMIN }

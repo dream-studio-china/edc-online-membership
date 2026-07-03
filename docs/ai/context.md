@@ -1,6 +1,6 @@
 # CRUD Skeleton - Full Codebase Context
 
-> Auto-generated context snapshot. Last updated: 2025-06-26
+> Context snapshot. Last updated: 2026-07-03
 
 ---
 
@@ -10,7 +10,7 @@
 - **PHP 8.4+**, Doctrine ORM 3.6, MySQL 8 (Docker), SQLite (tests)
 - JWT authentication (RS256), OTP/SMS login, WeChat Mini Program / Official Account login
 - Expression-based dynamic query engine (`@filter`, `@sort`, `@dql`)
-- Modular architecture: **Core** (framework), **Common** (CMS), **Identity** (auth), **Trade** (e-commerce), **Payment** (invoices), **Wallet** (balances), **Wechat** (login + pay)
+- Modular architecture: **Core** (framework), **Common** (CMS), **Identity** (auth), **Trade** (e-commerce), **Payment** (invoices), **Wallet** (balances), **Wechat** (login + pay), **Storage** (file upload drivers)
 - EasyWeChat 6.x integration (Mini Program, Official Account OAuth, WeChat Pay V3)
 - NelmioApiDoc (Swagger at `/api/doc`), PHPUnit 12.5, Docker Compose (5 services)
 - MkDocs Material + GitHub Pages documentation
@@ -37,10 +37,10 @@
 │   ├── Entity/                   # 7 entities
 │   ├── Repository/
 │   ├── Service/
-│   └── Controller/App/ + Manage/
+│   └── Controller/App/ + Manage/ + Public/
 │
 ├── src/Identity/                 # Authentication & Identity
-│   ├── Entity/User.php, RefreshToken.php
+│   ├── Entity/User.php, RefreshToken.php     # User has __toString(): username fallback to email
 │   ├── Security/JwtAuthenticator.php, TokenManager.php
 │   ├── Service/OtpService.php, UserService.php, SMS providers
 │   ├── Command/CreateUserCommand.php
@@ -56,49 +56,58 @@
 │
 ├── src/Payment/                  # Payment module
 │   ├── Entity/Invoice.php              # Payment invoice (pending→paying→paid→refunded)
-│   ├── DTO/                            # PaymentResult, PaymentNotifyResult, PaymentRefundResult
+│   ├── DTO/                            # PaymentResult, PaymentNotifyResult, PaymentRefundResult, PaymentAdjustmentContext, PaymentAdjustmentResult
 │   ├── Event/                          # InvoicePaidEvent, InvoiceRefundedEvent, etc.
-│   ├── Service/PaymentGatewayInterface.php  # Gateway contract (pay, notify, refund)
-│   ├── Service/Gateway/               # MockGateway, WalletGateway, WechatPayGateway (auto-registered)
-│   ├── Service/PaymentGatewayRegistry.php  # #[AutowireIterator('payment.gateway')] registry
+│   ├── Service/PaymentGatewayInterface.php  # Gateway contract (pay(explicit amount), notify, refund(explicit amount))
+│   ├── Service/Adjustment/PaymentAdjustmentProviderInterface.php  # Adjustments before gateway payment (implemented by Wallet)
+│   ├── Service/Adjustment/PaymentAdjustmentRegistry.php  # #[AutowireIterator('payment.adjustment_provider')] registry
+│   ├── Service/Gateway/MockGateway.php       # Deterministic test gateway (only gateway remaining in Payment)
+│   ├── Service/PaymentGatewayRegistry.php    # #[AutowireIterator('payment.gateway')] registry
 │   └── Controller/App/ + Manage/ + Webhook/
 │
 ├── src/Wallet/                   # Wallet module
-│   ├── Entity/                   # Wallet (balance, optimistic locking), WalletTransaction
-│   ├── Service/TransferService.php     # Atomic transfer + deposit with deadlock prevention + idempotency
+│   ├── Entity/                   # Wallet, WalletTransaction, WalletPaymentDeduction
+│   ├── Repository/               # + WalletPaymentDeductionRepository
+│   ├── Service/TransferService.php     # Atomic transfer + deposit
 │   ├── Service/WalletService.php       # verifyBalance() + reconcile()
+│   ├── Service/Payment/WalletGateway.php              # Implements PaymentGatewayInterface
+│   ├── Service/Payment/WalletBalanceAdjustmentProvider.php  # Wallet deduction as Payment adjustment provider
+│   ├── Service/Payment/WalletPaymentDeductionService.php    # Wallet-owned deduction lifecycle
+│   ├── DTO/WalletPaymentDeductionRequest.php
 │   └── Controller/Manage/
-│       ├── TransferController.php      # transfer + deposit endpoints
-│       └── WalletController.php        # CRUD + balance + reconcile
 │
 ├── src/Wechat/                   # WeChat module
-│   ├── Entity/WechatUser.php           # OneToOne→User (openid, unionid, sessionKey, profile)
+│   ├── Entity/WechatUser.php           # OneToOne→User
 │   ├── Repository/WechatUserRepository.php
-│   ├── Service/WechatService.php       # EasyWeChat factory (MiniApp, OfficialAccount, Pay)
-│   ├── Service/WechatAuthService.php   # Login orchestration (code2Session/OAuth→User→JWT)
-│   ├── Service/WechatUserService.php   # CRUD service (extends BaseService)
-│   ├── Service/Gateway/WechatPayGateway.php  # implements PaymentGatewayInterface
+│   ├── Service/WechatService.php       # EasyWeChat factory
+│   ├── Service/WechatAuthService.php   # Login orchestration
+│   ├── Service/WechatUserService.php   # CRUD service
+│   ├── Service/Payment/WechatPayGateway.php  # implements PaymentGatewayInterface
 │   └── Controller/
-│       ├── LoginController.php         # /api/wechat/* (miniapp login, oauth, phone binding)
-│       ├── App/WechatUserController.php      # User-scoped CRUD
-│       └── Manage/WechatUserController.php   # Admin CRUD
+│
+├── src/Storage/                  # Storage module (pluggable file upload drivers)
+│   ├── Service/MediaStorageInterface.php       # Driver contract (store/delete)
+│   ├── Service/MediaStorageRegistry.php        # Tagged iterator collection
+│   ├── Service/LocalStorage.php                # Local filesystem (public/uploads/)
+│   ├── Service/QiniuStorage.php                # Qiniu Kodo cloud storage (optional SDK)
+│   └── Resources/config/services_storage.yaml
 │
 ├── config/
-│   ├── services.yaml             # Service wiring + import src/Wechat/ + exclusions
+│   ├── services.yaml             # Service wiring + imports src/*/Resources/config + exclusions
 │   ├── routes.yaml               # Route imports (wechat, wechat_app, wechat_manage added)
 │   └── packages/
 │       ├── nelmio_api_doc.yaml   # OpenAPI 3.1 config: System + Wechat tags
-│       ├── security.yaml         # PUBLIC_ACCESS: /system/*, /api/wechat/miniapp/login, oauth/*
+│       ├── security.yaml         # PUBLIC_ACCESS: docs/auth/webhooks/wechat + GET /api/v1/public/*
 │       ├── workflow.yaml         # Order state machine (draft→completed)
 │       └── ...
-├── migrations/                   # 7 Doctrine migrations (latest added wechat_user, payment_invoice)
+├── migrations/                   # Doctrine migrations (latest adds media category relation)
 ├── docs/
 │   ├── ai/context.md             # This file
 │   ├── design/                   # Design contracts
 │   │   └── bundles/              # Per-module design docs (core, common, trade, wallet, identity, wechat)
 │   └── openapi/endpoints.yaml
 ├── scripts/tests/                # Test scripts
-├── tests/                        # ~922 PHPUnit tests, ~3177 assertions
+├── tests/                        # 1115 PHPUnit tests, ~3850 assertions
 ├── mkdocs.yml                    # MkDocs Material config
 ├── compose.yaml                  # Production deployment: app (PHP-FPM), nginx, MySQL, Redis, Mailpit
 ├── compose.override.yaml         # Dev overrides (source mount, debug, exposed ports)
@@ -268,14 +277,38 @@ Invoice (pending→paying→paid→refunded)
 ```php
 interface PaymentGatewayInterface {
     static getName(): string;           // e.g. 'wallet', 'wechat', 'mock'
-    pay(Invoice, array $options): PaymentResult;
+    pay(Invoice, int $amount, array $options): PaymentResult;
     notify(Request $request): PaymentNotifyResult;
-    refund(Invoice, int $amount, string $reason, array $options): PaymentRefundResult;
+    refund(Invoice, int $amount, int $paidAmount, string $reason, array $options): PaymentRefundResult;
     getNotifySuccessResponse(PaymentNotifyResult $result): Response;
 }
 ```
 
-All implementations auto-tagged `payment.gateway` via `_instanceof` rule. `PaymentGatewayRegistry` uses `#[AutowireIterator('payment.gateway')]` for auto-discovery. Webhook route: `/api/payment/notify/{payment}` (PUBLIC_ACCESS, gateway validates own signature).
+Gateways receive **explicit payment/refund amounts** and MUST NOT inspect deduction or adjustment options. `Invoice::amount` remains the gross business payable amount; the gateway amount is computed by `InvoiceService` after applying payment adjustments.
+
+Gateways are auto-tagged `payment.gateway` via `_instanceof` rule. `PaymentGatewayRegistry` uses `#[AutowireIterator('payment.gateway')]` for auto-discovery.
+
+### 8.2.1 Payment Adjustment Providers
+
+Payment defines `PaymentAdjustmentProviderInterface` — a pre-payment hook that reduces the amount a gateway must process. Implementations live in the owning module (e.g., Wallet provides `WalletBalanceAdjustmentProvider` for wallet balance deduction). Providers are auto-tagged `payment.adjustment_provider` and collected by `PaymentAdjustmentRegistry`.
+
+| Provider | Module | Description |
+|----------|--------|-------------|
+| `wallet_balance` | Wallet | Wallet balance deduction before gateway payment |
+| (future) coupons / points | Coupon / Loyalty modules | Other deduction types through the same extension point |
+
+`InvoiceService` orchestrates adjustment providers and gateways without knowing deduction internals:
+1. Apply registered adjustments → total applied amount
+2. Compute `gatewayAmount = invoice.amount - adjustmentAmount`
+3. Call gateway with explicit amount
+
+### 8.2.2 First-Phase Gateways
+
+| Gateway | Module | Purpose |
+|---------|--------|---------|
+| `mock` | Payment (`Service/Gateway/MockGateway.php`) | Deterministic test/development gateway |
+| `wallet` | Wallet (`Service/Payment/WalletGateway.php`) | Internal wallet balance payment |
+| `wechat` | Wechat (`Service/Payment/WechatPayGateway.php`) | WeChat Pay V3 adapter |
 
 ### 8.3 Payment Endpoints
 
@@ -322,9 +355,10 @@ New users get random password (cannot password-login), synthetic email/username 
 ### 9.3 WechatPayGateway
 
 Implements `PaymentGatewayInterface` with `getName() → 'wechat'`:
-- **pay()**: JSAPI (requires payer openid from WechatUser) or Native (QR code)
+- **File**: `src/Wechat/Service/Payment/WechatPayGateway.php`
+- **pay()**: JSAPI (requires payer openid from WechatUser) or Native (QR code) — receives explicit `$amount`
 - **notify()**: EasyWeChat server + validator, signature verification
-- **refund()**: Creates refund via WeChat Pay V3 API
+- **refund()**: Creates refund via WeChat Pay V3 API — receives explicit `$paidAmount` for `total`
 - Auto-registered as `payment.gateway` via `_instanceof` rule
 
 ### 9.4 WechatUser CRUD Controllers
@@ -335,6 +369,38 @@ Implements `PaymentGatewayInterface` with `getName() → 'wechat'`:
 | `/api/v1/manage/wechat-users` | ROLE_ADMIN | `[]` (no filter) | Admin CRUD (all records) |
 
 When `$this->getUser()` returns null in App controllers, `commonFilter()` returns `['id' => -1]` to block all records (security: unauthenticated users see nothing).
+
+## 9.5 Storage Module
+
+Storage is an infrastructure module under `src/Storage/`. Common/Media depends only on `MediaStorageInterface` and `MediaStorageRegistry`; Storage does not depend on Common entities or controllers.
+
+### 9.5.1 Drivers
+
+| Driver | Class | Configuration | Notes |
+|--------|-------|---------------|-------|
+| `local` | `App\Storage\Service\LocalStorage` | `media.local.upload_path`, `media.local.base_url` | Always available. Stores under `public/uploads/{YYYYMM}/{random}.{ext}` and returns `/uploads/...` URLs. |
+| `qiniu` | `App\Storage\Service\QiniuStorage` | `common_setting` keys | Optional. Reads `qiniu.access_key`, `qiniu.secret_key`, `qiniu.bucket`, `qiniu.domain` at runtime. |
+
+Qiniu SDK note: `qiniu/php-sdk` is intentionally not required by `composer.json` because v7.14 emits PHP 8.5 vendor deprecations. `QiniuStorage` checks for `Qiniu\Auth`, `Qiniu\Storage\UploadManager`, and `Qiniu\Storage\BucketManager` only when `storage=qiniu` is used; if missing, it throws a clear runtime error. Server deployments that need Qiniu may install it locally with `composer require qiniu/php-sdk`.
+
+### 9.5.2 Media Upload Flow
+
+| Endpoint | Method | Auth | Description |
+|----------|--------|------|-------------|
+| `/api/v1/app/media/upload` | POST multipart | ROLE_USER | Upload current user's media. App media list/detail is scoped by `['user' => $this->getUser()]`. |
+| `/api/v1/manage/media/upload` | POST multipart | ROLE_ADMIN | Admin upload endpoint, reuses App upload action via inheritance. Manage media CRUD uses no common filter. |
+| `/api/v1/public/media` | GET | PUBLIC | Public read-only media list. Only returns media with nullable owner (`user IS NULL`). |
+| `/api/v1/public/media/{id}` | GET | PUBLIC | Public read-only media detail. Only returns media with nullable owner (`user IS NULL`). |
+
+Multipart fields:
+- `file`: required uploaded file
+- `storage`: optional driver name, defaults to `MEDIA_STORAGE_DEFAULT` / `media.storage.default` (`local`)
+- `category`: optional `common_category` id; invalid ids return `Category is not found`
+- `alt`, `title`, `width`, `height`: optional metadata
+
+`MediaService::createFromUpload()` validates file presence/size/MIME, resolves the selected storage driver, stores the physical file, persists `Common\Entity\Media`, assigns the current authenticated `User` when available, and binds an optional `Category` from multipart `category`. `MediaService::remove()` best-effort deletes the physical file via the media's stored driver before removing the entity.
+
+`Media` stores `storage`, nullable owner `user` (`ManyToOne User`, `ON DELETE SET NULL`), and nullable `category` (`ManyToOne Category`, `ON DELETE SET NULL`). Manage media create/update accepts `category` ids. Public media uses a QueryBuilder `commonFilter()` with `media.user IS NULL` because array criteria cannot express SQL `IS NULL`.
 
 ## 10. System Introspection Endpoints
 
@@ -362,12 +428,16 @@ Placed in `src/Core/Controller/System/` (framework layer). NelmioApiDoc path_pat
 | **Pipeline** | Trade | `PriceCalculatorInterface` with priority ordering |
 | **Optimistic locking** | Wallet | `#[ORM\Version]` on Wallet |
 | **Post-response enrichment** | Core | `OpenApiEnricherListener` post-processes `/api/doc` and `/api/doc.json` |
-| **commonFilter** | Controllers | Array of WHERE criteria injected into all queries. `[]` = no filter (admin), `['user' => $user]` = user-scoped, `['id' => -1]` = block all |
+| **commonFilter** | Controllers | Array criteria or QueryBuilder injected into all queries. `[]` = no filter (admin), `['user' => $user]` = user-scoped, `['id' => -1]` = block all, QueryBuilder required for `IS NULL` filters |
 | **Payment via wallet** | Trade | `POST /app/orders/{id}/payment` with `payment: "wallet"` creates Invoice → WalletGateway deducts user wallet |
 | **Balance audit** | Wallet | `GET /wallets/balance` checks `SUM(wallets) == SUM(deposits)`; `POST /wallets/reconcile` fixes per-wallet gaps with `TYPE_ADJUSTMENT` |
 | **Idempotent deposit** | Wallet | `POST /transfers/deposit` with `referenceId` — duplicate requests return existing transaction |
 | **Gateway registry** | Payment | `#[AutowireIterator]` + `_instanceof` auto-tags all `PaymentGatewayInterface` implementations |
+| **Adjustment provider registry** | Payment | `#[AutowireIterator]` + `_instanceof` for `PaymentAdjustmentProviderInterface` — wallet deduction is a Wallet-owned provider |
+| **Deduction owned by Wallet** | Wallet | Wallet balance deduction lives in Wallet (`WalletPaymentDeduction` entity, `WalletPaymentDeductionService`, `WalletBalanceAdjustmentProvider`). Payment owns only the generic adjustment contract |
 | **OneToOne extension** | Wechat | `WechatUser` extends User identity without modifying User entity |
+| **Storage driver registry** | Storage | `MediaStorageInterface` implementations are tagged `media.storage`; callers select driver with multipart `storage` field |
+| **Media ownership** | Common | App media endpoints are user-scoped via `commonFilter()`. Manage media endpoints inherit App upload code but override `commonFilter()` to `[]`. Public media endpoints expose only ownerless media (`user IS NULL`) over anonymous GET. |
 | **System introspection** | Core | Entity metadata + route export via `/system/*` endpoints |
 
 ## 12. API Documentation System
@@ -408,7 +478,7 @@ Enriches all endpoints (90+):
 
 42+ named schemas across 11 tags (Auth, Products, Orders, Categories, Tags, Contents, Comments, Pages, Media, Settings, Wallet, System, Wechat). Each with field-level type, description, enum, and example values. `path_patterns` includes both `^/api` and `^/system`.
 
-## 13. Database Tables (7 Migrations)
+## 13. Database Tables (10 Migrations)
 
 | Version | Tables |
 |---------|--------|
@@ -419,6 +489,9 @@ Enriches all endpoints (90+):
 | 20250620000000 | `trade_product`, `trade_specification`, `trade_order`, `trade_order_item` |
 | 20250621000000 | Added to `trade_order`: `paid_at`, `refunded_at`, `fulfilled_at`, `payment_method`, `tracking_number`, `shipping_address`, `refund_reason` |
 | 20250624223701 | `payment_invoice`, `wechat_user`, `messenger_messages` |
+| 20260626000000 | `wallet_payment_deduction` (wallet-owned deduction audit, scalar invoice references, FK to `wallet`) |
+| 20260703000000 | Added to `common_media`: `storage`, nullable `user_id` FK to `users` |
+| 20260703010000 | Added to `common_media`: nullable `category_id` FK to `common_category` |
 
 ## 14. Documentation Assets
 
@@ -437,6 +510,8 @@ Enriches all endpoints (90+):
 | `docs/design/bundles/wallet.md` | Wallet module design |
 | `docs/design/bundles/identity.md` | Auth module design |
 | `docs/design/bundles/wechat.md` | WeChat module design (Mini Program, Official Account, Pay) |
+| `docs/design/bundles/payment.md` | Payment module design (invoice, gateway, adjustment providers, deduction) |
+| `docs/design/bundles/storage.md` | Storage module design (pluggable file upload drivers) |
 | `docs/ai/context.md` | This file — AI context snapshot |
 | `mkdocs.yml` | MkDocs Material site config |
 | `scripts/tests/simulate-trade.php` | Generates 100 orders across all 8 statuses into `var/test.db` |
@@ -446,16 +521,17 @@ Enriches all endpoints (90+):
 
 - **Framework**: PHPUnit 12.5
 - **DB**: SQLite `var/test.db` in test environment
-- **Coverage**: 80% minimum (enforced in CI), currently **86.64% lines**
-- **Test count**: **1019 tests**, **~3489 assertions**
-- **Local PHP note**: default `php` may point to PHP 7.4; use Homebrew PHP 8.5 at `/opt/homebrew/opt/php/bin/php` for local Symfony/PHPUnit commands.
+- **Coverage**: 80% minimum (enforced in CI), currently **88.37% lines** (`4481/5071`) from latest local Xdebug run
+- **Test count**: **1123 tests**, **~3900 assertions**
+- **Local PHP note**: default `php` may point to PHP 7.4; use Homebrew PHP 8.5 at `/opt/homebrew/opt/php@8.5/bin/php` for local Symfony/PHPUnit commands.
+- **Storage/upload coverage**: Storage + Media upload functionality is covered by real local-upload integration tests (`POST /api/v1/manage/media/upload` writes to `public/uploads`, then delete removes the file). Current focused media coverage is 100% for `App\Common\Controller\App\MediaController`, `Manage\MediaController`, `Public\MediaController`, `Common\Entity\Media`, and `MediaService`.
 - **Key test groups**:
-  - `tests/Wechat/`: 59 tests (Entity, Service, AuthService, Gateway, Controller, Repository)
+  - `tests/Wechat/`: 59 tests (Entity, Service, AuthService, Payment/Gateway, Controller, Repository)
   - `tests/Trade/`: 171 tests (Entity, Service, Pricing, Integration, EventListener, Workflow API)
-  - `tests/Wallet/`: **94 tests** (Entity, Integration, Transfer Service, **WalletService**, API regression)
+  - `tests/Wallet/`: ~105 tests (Entity, Integration, Transfer Service, WalletService, Payment/Gateway, API regression)
   - `tests/Common/`: 68 tests (Entity, Integration, Batch update)
-  - `tests/Identity/`: **92 tests** (Auth, OTP, Token, Black box, **UserService**, **UserController**, **UserApiIntegration**)
-  - `tests/Payment/`: Integration tests for Invoice + Gateway
+  - `tests/Identity/`: 92 tests (Auth, OTP, Token, Black box, UserService, UserController, UserApiIntegration)
+  - `tests/Payment/`: ~60 tests (Gateway, Registry, Adjustment/Provider, Invoice, Multi-gateway integration)
   - `tests/Integration/`: ~20 cross-module tests
   - `tests/Core/`: BaseService, RestController, Parser, Serializer, Utils, System controllers
 
@@ -476,6 +552,9 @@ Enriches all endpoints (90+):
 | `MESSENGER_TRANSPORT_DSN` | Async transport |
 | `DEFAULT_URI` | Base URL for CLI contexts |
 | `MAILER_DSN` | Mailer transport |
+| `MEDIA_STORAGE_DEFAULT` | Default media storage driver (`local` by default) |
+
+Qiniu configuration is intentionally **not** environment-variable based. Configure these records in `common_setting` when `storage=qiniu` is needed: `qiniu.access_key`, `qiniu.secret_key`, `qiniu.bucket`, `qiniu.domain`.
 
 ## 17. Docker Deployment
 
@@ -512,9 +591,13 @@ Requires `.env.prod.local` copied from `.env.prod.example` with `APP_SECRET`, `R
 ## 19. Service Container Wiring
 
 - Default: all `src/` classes autowired/autoconfigured
-- Explicit exclusions: `FlatNormalizer`, EventListener classes (except `OpenApiEnricherListener`), Auth/Otp controllers, TokenManager, AliyunSmsProvider, RedisOtpStorage, **WechatService, WechatPayGateway**
+- Explicit exclusions: `FlatNormalizer`, EventListener classes (except `OpenApiEnricherListener`), Auth/Otp controllers, TokenManager, AliyunSmsProvider, RedisOtpStorage, **Storage concrete drivers**, **WechatService, `src/Wechat/Service/Payment/WechatPayGateway.php`**
 - `OpenApiEnricherListener`: registered with `kernel.event_listener` tag on `kernel.response` (priority -10)
 - `RestController` subclasses get `RequestStack`, `SerializerInterface`, `TranslatorInterface` via `#[Required]` setter injection
 - `PaymentGatewayInterface` implementations auto-tagged `payment.gateway`, collected via `#[AutowireIterator]`
+- `PaymentAdjustmentProviderInterface` implementations auto-tagged `payment.adjustment_provider`, collected via `#[AutowireIterator]`
+- `MediaStorageInterface` implementations tagged `media.storage`, collected via `#[AutowireIterator]`; `LocalStorage`/`QiniuStorage` are explicitly wired in `src/Storage/Resources/config/services_storage.yaml` because they need scalar/config/repository constructor arguments
 - `PriceCalculatorInterface` implementations auto-tagged `trade.price_calculator`, sorted by `getPriority()`
 - `WechatService` explicitly defined in `services_wechat.yaml` with `%env()` parameter bindings
+- `WechatPayGateway` explicitly defined in `services_wechat.yaml` (excluded from global autowiring scan)
+- `WalletGateway` autowired in Wallet via `PaymentGatewayInterface` tag (no explicit exclusion needed)

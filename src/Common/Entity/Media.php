@@ -2,6 +2,7 @@
 
 namespace App\Common\Entity;
 
+use App\Identity\Entity\User;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: "App\\Common\\Repository\\MediaRepository")]
@@ -29,6 +30,17 @@ class Media
     #[ORM\Column(type: 'string', length: 1024)]
     private string $path;
 
+    #[ORM\Column(type: 'string', length: 20, options: ['default' => 'local'])]
+    private string $storage = 'local';
+
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
+    private ?User $user = null;
+
+    #[ORM\ManyToOne(targetEntity: Category::class)]
+    #[ORM\JoinColumn(name: 'category_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
+    private ?Category $category = null;
+
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private ?string $alt = null;
 
@@ -47,13 +59,14 @@ class Media
     #[ORM\Column(type: 'datetime_immutable', nullable: true)]
     private ?\DateTimeImmutable $updatedAt = null;
 
-    public function __construct(string $filename, string $originalFilename, string $mimeType, int $size, string $path)
+    public function __construct(string $filename, string $originalFilename, string $mimeType, int $size, string $path, string $storage = 'local')
     {
         $this->filename = $filename;
         $this->originalFilename = $originalFilename;
         $this->mimeType = $mimeType;
         $this->size = $size;
         $this->path = $path;
+        $this->storage = $storage;
         $this->createdAt = new \DateTimeImmutable();
     }
 
@@ -123,6 +136,42 @@ class Media
     public function setPath(string $path): self
     {
         $this->path = $path;
+        $this->touch();
+        return $this;
+    }
+
+    public function getStorage(): string
+    {
+        return $this->storage;
+    }
+
+    public function setStorage(string $storage): self
+    {
+        $this->storage = $storage;
+        $this->touch();
+        return $this;
+    }
+
+    public function getUser(): ?User
+    {
+        return $this->user;
+    }
+
+    public function setUser(?User $user): self
+    {
+        $this->user = $user;
+        $this->touch();
+        return $this;
+    }
+
+    public function getCategory(): ?Category
+    {
+        return $this->category;
+    }
+
+    public function setCategory(?Category $category): self
+    {
+        $this->category = $category;
         $this->touch();
         return $this;
     }

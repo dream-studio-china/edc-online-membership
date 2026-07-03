@@ -6,6 +6,7 @@ imports:
     - { resource: '../src/Core/Resources/config/services.yaml', ignore_errors: true }
     - { resource: '../src/Identity/Resources/config/services_identity.yaml', ignore_errors: true }
     - { resource: '../src/Payment/Resources/config/services_payment.yaml', ignore_errors: true }
+    - { resource: '../src/Storage/Resources/config/services_storage.yaml', ignore_errors: true }
     - { resource: '../src/Wechat/Resources/config/services_wechat.yaml', ignore_errors: true }
 
 services:
@@ -23,6 +24,8 @@ services:
             tags: ['payment.gateway']
         App\Payment\Service\Adjustment\PaymentAdjustmentProviderInterface:
             tags: ['payment.adjustment_provider']
+        App\Storage\Service\MediaStorageInterface:
+            tags: ['media.storage']
 
     App\:
         resource: '../src/'
@@ -34,6 +37,8 @@ services:
             - '../src/Identity/Security/TokenManager.php'
             - '../src/Identity/Sms/AliyunSmsProvider.php'
             - '../src/Identity/Service/RedisOtpStorage.php'
+            - '../src/Storage/Service/LocalStorage.php'
+            - '../src/Storage/Service/QiniuStorage.php'
             - '../src/Wechat/Service/WechatService.php'
             - '../src/Wechat/Service/Payment/WechatPayGateway.php'
 

@@ -25,4 +25,6 @@ interface OrderServiceInterface extends BaseServiceInterface
     public function createPayment(Order $order, string $payment = 'mock', array $options = []): PaymentResult;
 
     public function refundPayment(Order $order, string $reason, array $options = []): PaymentRefundResult;
+
+    public function cancel(Order $order): void;
 }

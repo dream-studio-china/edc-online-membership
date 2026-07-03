@@ -3,9 +3,14 @@
 namespace App\Tests\Wallet\Integration;
 
 use App\Identity\Entity\User;
+use App\Identity\Security\TokenManager;
 use App\Tests\Integration\IntegrationWebTestCase;
 use App\Tests\Integration\DatabaseBootstrapTrait;
+use App\Wallet\Entity\Wallet;
+use App\Wallet\Entity\WalletTransaction;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\FrameworkBundle\KernelBrowser;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 final class WalletApiRegressionTest extends IntegrationWebTestCase
 {
@@ -28,13 +33,26 @@ final class WalletApiRegressionTest extends IntegrationWebTestCase
 
     private function createTestUser(EntityManagerInterface $em, string $username): User
     {
+        $hasher = static::getContainer()->get(UserPasswordHasherInterface::class);
         $user = new User();
         $user->setEmail("$username@test.com");
         $user->setUsername($username);
-        $user->setPassword('password');
+        $user->setPassword($hasher->hashPassword($user, 'password'));
+        $user->setRoles(['ROLE_USER']);
         $em->persist($user);
         $em->flush();
         return $user;
+    }
+
+    private function createClientForUser(User $user): KernelBrowser
+    {
+        self::ensureKernelShutdown();
+        $client = static::createClient();
+        $tokenManager = $client->getContainer()->get(TokenManager::class);
+
+        $client->setServerParameters(['HTTP_AUTHORIZATION' => 'Bearer ' . $tokenManager->createAccessToken($user)]);
+
+        return $client;
     }
 
     // ------------------------------------------------
@@ -62,6 +80,48 @@ final class WalletApiRegressionTest extends IntegrationWebTestCase
         $list = json_decode((string) $client->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR);
         self::assertNotEmpty($list['data']);
         self::assertCount(1, $list['data']);
+    }
+
+    public function testAppWalletsAndTransactionsAreScopedToCurrentUser(): void
+    {
+        $client = static::createClient();
+        $em = $client->getContainer()->get(EntityManagerInterface::class);
+
+        $alice = $this->createTestUser($em, 'app_wallet_alice');
+        $bob = $this->createTestUser($em, 'app_wallet_bob');
+        $aliceWallet = new Wallet($alice, 'USD');
+        $bobWallet = new Wallet($bob, 'USD');
+        $em->persist($aliceWallet);
+        $em->persist($bobWallet);
+        $em->flush();
+
+        $ownTx = new WalletTransaction('app-wallet-own-' . bin2hex(random_bytes(6)), 1200, WalletTransaction::TYPE_DEPOSIT);
+        $ownTx->setToWallet($aliceWallet)->markCompleted();
+        $otherTx = new WalletTransaction('app-wallet-other-' . bin2hex(random_bytes(6)), 3400, WalletTransaction::TYPE_DEPOSIT);
+        $otherTx->setToWallet($bobWallet)->markCompleted();
+        $em->persist($ownTx);
+        $em->persist($otherTx);
+        $em->flush();
+
+        $client = $this->createClientForUser($alice);
+
+        $client->request('GET', '/api/v1/app/wallets');
+        self::assertSame(200, $client->getResponse()->getStatusCode(), (string) $client->getResponse()->getContent());
+        $wallets = json_decode((string) $client->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR);
+        self::assertCount(1, $wallets['data']);
+        self::assertSame($aliceWallet->getId(), $wallets['data'][0]['id']);
+
+        $client->request('GET', '/api/v1/app/wallets/' . $bobWallet->getId());
+        self::assertSame(404, $client->getResponse()->getStatusCode());
+
+        $client->request('GET', '/api/v1/app/transactions');
+        self::assertSame(200, $client->getResponse()->getStatusCode(), (string) $client->getResponse()->getContent());
+        $transactions = json_decode((string) $client->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR);
+        self::assertCount(1, $transactions['data']);
+        self::assertSame($ownTx->getId(), $transactions['data'][0]['id']);
+
+        $client->request('GET', '/api/v1/app/transactions/' . $otherTx->getId());
+        self::assertSame(404, $client->getResponse()->getStatusCode());
     }
 
     public function testWalletCreateDuplicateCurrencyFails(): void

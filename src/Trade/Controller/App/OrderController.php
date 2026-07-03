@@ -8,6 +8,7 @@ use App\Core\Controller\RestController;
 use App\Core\View\ApiView;
 use App\Core\View\DetailApiViewMixin;
 use App\Core\View\ListApiViewMixin;
+use App\Payment\Service\InvoiceServiceInterface;
 use App\Trade\Entity\Order;
 use App\Trade\Service\OrderServiceInterface;
 use Symfony\Component\DependencyInjection\Attribute\Target;
@@ -27,6 +28,7 @@ class OrderController extends RestController
         protected readonly OrderServiceInterface $service,
         #[Target('state_machine.order')]
         protected readonly WorkflowInterface $workflow,
+        private readonly InvoiceServiceInterface $invoiceService,
     ) {
     }
 
@@ -107,6 +109,7 @@ class OrderController extends RestController
 
         try {
             $this->service->wrapInTransaction(function () use ($order) {
+                $this->cancelLinkedInvoice($order);
                 $this->workflow->apply($order, 'cancel');
             });
             return $this->success($order, 'Order cancelled');
@@ -141,5 +144,10 @@ class OrderController extends RestController
         } catch (\Throwable $e) {
             return $this->warning($e->getMessage(), 400, '', 400);
         }
+    }
+
+    private function cancelLinkedInvoice(Order $order): void
+    {
+        $this->service->cancel($order);
     }
 }

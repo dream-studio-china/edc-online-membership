@@ -237,6 +237,16 @@ class OrderService extends BaseService implements OrderServiceInterface
         return $this->invoiceService->refund($invoice, $invoice->getAmount() - $invoice->getRefundedAmount(), $reason, $options);
     }
 
+    public function cancel(Order $order): void
+    {
+        if ($this->invoiceService !== null && $order->getInvoiceId() !== null) {
+            $invoice = $this->invoiceService->get(['uuid' => $order->getInvoiceId()]);
+            if ($invoice instanceof Invoice) {
+                $this->invoiceService->cancel($invoice, 'Order cancelled.');
+            }
+        }
+    }
+
     private function getSortedCalculators(): array
     {
         $calculators = is_array($this->priceCalculators)

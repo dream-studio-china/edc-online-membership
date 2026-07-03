@@ -38,6 +38,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'json')]
     private array $roles = [];
 
+    public function __toString(): string
+    {
+        return $this->username !== '' ? $this->username : $this->email;
+    }
+
     public function getId(): ?int
     {
         return $this->id;

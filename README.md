@@ -45,8 +45,9 @@ Compared with plain generated boilerplate, it provides:
 - A practical pattern for keeping controller logic thin and business logic in services.
 - Expression-based dynamic queries (`@filter`, `@sort`, `@dql`) compiled to DQL with in-memory fallback.
 - Pluggable pricing pipeline and state machine for e-commerce workflows.
-- Invoice-based payment framework with gateway abstraction (mock, wallet, future providers).
-- Atomic wallet transfers with deadlock prevention, optimistic locking, and idempotency.
+- Invoice-based payment framework with gateway abstraction (mock, wallet, wechat) and pluggable payment adjustment providers.
+- Atomic wallet transfers with deadlock prevention, optimistic locking, idempotency, and wallet balance deduction as a payment adjustment provider.
+- Pluggable file storage drivers (local, Qiniu Kodo) with a unified `MediaStorageInterface`.
 - JWT authentication (RS256) with refresh token rotation and phone-based OTP login.
 - **Password self-registration** with user profile management and admin user CRUD.
 - Comprehensive design contracts for consistent new module creation.
@@ -57,7 +58,7 @@ Compared with plain generated boilerplate, it provides:
 - **CRUD Service Abstraction**: `new()`, `get()`, `list()`, `update()`, `remove()`.
 - **Dynamic Query System**: Filter, sort, order, select, group by via request parameters with expression-to-DQL compilation.
 - **Trait-Based Controller Composition**: 9 mixin traits (List, Detail, Create, Update, Delete, Workflow, Singleton, Transform) composed into controllers.
-- **Modular Architecture**: Core framework + Common (CMS) + Trade (E-Commerce) + Payment + Wallet + Wechat (Login + Pay) + Identity (Auth) modules.
+- **Modular Architecture**: Core framework + Common (CMS) + Trade (E-Commerce) + Payment + Wallet + Wechat (Login + Pay) + Storage (file upload drivers) + Identity (Auth) modules.
 - **JWT Authentication**: RS256 access tokens, HMAC-SHA256 refresh token rotation with reuse detection.
 - **OTP Login**: Phone-based one-time password via Alibaba Cloud SMS, rate-limited.
 - **Password Registration**: Self-service sign-up with email/username/phone uniqueness validation.
@@ -65,10 +66,13 @@ Compared with plain generated boilerplate, it provides:
 - **Order State Machine**: Symfony Workflow for order lifecycle (draft → completed), with workflow API endpoints.
 - **Price Calculation Pipeline**: Pluggable calculators with priority ordering for e-commerce order pricing.
 - **Atomic Wallet Transfers**: Deadlock prevention (consistent lock ordering), optimistic locking, idempotency via reference ID.
+- **Payment Adjustment Providers**: Pre-payment hooks (e.g., wallet deduction) reduce invoice amounts before gateway processing — gateways receive explicit amounts only.
 - **Wallet Accounting**: System-injected deposits with audit trail, balance verification (`SUM(wallets) == SUM(deposits)`), per-wallet reconciliation.
+- **Wallet Balance Deduction**: Wallet-owned deduction lifecycle with Payment adjustment provider pattern — Payment orchestrates, Wallet implements.
+- **Pluggable File Storage**: `MediaStorageInterface` with local and Qiniu Kodo drivers — tagged iterator auto-discovery.
 - **OpenAPI Documentation**: NelmioApiDocBundle with `#[OA\*]` attributes, Swagger UI at `/api/doc`.
 - **System Introspection**: Entity metadata and route export endpoints (`/system/*`).
-- **Comprehensive Testing**: ~100+ test files, 1019 tests, ~3489 assertions, 86.64% coverage.
+- **Comprehensive Testing**: ~110+ test files, 1069 tests, ~3666 assertions, 87.83% coverage.
 - **Docker Compose**: MySQL 8 + Mailpit for development.
 
 ## Tech Stack
@@ -113,21 +117,25 @@ See `composer.json` for the full dependency list.
 │   │   ├── Entity/               #   Product, Specification, Order, OrderItem
 │   │   ├── Service/              #   OrderService, price calculation pipeline
 │   │   └── Service/Pricing/      #   PriceCalculatorInterface + 3 implementations
-│   ├── Wallet/                   # Wallet module
+│   ├── Wallet/                    # Wallet module
 │   │   ├── Controller/Manage/    #   Wallet, Transaction, Transfer (deposit) endpoints
-│   │   ├── Entity/               #   Wallet, WalletTransaction
-│   │   └── Service/              #   TransferService (atomic transfers + deposits), WalletService (balance/reconcile)
+│   │   ├── DTO/                  #   WalletPaymentDeductionRequest
+│   │   ├── Entity/               #   Wallet, WalletTransaction, WalletPaymentDeduction
+│   │   ├── Repository/           #   + WalletPaymentDeductionRepository
+│   │   └── Service/              #   TransferService, WalletService
+│   │       └── Payment/          #   WalletGateway, WalletBalanceAdjustmentProvider, WalletPaymentDeductionService
 │   ├── Payment/                  # Payment module
 │   │   ├── Controller/App/       #   Invoice list/detail/pay
 │   │   ├── Controller/Manage/    #   Invoice create/cancel/refund/transitions
 │   │   ├── Controller/Webhook/   #   Provider payment notification
-│   │   ├── DTO/                  #   CreateInvoiceRequest, PaymentResult, etc.
+│   │   ├── DTO/                  #   CreateInvoiceRequest, PaymentResult, PaymentAdjustmentContext/Result, etc.
 │   │   ├── Entity/               #   Invoice (cents, workflow, gateway)
 │   │   ├── Event/                #   InvoicePaid, Refunded, Cancelled, Failed
 │   │   ├── Exception/            #   GatewayNotFound, Verification, Transition
 │   │   ├── Repository/
 │   │   └── Service/              #   InvoiceService, PaymentGatewayRegistry
-│   │       └── Gateway/          #   MockGateway, WalletGateway, WechatPayGateway
+│   │       ├── Adjustment/       #   PaymentAdjustmentProviderInterface, PaymentAdjustmentRegistry
+│   │       └── Gateway/          #   MockGateway
 │   ├── Wechat/                   # WeChat module
 │   │   ├── Controller/           #   LoginController (Mini Program + OAuth)
 │   │   ├── Controller/App/       #   WechatUser CRUD (user-scoped)
@@ -135,7 +143,12 @@ See `composer.json` for the full dependency list.
 │   │   ├── Entity/               #   WechatUser (OneToOne→User)
 │   │   ├── Repository/
 │   │   └── Service/              #   WechatService, WechatAuthService, WechatUserService
-│   │       └── Gateway/          #   WechatPayGateway
+│   │       └── Payment/          #   WechatPayGateway
+│   ├── Storage/                  # Storage module (pluggable file upload drivers)
+│   │   ├── Service/              #   MediaStorageInterface, MediaStorageRegistry
+│   │   │   ├── LocalStorage.php       # Local filesystem (public/uploads/)
+│   │   │   └── QiniuStorage.php       # Qiniu Kodo CDN
+│   │   └── Resources/config/     #   services_storage.yaml
 │   └── Identity/                 # Authentication module
 │       ├── Controller/           #   AuthController, OtpController
 │       ├── Controller/App/       #   UserController (profile, change-password)
@@ -146,8 +159,8 @@ See `composer.json` for the full dependency list.
 │       └── Service/              #   UserService (register, password management), OtpService, SMS providers
 ├── config/                       # Symfony configuration
 │   └── packages/                 #   Doctrine, Security, Workflow, Serializer, etc.
-├── migrations/                   # Doctrine migrations (7 versions)
-├── tests/                        # ~80+ PHPUnit test files (917 tests, ~3150 assertions)
+├── migrations/                   # Doctrine migrations (8 versions)
+├── tests/                        # ~110+ PHPUnit test files (1069 tests, ~3666 assertions)
 ├── docs/                         # Project documentation
 │   ├── design/                   #   Design contracts (system, API, data, module, controller)
 │   │   └── bundles/              #   Per-module design documents
@@ -247,9 +260,10 @@ The app runs at `http://localhost:${APP_PORT:-8080}`.
 | **Core** | `App\Core` | Framework foundation | RestController, BaseService, View mixins, Expression parser |
 | **Common** | `App\Common` | CMS | Category (tree), Tag, Content, Comment (polymorphic), Page, Media, Setting (KV) |
 | **Trade** | `App\Trade` | E-Commerce | Product + Specification, Order (state machine), Price pipeline |
-| **Wallet** | `App\Wallet` | Payments | Balance (cents), Atomic transfers, System deposits, Idempotency, Optimistic locking, Balance verification + reconciliation |
-| **Payment** | `App\Payment` | Invoicing | Invoice (cents + workflow), Gateway abstraction (mock/wallet/wechat), Webhooks, Events |
+| **Wallet** | `App\Wallet` | Payments & deduction | Balance (cents), Atomic transfers, System deposits, Idempotency, Wallet balance deduction adjustment provider, Balance verification + reconciliation |
+| **Payment** | `App\Payment` | Invoicing & orchestration | Invoice (cents + workflow), Gateway abstraction (mock/wallet/wechat), **Payment adjustment provider contract**, Webhooks, Events |
 | **Wechat** | `App\Wechat` | WeChat integration | Mini Program/Official Account login, WeChat Pay V3, WechatUser (OneToOne→User) |
+| **Storage** | `App\Storage` | File upload drivers | `MediaStorageInterface`, LocalStorage, QiniuStorage, tagged iterator auto-discovery |
 | **Identity** | `App\Identity` | Authentication | JWT (RS256), OTP (SMS), Refresh token rotation, Password registration, User profile/CRUD |
 
 ## API Endpoints
