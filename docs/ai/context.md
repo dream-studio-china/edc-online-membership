@@ -37,7 +37,7 @@
 │   ├── Entity/                   # 7 entities
 │   ├── Repository/
 │   ├── Service/
-│   └── Controller/App/ + Manage/
+│   └── Controller/App/ + Manage/ + Public/
 │
 ├── src/Identity/                 # Authentication & Identity
 │   ├── Entity/User.php, RefreshToken.php     # User has __toString(): username fallback to email
@@ -97,10 +97,10 @@
 │   ├── routes.yaml               # Route imports (wechat, wechat_app, wechat_manage added)
 │   └── packages/
 │       ├── nelmio_api_doc.yaml   # OpenAPI 3.1 config: System + Wechat tags
-│       ├── security.yaml         # PUBLIC_ACCESS: /system/*, /api/wechat/miniapp/login, oauth/*
+│       ├── security.yaml         # PUBLIC_ACCESS: docs/auth/webhooks/wechat + GET /api/v1/public/*
 │       ├── workflow.yaml         # Order state machine (draft→completed)
 │       └── ...
-├── migrations/                   # Doctrine migrations (latest adds media storage + owner)
+├── migrations/                   # Doctrine migrations (latest adds media category relation)
 ├── docs/
 │   ├── ai/context.md             # This file
 │   ├── design/                   # Design contracts
@@ -389,15 +389,18 @@ Qiniu SDK note: `qiniu/php-sdk` is intentionally not required by `composer.json`
 |----------|--------|------|-------------|
 | `/api/v1/app/media/upload` | POST multipart | ROLE_USER | Upload current user's media. App media list/detail is scoped by `['user' => $this->getUser()]`. |
 | `/api/v1/manage/media/upload` | POST multipart | ROLE_ADMIN | Admin upload endpoint, reuses App upload action via inheritance. Manage media CRUD uses no common filter. |
+| `/api/v1/public/media` | GET | PUBLIC | Public read-only media list. Only returns media with nullable owner (`user IS NULL`). |
+| `/api/v1/public/media/{id}` | GET | PUBLIC | Public read-only media detail. Only returns media with nullable owner (`user IS NULL`). |
 
 Multipart fields:
 - `file`: required uploaded file
 - `storage`: optional driver name, defaults to `MEDIA_STORAGE_DEFAULT` / `media.storage.default` (`local`)
+- `category`: optional `common_category` id; invalid ids return `Category is not found`
 - `alt`, `title`, `width`, `height`: optional metadata
 
-`MediaService::createFromUpload()` validates file presence/size/MIME, resolves the selected storage driver, stores the physical file, persists `Common\Entity\Media`, and assigns the current authenticated `User` when available. `MediaService::remove()` best-effort deletes the physical file via the media's stored driver before removing the entity.
+`MediaService::createFromUpload()` validates file presence/size/MIME, resolves the selected storage driver, stores the physical file, persists `Common\Entity\Media`, assigns the current authenticated `User` when available, and binds an optional `Category` from multipart `category`. `MediaService::remove()` best-effort deletes the physical file via the media's stored driver before removing the entity.
 
-`Media` now stores `storage` and nullable owner `user` (`ManyToOne User`, `ON DELETE SET NULL`).
+`Media` stores `storage`, nullable owner `user` (`ManyToOne User`, `ON DELETE SET NULL`), and nullable `category` (`ManyToOne Category`, `ON DELETE SET NULL`). Manage media create/update accepts `category` ids. Public media uses a QueryBuilder `commonFilter()` with `media.user IS NULL` because array criteria cannot express SQL `IS NULL`.
 
 ## 10. System Introspection Endpoints
 
@@ -425,7 +428,7 @@ Placed in `src/Core/Controller/System/` (framework layer). NelmioApiDoc path_pat
 | **Pipeline** | Trade | `PriceCalculatorInterface` with priority ordering |
 | **Optimistic locking** | Wallet | `#[ORM\Version]` on Wallet |
 | **Post-response enrichment** | Core | `OpenApiEnricherListener` post-processes `/api/doc` and `/api/doc.json` |
-| **commonFilter** | Controllers | Array of WHERE criteria injected into all queries. `[]` = no filter (admin), `['user' => $user]` = user-scoped, `['id' => -1]` = block all |
+| **commonFilter** | Controllers | Array criteria or QueryBuilder injected into all queries. `[]` = no filter (admin), `['user' => $user]` = user-scoped, `['id' => -1]` = block all, QueryBuilder required for `IS NULL` filters |
 | **Payment via wallet** | Trade | `POST /app/orders/{id}/payment` with `payment: "wallet"` creates Invoice → WalletGateway deducts user wallet |
 | **Balance audit** | Wallet | `GET /wallets/balance` checks `SUM(wallets) == SUM(deposits)`; `POST /wallets/reconcile` fixes per-wallet gaps with `TYPE_ADJUSTMENT` |
 | **Idempotent deposit** | Wallet | `POST /transfers/deposit` with `referenceId` — duplicate requests return existing transaction |
@@ -434,7 +437,7 @@ Placed in `src/Core/Controller/System/` (framework layer). NelmioApiDoc path_pat
 | **Deduction owned by Wallet** | Wallet | Wallet balance deduction lives in Wallet (`WalletPaymentDeduction` entity, `WalletPaymentDeductionService`, `WalletBalanceAdjustmentProvider`). Payment owns only the generic adjustment contract |
 | **OneToOne extension** | Wechat | `WechatUser` extends User identity without modifying User entity |
 | **Storage driver registry** | Storage | `MediaStorageInterface` implementations are tagged `media.storage`; callers select driver with multipart `storage` field |
-| **Media ownership** | Common | App media endpoints are user-scoped via `commonFilter()`. Manage media endpoints inherit App upload code but override `commonFilter()` to `[]` |
+| **Media ownership** | Common | App media endpoints are user-scoped via `commonFilter()`. Manage media endpoints inherit App upload code but override `commonFilter()` to `[]`. Public media endpoints expose only ownerless media (`user IS NULL`) over anonymous GET. |
 | **System introspection** | Core | Entity metadata + route export via `/system/*` endpoints |
 
 ## 12. API Documentation System
@@ -475,7 +478,7 @@ Enriches all endpoints (90+):
 
 42+ named schemas across 11 tags (Auth, Products, Orders, Categories, Tags, Contents, Comments, Pages, Media, Settings, Wallet, System, Wechat). Each with field-level type, description, enum, and example values. `path_patterns` includes both `^/api` and `^/system`.
 
-## 13. Database Tables (9 Migrations)
+## 13. Database Tables (10 Migrations)
 
 | Version | Tables |
 |---------|--------|
@@ -488,6 +491,7 @@ Enriches all endpoints (90+):
 | 20250624223701 | `payment_invoice`, `wechat_user`, `messenger_messages` |
 | 20260626000000 | `wallet_payment_deduction` (wallet-owned deduction audit, scalar invoice references, FK to `wallet`) |
 | 20260703000000 | Added to `common_media`: `storage`, nullable `user_id` FK to `users` |
+| 20260703010000 | Added to `common_media`: nullable `category_id` FK to `common_category` |
 
 ## 14. Documentation Assets
 
@@ -518,9 +522,9 @@ Enriches all endpoints (90+):
 - **Framework**: PHPUnit 12.5
 - **DB**: SQLite `var/test.db` in test environment
 - **Coverage**: 80% minimum (enforced in CI), currently **88.37% lines** (`4481/5071`) from latest local Xdebug run
-- **Test count**: **1115 tests**, **~3850 assertions**
+- **Test count**: **1123 tests**, **~3900 assertions**
 - **Local PHP note**: default `php` may point to PHP 7.4; use Homebrew PHP 8.5 at `/opt/homebrew/opt/php@8.5/bin/php` for local Symfony/PHPUnit commands.
-- **Storage/upload coverage**: new Storage + Media upload functionality is covered by real local-upload integration tests (`POST /api/v1/manage/media/upload` writes to `public/uploads`, then delete removes the file). Related code coverage is ~97.5% lines.
+- **Storage/upload coverage**: Storage + Media upload functionality is covered by real local-upload integration tests (`POST /api/v1/manage/media/upload` writes to `public/uploads`, then delete removes the file). Current focused media coverage is 100% for `App\Common\Controller\App\MediaController`, `Manage\MediaController`, `Public\MediaController`, `Common\Entity\Media`, and `MediaService`.
 - **Key test groups**:
   - `tests/Wechat/`: 59 tests (Entity, Service, AuthService, Payment/Gateway, Controller, Repository)
   - `tests/Trade/`: 171 tests (Entity, Service, Pricing, Integration, EventListener, Workflow API)

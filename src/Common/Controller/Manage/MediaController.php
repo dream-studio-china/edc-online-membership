@@ -21,8 +21,8 @@ class MediaController extends AppMediaController
         CreateApiViewMixin, UpdateApiViewMixin, DeleteApiViewMixin;
 
     protected array $requiredCreateProperties = ['filename', 'originalFilename', 'mimeType', 'size', 'path'];
-    protected array $acceptedCreateProperties = ['filename', 'originalFilename', 'mimeType', 'size', 'path', 'storage', 'user', 'alt', 'title', 'width', 'height'];
-    protected array $acceptedUpdateProperties = ['filename', 'originalFilename', 'mimeType', 'size', 'path', 'storage', 'user', 'alt', 'title', 'width', 'height'];
+    protected array $acceptedCreateProperties = ['filename', 'originalFilename', 'mimeType', 'size', 'path', 'storage', 'user', 'category', 'alt', 'title', 'width', 'height'];
+    protected array $acceptedUpdateProperties = ['filename', 'originalFilename', 'mimeType', 'size', 'path', 'storage', 'user', 'category', 'alt', 'title', 'width', 'height'];
 
     public function __construct(
         MediaServiceInterface $service

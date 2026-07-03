@@ -2,6 +2,7 @@
 
 namespace App\Common\Service;
 
+use App\Common\Entity\Category;
 use App\Common\Entity\Media;
 use App\Core\Service\BaseService;
 use App\Identity\Entity\User;
@@ -53,6 +54,14 @@ class MediaService extends BaseService implements MediaServiceInterface
 
         if ($owner instanceof User) {
             $media->setUser($owner);
+        }
+
+        if (!empty($meta['category'])) {
+            $category = $this->em->getRepository(Category::class)->find((int) $meta['category']);
+            if (!$category instanceof Category) {
+                throw new ValidatorException('Category is not found');
+            }
+            $media->setCategory($category);
         }
 
         $media

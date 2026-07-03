@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Common\Integration;
 
+use App\Common\Entity\Category;
 use App\Common\Entity\Media;
 use App\Common\Service\MediaServiceInterface;
 use App\Common\Service\MediaService;
@@ -51,11 +52,14 @@ final class MediaUploadIntegrationTest extends IntegrationWebTestCase
     public function testManageUploadStoresMediaAndDeleteRemovesFile(): void
     {
         $client = static::createAuthenticatedClient();
+        $category = new Category('Upload Category', 'upload-category-' . bin2hex(random_bytes(4)));
+        $this->em->persist($category);
+        $this->em->flush();
 
         $client->request(
             'POST',
             '/api/v1/manage/media/upload',
-            ['alt' => 'Alt text', 'title' => 'Image title'],
+            ['alt' => 'Alt text', 'title' => 'Image title', 'category' => (string) $category->getId()],
             ['file' => $this->uploadedPng('manage.png')],
         );
 
@@ -67,6 +71,7 @@ final class MediaUploadIntegrationTest extends IntegrationWebTestCase
         self::assertSame('image/png', $created['data']['mimeType']);
         self::assertSame('Alt text', $created['data']['alt']);
         self::assertSame('Image title', $created['data']['title']);
+        self::assertSame($category->getId(), $created['data']['category']['id']);
         self::assertSame(1, $created['data']['width']);
         self::assertSame(1, $created['data']['height']);
 
@@ -76,11 +81,47 @@ final class MediaUploadIntegrationTest extends IntegrationWebTestCase
         /** @var Media $media */
         $media = $this->em->getRepository(Media::class)->find($created['data']['id']);
         self::assertNull($media->getUser());
+        self::assertSame($category->getId(), $media->getCategory()?->getId());
 
         $client->request('DELETE', '/api/v1/manage/media/' . $created['data']['id']);
 
         self::assertSame(204, $client->getResponse()->getStatusCode());
         self::assertFileDoesNotExist($storedPath);
+    }
+
+    public function testPublicMediaReadOnlyDoesNotRequireAuthentication(): void
+    {
+        $owner = new User();
+        $owner->setEmail('public-media-owner@example.com');
+        $owner->setUsername('public-media-owner');
+        $owner->setPassword('test-password');
+
+        $media = new Media('public.png', 'public.png', 'image/png', 10, '/uploads/public.png');
+        $ownedMedia = new Media('owned.png', 'owned.png', 'image/png', 10, '/uploads/owned.png');
+        $ownedMedia->setUser($owner);
+        $this->em->persist($owner);
+        $this->em->persist($media);
+        $this->em->persist($ownedMedia);
+        $this->em->flush();
+        $id = $media->getId();
+
+        self::ensureKernelShutdown();
+        $client = static::createClient();
+
+        $client->request('GET', '/api/v1/public/media');
+        self::assertSame(200, $client->getResponse()->getStatusCode(), (string) $client->getResponse()->getContent());
+        $list = $this->decodeResponse($client->getResponse()->getContent());
+        self::assertNotEmpty($list['data']);
+        $listIds = array_column($list['data'], 'id');
+        self::assertContains($id, $listIds);
+        self::assertNotContains($ownedMedia->getId(), $listIds);
+
+        $client->request('GET', '/api/v1/public/media/' . $id);
+        self::assertSame(200, $client->getResponse()->getStatusCode(), (string) $client->getResponse()->getContent());
+        $detail = $this->decodeResponse($client->getResponse()->getContent());
+        self::assertSame($id, $detail['data']['id']);
+
+        self::assertFalse($client->getContainer()->get('router')->getRouteCollection()->get('public-media-create') instanceof \Symfony\Component\Routing\Route);
     }
 
     public function testAppUploadStoresPdfWithoutDimensions(): void
@@ -206,6 +247,22 @@ final class MediaUploadIntegrationTest extends IntegrationWebTestCase
         self::assertStringContainsString('Unknown media storage driver', $data['message']);
     }
 
+    public function testUploadRejectsUnknownCategory(): void
+    {
+        $client = static::createAuthenticatedClient();
+
+        $client->request(
+            'POST',
+            '/api/v1/manage/media/upload',
+            ['category' => '999999'],
+            ['file' => $this->uploadedPng('missing-category.png')],
+        );
+
+        self::assertSame(400, $client->getResponse()->getStatusCode(), (string) $client->getResponse()->getContent());
+        $data = $this->decodeResponse($client->getResponse()->getContent());
+        self::assertSame('Category is not found', $data['message']);
+    }
+
     public function testMediaServiceRejectsInvalidUploads(): void
     {
         self::bootKernel();
@@ -306,6 +363,62 @@ final class MediaUploadIntegrationTest extends IntegrationWebTestCase
 
         self::assertTrue($service->remove($media));
         self::assertNull($em->getRepository(Media::class)->find($id));
+    }
+
+    public function testMediaServiceRemoveReturnsFalseWhenFlushFails(): void
+    {
+        self::bootKernel();
+        /** @var MediaService $service */
+        $service = static::getContainer()->get(MediaService::class);
+        /** @var EntityManagerInterface $em */
+        $em = static::getContainer()->get(EntityManagerInterface::class);
+
+        $media = new Media('flush-fail.png', 'flush-fail.png', 'image/png', 10, '/uploads/flush-fail.png');
+        $em->persist($media);
+        $em->flush();
+
+        $reflection = new \ReflectionClass($service);
+        $emProperty = $reflection->getParentClass()->getProperty('em');
+        $originalEm = $emProperty->getValue($service);
+        $emProperty->setValue($service, new class {
+            public function remove(object $object): void {}
+            public function flush(): void { throw new \RuntimeException('flush failed'); }
+        });
+
+        try {
+            self::assertFalse($service->remove($media));
+        } finally {
+            $emProperty->setValue($service, $originalEm);
+            $em->clear();
+        }
+    }
+
+    public function testMediaEntityAccessorsAndPrePersistDefaults(): void
+    {
+        $media = new Media('old.png', 'old-original.png', 'image/png', 1, '/uploads/old.png');
+
+        $media
+            ->setFilename('new.png')
+            ->setOriginalFilename('new-original.png')
+            ->setMimeType('image/jpeg')
+            ->setSize(2)
+            ->setPath('/uploads/new.png')
+            ->setStorage('qiniu');
+
+        self::assertSame('new.png', $media->getFilename());
+        self::assertSame('new-original.png', $media->getOriginalFilename());
+        self::assertSame('image/jpeg', $media->getMimeType());
+        self::assertSame(2, $media->getSize());
+        self::assertSame('/uploads/new.png', $media->getPath());
+        self::assertSame('qiniu', $media->getStorage());
+        self::assertNotNull($media->getUpdatedAt());
+
+        $reflection = new \ReflectionClass(Media::class);
+        /** @var Media $uninitialized */
+        $uninitialized = $reflection->newInstanceWithoutConstructor();
+        $uninitialized->prePersist();
+
+        self::assertInstanceOf(\DateTimeImmutable::class, $uninitialized->getCreatedAt());
     }
 
     /** @return array<string, mixed> */
