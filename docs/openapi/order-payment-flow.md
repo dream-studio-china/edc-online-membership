@@ -25,7 +25,7 @@ Amounts are stored as integer cents/fen. For example, `1234` means `12.34 CNY`.
 | Status | Meaning | Frontend meaning |
 | --- | --- | --- |
 | `draft` | Order created but not submitted/confirmed | Created, not payable yet |
-| `pending` | Submitted and waiting for confirmation | Waiting for backend/admin confirmation |
+| `pending` | Submitted and waiting for confirmation | Ready for user/backend confirmation |
 | `confirmed` | Confirmed and can start payment | Payable |
 | `paid` | Payment completed | Paid, waiting fulfillment |
 | `fulfilled` | Order shipped/fulfilled | Waiting completion/receipt |
@@ -67,18 +67,25 @@ pending --start_pay--> paying --mark_paid--> paid --partial_refund--> partial_re
 
 Invoice `paid/refunded/cancelled/failed` events update the linked order payment fields automatically when the invoice source is a trade order.
 
-## Current Important Limitation
+## User-Side Order Transitions
 
 `POST /api/v1/app/orders` creates an order in `draft` status.
 
 `POST /api/v1/app/orders/{id}/payment` can only pay an order in `confirmed` status.
 
-There is currently no user-side app API to submit or confirm an order. In the current implementation, the backend/admin must move the order through:
+The user can move their own order to payable status without admin intervention:
 
 ```http
-POST /api/v1/manage/orders/{id}/do/submit
-POST /api/v1/manage/orders/{id}/do/confirm
+POST /api/v1/app/orders/{id}/submit
+Authorization: Bearer <access_token>
 ```
+
+```http
+POST /api/v1/app/orders/{id}/confirm
+Authorization: Bearer <access_token>
+```
+
+Only the current user's own order can be submitted or confirmed. Other users' orders return `404`.
 
 After the order becomes `confirmed`, the frontend can call the user payment endpoint.
 
@@ -283,19 +290,21 @@ Example response fields:
 
 Current implementation requires the order to be `confirmed` before user payment.
 
-Admin/backend flow:
+User app flow:
 
 ```http
-POST /api/v1/manage/orders/{orderId}/do/submit
-Authorization: Bearer <admin_access_token>
+POST /api/v1/app/orders/{orderId}/submit
+Authorization: Bearer <access_token>
 ```
 
 ```http
-POST /api/v1/manage/orders/{orderId}/do/confirm
-Authorization: Bearer <admin_access_token>
+POST /api/v1/app/orders/{orderId}/confirm
+Authorization: Bearer <access_token>
 ```
 
 The order is now `confirmed` and can be paid.
+
+Admin/backend can still use `POST /api/v1/manage/orders/{orderId}/do/{transition}` for operational workflows.
 
 ### 2. Start Order Payment
 
@@ -456,7 +465,7 @@ Server configuration required for WeChat Pay:
 
 ### Start Mini Program Payment
 
-The order must already be `confirmed`.
+The order must already be `confirmed`. For user-side flow, call `POST /api/v1/app/orders/{orderId}/submit` and then `POST /api/v1/app/orders/{orderId}/confirm` before starting payment.
 
 ```http
 POST /api/v1/app/orders/{orderId}/payment
@@ -908,8 +917,8 @@ Authorization: Bearer <admin_access_token>
 
 | Order status | Show actions |
 | --- | --- |
-| `draft` | Cancel; wait for backend confirmation flow before pay |
-| `pending` | Cancel; show waiting confirmation |
+| `draft` | Submit; Cancel |
+| `pending` | Confirm; Cancel |
 | `confirmed` | Pay; Cancel |
 | `paid` | Show paid/waiting fulfillment |
 | `fulfilled` | Show shipped/fulfilled |
@@ -959,11 +968,11 @@ POST /api/v1/app/orders
 }
 ```
 
-2. Backend/admin confirms order:
+2. User submits and confirms order:
 
 ```http
-POST /api/v1/manage/orders/{orderId}/do/submit
-POST /api/v1/manage/orders/{orderId}/do/confirm
+POST /api/v1/app/orders/{orderId}/submit
+POST /api/v1/app/orders/{orderId}/confirm
 ```
 
 3. User starts mock auto-paid payment:
