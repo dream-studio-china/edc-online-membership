@@ -120,13 +120,18 @@ final class WechatPayGateway implements PaymentGatewayInterface
                 return $next($message);
             });
 
-            $server->serve($psrRequest);
+            $response = $server->serve($psrRequest);
 
-            if ($notifyResult === null) {
-                throw new PaymentVerificationException('WeChat notify: unsupported event type.');
+            if ($notifyResult !== null) {
+                return $notifyResult;
             }
 
-            return $notifyResult;
+            $body = (string) $response->getBody();
+            throw new PaymentVerificationException(
+                sprintf('WeChat notify failed: HTTP %d, body: %s', $response->getStatusCode(), $body),
+            );
+        } catch (PaymentVerificationException $e) {
+            throw $e;
         } catch (\Throwable $e) {
             throw new PaymentVerificationException(
                 'WeChat notify verification failed: ' . $e->getMessage(),
