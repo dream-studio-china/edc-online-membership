@@ -31,6 +31,8 @@ class WechatService
         private readonly string $payPrivateKeyPath,
         private readonly string $payCertificatePath,
         private readonly string $payPlatformCertPath = '',
+        private readonly string $payPubKeyId = '',
+        private readonly string $payPubKeyPath = '',
     ) {}
 
     public function getMiniApp(): MiniApp
@@ -81,6 +83,9 @@ class WechatService
 
             if ($this->payPlatformCertPath !== '') {
                 $config['platform_certs'] = [$this->payPlatformCertPath];
+            }
+            if ($this->payPubKeyId !== '' && $this->payPubKeyPath !== '') {
+                $config['platform_certs'][$this->payPubKeyId] = $this->payPubKeyPath;
             }
 
             $this->payApp = new Pay($config);
