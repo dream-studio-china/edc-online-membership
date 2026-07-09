@@ -46,6 +46,10 @@ services:
         tags:
             - { name: kernel.event_listener, event: kernel.response, priority: -10 }
 
+    App\Core\EventListener\AccessLogListener:
+        tags:
+            - { name: kernel.event_listener, event: kernel.response, priority: -5 }
+
     Symfony\Component\DependencyInjection\ContainerInterface: '@service_container'
     Psr\Log\LoggerInterface: '@logger'
     Symfony\Component\Serializer\SerializerInterface: '@serializer'
