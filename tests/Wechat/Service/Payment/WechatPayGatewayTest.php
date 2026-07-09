@@ -103,7 +103,7 @@ final class WechatPayGatewayTest extends TestCase
         $server->method('serve')->willReturn($this->createMock(\Psr\Http\Message\ResponseInterface::class));
 
         self::expectException(PaymentVerificationException::class);
-        self::expectExceptionMessage('unsupported event type');
+        self::expectExceptionMessage('WeChat notify failed');
 
         $this->gateway->notify(Request::create('/notify', 'POST'));
     }
