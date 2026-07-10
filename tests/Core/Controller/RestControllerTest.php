@@ -21,6 +21,11 @@ class TestableRestController extends RestController
     {
         return parent::warning($error_msg, $error_code, $raw_data);
     }
+
+    public function callSuccessWithStatus($content = '', string $message = 'SUCCESS', int $status = 200)
+    {
+        return parent::success($content, $message, $status);
+    }
 }
 
 
@@ -163,6 +168,77 @@ class RestControllerTest extends TestCase
         $this->assertArrayHasKey(0, $decoded['data']);
         $this->assertArrayHasKey('computed', $decoded['data'][0]);
         $this->assertEquals(42, $decoded['data'][0]['computed']);
+    }
+
+    public function testSuccessWith204ReturnsEmptyResponse(): void
+    {
+        $requestStack = new RequestStack();
+        $requestStack->push(Request::create('/', 'DELETE'));
+
+        $serializer = $this->createMock(SerializerInterface::class);
+        $translator = $this->createMock(TranslatorInterface::class);
+
+        $controller = new TestableRestController($requestStack, $serializer, $translator);
+        $resp = $controller->callSuccessWithStatus('', 'SUCCESS', 204);
+
+        self::assertSame(204, $resp->getStatusCode());
+        self::assertEmpty($resp->getContent());
+    }
+
+    public function testWarningWithDefaultValues(): void
+    {
+        $requestStack = new RequestStack();
+        $requestStack->push(Request::create('/', 'GET'));
+
+        $serializer = $this->createMock(SerializerInterface::class);
+        $serializer->method('serialize')->willReturnCallback(fn($data) => json_encode($data));
+        $translator = $this->createMock(TranslatorInterface::class);
+        $translator->method('trans')->willReturnArgument(0);
+
+        $controller = new TestableRestController($requestStack, $serializer, $translator);
+        $resp = $controller->callWarning();
+
+        self::assertSame(200, $resp->getStatusCode());
+        $body = json_decode((string) $resp->getContent(), true);
+        self::assertSame('Api error occurred', $body['message']);
+        self::assertSame(-1, $body['code']);
+    }
+
+    public function testSuccessWithArrayCollection(): void
+    {
+        $requestStack = new RequestStack();
+        $requestStack->push(Request::create('/', 'GET'));
+
+        $serializer = $this->createMock(SerializerInterface::class);
+        $serializer->method('serialize')->willReturnCallback(fn($data) => json_encode($data));
+        $translator = $this->createMock(TranslatorInterface::class);
+        $translator->method('trans')->willReturnArgument(0);
+
+        $controller = new TestableRestController($requestStack, $serializer, $translator);
+
+        $collection = new \Doctrine\Common\Collections\ArrayCollection([1, 2, 3]);
+        $resp = $controller->callSuccess($collection, 'OK');
+
+        self::assertSame(200, $resp->getStatusCode());
+        $body = json_decode((string) $resp->getContent(), true);
+        self::assertSame([1, 2, 3], $body['data']);
+    }
+
+    public function testSuccessWithoutRequestReturnsNoPagination(): void
+    {
+        $requestStack = new RequestStack();
+        $requestStack->push(Request::create('/', 'DELETE'));
+        $serializer = $this->createMock(SerializerInterface::class);
+        $serializer->method('serialize')->willReturnCallback(fn($data) => json_encode($data));
+        $translator = $this->createMock(TranslatorInterface::class);
+        $translator->method('trans')->willReturnArgument(0);
+
+        $controller = new TestableRestController($requestStack, $serializer, $translator);
+        $resp = $controller->callSuccess([1, 2], 'OK');
+
+        self::assertSame(200, $resp->getStatusCode());
+        $body = json_decode((string) $resp->getContent(), true);
+        self::assertArrayNotHasKey('paginator', $body);
     }
 }
 
