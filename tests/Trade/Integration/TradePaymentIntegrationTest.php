@@ -13,6 +13,7 @@ use App\Wallet\Entity\Wallet;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 final class TradePaymentIntegrationTest extends IntegrationWebTestCase
 {
@@ -73,6 +74,67 @@ final class TradePaymentIntegrationTest extends IntegrationWebTestCase
         $order = $this->em->getRepository(Order::class)->find($orderId);
         self::assertSame(Order::STATUS_REFUNDED, $order->getStatus());
         self::assertSame(Invoice::STATUS_REFUNDED, $order->getPaymentStatus());
+    }
+
+    public function testAppUserCanSubmitConfirmAndPayOwnOrder(): void
+    {
+        $productId = $this->createProduct();
+        $specId = $this->createSpecification($productId);
+
+        [, $content] = $this->jsonRequest('POST', '/api/v1/app/orders', [
+            'items' => [['specificationId' => $specId, 'quantity' => 1]],
+            'currency' => 'CNY',
+        ]);
+        self::assertSame(0, $content['code']);
+        $orderId = (int) $content['data']['id'];
+        self::assertSame(Order::STATUS_DRAFT, $content['data']['status']);
+
+        [$response, $content] = $this->jsonRequest('POST', "/api/v1/app/orders/{$orderId}/submit");
+        self::assertSame(Response::HTTP_OK, $response->getStatusCode());
+        self::assertSame(0, $content['code']);
+        self::assertSame(Order::STATUS_PENDING, $content['data']['status']);
+
+        [$response, $content] = $this->jsonRequest('POST', "/api/v1/app/orders/{$orderId}/confirm");
+        self::assertSame(Response::HTTP_OK, $response->getStatusCode());
+        self::assertSame(0, $content['code']);
+        self::assertSame(Order::STATUS_CONFIRMED, $content['data']['status']);
+
+        [$response, $content] = $this->jsonRequest('POST', "/api/v1/app/orders/{$orderId}/payment", [
+            'payment' => Invoice::PAYMENT_MOCK,
+            'autoPaid' => true,
+        ]);
+        self::assertSame(Response::HTTP_OK, $response->getStatusCode());
+        self::assertSame(0, $content['code']);
+
+        $this->em->clear();
+        $order = $this->em->getRepository(Order::class)->find($orderId);
+        self::assertInstanceOf(Order::class, $order);
+        self::assertSame(Order::STATUS_PAID, $order->getStatus());
+        self::assertSame(Invoice::STATUS_PAID, $order->getPaymentStatus());
+    }
+
+    public function testAppOrderTransitionFailures(): void
+    {
+        $productId = $this->createProduct();
+        $specId = $this->createSpecification($productId);
+
+        [$response] = $this->jsonRequest('POST', '/api/v1/app/orders/999999/submit');
+        self::assertSame(Response::HTTP_NOT_FOUND, $response->getStatusCode());
+
+        [, $content] = $this->jsonRequest('POST', '/api/v1/app/orders', [
+            'items' => [['specificationId' => $specId, 'quantity' => 1]],
+            'currency' => 'CNY',
+        ]);
+        $orderId = (int) $content['data']['id'];
+
+        [$response] = $this->jsonRequestAs($this->createUser('other-order-user@example.com'), 'POST', "/api/v1/app/orders/{$orderId}/submit");
+        self::assertSame(Response::HTTP_NOT_FOUND, $response->getStatusCode());
+
+        [$response] = $this->jsonRequest('POST', "/api/v1/app/orders/{$orderId}/submit");
+        self::assertSame(Response::HTTP_OK, $response->getStatusCode());
+
+        [$response] = $this->jsonRequest('POST', "/api/v1/app/orders/{$orderId}/submit");
+        self::assertSame(Response::HTTP_BAD_REQUEST, $response->getStatusCode());
     }
 
     public function testOrderPaymentWithWalletDeductionAndMockRemainder(): void
@@ -138,6 +200,18 @@ final class TradePaymentIntegrationTest extends IntegrationWebTestCase
         return [$response, json_decode($response->getContent(), true) ?? []];
     }
 
+    private function jsonRequestAs(User $user, string $method, string $uri, array $data = []): array
+    {
+        $tokenManager = $this->client->getContainer()->get(\App\Identity\Security\TokenManager::class);
+        $this->client->request($method, $uri, [], [], [
+            'CONTENT_TYPE' => 'application/json',
+            'HTTP_AUTHORIZATION' => 'Bearer ' . $tokenManager->createAccessToken($user),
+        ], json_encode($data, JSON_THROW_ON_ERROR));
+
+        $response = $this->client->getResponse();
+        return [$response, json_decode($response->getContent(), true) ?? []];
+    }
+
     private function currentUser(): User
     {
         $user = $this->em->getRepository(User::class)->findOneBy(['email' => 'testauth@example.com']);
@@ -147,11 +221,16 @@ final class TradePaymentIntegrationTest extends IntegrationWebTestCase
 
     private function createSystemUser(string $email): User
     {
+        return $this->createUser($email, ['ROLE_ADMIN']);
+    }
+
+    private function createUser(string $email, array $roles = ['ROLE_USER']): User
+    {
         $user = new User();
         $user->setEmail($email);
         $user->setUsername(strstr($email, '@', true));
-        $user->setPassword('password');
-        $user->setRoles(['ROLE_ADMIN']);
+        $user->setPassword($this->client->getContainer()->get(UserPasswordHasherInterface::class)->hashPassword($user, 'TestPass123!'));
+        $user->setRoles($roles);
         $this->em->persist($user);
         $this->em->flush();
         return $user;

@@ -1,6 +1,6 @@
 # CRUD Skeleton - Full Codebase Context
 
-> Context snapshot. Last updated: 2026-07-03
+> Context snapshot. Last updated: 2026-07-04
 
 ---
 
@@ -48,7 +48,7 @@
 │
 ├── src/Trade/                    # E-commerce module
 │   ├── Entity/                   # Product, Specification, Order, OrderItem
-│   ├── Service/OrderService.php        # pay(), refund(), fulfill() + price pipeline
+│   ├── Service/OrderService.php        # createOrder(... metadata), pay(), refund(), fulfill() + price pipeline
 │   ├── Service/Pricing/                # PriceCalculatorInterface (Base, Quantity, Total)
 │   ├── EventListener/OrderWorkflowListener.php
 │   ├── Exception/                      # OrderInvalidTransitionException, SpecificationNotFoundException
@@ -74,7 +74,7 @@
 │   ├── Service/Payment/WalletBalanceAdjustmentProvider.php  # Wallet deduction as Payment adjustment provider
 │   ├── Service/Payment/WalletPaymentDeductionService.php    # Wallet-owned deduction lifecycle
 │   ├── DTO/WalletPaymentDeductionRequest.php
-│   └── Controller/Manage/
+│   └── Controller/App/ + Manage/       # App list/detail/balance, Manage CRUD/audit/reconcile
 │
 ├── src/Wechat/                   # WeChat module
 │   ├── Entity/WechatUser.php           # OneToOne→User
@@ -105,9 +105,9 @@
 │   ├── ai/context.md             # This file
 │   ├── design/                   # Design contracts
 │   │   └── bundles/              # Per-module design docs (core, common, trade, wallet, identity, wechat)
-│   └── openapi/endpoints.yaml
+│   └── openapi/                       # endpoints.yaml + order/payment frontend flow docs
 ├── scripts/tests/                # Test scripts
-├── tests/                        # 1115 PHPUnit tests, ~3850 assertions
+├── tests/                        # 1130 PHPUnit tests, 3973 assertions
 ├── mkdocs.yml                    # MkDocs Material config
 ├── compose.yaml                  # Production deployment: app (PHP-FPM), nginx, MySQL, Redis, Mailpit
 ├── compose.override.yaml         # Dev overrides (source mount, debug, exposed ports)
@@ -211,7 +211,7 @@ draft → pending → confirmed → paid → fulfilled → completed → refunde
 | Method | Description |
 |--------|-------------|
 | `calculatePrices(items, currency)` | Pipeline: BasePriceCalculator → QuantityCalculator → TotalAggregator |
-| `createOrder(items, user, total, currency, notes)` | Create Order + OrderItems in transaction |
+| `createOrder(items, user, total, currency, notes, metadata)` | Create Order + OrderItems in transaction. Optional `metadata` is saved as-is to `trade_order.metadata`. |
 | `pay(Order, systemWalletId, paymentMethod)` | User wallet → system wallet via `TransferService`. Sets `paidAt`. |
 | `refund(Order, systemWalletId, reason)` | System wallet → user wallet via `TransferService`. Sets `refundedAt`. |
 | `fulfill(Order, data)` | Set tracking/shipping + `fulfilledAt`. |
@@ -227,6 +227,7 @@ draft → pending → confirmed → paid → fulfilled → completed → refunde
 | `trackingNumber` | string | On fulfill |
 | `shippingAddress` | text | On fulfill |
 | `refundReason` | text | On refund |
+| `metadata` | json | Optional request payload from app/manage order creation; useful for receiver/address snapshots |
 
 ### 7.4 Manage Order Endpoints
 
@@ -247,7 +248,7 @@ draft → pending → confirmed → paid → fulfilled → completed → refunde
 
 | Method | Path | Description |
 |--------|------|-------------|
-| POST | `/app/orders` | Create order (auto-assigns user) |
+| POST | `/app/orders` | Create order (auto-assigns user). Accepts optional `metadata` JSON payload and persists it directly. |
 | GET | `/app/orders/{id}/items` | View own order items |
 | POST | `/app/orders/{id}/cancel` | Cancel own order (draft/pending/confirmed) |
 | POST | `/app/orders/{id}/payment` | **Pay order via gateway (wallet, mock, wechat)** |
@@ -320,6 +321,18 @@ Payment defines `PaymentAdjustmentProviderInterface` — a pre-payment hook that
 | POST | `/manage/invoices/{id}/refund` | Refund invoice |
 | POST | `/api/payment/notify/{payment}` | Payment callback (public, G/W signature verified) |
 
+### 8.4 Wallet App Endpoints
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/app/wallets` | Current user's wallets only |
+| GET | `/app/wallets/{id}` | Current user's wallet detail only |
+| GET | `/app/wallets/balance` | Current user's wallet balance audit: `totalBalance`, `totalDeposited`, `discrepancy`, `matches`, `walletCount` |
+| GET | `/app/transactions` | Current user's wallet transactions only |
+| GET | `/app/transactions/{id}` | Current user's transaction detail only |
+
+Manage keeps global audit endpoints: `GET /manage/wallets/balance` and `POST /manage/wallets/reconcile`.
+
 ## 9. Wechat Module
 
 ### 9.1 WechatUser Entity (OneToOne → User)
@@ -388,6 +401,7 @@ Qiniu SDK note: `qiniu/php-sdk` is intentionally not required by `composer.json`
 | Endpoint | Method | Auth | Description |
 |----------|--------|------|-------------|
 | `/api/v1/app/media/upload` | POST multipart | ROLE_USER | Upload current user's media. App media list/detail is scoped by `['user' => $this->getUser()]`. |
+| `/api/v1/app/media/{id}` | DELETE | ROLE_USER | Delete current user's own uploaded media. Uses app `commonFilter()` so other users' media returns 404; local files are best-effort removed. |
 | `/api/v1/manage/media/upload` | POST multipart | ROLE_ADMIN | Admin upload endpoint, reuses App upload action via inheritance. Manage media CRUD uses no common filter. |
 | `/api/v1/public/media` | GET | PUBLIC | Public read-only media list. Only returns media with nullable owner (`user IS NULL`). |
 | `/api/v1/public/media/{id}` | GET | PUBLIC | Public read-only media detail. Only returns media with nullable owner (`user IS NULL`). |
@@ -398,7 +412,7 @@ Multipart fields:
 - `category`: optional `common_category` id; invalid ids return `Category is not found`
 - `alt`, `title`, `width`, `height`: optional metadata
 
-`MediaService::createFromUpload()` validates file presence/size/MIME, resolves the selected storage driver, stores the physical file, persists `Common\Entity\Media`, assigns the current authenticated `User` when available, and binds an optional `Category` from multipart `category`. `MediaService::remove()` best-effort deletes the physical file via the media's stored driver before removing the entity.
+`MediaService::createFromUpload()` validates file presence/size/MIME, resolves the selected storage driver, stores the physical file, persists `Common\Entity\Media`, assigns the current authenticated `User` when available, and binds an optional `Category` from multipart `category`. `MediaService::remove()` best-effort deletes the physical file via the media's stored driver before removing the entity. App media delete now reuses `DeleteApiViewMixin`, scoped by owner.
 
 `Media` stores `storage`, nullable owner `user` (`ManyToOne User`, `ON DELETE SET NULL`), and nullable `category` (`ManyToOne Category`, `ON DELETE SET NULL`). Manage media create/update accepts `category` ids. Public media uses a QueryBuilder `commonFilter()` with `media.user IS NULL` because array criteria cannot express SQL `IS NULL`.
 
@@ -422,6 +436,7 @@ Placed in `src/Core/Controller/System/` (framework layer). NelmioApiDoc path_pat
 | **UUID v4** | Trade + Wallet | `UUID::v4()` for external identity |
 | **Soft delete** | Trade | `isDeleted` boolean on Product, Specification |
 | **Snapshot** | Trade | `OrderItem` captures `specSnapshot`/`productSnapshot` at creation |
+| **Order metadata** | Trade | App order creation accepts optional `metadata` JSON and persists it as-is to `trade_order.metadata`, useful for receiver/address snapshots and frontend extension data |
 | **State machine** | Trade | Symfony Workflow for orders |
 | **Token rotation + reuse detection** | Identity | HMAC-SHA256 refresh tokens |
 | **Idempotency** | Wallet | `referenceId` unique constraint on WalletTransaction |
@@ -430,14 +445,14 @@ Placed in `src/Core/Controller/System/` (framework layer). NelmioApiDoc path_pat
 | **Post-response enrichment** | Core | `OpenApiEnricherListener` post-processes `/api/doc` and `/api/doc.json` |
 | **commonFilter** | Controllers | Array criteria or QueryBuilder injected into all queries. `[]` = no filter (admin), `['user' => $user]` = user-scoped, `['id' => -1]` = block all, QueryBuilder required for `IS NULL` filters |
 | **Payment via wallet** | Trade | `POST /app/orders/{id}/payment` with `payment: "wallet"` creates Invoice → WalletGateway deducts user wallet |
-| **Balance audit** | Wallet | `GET /wallets/balance` checks `SUM(wallets) == SUM(deposits)`; `POST /wallets/reconcile` fixes per-wallet gaps with `TYPE_ADJUSTMENT` |
+| **Balance audit** | Wallet | `GET /app/wallets/balance` audits only current user's wallets; `GET /manage/wallets/balance` is global; `POST /manage/wallets/reconcile` fixes per-wallet gaps with `TYPE_ADJUSTMENT` |
 | **Idempotent deposit** | Wallet | `POST /transfers/deposit` with `referenceId` — duplicate requests return existing transaction |
 | **Gateway registry** | Payment | `#[AutowireIterator]` + `_instanceof` auto-tags all `PaymentGatewayInterface` implementations |
 | **Adjustment provider registry** | Payment | `#[AutowireIterator]` + `_instanceof` for `PaymentAdjustmentProviderInterface` — wallet deduction is a Wallet-owned provider |
 | **Deduction owned by Wallet** | Wallet | Wallet balance deduction lives in Wallet (`WalletPaymentDeduction` entity, `WalletPaymentDeductionService`, `WalletBalanceAdjustmentProvider`). Payment owns only the generic adjustment contract |
 | **OneToOne extension** | Wechat | `WechatUser` extends User identity without modifying User entity |
 | **Storage driver registry** | Storage | `MediaStorageInterface` implementations are tagged `media.storage`; callers select driver with multipart `storage` field |
-| **Media ownership** | Common | App media endpoints are user-scoped via `commonFilter()`. Manage media endpoints inherit App upload code but override `commonFilter()` to `[]`. Public media endpoints expose only ownerless media (`user IS NULL`) over anonymous GET. |
+| **Media ownership** | Common | App media endpoints are user-scoped via `commonFilter()`, including delete. Manage media endpoints inherit App upload code but override `commonFilter()` to `[]`. Public media endpoints expose only ownerless media (`user IS NULL`) over anonymous GET. |
 | **System introspection** | Core | Entity metadata + route export via `/system/*` endpoints |
 
 ## 12. API Documentation System
@@ -512,6 +527,8 @@ Enriches all endpoints (90+):
 | `docs/design/bundles/wechat.md` | WeChat module design (Mini Program, Official Account, Pay) |
 | `docs/design/bundles/payment.md` | Payment module design (invoice, gateway, adjustment providers, deduction) |
 | `docs/design/bundles/storage.md` | Storage module design (pluggable file upload drivers) |
+| `docs/openapi/order-payment-flow.md` | Frontend order/payment/cancel/refund API integration guide, including WeChat Mini Program pay |
+| `docs/openapi/order-payment-flow.zh.md` | Chinese translation of the frontend order/payment/cancel/refund API guide |
 | `docs/ai/context.md` | This file — AI context snapshot |
 | `mkdocs.yml` | MkDocs Material site config |
 | `scripts/tests/simulate-trade.php` | Generates 100 orders across all 8 statuses into `var/test.db` |
@@ -521,15 +538,15 @@ Enriches all endpoints (90+):
 
 - **Framework**: PHPUnit 12.5
 - **DB**: SQLite `var/test.db` in test environment
-- **Coverage**: 80% minimum (enforced in CI), currently **88.37% lines** (`4481/5071`) from latest local Xdebug run
-- **Test count**: **1123 tests**, **~3900 assertions**
+- **Coverage**: 80% minimum (enforced in CI), currently **88.80% lines** (`4630/5214`) from latest local Xdebug run
+- **Test count**: **1130 tests**, **3973 assertions**
 - **Local PHP note**: default `php` may point to PHP 7.4; use Homebrew PHP 8.5 at `/opt/homebrew/opt/php@8.5/bin/php` for local Symfony/PHPUnit commands.
-- **Storage/upload coverage**: Storage + Media upload functionality is covered by real local-upload integration tests (`POST /api/v1/manage/media/upload` writes to `public/uploads`, then delete removes the file). Current focused media coverage is 100% for `App\Common\Controller\App\MediaController`, `Manage\MediaController`, `Public\MediaController`, `Common\Entity\Media`, and `MediaService`.
+- **Storage/upload coverage**: Storage + Media upload/delete functionality is covered by real local-upload integration tests (`POST /api/v1/manage/media/upload` writes to `public/uploads`, delete removes the file; `DELETE /api/v1/app/media/{id}` deletes only the current user's own upload and returns 404 for other users' media). Current focused media coverage is 100% for `App\Common\Controller\App\MediaController`, `Manage\MediaController`, `Public\MediaController`, `Common\Entity\Media`, and `MediaService`.
 - **Key test groups**:
   - `tests/Wechat/`: 59 tests (Entity, Service, AuthService, Payment/Gateway, Controller, Repository)
-  - `tests/Trade/`: 171 tests (Entity, Service, Pricing, Integration, EventListener, Workflow API)
+  - `tests/Trade/`: 171+ tests (Entity, Service, Pricing, Integration, EventListener, Workflow API; app order creation persists optional metadata)
   - `tests/Wallet/`: ~105 tests (Entity, Integration, Transfer Service, WalletService, Payment/Gateway, API regression)
-  - `tests/Common/`: 68 tests (Entity, Integration, Batch update)
+  - `tests/Common/`: 69 tests (Entity, Integration, Batch update, media upload/delete)
   - `tests/Identity/`: 92 tests (Auth, OTP, Token, Black box, UserService, UserController, UserApiIntegration)
   - `tests/Payment/`: ~60 tests (Gateway, Registry, Adjustment/Provider, Invoice, Multi-gateway integration)
   - `tests/Integration/`: ~20 cross-module tests
@@ -587,6 +604,7 @@ Requires `.env.prod.local` copied from `.env.prod.example` with `APP_SECRET`, `R
 | Command | Module | Purpose |
 |---------|--------|---------|
 | `app:identity:user:create` | Identity | Create user: email, username, password, --phone, --role, --admin, --phone-verified |
+| `app:storage:qiniu:settings:init` | Storage | Initialize missing Qiniu `common_setting` records (`qiniu.access_key`, `qiniu.secret_key`, `qiniu.bucket`, `qiniu.domain`) without overwriting existing values |
 
 ## 19. Service Container Wiring
 

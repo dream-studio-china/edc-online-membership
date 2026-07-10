@@ -46,6 +46,21 @@ services:
         tags:
             - { name: kernel.event_listener, event: kernel.response, priority: -10 }
 
+    App\Core\EventListener\AccessLogListener:
+        tags:
+            - { name: kernel.event_listener, event: kernel.response, priority: -5 }
+
+    Nyholm\Psr7\Factory\Psr17Factory: ~
+
+    Symfony\Bridge\PsrHttpMessage\Factory\PsrHttpFactory:
+        arguments:
+            - '@Nyholm\Psr7\Factory\Psr17Factory'
+            - '@Nyholm\Psr7\Factory\Psr17Factory'
+            - '@Nyholm\Psr7\Factory\Psr17Factory'
+            - '@Nyholm\Psr7\Factory\Psr17Factory'
+
+    Symfony\Bridge\PsrHttpMessage\HttpMessageFactoryInterface: '@Symfony\Bridge\PsrHttpMessage\Factory\PsrHttpFactory'
+
     Symfony\Component\DependencyInjection\ContainerInterface: '@service_container'
     Psr\Log\LoggerInterface: '@logger'
     Symfony\Component\Serializer\SerializerInterface: '@serializer'

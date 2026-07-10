@@ -12,6 +12,7 @@ use App\Payment\Exception\PaymentVerificationException;
 use App\Payment\Service\PaymentGatewayInterface;
 use App\Wechat\Repository\WechatUserRepository;
 use App\Wechat\Service\WechatService;
+use Symfony\Bridge\PsrHttpMessage\HttpMessageFactoryInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -22,6 +23,7 @@ final class WechatPayGateway implements PaymentGatewayInterface
     public function __construct(
         private readonly WechatService $wechatService,
         private readonly WechatUserRepository $wechatUserRepository,
+        private readonly HttpMessageFactoryInterface $psrHttpFactory,
         #[Autowire('%wechat.pay.notify_url%')]
         private readonly string $notifyUrl,
     ) {}
@@ -97,8 +99,9 @@ final class WechatPayGateway implements PaymentGatewayInterface
             $server = $app->getServer();
 
             $notifyResult = null;
-            $server->handlePaid(function ($message, \Closure $next) use ($app, $request, &$notifyResult) {
-                $app->getValidator()->validate($request);
+            $psrRequest = $this->psrHttpFactory->createRequest($request);
+            $server->handlePaid(function ($message, \Closure $next) use ($app, $psrRequest, &$notifyResult) {
+                $app->getValidator()->validate($psrRequest);
 
                 $notifyResult = new PaymentNotifyResult(
                     payment: self::getName(),
@@ -117,13 +120,18 @@ final class WechatPayGateway implements PaymentGatewayInterface
                 return $next($message);
             });
 
-            $server->serve();
+            $response = $server->serve($psrRequest);
 
-            if ($notifyResult === null) {
-                throw new PaymentVerificationException('WeChat notify: unsupported event type.');
+            if ($notifyResult !== null) {
+                return $notifyResult;
             }
 
-            return $notifyResult;
+            $body = (string) $response->getBody();
+            throw new PaymentVerificationException(
+                sprintf('WeChat notify failed: HTTP %d, body: %s', $response->getStatusCode(), $body),
+            );
+        } catch (PaymentVerificationException $e) {
+            throw $e;
         } catch (\Throwable $e) {
             throw new PaymentVerificationException(
                 'WeChat notify verification failed: ' . $e->getMessage(),

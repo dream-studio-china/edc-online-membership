@@ -20,6 +20,7 @@ use EasyWeChat\Pay\Application as PayApp;
 use EasyWeChat\Pay\Merchant;
 use EasyWeChat\Pay\Utils;
 use PHPUnit\Framework\TestCase;
+use Symfony\Bridge\PsrHttpMessage\HttpMessageFactoryInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -27,16 +28,19 @@ final class WechatPayGatewayTest extends TestCase
 {
     private WechatService $wechatService;
     private WechatUserRepository $wechatUserRepo;
+    private HttpMessageFactoryInterface $psrHttpFactory;
     private WechatPayGateway $gateway;
 
     protected function setUp(): void
     {
         $this->wechatService = $this->createMock(WechatService::class);
         $this->wechatUserRepo = $this->createMock(WechatUserRepository::class);
+        $this->psrHttpFactory = $this->createMock(HttpMessageFactoryInterface::class);
 
         $this->gateway = new WechatPayGateway(
             $this->wechatService,
             $this->wechatUserRepo,
+            $this->psrHttpFactory,
             'https://example.com/notify/wechat',
         );
     }
@@ -99,7 +103,7 @@ final class WechatPayGatewayTest extends TestCase
         $server->method('serve')->willReturn($this->createMock(\Psr\Http\Message\ResponseInterface::class));
 
         self::expectException(PaymentVerificationException::class);
-        self::expectExceptionMessage('unsupported event type');
+        self::expectExceptionMessage('WeChat notify failed');
 
         $this->gateway->notify(Request::create('/notify', 'POST'));
     }

@@ -91,6 +91,52 @@ class OrderController extends RestController
         return $this->success($order->getItems()->toArray());
     }
 
+    #[Route('/{id<\d+>}/submit', name: 'submit', methods: ['POST'])]
+    public function submitAction(int $id): Response
+    {
+        return $this->applyUserOrderTransition(
+            $id,
+            'submit',
+            'Order cannot be submitted in current status.',
+            'Order submitted',
+        );
+    }
+
+    #[Route('/{id<\d+>}/confirm', name: 'confirm', methods: ['POST'])]
+    public function confirmAction(int $id): Response
+    {
+        return $this->applyUserOrderTransition(
+            $id,
+            'confirm',
+            'Order cannot be confirmed in current status.',
+            'Order confirmed',
+        );
+    }
+
+    private function applyUserOrderTransition(int $id, string $transition, string $invalidMessage, string $successMessage): Response
+    {
+        $order = $this->service->get(['id' => $id]);
+
+        if (!$order) {
+            return $this->warning('Order not found.', 404, '', 404);
+        }
+
+        $user = $this->getUser();
+        if ($user === null || $order->getUser()?->getId() !== $user->getId()) {
+            return $this->warning('Order not found.', 404, '', 404);
+        }
+
+        if (!$this->workflow->can($order, $transition)) {
+            return $this->warning($invalidMessage, 400, '', 400);
+        }
+
+        $this->service->wrapInTransaction(function () use ($order, $transition) {
+            $this->workflow->apply($order, $transition);
+        });
+
+        return $this->success($order, $successMessage);
+    }
+
     #[Route('/{id<\d+>}/cancel', name: 'cancel', methods: ['POST'])]
     public function cancelAction(int $id): Response
     {
