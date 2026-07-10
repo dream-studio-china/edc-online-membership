@@ -38,6 +38,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'json')]
     private array $roles = [];
 
+    #[ORM\OneToOne(mappedBy: 'user', targetEntity: Profile::class, cascade: ['persist', 'remove'])]
+    private ?Profile $profile = null;
+
     public function __toString(): string
     {
         return $this->username !== '' ? $this->username : $this->email;
@@ -123,5 +126,19 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function eraseCredentials(): void
     {
+    }
+
+    public function getProfile(): ?Profile
+    {
+        return $this->profile;
+    }
+
+    public function setProfile(?Profile $profile): self
+    {
+        $this->profile = $profile;
+        if ($profile !== null && $profile->getUser() !== $this) {
+            $profile->setUser($this);
+        }
+        return $this;
     }
 }
