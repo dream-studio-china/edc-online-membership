@@ -586,7 +586,7 @@ class ContentController extends RestController
 ./vendor/bin/phpunit tests/Core/Service/BaseServiceUnitTest.php
 ```
 
-带覆盖率（CI 强制 85% 最低线）：
+带覆盖率（CI 强制 90% 最低线）：
 
 ```bash
 XDEBUG_MODE=coverage ./vendor/bin/phpunit --coverage-text

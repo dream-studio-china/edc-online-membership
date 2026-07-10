@@ -25,7 +25,7 @@ src/
 | Database | MySQL 8 |
 | Auth | JWT (RS256) + OTP (SMS via Alibaba Cloud) |
 | API Docs | Swagger UI (`/api/doc`) via NelmioApiDocBundle |
-| Testing | PHPUnit 12.5 (85% coverage minimum, currently 85.50%) |
+| Testing | PHPUnit 12.5 (90% coverage minimum, currently 90.06%) |
 | Assets | Stimulus + Turbo via AssetMapper |
 
 ## Key Features

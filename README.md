@@ -594,7 +594,7 @@ Run a single test file:
 ./vendor/bin/phpunit tests/Core/Service/BaseServiceUnitTest.php
 ```
 
-With code coverage report (CI enforces 85% threshold):
+With code coverage report (CI enforces 90% threshold):
 
 ```bash
 XDEBUG_MODE=coverage ./vendor/bin/phpunit --coverage-text
