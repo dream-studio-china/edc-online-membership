@@ -1,6 +1,6 @@
 # CRUD Skeleton - Full Codebase Context
 
-> Context snapshot. Last updated: 2026-07-04
+> Context snapshot. Last updated: 2026-07-10
 
 ---
 
@@ -14,11 +14,13 @@
 - EasyWeChat 6.x integration (Mini Program, Official Account OAuth, WeChat Pay V3)
 - NelmioApiDoc (Swagger at `/api/doc`), PHPUnit 12.5, Docker Compose (5 services)
 - MkDocs Material + GitHub Pages documentation
+- **i18n**: Symfony Translation with en, zh, zh_Hant, ja — all user-facing messages, entity/field names, and status values translated
 
 ## 2. Directory Structure
 
 ```
 ├── public/index.php              # Front controller
+├── public/.htaccess              # Apache rewrite rules + Authorization header forwarding
 ├── src/Kernel.php                # Symfony Kernel (MicroKernelTrait)
 ├── bin/console                   # CLI entry point
 │
@@ -30,7 +32,7 @@
 │   ├── Service/Concern/                 # Traits: Infrastructure, ReadList, Mutation
 │   ├── Parser/ExpressionDqlParser.php   # Expression → DQL compiler
 │   ├── Serializer/FlatNormalizer.php    # Custom object normalizer (Doctrine internal objects → class names)
-│   ├── EventListener/                   # ExceptionInterceptor, ControllerListener, OpenApiEnricherListener
+│   ├── EventListener/                   # ExceptionInterceptor, ControllerListener, OpenApiEnricherListener, LocaleListener, AccessLogListener
 │   └── Utils/                           # UUID, Math, RSA, Location, Inflect, etc.
 │
 ├── src/Common/                   # CMS module: Category, Tag, Content, Comment, Page, Media, Setting
@@ -98,16 +100,22 @@
 │   └── packages/
 │       ├── nelmio_api_doc.yaml   # OpenAPI 3.1 config: System + Wechat tags
 │       ├── security.yaml         # PUBLIC_ACCESS: docs/auth/webhooks/wechat + GET /api/v1/public/*
+│       ├── translation.yaml      # Translator config: default_locale en, translations/ path
 │       ├── workflow.yaml         # Order state machine (draft→completed)
 │       └── ...
 ├── migrations/                   # Doctrine migrations (latest adds media category relation)
+├── translations/                 # i18n translation files (messages.en/zh/zh_Hant/ja.yaml)
 ├── docs/
 │   ├── ai/context.md             # This file
 │   ├── design/                   # Design contracts
 │   │   └── bundles/              # Per-module design docs (core, common, trade, wallet, identity, wechat)
 │   └── openapi/                       # endpoints.yaml + order/payment frontend flow docs
 ├── scripts/tests/                # Test scripts
-├── tests/                        # 1130 PHPUnit tests, 3973 assertions
+├── tests/                        # 1221 PHPUnit tests, 4199 assertions, 90%+ coverage
+├── README.md                     # English README
+├── README.zh-cn.md               # Chinese (Simplified) README
+├── README.zh-hant.md             # Chinese (Traditional) README
+├── README.ja.md                  # Japanese README
 ├── mkdocs.yml                    # MkDocs Material config
 ├── compose.yaml                  # Production deployment: app (PHP-FPM), nginx, MySQL, Redis, Mailpit
 ├── compose.override.yaml         # Dev overrides (source mount, debug, exposed ports)
@@ -162,6 +170,8 @@
 **UserService** (`App\Identity\Service\UserService`): encapsulates register, verifyPassword, changePassword, adminChangePassword, updateProfile. Auto-hashes passwords in `update()`.
 
 **Token management**: RS256 JWT (7200s TTL), HMAC-SHA256 refresh tokens with rotation + reuse detection.
+
+**Translation**: AuthController, OtpController, LoginController inject `TranslatorInterface` and pass error messages through `trans()`. JwtAuthenticator also translates `onAuthenticationFailure()` messages.
 
 ## 5. Dynamic Query System
 
@@ -383,11 +393,61 @@ Implements `PaymentGatewayInterface` with `getName() → 'wechat'`:
 
 When `$this->getUser()` returns null in App controllers, `commonFilter()` returns `['id' => -1]` to block all records (security: unauthenticated users see nothing).
 
-## 9.5 Storage Module
+## 10. Internationalization (i18n)
+
+### 10.1 Architecture
+
+Symfony Translation component with 4 locales. Translation files are YAML-based under `translations/`.
+
+| Locale | File | Language |
+|--------|------|----------|
+| `en` | `translations/messages.en.yaml` | English (default, identity mapping) |
+| `zh` | `translations/messages.zh.yaml` | Chinese (Simplified) |
+| `zh_Hant` | `translations/messages.zh_Hant.yaml` | Chinese (Traditional) |
+| `ja` | `translations/messages.ja.yaml` | Japanese |
+
+**~280 translation keys** per locale covering: entity names (18), field names (95), status/enum values (17), authentication/JWT messages, WeChat errors, Core framework errors (View mixins, Service traits), success messages, Wallet/Trade/Payment/media/Storage errors, expression parser errors, and more.
+
+### 10.2 Translation Flow
+
+All user-facing messages pass through the translator:
+
+| Source | Method | Translation Point |
+|--------|--------|-------------------|
+| Uncaught exceptions (API routes) | `ExceptionInterceptor::onKernelException()` | `$this->translator->trans($exception->getMessage())` |
+| Controller warnings | `RestController::warning()` | `$this->getTranslator()->trans($error_msg)` |
+| Auth/Otp/Login errors | `AuthController::error()` etc. | `$this->translator->trans($message)` |
+| JWT auth failures | `JwtAuthenticator::onAuthenticationFailure()` | `$this->translator->trans($messageKey)` |
+| Entity field names | `EntityController` `/system/entities/{name}` | `$this->getTranslator()->trans($plainTextFieldName)` |
+
+### 10.3 LocaleListener (`src/Core/EventListener/LocaleListener.php`)
+
+Registered at `kernel.request` priority 20. Language detection priority:
+
+1. **`?_locale=` query parameter** — explicit override (e.g., `?_locale=ja`)
+2. **`Accept-Language` header** — browser-sent preference with quality factor ordering  
+   - `zh-CN`, `zh-Hans` → `zh`  
+   - `zh-TW`, `zh-HK`, `zh-Hant` → `zh_Hant`  
+   - `ja-JP` → `ja`  
+   - `en-US`, `en-GB` → `en`
+3. **Fallback** — `config/packages/translation.yaml` `default_locale: en`
+
+Sub-requests are ignored.
+
+### 10.4 Multi-language README
+
+| Language | File |
+|----------|------|
+| English | `README.md` |
+| Chinese (Simplified) | `README.zh-cn.md` |
+| Chinese (Traditional) | `README.zh-hant.md` |
+| Japanese | `README.ja.md` |
+
+## 11. Storage Module
 
 Storage is an infrastructure module under `src/Storage/`. Common/Media depends only on `MediaStorageInterface` and `MediaStorageRegistry`; Storage does not depend on Common entities or controllers.
 
-### 9.5.1 Drivers
+### 11.1 Drivers
 
 | Driver | Class | Configuration | Notes |
 |--------|-------|---------------|-------|
@@ -396,7 +456,7 @@ Storage is an infrastructure module under `src/Storage/`. Common/Media depends o
 
 Qiniu SDK note: `qiniu/php-sdk` is intentionally not required by `composer.json` because v7.14 emits PHP 8.5 vendor deprecations. `QiniuStorage` checks for `Qiniu\Auth`, `Qiniu\Storage\UploadManager`, and `Qiniu\Storage\BucketManager` only when `storage=qiniu` is used; if missing, it throws a clear runtime error. Server deployments that need Qiniu may install it locally with `composer require qiniu/php-sdk`.
 
-### 9.5.2 Media Upload Flow
+### 11.2 Media Upload Flow
 
 | Endpoint | Method | Auth | Description |
 |----------|--------|------|-------------|
@@ -416,7 +476,7 @@ Multipart fields:
 
 `Media` stores `storage`, nullable owner `user` (`ManyToOne User`, `ON DELETE SET NULL`), and nullable `category` (`ManyToOne Category`, `ON DELETE SET NULL`). Manage media create/update accepts `category` ids. Public media uses a QueryBuilder `commonFilter()` with `media.user IS NULL` because array criteria cannot express SQL `IS NULL`.
 
-## 10. System Introspection Endpoints
+## 12. System Introspection Endpoints
 
 | Endpoint | Method | Description |
 |----------|--------|-------------|
@@ -426,7 +486,7 @@ Multipart fields:
 
 Placed in `src/Core/Controller/System/` (framework layer). NelmioApiDoc path_patterns include `^/system`. Tag: `System`.
 
-## 11. Key Patterns
+## 13. Key Patterns
 
 | Pattern | Where | Detail |
 |---------|-------|--------|
@@ -453,15 +513,18 @@ Placed in `src/Core/Controller/System/` (framework layer). NelmioApiDoc path_pat
 | **OneToOne extension** | Wechat | `WechatUser` extends User identity without modifying User entity |
 | **Storage driver registry** | Storage | `MediaStorageInterface` implementations are tagged `media.storage`; callers select driver with multipart `storage` field |
 | **Media ownership** | Common | App media endpoints are user-scoped via `commonFilter()`, including delete. Manage media endpoints inherit App upload code but override `commonFilter()` to `[]`. Public media endpoints expose only ownerless media (`user IS NULL`) over anonymous GET. |
+| **Error response translation** | Identity + Core | AuthController, OtpController, LoginController, JwtAuthenticator inject `TranslatorInterface` — all error() and onAuthenticationFailure() methods pass messages through `trans()` |
+| **Locale auto-detection** | Core | `LocaleListener` at kernel.request priority 20: `?_locale=` param > `Accept-Language` header > default_locale fallback. Sub-requests are ignored. |
+| **Apache .htaccess** | public/ | Rewrite all non-file requests to `index.php` + forward `Authorization` header via `SetEnvIf` for JWT in PHP-FPM environments |
 | **System introspection** | Core | Entity metadata + route export via `/system/*` endpoints |
 
-## 12. API Documentation System
+## 14. API Documentation System
 
-### 12.1 Architecture
+### 14.1 Architecture
 
 Controller `#[OA\*]` attributes → swagger-php (raw spec) → NelmioApiDocBundle (merge config) → `OpenApiEnricherListener` (post-process) → Swagger UI
 
-### 12.2 OpenApiEnricherListener (`src/Core/EventListener/OpenApiEnricherListener.php`)
+### 14.2 OpenApiEnricherListener (`src/Core/EventListener/OpenApiEnricherListener.php`)
 
 Enriches all endpoints (90+):
 - **`detectTag()`**: Infers module tag from `operationId`: `manage-products-*` → Products, `system-*` → System, `wechat-*` → Wechat, `sys-auth-*` → Auth, etc.
@@ -470,7 +533,7 @@ Enriches all endpoints (90+):
 - **Generic tag removal**: Filters out operation-type tags (List, Detail, Create, Update, Delete, Workflow) from swagger-php output — replaced with module tags
 - Registered in `services.yaml` as `kernel.event_listener` on `kernel.response` (priority -10)
 
-### 12.3 Tag Auto-Detection
+### 14.3 Tag Auto-Detection
 
 | operationId Pattern | Tag |
 |---------------------|-----|
@@ -489,11 +552,11 @@ Enriches all endpoints (90+):
 | `manage-wallets-*`, `manage-transactions-*`, `manage-transfers-*` | Wallet |
 | Any other `manage-{X}-*` | {X} (auto-title-cased) |
 
-### 12.4 Schema Configuration (`config/packages/nelmio_api_doc.yaml`)
+### 14.4 Schema Configuration (`config/packages/nelmio_api_doc.yaml`)
 
 42+ named schemas across 11 tags (Auth, Products, Orders, Categories, Tags, Contents, Comments, Pages, Media, Settings, Wallet, System, Wechat). Each with field-level type, description, enum, and example values. `path_patterns` includes both `^/api` and `^/system`.
 
-## 13. Database Tables (10 Migrations)
+## 15. Database Tables (10 Migrations)
 
 | Version | Tables |
 |---------|--------|
@@ -508,7 +571,7 @@ Enriches all endpoints (90+):
 | 20260703000000 | Added to `common_media`: `storage`, nullable `user_id` FK to `users` |
 | 20260703010000 | Added to `common_media`: nullable `category_id` FK to `common_category` |
 
-## 14. Documentation Assets
+## 16. Documentation Assets
 
 | File | Purpose |
 |------|---------|
@@ -534,25 +597,25 @@ Enriches all endpoints (90+):
 | `scripts/tests/simulate-trade.php` | Generates 100 orders across all 8 statuses into `var/test.db` |
 | `scripts/tests/demo-trade-workflow.php` | E2E workflow demo (all transitions + guards) |
 
-## 15. Testing
+## 17. Testing
 
 - **Framework**: PHPUnit 12.5
 - **DB**: SQLite `var/test.db` in test environment
-- **Coverage**: 80% minimum (enforced in CI), currently **88.80% lines** (`4630/5214`) from latest local Xdebug run
-- **Test count**: **1130 tests**, **3973 assertions**
+- **Coverage**: 85% minimum (enforced in CI), currently **90.06% lines** (`4795/5324`) from latest local Xdebug run
+- **Test count**: **1221 tests**, **4199 assertions**
 - **Local PHP note**: default `php` may point to PHP 7.4; use Homebrew PHP 8.5 at `/opt/homebrew/opt/php@8.5/bin/php` for local Symfony/PHPUnit commands.
-- **Storage/upload coverage**: Storage + Media upload/delete functionality is covered by real local-upload integration tests (`POST /api/v1/manage/media/upload` writes to `public/uploads`, delete removes the file; `DELETE /api/v1/app/media/{id}` deletes only the current user's own upload and returns 404 for other users' media). Current focused media coverage is 100% for `App\Common\Controller\App\MediaController`, `Manage\MediaController`, `Public\MediaController`, `Common\Entity\Media`, and `MediaService`.
+- **HTML coverage report**: `XDEBUG_MODE=coverage ./vendor/bin/phpunit --coverage-html var/coverage`
 - **Key test groups**:
-  - `tests/Wechat/`: 59 tests (Entity, Service, AuthService, Payment/Gateway, Controller, Repository)
-  - `tests/Trade/`: 171+ tests (Entity, Service, Pricing, Integration, EventListener, Workflow API; app order creation persists optional metadata)
+  - `tests/Trade/`: 171+ tests + Controller/Manage/OrderControllerTest (16 tests for not-found, workflow guards, payment validation)
   - `tests/Wallet/`: ~105 tests (Entity, Integration, Transfer Service, WalletService, Payment/Gateway, API regression)
   - `tests/Common/`: 69 tests (Entity, Integration, Batch update, media upload/delete)
   - `tests/Identity/`: 92 tests (Auth, OTP, Token, Black box, UserService, UserController, UserApiIntegration)
   - `tests/Payment/`: ~60 tests (Gateway, Registry, Adjustment/Provider, Invoice, Multi-gateway integration)
+  - `tests/Wechat/`: 59 tests (Entity, Service, AuthService, Payment/Gateway, Controller, Repository)
+  - `tests/Core/`: 70+ tests (BaseService, RestController, Parser, Serializer, LocaleListener, MutationTrait, Utils, System controllers)
   - `tests/Integration/`: ~20 cross-module tests
-  - `tests/Core/`: BaseService, RestController, Parser, Serializer, Utils, System controllers
 
-## 16. Environment Variables (Key)
+## 18. Environment Variables (Key)
 
 | Var | Purpose |
 |-----|---------|
@@ -573,7 +636,7 @@ Enriches all endpoints (90+):
 
 Qiniu configuration is intentionally **not** environment-variable based. Configure these records in `common_setting` when `storage=qiniu` is needed: `qiniu.access_key`, `qiniu.secret_key`, `qiniu.bucket`, `qiniu.domain`.
 
-## 17. Docker Deployment
+## 19. Docker Deployment
 
 ### 17.1 Architecture
 
@@ -599,18 +662,20 @@ Requires `.env.prod.local` copied from `.env.prod.example` with `APP_SECRET`, `R
 
 `compose.yaml` provides defaults for `DATABASE_URL`, `MAILER_DSN`, `OTP_REDIS_DSN`, and JWT key paths. Required vars use `${VAR:?required}` which fails fast if missing. Optional vars use `${VAR:-}` which defaults to empty.
 
-## 18. Console Commands
+## 20. Console Commands
 
 | Command | Module | Purpose |
 |---------|--------|---------|
 | `app:identity:user:create` | Identity | Create user: email, username, password, --phone, --role, --admin, --phone-verified |
 | `app:storage:qiniu:settings:init` | Storage | Initialize missing Qiniu `common_setting` records (`qiniu.access_key`, `qiniu.secret_key`, `qiniu.bucket`, `qiniu.domain`) without overwriting existing values |
 
-## 19. Service Container Wiring
+## 21. Service Container Wiring
 
 - Default: all `src/` classes autowired/autoconfigured
 - Explicit exclusions: `FlatNormalizer`, EventListener classes (except `OpenApiEnricherListener`), Auth/Otp controllers, TokenManager, AliyunSmsProvider, RedisOtpStorage, **Storage concrete drivers**, **WechatService, `src/Wechat/Service/Payment/WechatPayGateway.php`**
 - `OpenApiEnricherListener`: registered with `kernel.event_listener` tag on `kernel.response` (priority -10)
+- `AccessLogListener`: registered with `kernel.event_listener` tag on `kernel.response` (priority -5)
+- `LocaleListener`: registered with `kernel.event_listener` tag on `kernel.request` (priority 20)
 - `RestController` subclasses get `RequestStack`, `SerializerInterface`, `TranslatorInterface` via `#[Required]` setter injection
 - `PaymentGatewayInterface` implementations auto-tagged `payment.gateway`, collected via `#[AutowireIterator]`
 - `PaymentAdjustmentProviderInterface` implementations auto-tagged `payment.adjustment_provider`, collected via `#[AutowireIterator]`
