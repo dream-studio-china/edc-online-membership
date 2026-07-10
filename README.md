@@ -58,7 +58,7 @@ Compared with plain generated boilerplate, it provides:
 - **CRUD Service Abstraction**: `new()`, `get()`, `list()`, `update()`, `remove()`.
 - **Dynamic Query System**: Filter, sort, order, select, group by via request parameters with expression-to-DQL compilation.
 - **Trait-Based Controller Composition**: 9 mixin traits (List, Detail, Create, Update, Delete, Workflow, Singleton, Transform) composed into controllers.
-- **Modular Architecture**: Core framework + Common (CMS) + Trade (E-Commerce) + Payment + Wallet + Wechat (Login + Pay) + Storage (file upload drivers) + Identity (Auth) modules.
+- **Modular Architecture**: Core framework + Common (CMS) + Promotion (DSL-driven promotions) + Trade (E-Commerce) + Payment + Wallet + Wechat (Login + Pay) + Storage (file upload drivers) + Identity (Auth) modules.
 - **JWT Authentication**: RS256 access tokens, HMAC-SHA256 refresh token rotation with reuse detection.
 - **OTP Login**: Phone-based one-time password via Alibaba Cloud SMS, rate-limited.
 - **Password Registration**: Self-service sign-up with email/username/phone uniqueness validation.
@@ -72,7 +72,9 @@ Compared with plain generated boilerplate, it provides:
 - **Pluggable File Storage**: `MediaStorageInterface` with local and Qiniu Kodo drivers — tagged iterator auto-discovery.
 - **OpenAPI Documentation**: NelmioApiDocBundle with `#[OA\*]` attributes, Swagger UI at `/api/doc`.
 - **System Introspection**: Entity metadata and route export endpoints (`/system/*`).
-- **Comprehensive Testing**: 1221 tests, 4199 assertions, 90%+ line coverage.
+- **Promotion DSL Engine**: Custom lexer/parser/evaluator for human-readable promotion rules with 7 promotion types (full_reduction, discount, gift, nth_discount, tiered, free_shipping, member_discount). Tagged pricing calculator (priority=60) sits in the Trade price pipeline.
+- **Profile Entity**: Auto-created on User registration via Doctrine listener. Carries level (bronze→diamond), nickname, avatar, metadata. Points delegated to Wallet (currency=POINTS).
+- **Comprehensive Testing**: 1583 tests, 5142 assertions, 91%+ line coverage.
 - **Docker Compose**: MySQL 8 + Mailpit for development.
 
 ## Tech Stack
@@ -149,18 +151,32 @@ See `composer.json` for the full dependency list.
 │   │   │   ├── LocalStorage.php       # Local filesystem (public/uploads/)
 │   │   │   └── QiniuStorage.php       # Qiniu Kodo CDN
 │   │   └── Resources/config/     #   services_storage.yaml
+│   ├── Storage/                  # Storage module (pluggable file upload drivers)
+│   │   ├── Service/              #   MediaStorageInterface, MediaStorageRegistry
+│   │   │   ├── LocalStorage.php       # Local filesystem (public/uploads/)
+│   │   │   └── QiniuStorage.php       # Qiniu Kodo CDN
+│   │   └── Resources/config/     #   services_storage.yaml
+│   ├── Promotion/                # Promotion module (DSL engine)
+│   │   ├── Controller/App/       #   Read-only promotion endpoints
+│   │   ├── Controller/Manage/    #   Admin promotion CRUD
+│   │   ├── Entity/               #   PromotionTemplate, Promotion
+│   │   ├── Repository/
+│   │   ├── Service/              #   PromotionService, PromotionTemplateService, PromotionCalculator
+│   │   │   └── Dsl/              #   DSL lexer/parser/evaluator
+│   │   ├── Strategy/             #   7 promotion strategies
+│   │   └── Exception/
 │   └── Identity/                 # Authentication module
 │       ├── Controller/           #   AuthController, OtpController
-│       ├── Controller/App/       #   UserController (profile, change-password)
-│       ├── Controller/Manage/    #   UserController (admin CRUD)
+│       ├── Controller/App/       #   UserController (profile, change-password), ProfileController
+│       ├── Controller/Manage/    #   UserController (admin CRUD), ProfileController
 │       ├── Command/              #   CreateUserCommand (CLI)
-│       ├── Entity/               #   User, RefreshToken
+│       ├── Entity/               #   User, RefreshToken, Profile
 │       ├── Security/             #   JwtAuthenticator, TokenManager
 │       └── Service/              #   UserService (register, password management), OtpService, SMS providers
 ├── config/                       # Symfony configuration
 │   └── packages/                 #   Doctrine, Security, Workflow, Serializer, etc.
-├── migrations/                   # Doctrine migrations (8 versions)
-├── tests/                        # 1221 PHPUnit tests, 4199 assertions, 90%+ coverage
+├── migrations/                   # Doctrine migrations (12 versions)
+├── tests/                        # 1583 PHPUnit tests, 5142 assertions, 91%+ coverage
 ├── docs/                         # Project documentation
 │   ├── design/                   #   Design contracts (system, API, data, module, controller)
 │   │   └── bundles/              #   Per-module design documents
@@ -353,7 +369,8 @@ The app runs at `http://localhost:${APP_PORT:-8080}`.
 | **Payment** | `App\Payment` | Invoicing & orchestration | Invoice (cents + workflow), Gateway abstraction (mock/wallet/wechat), **Payment adjustment provider contract**, Webhooks, Events |
 | **Wechat** | `App\Wechat` | WeChat integration | Mini Program/Official Account login, WeChat Pay V3, WechatUser (OneToOne→User) |
 | **Storage** | `App\Storage` | File upload drivers | `MediaStorageInterface`, LocalStorage, QiniuStorage, tagged iterator auto-discovery |
-| **Identity** | `App\Identity` | Authentication | JWT (RS256), OTP (SMS), Refresh token rotation, Password registration, User profile/CRUD |
+| **Promotion** | `App\Promotion` | DSL-driven promotions | Custom DSL lexer/parser/evaluator, 7 strategy types, tagged `trade.price_calculator` (priority 60) |
+| **Identity** | `App\Identity` | Authentication | JWT (RS256), OTP (SMS), Refresh token rotation, Password registration, User profile/CRUD, Profile entity (auto-created, level, points delegated to Wallet) |
 
 ## API Endpoints
 
@@ -367,6 +384,14 @@ The app runs at `http://localhost:${APP_PORT:-8080}`.
 | POST | `/api/auth/otp/verify` | Verify OTP |
 | POST | `/api/auth/token/refresh` | Rotate refresh token |
 | POST | `/api/auth/logout` | Revoke tokens |
+
+### Profile (`/api/v1/app/profiles`, `/api/v1/manage/profiles`)
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/v1/app/profiles` | Current user profile (self-service) |
+| PUT | `/api/v1/app/profiles` | Update nickname, avatar, metadata |
+| GET/POST/PUT/DELETE | `/api/v1/manage/profiles[/{id}]` | Admin profile CRUD (including level) |
 
 ### User (`/api/v1/app/users`, `/api/v1/manage/users`)
 
@@ -457,6 +482,15 @@ Resources: `categories`, `contents`, `tags`, `comments`, `pages`, `media`, `sett
 | POST | `/api/wechat/oauth/callback` | OAuth callback (`code` → JWT) |
 | GET | `/api/v1/app/wechat-users` | User-scoped WechatUser CRUD |
 | GET | `/api/v1/manage/wechat-users` | Admin WechatUser CRUD |
+
+### Promotion
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/v1/app/promotions` | List active promotions |
+| GET | `/api/v1/app/promotions/{id}` | Promotion detail |
+| GET/POST/PUT/DELETE | `/api/v1/manage/promotions[/{id}]` | Admin promotion CRUD |
+| GET/POST/PUT/DELETE | `/api/v1/manage/promotion-templates[/{id}]` | Admin promotion template CRUD (DSL authoring) |
 
 ### System Introspection (`/system`)
 
@@ -573,14 +607,14 @@ Note on controller construction: Controllers extending `RestController` receive 
 ## Documentation
 
 - **[Design Contracts](docs/design/)** — System architecture, API design, data model, module design, controller contract, cross-cutting contracts
-- **[Bundle Design Docs](docs/design/bundles/)** — Per-module design documents (Core, Common, Trade, Wallet, Identity)
+- **[Bundle Design Docs](docs/design/bundles/)** — Per-module design documents (Core, Common, Trade, Wallet, Identity, Promotion)
 - **[AI Context](docs/ai/context.md)** — Full codebase snapshot for AI-assisted development
 - **[API Docs](/api/doc)** — Interactive Swagger UI (when running locally)
 - **[QUICKSTART.md](QUICKSTART.md)** — 5-10 minute setup guide
 
 ## Testing
 
-**1221 tests · 4199 assertions · 90%+ line coverage**
+**1583 tests · 5142 assertions · 91%+ line coverage**
 
 Run all tests:
 
@@ -618,7 +652,8 @@ Then open `var/coverage/index.html` in a browser.
 | Trade | 171+ | Orders, pricing pipeline, workflow, app order creation with metadata |
 | Wallet | 105+ | Transfers, wallet service, payment gateway, balance audit API |
 | Payment | 60+ | Gateways, registry, adjustments, invoices, multi-gateway integration |
-| Identity | 92+ | Auth, OTP, tokens, UserService, UserController, integration |
+| Identity | 116+ | Auth, OTP, tokens, UserService, UserController, integration, Profile entity/controller |
+| Promotion | 197+ | Entities, DSL lexer/parser/evaluator, strategies, engine, calculator, controllers |
 | Wechat | 59+ | Auth, service, payment gateway, controller, repository |
 | Core | 70+ | BaseService, RestController, expression parser, serializer, system controllers |
 | Integration | 20+ | Cross-module integration tests |

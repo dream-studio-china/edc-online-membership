@@ -59,7 +59,7 @@
 - **CRUD 服务抽象**：`new()`、`get()`、`list()`、`update()`、`remove()`。
 - **动态查询系统**：通过请求参数控制筛选/排序/排序/分组/字段选择，表达式编译为 DQL。
 - **Trait 组合式控制器**：9 个 mixin trait（List、Detail、Create、Update、Delete、Workflow、Singleton、Transform）可按需组合。
-- **模块化架构**：Core 框架 + Common（CMS） + Trade（电商） + Payment（支付） + Wallet（钱包） + Wechat（微信登录+支付） + Storage（文件存储驱动） + Identity（鉴权）。
+- **模块化架构**：Core 框架 + Common（CMS） + Promotion（DSL 驱动促销引擎） + Trade（电商） + Payment（支付） + Wallet（钱包） + Wechat（微信登录+支付） + Storage（文件存储驱动） + Identity（鉴权）。
 - **JWT 鉴权**：RS256 访问令牌，HMAC-SHA256 Refresh Token 轮换，含重用检测。
 - **OTP 登录**：基于手机验证码的短信登录，带频率限制（阿里云）。
 - **订单状态机**：Symfony Workflow（草稿 → 完成），含完整工作流 API。
@@ -70,7 +70,9 @@
 - **可插拔文件存储**：`MediaStorageInterface`，本地与七牛 Kodo 驱动 — tagged iterator 自动发现。
 - **OpenAPI 文档**：NelmioApiDocBundle + `#[OA\*]` 属性，`/api/doc` 提供 Swagger UI。
 - **系统自省**：实体元数据和路由导出接口（`/system/*`）。
-- **完善的测试**：1221 个测试，4199 个断言，90%+ 行覆盖率。
+- **促销 DSL 引擎**：自定义词法/语法/求值器，支持 7 种促销类型（满减、折扣、赠品、第 N 件折扣、阶梯、免运费、会员折扣）。作为标签定价计算器（优先级 60）嵌入 Trade 价格管道。
+- **Profile 实体**：用户注册时通过 Doctrine 监听器自动创建。包含等级（青铜→钻石）、昵称、头像、元数据。积分委托给 Wallet（currency=POINTS）。
+- **完善的测试**：1583 个测试，5142 个断言，91%+ 行覆盖率。
 - **Docker Compose**：MySQL 8 + Mailpit 开发环境。
 
 ## 技术栈
@@ -147,21 +149,30 @@
 │   │   │   ├── LocalStorage.php       # 本地文件系统（public/uploads/）
 │   │   │   └── QiniuStorage.php       # 七牛 Kodo CDN
 │   │   └── Resources/config/     #   services_storage.yaml
+│   ├── Promotion/                # 促销模块（DSL 引擎）
+│   │   ├── Controller/App/       #   只读促销接口
+│   │   ├── Controller/Manage/    #   管理端促销 CRUD
+│   │   ├── Entity/               #   PromotionTemplate、Promotion
+│   │   ├── Repository/
+│   │   ├── Service/              #   PromotionService、PromotionTemplateService、PromotionCalculator
+│   │   │   └── Dsl/              #   DSL 词法/语法/求值器
+│   │   ├── Strategy/             #   7 种促销策略
+│   │   └── Exception/
 │   └── Identity/                 # 鉴权模块
-│       ├── Controller/App/       #   UserController (个人信息、改密码)
-│       ├── Controller/Manage/    #   UserController (管理员 CRUD)
+│       ├── Controller/App/       #   UserController (个人信息、改密码)、ProfileController
+│       ├── Controller/Manage/    #   UserController (管理员 CRUD)、ProfileController
 │       ├── Command/              #   CreateUserCommand (CLI)
 │       ├── Controller/           #   AuthController、OtpController
-│       ├── Entity/               #   User、RefreshToken
+│       ├── Entity/               #   User、RefreshToken、Profile
 │       ├── Security/             #   JwtAuthenticator、TokenManager
 │       └── Service/              #   OtpService、短信供应商
 ├── config/                       # Symfony 配置
 │   └── packages/                 #   Doctrine、Security、Workflow、Serializer 等
-├── migrations/                   # Doctrine 迁移（8 个版本）
-├── tests/                        # 1221 个 PHPUnit 测试，4199 个断言，90%+ 覆盖率
+├── migrations/                   # Doctrine 迁移（12 个版本）
+├── tests/                        # 1583 个 PHPUnit 测试，5142 个断言，91%+ 覆盖率
 ├── docs/                         # 项目文档
 │   ├── design/                   #   设计契约（系统、API、数据、模块、控制器）
-│   │   └── bundles/              #   各模块设计文档
+│   │   │   └── bundles/              #   各模块设计文档（含 Promotion）
 │   └── ai/                       #   AI 上下文快照
 ├── compose.yaml                  # MySQL 8
 ├── compose.override.yaml         # 端口映射 + Mailpit
@@ -351,7 +362,8 @@ docker compose exec app php bin/console app:identity:user:create admin@example.c
 | **Payment** | `App\Payment` | 支付编排 | 发票（分+工作流）、网关抽象（mock/wallet/wechat）、**支付抵扣提供方契约**、Webhook、事件 |
 | **Wechat** | `App\Wechat` | 微信集成 | 小程序/公众号登录、微信支付 V3、WechatUser（OneToOne→User） |
 | **Storage** | `App\Storage` | 文件存储驱动 | `MediaStorageInterface`、LocalStorage、QiniuStorage、tagged iterator 自动发现 |
-| **Identity** | `App\Identity` | 鉴权 | JWT (RS256)、OTP (短信)、Refresh Token 轮换 |
+| **Promotion** | `App\Promotion` | DSL 驱动促销 | 自定义 DSL 词法/语法/求值器、7 种策略类型、作为 `trade.price_calculator`（优先级 60） |
+| **Identity** | `App\Identity` | 鉴权 | JWT (RS256)、OTP (短信)、Refresh Token 轮换、Profile 实体（自动创建、等级、积分委托给 Wallet） |
 
 ## API 路由
 
@@ -365,6 +377,14 @@ docker compose exec app php bin/console app:identity:user:create admin@example.c
 | POST | `/api/auth/otp/verify` | 验证验证码 |
 | POST | `/api/auth/token/refresh` | 刷新令牌 |
 | POST | `/api/auth/logout` | 退出登录 |
+
+### Profile (`/api/v1/app/profiles`, `/api/v1/manage/profiles`)
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| GET | `/api/v1/app/profiles` | 当前用户个人信息 |
+| PUT | `/api/v1/app/profiles` | 更新昵称、头像、元数据 |
+| GET/POST/PUT/DELETE | `/api/v1/manage/profiles[/{id}]` | 管理端 Profile CRUD（含等级） |
 
 ### User (`/api/v1/app/users`, `/api/v1/manage/users`)
 
@@ -451,6 +471,15 @@ docker compose exec app php bin/console app:identity:user:create admin@example.c
 | POST | `/api/wechat/oauth/callback` | OAuth 回调（`code` → JWT） |
 | GET | `/api/v1/app/wechat-users` | 用户范围 WechatUser CRUD |
 | GET | `/api/v1/manage/wechat-users` | 管理员 WechatUser CRUD |
+
+### Promotion
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| GET | `/api/v1/app/promotions` | 活跃促销列表 |
+| GET | `/api/v1/app/promotions/{id}` | 促销详情 |
+| GET/POST/PUT/DELETE | `/api/v1/manage/promotions[/{id}]` | 管理端促销 CRUD |
+| GET/POST/PUT/DELETE | `/api/v1/manage/promotion-templates[/{id}]` | 管理端促销模板 CRUD（DSL 编辑） |
 
 ### 系统自省 (`/system`)
 
@@ -567,12 +596,14 @@ class ContentController extends RestController
 ## 文档说明
 
 - **[设计契约](docs/design/)** — 系统架构、API 设计、数据模型、模块设计、控制器契约、跨切面契约
-- **[Bundle 设计文档](docs/design/bundles/)** — 各模块设计文档（Core、Common、Trade、Wallet、Identity）
+- **[Bundle 设计文档](docs/design/bundles/)** — 各模块设计文档（Core、Common、Trade、Wallet、Identity、Promotion）
 - **[AI 上下文](docs/ai/context.md)** — 为 AI 辅助编程准备的完整代码库快照
 - **[API 文档](/api/doc)** — 交互式 Swagger UI（本地运行时可用）
 - **[QUICKSTART.zh-cn.md](QUICKSTART.zh-cn.md)** — 5-10 分钟快速上手
 
 ## 测试
+
+**1583 个测试 · 5142 个断言 · 91%+ 行覆盖率**
 
 运行全部测试：
 
@@ -586,13 +617,33 @@ class ContentController extends RestController
 ./vendor/bin/phpunit tests/Core/Service/BaseServiceUnitTest.php
 ```
 
-带覆盖率（CI 强制 90% 最低线）：
+带覆盖率报告：
 
 ```bash
 XDEBUG_MODE=coverage ./vendor/bin/phpunit --coverage-text
 ```
 
+生成 HTML 覆盖率报告：
+
+```bash
+XDEBUG_MODE=coverage ./vendor/bin/phpunit --coverage-html var/coverage
+```
+
 `phpunit.dist.xml` 已配置 `APP_ENV=test` 以及 `KERNEL_CLASS=App\Kernel`。
+
+### 测试分组
+
+| 分组 | 数量 | 覆盖范围 |
+|------|------|----------|
+| Common | 69+ | CMS 实体、媒体上传/删除、批量更新 |
+| Trade | 171+ | 订单、定价管道、工作流 |
+| Wallet | 105+ | 转账、钱包服务、支付网关、余额审计 |
+| Payment | 60+ | 网关、注册表、调整、发票、多网关集成 |
+| Identity | 116+ | 认证、OTP、令牌、UserService、Profile 实体/控制器 |
+| Promotion | 197+ | 实体、DSL 词法/语法/求值器、策略、引擎、计算器、控制器 |
+| Wechat | 59+ | 认证、服务、支付网关、控制器、仓库 |
+| Core | 70+ | BaseService、RestController、表达式解析器、序列化器、系统控制器 |
+| Integration | 20+ | 跨模块集成测试 |
 
 ## Docker 部署
 
