@@ -75,3 +75,10 @@ wechat_manage:
         path: ../src/Wechat/Controller/Manage/
         namespace: App\Wechat\Controller\Manage
     type: attribute
+
+api_promotion:
+    prefix: /api/v1
+    resource:
+        path: ../src/Promotion/Controller/
+        namespace: App\Promotion\Controller
+    type: attribute
