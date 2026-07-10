@@ -192,10 +192,11 @@ public const PHASE_OUTER = 1;
 | `startTime` | datetime_immutable nullable | Campaign start |
 | `endTime` | datetime_immutable nullable | Campaign end |
 | `config` | json nullable | Values for DSL `config.*` placeholders (threshold, amount, gift spec ID, etc.) |
-| `specifications` | M2M → `App\Trade\Entity\Specification` | Which product specs this applies to (empty = all) |
 | `conflictMode` | string(30) default `'stackable'` | `stackable` | `exclusive` | `lock_item` |
 | `createdAt` | datetime_immutable | Auto-set on persist |
 | `updatedAt` | datetime_immutable nullable | Auto-set on update |
+
+Specification targeting is done via DSL conditions (`item.spec.id in config.target_specs`), not via entity relationship.
 
 ### 4.3 Conflict Modes
 

@@ -5,9 +5,6 @@ declare(strict_types=1);
 namespace App\Promotion\Entity;
 
 use App\Core\Utils\UUID;
-use App\Trade\Entity\Specification;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: \App\Promotion\Repository\PromotionRepository::class)]
@@ -53,12 +50,6 @@ class Promotion
     #[ORM\Column(type: 'json', nullable: true)]
     private ?array $config = null;
 
-    #[ORM\ManyToMany(targetEntity: Specification::class)]
-    #[ORM\JoinTable(name: 'promotion_specifications')]
-    #[ORM\JoinColumn(name: 'promotion_id', referencedColumnName: 'id')]
-    #[ORM\InverseJoinColumn(name: 'specification_id', referencedColumnName: 'id')]
-    private Collection $specifications;
-
     #[ORM\Column(type: 'string', length: 30, options: ['default' => 'stackable'])]
     private string $conflictMode = self::CONFLICT_STACKABLE;
 
@@ -71,7 +62,6 @@ class Promotion
     public function __construct()
     {
         $this->uuid = UUID::v4();
-        $this->specifications = new ArrayCollection();
         $this->createdAt = new \DateTimeImmutable();
     }
 
@@ -183,25 +173,6 @@ class Promotion
     {
         $this->config = $config;
         $this->touch();
-        return $this;
-    }
-
-    public function getSpecifications(): Collection
-    {
-        return $this->specifications;
-    }
-
-    public function addSpecification(Specification $specification): self
-    {
-        if (!$this->specifications->contains($specification)) {
-            $this->specifications[] = $specification;
-        }
-        return $this;
-    }
-
-    public function removeSpecification(Specification $specification): self
-    {
-        $this->specifications->removeElement($specification);
         return $this;
     }
 
