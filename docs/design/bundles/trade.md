@@ -67,7 +67,7 @@ src/Trade/
 |       |-- PriceCalculationResult.php     # Result DTO
 |       |-- BasePriceCalculator.php        # Resolves specs, extracts unit price
 |       |-- QuantityCalculator.php         # Computes price = unitPrice * quantity
-|       |-- TotalAggregator.php            # Sums all items into totalAmount
+|       |-- TotalAggregator.php            # Establishes subtotal (priority 55)
 ```
 
 ---
@@ -150,8 +150,8 @@ interface PriceCalculatorInterface
 |----------|-----------|--------|----------------|
 | -100 | `BasePriceCalculator` | Trade | Resolve Specification entity, validate active/not-deleted, extract unit price, capture snapshots |
 | 50 | `QuantityCalculator` | Trade | Compute `price = unitPrice * quantity` for each item |
-| **60** | **`PromotionCalculator`** | **Promotion** | **DSL eval → match → apply (loop)** |
-| 100 | `TotalAggregator` | Trade | Sum all item prices into `context.totalAmount` |
+| **55** | **`TotalAggregator`** | **Trade** | **Establish the subtotal before promotion evaluation** |
+| **60** | **`PromotionCalculator`** | **Promotion** | **DSL eval → match → apply (max 20 iterations, applied-ID tracking, exclusive/lock-item/best-price conflict modes)** |
 
 External modules (e.g., `Promotion`, future `Coupon`) hook into the pipeline by implementing `PriceCalculatorInterface` and tagging with `#[AutoconfigureTag('trade.price_calculator')]`. Trade has zero awareness of these modules.
 
@@ -173,6 +173,7 @@ OrderService::calculatePrices($items, $currency, $storeCode = null, $meta = [])
   -> Collect all PriceCalculatorInterface implementations (auto-tagged)
   -> Sort by getPriority() ascending
   -> Execute each in sequence on PriceCalculationContext
+     (BasePriceCalculator → QuantityCalculator → TotalAggregator → PromotionCalculator)
   -> Return PriceCalculationResult (items, totalAmount, currency, meta)
 ```
 
@@ -300,8 +301,8 @@ POST /api/v1/manage/orders
 OrderService::calculatePrices($items, $currency, $storeCode, $meta)
   -> Create PriceCalculationContext(items, currency)
   -> Set context.user, context.storeCode, context.meta = $meta
-  -> Price Calculation Pipeline (Base → Quantity → Promotion → TotalAggregator)
-  -> Returns PriceCalculationResult (items, totalAmount, currency, meta)
+   -> Price Calculation Pipeline (Base → Quantity → TotalAggregator [subtotal] → Promotion)
+   -> Returns PriceCalculationResult (items, totalAmount, currency, meta)
   |
   v
 OrderService::createOrder($calculatedItems, $user, $totalAmount, $currency, $notes)
@@ -473,3 +474,4 @@ Adds columns to `trade_order`: `paid_at`, `refunded_at`, `fulfilled_at`, `paymen
 | `tests/Trade/Pricing/` | BasePriceCalculator, QuantityCalculator, TotalAggregator, PriceCalculationResult |
 | `tests/Trade/Controller/` | OrderController create/quote/list/detail |
 | `tests/Trade/Integration/` | Product repository, Order repository integration |
+| `tests/Promotion/Integration/` | 8 real SQLite pipeline tests with Doctrine + actual OrderService |

@@ -11,7 +11,8 @@ class TotalAggregator implements PriceCalculatorInterface
 {
     public static function getPriority(): int
     {
-        return 100;
+        // Establish the cart subtotal before calculators that apply order-level adjustments.
+        return 55;
     }
 
     public function calculate(PriceCalculationContext $context): void

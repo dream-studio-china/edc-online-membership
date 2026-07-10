@@ -33,7 +33,7 @@
 - **可插拔檔案儲存**：`MediaStorageInterface`，本地與七牛 Kodo 驅動 — tagged iterator 自動發現
 - **OpenAPI 文件**：NelmioApiDocBundle + `#[OA\*]` 屬性，`/api/doc` 提供 Swagger UI
 - **系統自省**：實體元資料和路由匯出介面（`/system/*`）
-- **促銷 DSL 引擎**：自訂詞法/語法/求值器，支援 7 種促銷類型（滿減、折扣、贈品、第 N 件折扣、階梯、免運費、會員折扣）。作為標籤定價計算器（優先級 60）嵌入 Trade 價格管道。
+- **促銷 DSL 引擎**：自訂詞法/語法/求值器，支援 7 種促銷類型（滿減、折扣、贈品、第 N 件折扣、階梯、免運費、會員折扣）。作為標籤定價計算器（優先級 60）運行在 Trade 價格管道彙總小計之後。支援會員定向 SKU 折扣、多門店路由、全平台活動，以及 `best_price` 衝突模式（模擬候選活動並選擇最低總價）。
 - **Profile 實體**：用戶註冊時透過 Doctrine 監聽器自動建立。包含等級（青銅→鑽石）、暱稱、頭像、元資料。積分委託給 Wallet（currency=POINTS）。
 - **Docker Compose**：MySQL 8 + Mailpit 開發環境
 
@@ -66,7 +66,7 @@
 │   └── Identity/                 # 鑑權模組
 ├── config/                       # Symfony 配置
 ├── migrations/                   # Doctrine 遷移（12 個版本）
-├── tests/                        # 1589 測試、5157 斷言、91%+ 覆蓋率
+├── tests/                        # 1589 測試、5165 斷言、91%+ 覆蓋率
 ├── translations/                 # 多語言翻譯檔案
 └── compose.yaml                  # Docker Compose
 ```
@@ -82,12 +82,12 @@
 | **Payment** | `App\Payment` | 支付編排 | 發票（分+工作流）、網關抽象、支付抵扣提供方契約 |
 | **Wechat** | `App\Wechat` | 微信整合 | 小程式/公眾號登入、微信支付 V3 |
 | **Storage** | `App\Storage` | 檔案儲存驅動 | LocalStorage、QiniuStorage |
-| **Promotion** | `App\Promotion` | DSL 驅動促銷 | 自訂 DSL 詞法/語法/求值器、7 種策略類型、作為 `trade.price_calculator`（優先級 60） |
+| **Promotion** | `App\Promotion` | DSL 驅動促銷 | 自訂 DSL 詞法/語法/求值器、7 種策略類型、作為 `trade.price_calculator`（優先級 60）、會員定向 SKU 折扣、多門店路由、`best_price` 衝突模式 |
 | **Identity** | `App\Identity` | 鑑權 | JWT (RS256)、OTP (簡訊)、Refresh Token 輪換、Profile 實體（自動建立、等級、積分委託給 Wallet） |
 
 ## 測試
 
-**1589 個測試 · 5157 個斷言 · 91%+ 行覆蓋率**
+**1589 個測試 · 5165 個斷言 · 91%+ 行覆蓋率**
 
 ```bash
 ./vendor/bin/phpunit

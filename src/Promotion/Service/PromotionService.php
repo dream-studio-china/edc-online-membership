@@ -7,6 +7,7 @@ namespace App\Promotion\Service;
 use App\Core\Service\BaseService;
 use App\Promotion\Entity\Promotion;
 use App\Promotion\Entity\PromotionTemplate;
+use App\Promotion\Repository\PromotionRepository;
 use App\Promotion\Service\Dsl\Evaluator;
 use App\Promotion\Strategy\PromotionStrategyInterface;
 use App\Trade\Service\Pricing\PriceCalculationContext;
@@ -26,35 +27,38 @@ class PromotionService extends BaseService implements PromotionServiceInterface
 
     public function getAvailable(
         PriceCalculationContext $context,
-        ?int $phase = null
+        ?int $phase = null,
+        array $excludedIds = []
     ): array {
-        $criteria = ['enabled' => true];
+        // A missing store only permits explicitly global campaigns (empty code),
+        // never every store's campaigns.
+        $storeCode = $context->storeCode ?? '';
 
-        if ($context->storeCode !== null) {
-            $criteria['storeCode'] = $context->storeCode;
-        }
-
-        /** @var Promotion[] $promotions */
-        $promotions = $this->rep->findBy($criteria);
-
-        $evaluator = $this->createEvaluator();
         $now = new \DateTimeImmutable();
 
-        $filtered = array_filter($promotions, function (Promotion $promotion) use ($context, $evaluator, $now, $phase) {
+        /** @var Promotion[] $promotions */
+        $promotions = $this->rep instanceof PromotionRepository
+            ? $this->rep->findActiveForStore($storeCode, $now, $phase, $excludedIds)
+            : $this->rep->findBy(['enabled' => true, 'storeCode' => $storeCode]);
+
+        $evaluator = $this->createEvaluator();
+
+        $filtered = array_filter($promotions, function (Promotion $promotion) use ($context, $evaluator, $now, $phase, $excludedIds) {
             $template = $promotion->getTemplate();
-            if (!$template || !$template->isEnabled()) {
+            if (!$template) {
                 return false;
             }
 
+            // Kept here as a defence-in-depth check and for repository test doubles.
+            if (!$promotion->isEnabled() || !$template->isEnabled()) {
+                return false;
+            }
             if ($phase !== null && $template->getPhase() !== $phase) {
                 return false;
             }
-
-            if ($promotion->getStartTime() && $promotion->getStartTime() > $now) {
-                return false;
-            }
-
-            if ($promotion->getEndTime() && $promotion->getEndTime() < $now) {
+            if (($promotion->getStartTime() && $promotion->getStartTime() > $now)
+                || ($promotion->getEndTime() && $promotion->getEndTime() < $now)
+                || in_array($promotion->getId(), $excludedIds, true)) {
                 return false;
             }
 
@@ -72,9 +76,10 @@ class PromotionService extends BaseService implements PromotionServiceInterface
 
     public function getFirstAvailable(
         PriceCalculationContext $context,
-        ?int $phase = null
+        ?int $phase = null,
+        array $excludedIds = []
     ): ?Promotion {
-        $available = $this->getAvailable($context, $phase);
+        $available = $this->getAvailable($context, $phase, $excludedIds);
         return $available[0] ?? null;
     }
 
@@ -158,9 +163,17 @@ class PromotionService extends BaseService implements PromotionServiceInterface
         foreach ($data['children'] ?? [] as $child) {
             $children[] = $this->arrayToAstNode($child);
         }
+
+        $nodeData = $data['data'] ?? [];
+        foreach (['left', 'right'] as $operand) {
+            if (isset($nodeData[$operand]) && is_array($nodeData[$operand]) && isset($nodeData[$operand]['type'])) {
+                $nodeData[$operand] = $this->arrayToAstNode($nodeData[$operand]);
+            }
+        }
+
         return new \App\Promotion\Service\Dsl\AstNode(
             $data['type'] ?? 'unknown',
-            $data['data'] ?? [],
+            $nodeData,
             $children
         );
     }

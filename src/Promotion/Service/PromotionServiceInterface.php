@@ -16,7 +16,8 @@ interface PromotionServiceInterface extends BaseServiceInterface
      */
     public function getAvailable(
         PriceCalculationContext $context,
-        ?int $phase = null
+        ?int $phase = null,
+        array $excludedIds = []
     ): array;
 
     /**
@@ -24,7 +25,8 @@ interface PromotionServiceInterface extends BaseServiceInterface
      */
     public function getFirstAvailable(
         PriceCalculationContext $context,
-        ?int $phase = null
+        ?int $phase = null,
+        array $excludedIds = []
     ): ?Promotion;
 
     /**

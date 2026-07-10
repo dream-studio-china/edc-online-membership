@@ -121,7 +121,7 @@
 │   │   └── bundles/              # Per-module design docs (core, common, trade, wallet, identity, wechat, payment, storage, promotion)
 │   └── openapi/                       # endpoints.yaml + order/payment frontend flow docs
 ├── scripts/tests/                # Test scripts
-├── tests/                        # 1589 PHPUnit tests, 5157 assertions, 91%+ coverage
+├── tests/                        # 1589 PHPUnit tests, 5165 assertions, 91%+ coverage
 ├── README.md                     # English README
 ├── README.zh-cn.md               # Chinese (Simplified) README
 ├── README.zh-hant.md             # Chinese (Traditional) README
@@ -245,7 +245,7 @@ draft → pending → confirmed → paid → fulfilled → completed → refunde
 
 | Method | Description |
 |--------|-------------|
-| `calculatePrices(items, currency, storeCode?, meta?)` | Pipeline: BasePriceCalculator → QuantityCalculator → **PromotionCalculator** → TotalAggregator. `meta` is an opaque bidirectional channel for calculators. |
+| `calculatePrices(items, currency, storeCode?, meta?)` | Pipeline: BasePriceCalculator → QuantityCalculator → **TotalAggregator (subtotal, priority 55)** → **PromotionCalculator (priority 60)**. `meta` is an opaque bidirectional channel for calculators. |
 | `createOrder(items, user, total, currency, notes, metadata)` | Create Order + OrderItems in transaction. Optional `metadata` is saved as-is to `trade_order.metadata`. |
 | `pay(Order, systemWalletId, paymentMethod)` | User wallet → system wallet via `TransferService`. Sets `paidAt`. |
 | `refund(Order, systemWalletId, reason)` | System wallet → user wallet via `TransferService`. Sets `refundedAt`. |
@@ -548,7 +548,7 @@ Placed in `src/Core/Controller/System/` (framework layer). NelmioApiDoc path_pat
 | **System introspection** | Core | Entity metadata + route export via `/system/*` endpoints |
 | **Promotion DSL** | Promotion | Custom lexer/parser/evaluator for human-readable promotion rules |
 | **Promotion strategy tag** | Promotion | `promotion.strategy` auto-tag for strategy implementations, collected via `#[AutowireIterator]` |
-| **Promotion calculator pipeline** | Promotion | `PromotionCalculator` tagged `trade.price_calculator` (priority 60) between QuantityCalculator(50) and TotalAggregator(100) |
+| **Promotion calculator pipeline** | Promotion | `PromotionCalculator` tagged `trade.price_calculator` (priority 60). TotalAggregator runs at priority 55 to establish the subtotal before promotion evaluation. |
 | **Profile auto-creation** | Identity | `Profile` entity created on User registration via Doctrine lifecycle listener; user has `$profile` (OneToOne) instead of `$member` |
 | **Points delegated to Wallet** | Identity | Profile points use Wallet with currency=POINTS |
 
@@ -607,7 +607,7 @@ Enriches all endpoints (90+):
 | 20260703000000 | Added to `common_media`: `storage`, nullable `user_id` FK to `users` |
 | 20260703010000 | Added to `common_media`: nullable `category_id` FK to `common_category` |
 | 20260703020000 | `identity_profile` (replaces `member` table; level, nickname, avatar, metadata; FK to `users`) |
-| 20260704000000 | `promotion_template`, `promotion` (DSL text, AST cache, per-store config, time range) |
+| 20260704000000 | `promotion_template`, `promotion` (DSL text, AST cache, per-store config, time range, `IDX_PROMOTION_ACTIVE_STORE` composite index) |
 
 ## 16. Documentation Assets
 
@@ -641,7 +641,7 @@ Enriches all endpoints (90+):
 - **Framework**: PHPUnit 12.5
 - **DB**: SQLite `var/test.db` in test environment
 - **Coverage**: 90% minimum (enforced in CI), currently **91.12% lines** from latest local Xdebug run
-- **Test count**: **1589 tests**, **5157 assertions**
+- **Test count**: **1589 tests**, **5165 assertions**
 - **Local PHP note**: default `php` may point to PHP 7.4; use Homebrew PHP 8.5 at `/opt/homebrew/opt/php@8.5/bin/php` for local Symfony/PHPUnit commands.
 - **HTML coverage report**: `XDEBUG_MODE=coverage ./vendor/bin/phpunit --coverage-html var/coverage`
 - **Key test groups**:
@@ -649,11 +649,12 @@ Enriches all endpoints (90+):
   - `tests/Wallet/`: ~105 tests (Entity, Integration, Transfer Service, WalletService, Payment/Gateway, API regression)
   - `tests/Common/`: 69 tests (Entity, Integration, Batch update, media upload/delete)
   - `tests/Identity/`: 116+ tests (Auth, OTP, Token, Black box, UserService, UserController, UserApiIntegration, Profile entity, ProfileController)
-  - `tests/Promotion/`: 197+ tests (Entity, DSL lexer/parser/evaluator, Strategies, Engine, Calculator, App/Manage controllers)
+   - `tests/Promotion/`: 320+ tests (Entity, DSL lexer/parser/evaluator, Strategies, Engine, Calculator, App/Manage controllers, real SQLite pipeline integration with Doctrine + OrderService)
   - `tests/Payment/`: ~60 tests (Gateway, Registry, Adjustment/Provider, Invoice, Multi-gateway integration)
   - `tests/Wechat/`: 59 tests (Entity, Service, AuthService, Payment/Gateway, Controller, Repository)
   - `tests/Core/`: 70+ tests (BaseService, RestController, Parser, Serializer, LocaleListener, MutationTrait, Utils, System controllers)
-  - `tests/Integration/`: ~20 cross-module tests
+   - `tests/Promotion/Integration/`: 8 real SQLite quote pipeline tests (store isolation, global campaigns, member-targeted item discounts, stacking, best-price conflict, Nth-item, multi-SKU, expiry, mixed rules)
+   - `tests/Integration/`: ~20 cross-module tests
 
 ## 18. Environment Variables (Key)
 
@@ -720,8 +721,8 @@ Requires `.env.prod.local` copied from `.env.prod.example` with `APP_SECRET`, `R
 - `PaymentGatewayInterface` implementations auto-tagged `payment.gateway`, collected via `#[AutowireIterator]`
 - `PaymentAdjustmentProviderInterface` implementations auto-tagged `payment.adjustment_provider`, collected via `#[AutowireIterator]`
 - `MediaStorageInterface` implementations tagged `media.storage`, collected via `#[AutowireIterator]`; `LocalStorage`/`QiniuStorage` are explicitly wired in `src/Storage/Resources/config/services_storage.yaml` because they need scalar/config/repository constructor arguments
-- `PriceCalculatorInterface` implementations auto-tagged `trade.price_calculator`, sorted by `getPriority()` — pipeline: BasePriceCalculator(10) → QuantityCalculator(50) → **PromotionCalculator(60)** → TotalAggregator(100)
-- `PromotionCalculator` (`App\Promotion\Service\PromotionCalculator`) implements `PriceCalculatorInterface`, tagged `trade.price_calculator` at priority 60, sits between QuantityCalculator and TotalAggregator in the price pipeline
+- `PriceCalculatorInterface` implementations auto-tagged `trade.price_calculator`, sorted by `getPriority()` — pipeline: BasePriceCalculator(-100) → QuantityCalculator(50) → **TotalAggregator(55)** (establishes subtotal) → **PromotionCalculator(60)** (applies order-level adjustments on the real subtotal)
+- `PromotionCalculator` (`App\Promotion\Service\PromotionCalculator`) implements `PriceCalculatorInterface`, tagged `trade.price_calculator` at priority 60, applies promotions after the subtotal is aggregated
 - Promotion strategies auto-tagged `promotion.strategy` via `_instanceof` rule, collected by `#[AutowireIterator]` in the strategy registry
 - `WechatService` explicitly defined in `services_wechat.yaml` with `%env()` parameter bindings
 - `WechatPayGateway` explicitly defined in `services_wechat.yaml` (excluded from global autowiring scan)

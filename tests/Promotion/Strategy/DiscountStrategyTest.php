@@ -92,6 +92,23 @@ final class DiscountStrategyTest extends TestCase
         self::assertSame(35000, $context->totalAmount);
     }
 
+    public function testApplyToConfiguredSpecificationIds(): void
+    {
+        $context = new PriceCalculationContext([]);
+        $context->totalAmount = 25000;
+        $context->items = [
+            ['specificationId' => 10, 'price' => 10000],
+            ['specificationId' => 20, 'price' => 15000],
+        ];
+
+        $action = new AstNode('action_discount', ['target' => 'items', 'rate' => 'config.rate']);
+        $this->strategy->apply($action, $context, ['rate' => 90, 'specification_ids' => [10]]);
+
+        self::assertSame(9000, $context->items[0]['price']);
+        self::assertSame(15000, $context->items[1]['price']);
+        self::assertSame(24000, $context->totalAmount);
+    }
+
     public function testApplyWithMissingConfigRate(): void
     {
         $context = new PriceCalculationContext([]);

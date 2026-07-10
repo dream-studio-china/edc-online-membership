@@ -18,7 +18,13 @@ class DiscountStrategy implements PromotionStrategyInterface
 
     public function apply(AstNode $action, PriceCalculationContext $context, array $config): void
     {
-        $rate = $this->resolveValue($action->data['rate'] ?? 100, $config);
+        $rate = $this->resolveValue($action->data['rate'] ?? $action->data['value'] ?? 100, $config);
+
+        if (($action->data['target'] ?? 'order') === 'items') {
+            $this->applyToMatchingItems($rate, $context, $config);
+            return;
+        }
+
         $cap = isset($action->data['maxCap']) ? (int) ($action->data['maxCap'] * 100) : null;
 
         $discount = (int) ($context->totalAmount * (100 - $rate) / 100);
@@ -28,6 +34,24 @@ class DiscountStrategy implements PromotionStrategyInterface
         }
 
         $context->totalAmount = max(0, $context->totalAmount - $discount);
+    }
+
+    private function applyToMatchingItems(float $rate, PriceCalculationContext $context, array $config): void
+    {
+        $specificationIds = array_map('intval', $config['specification_ids'] ?? []);
+
+        foreach ($context->items as &$item) {
+            $specificationId = (int) ($item['specificationId'] ?? 0);
+            if ($specificationIds !== [] && !in_array($specificationId, $specificationIds, true)) {
+                continue;
+            }
+
+            $price = (int) ($item['price'] ?? 0);
+            $discountedPrice = (int) round($price * $rate / 100);
+            $context->totalAmount -= $price - $discountedPrice;
+            $item['price'] = $discountedPrice;
+        }
+        unset($item);
     }
 
     private function resolveValue(mixed $value, array $config): float

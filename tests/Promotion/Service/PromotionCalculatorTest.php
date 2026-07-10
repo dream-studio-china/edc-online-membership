@@ -184,8 +184,8 @@ final class PromotionCalculatorTest extends TestCase
         $calculator = new PromotionCalculator($service);
         $calculator->calculate($context);
 
-        self::assertSame(2, $applyCount);
-        self::assertCount(2, $context->meta['promotion']['inner']);
+        self::assertSame(1, $applyCount);
+        self::assertCount(1, $context->meta['promotion']['inner']);
     }
 
     public function testCalculateAppliedPromotionsSnapshot(): void

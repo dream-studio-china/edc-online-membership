@@ -72,9 +72,9 @@ Compared with plain generated boilerplate, it provides:
 - **Pluggable File Storage**: `MediaStorageInterface` with local and Qiniu Kodo drivers — tagged iterator auto-discovery.
 - **OpenAPI Documentation**: NelmioApiDocBundle with `#[OA\*]` attributes, Swagger UI at `/api/doc`.
 - **System Introspection**: Entity metadata and route export endpoints (`/system/*`).
-- **Promotion DSL Engine**: Custom lexer/parser/evaluator for human-readable promotion rules with 7 promotion types (full_reduction, discount, gift, nth_discount, tiered, free_shipping, member_discount). Tagged pricing calculator (priority=60) sits in the Trade price pipeline.
+- **Promotion DSL Engine**: Custom lexer/parser/evaluator for human-readable promotion rules with 7 promotion types (full_reduction, discount, gift, nth_discount, tiered, free_shipping, member_discount). Tagged pricing calculator (priority=60) runs in the Trade price pipeline after the subtotal is aggregated. Supports member-targeted SKU discounts, multi-store routing, global campaigns, and `best_price` conflict mode with simulated candidate comparison.
 - **Profile Entity**: Auto-created on User registration via Doctrine listener. Carries level (bronze→diamond), nickname, avatar, metadata. Points delegated to Wallet (currency=POINTS).
-- **Comprehensive Testing**: 1589 tests, 5157 assertions, 91%+ line coverage.
+- **Comprehensive Testing**: 1589 tests, 5165 assertions, 91%+ line coverage.
 - **Docker Compose**: MySQL 8 + Mailpit for development.
 
 ## Tech Stack
@@ -369,7 +369,7 @@ The app runs at `http://localhost:${APP_PORT:-8080}`.
 | **Payment** | `App\Payment` | Invoicing & orchestration | Invoice (cents + workflow), Gateway abstraction (mock/wallet/wechat), **Payment adjustment provider contract**, Webhooks, Events |
 | **Wechat** | `App\Wechat` | WeChat integration | Mini Program/Official Account login, WeChat Pay V3, WechatUser (OneToOne→User) |
 | **Storage** | `App\Storage` | File upload drivers | `MediaStorageInterface`, LocalStorage, QiniuStorage, tagged iterator auto-discovery |
-| **Promotion** | `App\Promotion` | DSL-driven promotions | Custom DSL lexer/parser/evaluator, 7 strategy types, tagged `trade.price_calculator` (priority 60) |
+| **Promotion** | `App\Promotion` | DSL-driven promotions | Custom DSL lexer/parser/evaluator, 7 strategy types, tagged `trade.price_calculator` (priority 60), member-targeted SKU discounts, multi-store routing, `best_price` conflict mode |
 | **Identity** | `App\Identity` | Authentication | JWT (RS256), OTP (SMS), Refresh token rotation, Password registration, User profile/CRUD, Profile entity (auto-created, level, points delegated to Wallet) |
 
 ## API Endpoints
@@ -615,7 +615,7 @@ Note on controller construction: Controllers extending `RestController` receive 
 
 ## Testing
 
-**1589 tests · 5157 assertions · 91%+ line coverage**
+**1589 tests · 5165 assertions · 91%+ line coverage**
 
 Run all tests:
 
@@ -654,7 +654,7 @@ Then open `var/coverage/index.html` in a browser.
 | Wallet | 105+ | Transfers, wallet service, payment gateway, balance audit API |
 | Payment | 60+ | Gateways, registry, adjustments, invoices, multi-gateway integration |
 | Identity | 116+ | Auth, OTP, tokens, UserService, UserController, integration, Profile entity/controller |
-| Promotion | 197+ | Entities, DSL lexer/parser/evaluator, strategies, engine, calculator, controllers |
+| Promotion | 320+ | Entities, DSL lexer/parser/evaluator, strategies, engine, calculator, controllers, real SQLite pipeline integration |
 | Wechat | 59+ | Auth, service, payment gateway, controller, repository |
 | Core | 70+ | BaseService, RestController, expression parser, serializer, system controllers |
 | Integration | 20+ | Cross-module integration tests |

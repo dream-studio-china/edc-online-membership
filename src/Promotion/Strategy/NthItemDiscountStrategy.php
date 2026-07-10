@@ -21,13 +21,16 @@ class NthItemDiscountStrategy implements PromotionStrategyInterface
         $position = (int) ($action->data['position'] ?? 0);
         $rate = (float) ($action->data['rate'] ?? 100);
 
-        // Discount the price of the Nth item in each matching item group
-        foreach ($context->items as $index => &$item) {
-            if (($index + 1) === $position) {
-                $originalPrice = $item['unitPrice'];
-                $discountedPrice = (int) ($originalPrice * $rate / 100);
-                $item['unitPrice'] = $discountedPrice;
-                $item['price'] = $discountedPrice * $item['quantity'];
+        // Items are stored as quantity groups. Apply the rate to the Nth unit of
+        // every eligible group, without changing the catalog unit price snapshot.
+        foreach ($context->items as &$item) {
+            $quantity = (int) ($item['quantity'] ?? 0);
+            if ($position > 0 && $quantity >= $position) {
+                $unitPrice = (int) ($item['unitPrice'] ?? 0);
+                $discountedPrice = (int) round($unitPrice * $rate / 100);
+                $discount = max(0, $unitPrice - $discountedPrice);
+                $item['price'] = max(0, (int) ($item['price'] ?? 0) - $discount);
+                $context->totalAmount = max(0, $context->totalAmount - $discount);
             }
         }
         unset($item);

@@ -12,6 +12,7 @@ use App\Promotion\Service\Dsl\Lexer;
 use App\Promotion\Service\Dsl\Parser;
 use App\Trade\Service\Pricing\PriceCalculationContext;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\Validator\Exception\ValidatorException;
 
 class PromotionTemplateService extends BaseService implements PromotionTemplateServiceInterface
 {
@@ -105,8 +106,20 @@ class PromotionTemplateService extends BaseService implements PromotionTemplateS
         if (is_array($data) && isset($data['dsl']) && is_string($data['dsl'])) {
             $result = $this->parseDsl($data['dsl']);
             if (!empty($result['errors'])) {
-                throw $result['errors'][0]; // Let caller handle
+                $error = $result['errors'][0];
+                throw new ValidatorException($error['message']);
             }
+
+            $program = $result['ast']['data'] ?? [];
+            $type = $data['type'] ?? $object->getType();
+            $phase = $data['phase'] ?? $object->getPhase();
+            if (($program['type'] ?? $type) !== $type) {
+                throw new ValidatorException('Template type must match DSL type.');
+            }
+            if (isset($program['phase']) && $program['phase'] !== $phase) {
+                throw new ValidatorException('Template phase must match DSL phase.');
+            }
+
             $data['astCache'] = $result['ast'];
         }
 

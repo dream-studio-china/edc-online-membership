@@ -51,6 +51,7 @@ final class Version20260704000000 extends AbstractMigration
             UNIQUE INDEX uniq_promotion_uuid (uuid),
             UNIQUE INDEX UNIQ_PROMOTION_NAME (name),
             INDEX IDX_PROMOTION_TEMPLATE (template_id),
+            INDEX IDX_PROMOTION_ACTIVE_STORE (store_code, enabled, start_time, end_time),
             PRIMARY KEY(id)
         ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ENGINE = InnoDB');
 

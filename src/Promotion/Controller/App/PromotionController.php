@@ -10,6 +10,7 @@ use App\Core\View\DetailApiViewMixin;
 use App\Core\View\ListApiViewMixin;
 use App\Promotion\Entity\Promotion;
 use App\Promotion\Service\PromotionServiceInterface;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
 use Symfony\Component\Routing\Attribute\Route;
 
@@ -20,15 +21,33 @@ class PromotionController extends RestController
 
     public function __construct(
         protected readonly PromotionServiceInterface $service,
+        private readonly ?EntityManagerInterface $entityManager = null,
     ) {}
 
-    protected function commonFilter(): array
+    protected function commonFilter(): array|QueryBuilder
     {
-        $filter = ['enabled' => true];
+        if ($this->entityManager === null) {
+            return ['enabled' => true];
+        }
 
         $now = new \DateTimeImmutable();
+        $qb = $this->entityManager->createQueryBuilder()
+            ->select('promotion')
+            ->from(Promotion::class, 'promotion')
+            ->innerJoin('promotion.template', 'template')
+            ->andWhere('promotion.enabled = :enabled')
+            ->andWhere('template.enabled = :templateEnabled')
+            ->andWhere('(promotion.startTime IS NULL OR promotion.startTime <= :now)')
+            ->andWhere('(promotion.endTime IS NULL OR promotion.endTime >= :now)')
+            ->setParameter('enabled', true)
+            ->setParameter('templateEnabled', true)
+            ->setParameter('now', $now);
 
-        // Active time-window filtering is handled in getAvailable()
-        return $filter;
+        $storeCode = $this->getRequestStack()->getCurrentRequest()?->query->get('storeCode');
+        if (is_string($storeCode) && $storeCode !== '') {
+            $qb->andWhere('promotion.storeCode = :storeCode')->setParameter('storeCode', $storeCode);
+        }
+
+        return $qb;
     }
 }

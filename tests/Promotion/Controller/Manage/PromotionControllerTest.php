@@ -81,7 +81,7 @@ final class PromotionControllerTest extends TestCase
 
         self::assertContains('name', $value);
         self::assertContains('template', $value);
-        self::assertContains('storeCode', $value);
+        self::assertNotContains('storeCode', $value);
     }
 
     public function testAcceptedPropertiesIncludeAllFields(): void

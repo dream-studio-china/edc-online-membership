@@ -94,7 +94,7 @@ final class PromotionServiceTest extends TestCase
         $context = new PriceCalculationContext([]);
         $context->storeCode = null;
 
-        $this->rep->method('findBy')->with(['enabled' => true])->willReturn([]);
+        $this->rep->method('findBy')->with(['enabled' => true, 'storeCode' => ''])->willReturn([]);
 
         $result = $this->createService()->getAvailable($context);
 
@@ -121,7 +121,7 @@ final class PromotionServiceTest extends TestCase
 
         $this->rep->expects(self::once())
             ->method('findBy')
-            ->with(['enabled' => true])
+            ->with(['enabled' => true, 'storeCode' => ''])
             ->willReturn([]);
 
         $this->createService()->getAvailable($context);
@@ -171,14 +171,9 @@ final class PromotionServiceTest extends TestCase
 
         $result = $this->createService()->getAvailable($context);
 
-        // The service's findBy filter has ['enabled' => true], but mock returns the
-        // promotion anyway. The service then ALSO checks the promotion's isEnabled
-        // in the array_filter callback? No — it doesn't; it only checks template
-        // enabled, phase, time, and DSL. The enabled flag is only used in findBy.
-        // Since the mock bypasses findBy's filtering, the disabled promotion passes.
-        // This is a mock limitation — in production, findBy would filter it.
-        // We verify the promotions are returned by the mock.
-        self::assertCount(1, $result);
+        // Defence-in-depth filtering rejects disabled rows even when a repository
+        // test double returns them.
+        self::assertCount(0, $result);
     }
 
     public function testGetAvailableFiltersDisabledTemplate(): void

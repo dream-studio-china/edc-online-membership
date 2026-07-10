@@ -237,6 +237,16 @@ final class ParserTest extends TestCase
         self::assertTrue($doNode->children[0]->data['isPercent']);
     }
 
+    public function testParseDoDiscountMatchingItemsWithConfigRate(): void
+    {
+        $ast = $this->parse("type: discount\ndo:\n  discount items config.rate%");
+
+        $doNode = $this->findChild($ast, 'do');
+        self::assertSame('items', $doNode->children[0]->data['target']);
+        self::assertSame('config.rate', $doNode->children[0]->data['rate']);
+        self::assertTrue($doNode->children[0]->data['isPercent']);
+    }
+
     // ──────────────────────────── do: gift ────────────────────────────
 
     public function testParseDoAddGift(): void
@@ -395,7 +405,7 @@ final class ParserTest extends TestCase
     public function testParseInvalidTargetThrows(): void
     {
         $this->expectException(DslSyntaxException::class);
-        $this->expectExceptionMessage("Expected 'order' or 'item'");
+        $this->expectExceptionMessage("Expected 'order', 'item', or 'items'");
 
         $dsl = "type: full_reduction\ndo:\n  discount unknown 20";
         $this->parse($dsl);

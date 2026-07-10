@@ -16,6 +16,7 @@ class Promotion
     public const CONFLICT_STACKABLE = 'stackable';
     public const CONFLICT_EXCLUSIVE = 'exclusive';
     public const CONFLICT_LOCK_ITEM = 'lock_item';
+    public const CONFLICT_BEST_PRICE = 'best_price';
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -203,3 +204,4 @@ class Promotion
         $this->updatedAt = new \DateTimeImmutable();
     }
 }
+

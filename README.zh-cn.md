@@ -70,9 +70,9 @@
 - **可插拔文件存储**：`MediaStorageInterface`，本地与七牛 Kodo 驱动 — tagged iterator 自动发现。
 - **OpenAPI 文档**：NelmioApiDocBundle + `#[OA\*]` 属性，`/api/doc` 提供 Swagger UI。
 - **系统自省**：实体元数据和路由导出接口（`/system/*`）。
-- **促销 DSL 引擎**：自定义词法/语法/求值器，支持 7 种促销类型（满减、折扣、赠品、第 N 件折扣、阶梯、免运费、会员折扣）。作为标签定价计算器（优先级 60）嵌入 Trade 价格管道。
+- **促销 DSL 引擎**：自定义词法/语法/求值器，支持 7 种促销类型（满减、折扣、赠品、第 N 件折扣、阶梯、免运费、会员折扣）。作为标签定价计算器（优先级 60）运行在 Trade 价格管道汇总小计之后。支持会员定向 SKU 折扣、多门店路由、全平台活动，以及 `best_price` 冲突模式（模拟候选活动并选择最低总价）。
 - **Profile 实体**：用户注册时通过 Doctrine 监听器自动创建。包含等级（青铜→钻石）、昵称、头像、元数据。积分委托给 Wallet（currency=POINTS）。
-- **完善的测试**：1589 个测试，5157 个断言，91%+ 行覆盖率。
+- **完善的测试**：1589 个测试，5165 个断言，91%+ 行覆盖率。
 - **Docker Compose**：MySQL 8 + Mailpit 开发环境。
 
 ## 技术栈
@@ -362,7 +362,7 @@ docker compose exec app php bin/console app:identity:user:create admin@example.c
 | **Payment** | `App\Payment` | 支付编排 | 发票（分+工作流）、网关抽象（mock/wallet/wechat）、**支付抵扣提供方契约**、Webhook、事件 |
 | **Wechat** | `App\Wechat` | 微信集成 | 小程序/公众号登录、微信支付 V3、WechatUser（OneToOne→User） |
 | **Storage** | `App\Storage` | 文件存储驱动 | `MediaStorageInterface`、LocalStorage、QiniuStorage、tagged iterator 自动发现 |
-| **Promotion** | `App\Promotion` | DSL 驱动促销 | 自定义 DSL 词法/语法/求值器、7 种策略类型、作为 `trade.price_calculator`（优先级 60） |
+| **Promotion** | `App\Promotion` | DSL 驱动促销 | 自定义 DSL 词法/语法/求值器、7 种策略类型、作为 `trade.price_calculator`（优先级 60）、会员定向 SKU 折扣、多门店路由、`best_price` 冲突模式 |
 | **Identity** | `App\Identity` | 鉴权 | JWT (RS256)、OTP (短信)、Refresh Token 轮换、Profile 实体（自动创建、等级、积分委托给 Wallet） |
 
 ## API 路由
@@ -603,7 +603,7 @@ class ContentController extends RestController
 
 ## 测试
 
-**1589 个测试 · 5157 个断言 · 91%+ 行覆盖率**
+**1589 个测试 · 5165 个断言 · 91%+ 行覆盖率**
 
 运行全部测试：
 
@@ -640,7 +640,7 @@ XDEBUG_MODE=coverage ./vendor/bin/phpunit --coverage-html var/coverage
 | Wallet | 105+ | 转账、钱包服务、支付网关、余额审计 |
 | Payment | 60+ | 网关、注册表、调整、发票、多网关集成 |
 | Identity | 116+ | 认证、OTP、令牌、UserService、Profile 实体/控制器 |
-| Promotion | 197+ | 实体、DSL 词法/语法/求值器、策略、引擎、计算器、控制器 |
+| Promotion | 320+ | 实体、DSL 词法/语法/求值器、策略、引擎、计算器、控制器、真实 SQLite 报价管道集成 |
 | Wechat | 59+ | 认证、服务、支付网关、控制器、仓库 |
 | Core | 70+ | BaseService、RestController、表达式解析器、序列化器、系统控制器 |
 | Integration | 20+ | 跨模块集成测试 |

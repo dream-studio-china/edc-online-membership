@@ -325,17 +325,19 @@ class Parser
     {
         $data = [];
 
-        // target: 'order' or 'item'
+        // target: 'order', 'item' (nth item), or 'items' (matching item groups)
         $target = $this->advance();
-        if ($target->type !== TokenType::IDENTIFIER || !in_array($target->value, ['order', 'item'], true)) {
-            throw new DslSyntaxException("Expected 'order' or 'item'", $target->line, $target->col);
+        if ($target->type !== TokenType::IDENTIFIER || !in_array($target->value, ['order', 'item', 'items'], true)) {
+            throw new DslSyntaxException("Expected 'order', 'item', or 'items'", $target->line, $target->col);
         }
         $data['target'] = $target->value;
 
         if ($target->value === 'order') {
             $data = array_merge($data, $this->parseOrderDiscountArgs());
-        } else {
+        } elseif ($target->value === 'item') {
             $data = array_merge($data, $this->parseItemDiscountArgs());
+        } else {
+            $data = array_merge($data, $this->parseItemsDiscountArgs());
         }
 
         return new AstNode('action_discount', $data);
@@ -418,6 +420,30 @@ class Parser
         }
 
         return $data;
+    }
+
+    private function parseItemsDiscountArgs(): array
+    {
+        $valueToken = $this->advance();
+        if ($valueToken->type === TokenType::NUMBER) {
+            $rate = str_contains($valueToken->value, '.') ? (float) $valueToken->value : (int) $valueToken->value;
+        } elseif ($valueToken->type === TokenType::IDENTIFIER && $valueToken->value === 'config') {
+            $rate = 'config';
+            if ($this->peek()->type === TokenType::DOT) {
+                $this->advance();
+                $property = $this->advance();
+                if ($property->type !== TokenType::IDENTIFIER) {
+                    throw new DslSyntaxException('Expected config property', $property->line, $property->col);
+                }
+                $rate .= '.' . $property->value;
+            }
+        } else {
+            throw new DslSyntaxException('Expected discount rate', $valueToken->line, $valueToken->col);
+        }
+
+        $this->expect(TokenType::PERCENT);
+
+        return ['rate' => $rate, 'isPercent' => true];
     }
 
     private function parseAddAction(): AstNode
@@ -533,7 +559,17 @@ class Parser
             throw new DslSyntaxException('Expected priority value', $exprToken->line, $exprToken->col);
         }
 
-        $data = ['value' => $exprToken->value];
+        $value = $exprToken->value;
+        if ($value === 'config' && $this->peek()->type === TokenType::DOT) {
+            $this->advance();
+            $property = $this->advance();
+            if ($property->type !== TokenType::IDENTIFIER) {
+                throw new DslSyntaxException('Expected config property', $property->line, $property->col);
+            }
+            $value .= '.' . $property->value;
+        }
+
+        $data = ['value' => $value];
 
         // Check for 'desc'
         if ($this->peek()->type === TokenType::IDENTIFIER && $this->peek()->value === 'desc') {

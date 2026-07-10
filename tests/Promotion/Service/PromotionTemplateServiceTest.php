@@ -402,6 +402,7 @@ DSL;
         $this->em->expects(self::once())->method('flush');
 
         $result = $this->service->update($template, [
+            'type' => PromotionTemplate::TYPE_DISCOUNT,
             'dsl' => "type: discount\ndo:\n  discount order 20%",
         ]);
 

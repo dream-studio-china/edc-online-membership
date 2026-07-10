@@ -150,6 +150,9 @@ class Evaluator
         // user.level, user.tags
         if ($parts[0] === 'user') {
             $user = $context->user;
+            if (($parts[1] ?? '') === 'id' && $user !== null && method_exists($user, 'getId')) {
+                return $user->getId();
+            }
             if (($parts[1] ?? '') === 'level' && $user instanceof \App\Identity\Entity\User) {
                 return $user->getProfile()?->getLevel() ?? '';
             }

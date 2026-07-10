@@ -30,7 +30,7 @@ Symfony 8.1 ベースのプロダクション向け API スケルトン。再利
 - **原子ウォレット転送**: デッドロック防止、楽観的ロック、冪等性
 - **ファイルストレージ**: ローカルおよび Qiniu Kodo ドライバのプラグイン可能なアーキテクチャ
 - **OpenAPI ドキュメント**: NelmioApiDocBundle + Swagger UI（`/api/doc`）
-- **プロモーション DSL エンジン**: カスタム lexer/parser/evaluator による人間可読なプロモーションルール。7 種類のプロモーション（full_reduction、discount、gift、nth_discount、tiered、free_shipping、member_discount）。タグ付き価格計算機（優先度 60）として Trade 価格パイプラインに組み込み。
+- **プロモーション DSL エンジン**: カスタム lexer/parser/evaluator による人間可読なプロモーションルール。7 種類のプロモーション（full_reduction、discount、gift、nth_discount、tiered、free_shipping、member_discount）。タグ付き価格計算機（優先度 60）として Trade 価格パイプラインの小計集計後に実行。会員向け SKU 割引、マルチストアルーティング、グローバルキャンペーン、`best_price` コンフリクトモード（候補をシミュレーションして最低金額を選択）をサポート。
 - **Profile エンティティ**: ユーザー登録時に Doctrine リスナーにより自動生成。レベル（bronze→diamond）、ニックネーム、アバター、メタデータを保持。ポイントは Wallet（currency=POINTS）に委譲。
 - **Docker Compose**: MySQL 8 + Redis + Mailpit による開発環境
 
@@ -63,7 +63,7 @@ Symfony 8.1 ベースのプロダクション向け API スケルトン。再利
 │   └── Identity/                 # 認証モジュール
 ├── config/                       # Symfony 設定
 ├── migrations/                   # Doctrine マイグレーション（12 バージョン）
-├── tests/                        # 1589 テスト、5157 アサーション、91%+ カバレッジ
+├── tests/                        # 1589 テスト、5165 アサーション、91%+ カバレッジ
 ├── translations/                 # 多言語翻訳ファイル
 └── compose.yaml                  # Docker Compose
 ```
@@ -79,12 +79,12 @@ Symfony 8.1 ベースのプロダクション向け API スケルトン。再利
 | **Payment** | `App\Payment` | 決済管理 | 請求書（セント+ワークフロー）、ゲートウェイ抽象化 |
 | **Wechat** | `App\Wechat` | 微信連携 | ミニプログラム/公式アカウントログイン、微信 Pay V3 |
 | **Storage** | `App\Storage` | ファイルストレージ | LocalStorage、QiniuStorage |
-| **Promotion** | `App\Promotion` | DSL駆動プロモーション | カスタム DSL lexer/parser/evaluator、7 種類の戦略、`trade.price_calculator`（優先度 60） |
+| **Promotion** | `App\Promotion` | DSL駆動プロモーション | カスタム DSL lexer/parser/evaluator、7 種類の戦略、`trade.price_calculator`（優先度 60）、会員向け SKU 割引、マルチストアルーティング、`best_price` コンフリクトモード |
 | **Identity** | `App\Identity` | 認証 | JWT（RS256）、OTP（SMS）、リフレッシュトークンローテーション、Profile エンティティ（自動生成、レベル、ポイントは Wallet に委譲） |
 
 ## テスト
 
-**1589 テスト · 5157 アサーション · 91%+ ラインカバレッジ**
+**1589 テスト · 5165 アサーション · 91%+ ラインカバレッジ**
 
 ```bash
 ./vendor/bin/phpunit
@@ -109,7 +109,7 @@ XDEBUG_MODE=coverage ./vendor/bin/phpunit --coverage-html var/coverage
 | Wallet | 105+ | 転送、ウォレットサービス、決済ゲートウェイ、残高監査 |
 | Payment | 60+ | ゲートウェイ、レジストリ、調整、請求書、マルチゲートウェイ統合 |
 | Identity | 116+ | 認証、OTP、トークン、UserService、Profile エンティティ/コントローラ |
-| Promotion | 197+ | エンティティ、DSL lexer/parser/evaluator、戦略、エンジン、計算機、コントローラ |
+| Promotion | 320+ | エンティティ、DSL lexer/parser/evaluator、戦略、エンジン、計算機、コントローラ、実際の SQLite 見積パイプライン統合 |
 | Wechat | 59+ | 認証、サービス、決済ゲートウェイ、コントローラ、リポジトリ |
 | Core | 70+ | BaseService、RestController、式パーサー、シリアライザ、システムコントローラ |
 | Integration | 20+ | モジュール間結合テスト |
