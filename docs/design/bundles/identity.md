@@ -12,6 +12,7 @@ This document describes the Identity module (src/Identity). It implements:
 - **password-based user self-registration** (`POST /api/auth/register`)
 - **user profile management** with password change and profile update
 - **admin user CRUD** with managed password changes
+- **profile management**: tiered membership (bronze/silver/gold/platinum/diamond), auto-created 1:1 with User, points delegated to Wallet (currency=POINTS). Also carries nickname/avatar/metadata as user profile data.
 
 Goals
 -----
@@ -112,19 +113,138 @@ User Management (Manage)
 | DELETE | `/api/v1/manage/users/{id}` | ROLE_ADMIN | Delete user |
 | POST | `/api/v1/manage/users/{id}/change-password` | ROLE_ADMIN | Admin change user password (no current pw required) |
 
-UserService
------------
+Profile Management (Manage)
+--------------------------
 
-`App\Identity\Service\UserService` extends `BaseService` and encapsulates all user business logic:
+`Profile` is the identity profile entity: a 1:1 extension of User, auto-created on User persist.
+It carries membership level, profile fields (nickname/avatar/metadata), and joinedAt.
+Membership points are stored in Wallet (currency=POINTS), not on Profile.
+
+| Entity | Table | Purpose |
+|--------|-------|---------|
+| `Profile` | `identity_profile` | 1:1 User extension: level, nickname, avatar, metadata, joinedAt |
+
+**Level Constants:**
+
+```php
+public const LEVEL_BRONZE = 'bronze';
+public const LEVEL_SILVER = 'silver';
+public const LEVEL_GOLD = 'gold';
+public const LEVEL_PLATINUM = 'platinum';
+public const LEVEL_DIAMOND = 'diamond';
+```
+
+**Level Hierarchy (for `findByLevelOrAbove`):**
+
+```
+bronze (0) < silver (1) < gold (2) < platinum (3) < diamond (4)
+```
+
+**Profile Fields:**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `nickname` | string(255) nullable | Display name (takes precedence over username for display) |
+| `avatar` | string(500) nullable | Avatar URL |
+| `metadata` | json nullable | Extensible preferences (theme, language, etc.) |
+
+**Auto-Creation via Doctrine Listener:**
+
+A `UserProfileListener` (`#[AsDoctrineListener(event: Events::postPersist)]`) ensures
+every persisted User has a Profile by default. After `EntityManager::flush()` on a new
+User, if no Profile exists, one is created at `LEVEL_BRONZE` automatically. This covers
+all User creation paths: `UserService::register()`, admin CRUD, programmatic creation.
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET | `/api/v1/manage/profiles` | ROLE_ADMIN | List all profiles |
+| GET | `/api/v1/manage/profiles/{id}` | ROLE_ADMIN | View profile detail |
+| POST | `/api/v1/manage/profiles` | ROLE_ADMIN | Create profile (user, level, nickname, avatar, metadata, joinedAt) |
+| PUT | `/api/v1/manage/profiles/{id}` | ROLE_ADMIN | Update profile (level, nickname, avatar, metadata, joinedAt) |
+| DELETE | `/api/v1/manage/profiles/{id}` | ROLE_ADMIN | Delete profile |
+
+**User Entity Relationship:**
+
+```php
+// User has inverse side OneToOne
+#[ORM\OneToOne(mappedBy: 'user', targetEntity: Profile::class, cascade: ['persist', 'remove'])]
+private ?Profile $profile = null;
+
+public function getProfile(): ?Profile;
+public function setProfile(?Profile $profile): self;  // syncs bidirectional
+```
+
+**Repository Methods:**
+
+```php
+ProfileRepository extends ServiceEntityRepository
+  findById(int $id): ?Profile
+  findByUser(User $user): ?Profile
+  findByUserId(int $userId): ?Profile
+  findByLevel(string $level): array              // exact level match
+  findByLevelOrAbove(string $minLevel): array    // cumulative (>= this level)
+```
+
+**Points via Wallet:**
+
+Profile points use the Wallet module. A user's points are stored as:
+
+```
+Wallet for user_id=X, currency="POINTS"
+```
+
+No points field exists on Profile. Promotion conditions use `user.profile.level` for
+level-based rules and reference Wallet for point-based rules.
+
+Profile App Self-Service (App)
+------------------------------
+
+The App ProfileController uses `SingleDetailApiViewMixin` (GET) and
+`SingleCreateAndUpdateApiViewMixin` (PUT). Property filtering is handled
+by the mixin via `acceptedCreateProperties` / `acceptedUpdateProperties`:
+
+```php
+#[Route('/app/profiles', name: 'app-profiles-')]
+#[IsGranted('ROLE_USER')]
+class ProfileController extends RestController
+{
+    use ApiView, SingleDetailApiViewMixin, SingleCreateAndUpdateApiViewMixin;
+
+    protected array $acceptedCreateProperties = ['nickname', 'avatar', 'metadata'];
+    protected array $acceptedUpdateProperties = ['nickname', 'avatar', 'metadata'];
+
+    protected function commonFilter(): array
+    {
+        $user = $this->getUser();
+        return $user instanceof User ? ['user' => $user] : ['id' => -1];
+    }
+
+    protected function defaultCreateValues(): array
+    {
+        $user = $this->getUser();
+        return ['user' => $user, 'level' => Profile::LEVEL_BRONZE];
+    }
+}
+```
+
+**Users can only modify `nickname`, `avatar`, and `metadata`.** Level changes require admin via `/manage/profiles`.
+`SingleCreateAndUpdateApiViewMixin` now supports `acceptedCreateProperties`/`acceptedUpdateProperties`/
+`requiredCreateProperties`/`requiredUpdateProperties` — the same contract as `CreateApiViewMixin` and
+`UpdateApiViewMixin`.
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET | `/api/v1/app/profiles` | ROLE_USER | View own profile |
+| PUT | `/api/v1/app/profiles` | ROLE_USER | Update own profile (nickname, avatar, metadata only) |
+
+ProfileService
+--------------
+
+`App\Identity\Service\ProfileService` extends `BaseService` and adds:
 
 | Method | Description |
 |--------|-------------|
-| `register($email, $username, $password, $phone)` | Validate uniqueness, create User, hash password, persist |
-| `verifyPassword($user, $password)` | Verify a plain password against a User |
-| `changePassword($user, $currentPassword, $newPassword)` | Verify current password, hash and set new, persist |
-| `adminChangePassword($user, $newPassword)` | Hash and set new password, persist (no current pw check) |
-| `updateProfile($user, $data)` | Validate uniqueness of email/username/phone, update fields, optional password change |
-| `update($object, $data)` | Auto-hashes password when present in data; skips empty passwords |
+| `joinAsMember(User $user)` | Idempotent profile creation at LEVEL_BRONZE. Returns existing record if user already has a profile |
 
 Security Considerations
 -----------------------
@@ -153,9 +273,17 @@ Test Coverage
 
 | File | Type | Coverage |
 |------|------|----------|
+| `UserTest` | Unit (9 tests) | User entity: interfaces, email/username normalization, phone, roles, password, erase, id, toString |
+| `ProfileTest` | Unit (21 tests) | Profile entity: constructor defaults, levels, UUID, user/level setters, joinedAt, PrePersist, touch, toString / toStringPrefersNickname, nickname/avatar/metadata accessors, default nulls |
+| `UserProfileListenerTest` | Unit (4 tests) | Auto-creates Profile on User persist, skips when exists, default LEVEL_BRONZE, ignores non-User entities |
+| `ProfileRepositoryTest` | Integration (9 tests) | findById, findByUser, findByUserId, findByLevel, findByLevelOrAbove, nickname storage, edge cases |
+| `ProfileServiceTest` | Unit (13 tests) | new(), get(), list(), update() persist/flush/fields, remove(), joinAsMember create/idempotent/default |
+| `ProfileControllerTest` (Manage) | Unit (5 tests) | Unauthenticated access rejection for create/list/detail/update/delete |
+| `ProfileControllerTest` (App) | Unit (10 tests) | GET unauthenticated/no profile/existing; PUT unauthenticated/create/existing/level rejected/nickname/unknown fields filtered/defaultCreateValues |
+| `SingleCreateAndUpdateApiViewMixinTest` | Unit (10 tests) | Pass-through (no props), acceptedCreateProperties filter, acceptedUpdateProperties filter, requiredCreateProperties throw/pass, requiredUpdateProperties throw/pass, combined required+accepted, empty accepted no-op |
 | `UserServiceTest` | Unit (28 tests) | register, changePassword, adminChangePassword, updateProfile, update password hashing |
 | `UserControllerTest` | Unit (3 tests) | Unauthenticated access rejection for all actions |
-| `UserApiIntegrationTest` | Integration (45 tests) | Register flow, login, profile, change-password, update-profile, manage CRUD, manage change-password, specification browsing, wallet deposit, transfer, balance, reconcile, edge cases for all endpoints |
+| `UserApiIntegrationTest` | Integration (45 tests) | Register flow, login, profile, change-password, update-profile, manage CRUD, wallet deposit, transfer, balance, reconcile |
 | `AuthControllerTest` | Unit (existing) | Login, logout, refresh, OTP verification |
 
 Next steps

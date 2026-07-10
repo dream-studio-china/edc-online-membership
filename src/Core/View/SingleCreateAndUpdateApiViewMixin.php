@@ -6,18 +6,22 @@ use OpenApi\Attributes as OA;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Validator\Exception\ValidatorException;
 
 trait SingleCreateAndUpdateApiViewMixin
 {
+    // protected array $requiredCreateProperties = [];
+    // protected array $acceptedCreateProperties = [];
+    // protected array $requiredUpdateProperties = [];
+    // protected array $acceptedUpdateProperties = [];
+
     protected function defaultCreateValues(): array
     {
-        /** Default values */
         return [];
     }
 
     protected function defaultUpdateValues(): array
     {
-        /** Default values */
         return [];
     }
 
@@ -32,23 +36,73 @@ trait SingleCreateAndUpdateApiViewMixin
     public function updateAction(Request $request): Response
     {
         $service = $this->service ?? $this->get($this->serviceClass);
-        $content = json_decode($request->getContent(), true) ? : [];
+        $content = json_decode($request->getContent(), true) ?: [];
 
         $filter = $this->commonFilter();
         $entity = $service->get($filter, false);
 
-        if(empty($entity)) {
-            $entity = $service->new();
+        if (empty($entity)) {
+            $content = $this->filterCreateProperties($content);
             $content = array_merge($content, $this->defaultCreateValues());
-        }
-        else {
+            $entity = $service->new();
+        } else {
+            $content = $this->filterUpdateProperties($content);
             $content = array_merge($content, $this->defaultUpdateValues());
         }
 
         if ($entity = $service->update($entity, $content)) {
             return $this->success($entity);
-        } else {
-            return $this->warning();
         }
+
+        return $this->warning();
+    }
+
+    private function filterCreateProperties(array $content): array
+    {
+        return $this->filterProperties(
+            $content,
+            'requiredCreateProperties',
+            'acceptedCreateProperties'
+        );
+    }
+
+    private function filterUpdateProperties(array $content): array
+    {
+        return $this->filterProperties(
+            $content,
+            'requiredUpdateProperties',
+            'acceptedUpdateProperties'
+        );
+    }
+
+    private function filterProperties(array $content, string $requiredProp, string $acceptedProp): array
+    {
+        $hasRequired = property_exists($this, $requiredProp) && $this->{$requiredProp};
+        $hasAccepted = property_exists($this, $acceptedProp) && $this->{$acceptedProp};
+
+        if (!$hasRequired && !$hasAccepted) {
+            return $content;
+        }
+
+        $data = [];
+
+        if ($hasRequired) {
+            foreach ($this->{$requiredProp} as $property) {
+                if (!array_key_exists($property, $content)) {
+                    throw new ValidatorException(ucfirst($property) . ' is required');
+                }
+                $data[$property] = $content[$property];
+            }
+        }
+
+        if ($hasAccepted) {
+            foreach ($this->{$acceptedProp} as $property) {
+                if (array_key_exists($property, $content)) {
+                    $data[$property] = $content[$property];
+                }
+            }
+        }
+
+        return $data;
     }
 }
