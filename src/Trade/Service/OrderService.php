@@ -35,9 +35,12 @@ class OrderService extends BaseService implements OrderServiceInterface
         parent::__construct($container, Order::class);
     }
 
-    public function calculatePrices(array $items, string $currency = 'CNY'): PriceCalculationResult
+    public function calculatePrices(array $items, string $currency = 'CNY', ?string $storeCode = null, array $meta = []): PriceCalculationResult
     {
         $context = new PriceCalculationContext($items, $currency);
+        $context->user = $this->user;
+        $context->storeCode = $storeCode;
+        $context->meta = $meta;
 
         $sortedCalculators = $this->getSortedCalculators();
         foreach ($sortedCalculators as $calculator) {

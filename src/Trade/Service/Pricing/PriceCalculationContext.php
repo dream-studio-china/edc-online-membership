@@ -16,6 +16,12 @@ class PriceCalculationContext
 
     public array $meta = [];
 
+    /** User object for promotion condition evaluation (member level, etc.) */
+    public ?object $user = null;
+
+    /** Store identifier for multi-store promotion filtering */
+    public ?string $storeCode = null;
+
     public function __construct(array $inputItems, string $currency = 'CNY')
     {
         $this->inputItems = $inputItems;

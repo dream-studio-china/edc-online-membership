@@ -146,7 +146,7 @@ src/Promotion/
 ```
 
 Modified files:
-- `src/Trade/Service/Pricing/PriceCalculationContext.php` — add `$user`, `$storeCode`, `$appliedPromotions`
+- `src/Trade/Service/Pricing/PriceCalculationContext.php` — add `$user`, `$storeCode`
 - `src/Trade/Service/OrderService.php` — inject user + storeCode into context in `calculatePrices()`
 - `config/routes.yaml` — add `api_promotion` route group
 
@@ -192,10 +192,11 @@ public const PHASE_OUTER = 1;
 | `startTime` | datetime_immutable nullable | Campaign start |
 | `endTime` | datetime_immutable nullable | Campaign end |
 | `config` | json nullable | Values for DSL `config.*` placeholders (threshold, amount, gift spec ID, etc.) |
-| `specifications` | M2M → `App\Trade\Entity\Specification` | Which product specs this applies to (empty = all) |
 | `conflictMode` | string(30) default `'stackable'` | `stackable` | `exclusive` | `lock_item` |
 | `createdAt` | datetime_immutable | Auto-set on persist |
 | `updatedAt` | datetime_immutable nullable | Auto-set on update |
+
+Specification targeting is done via DSL conditions (`item.spec.id in config.target_specs`), not via entity relationship.
 
 ### 4.3 Conflict Modes
 
@@ -647,7 +648,7 @@ apply(promotion, context)
   ├─ Resolve strategy by template.type
   ├─ Execute each action in order:
   │   └─ Strategy::apply(actionAst, context, config)
-  └─ Mark promotion as applied in context.appliedPromotions[]
+  └─ Mark promotion as applied in context.meta['promotion']
 ```
 
 ### 8.4 Chaining (Loop)
@@ -668,7 +669,7 @@ class PromotionCalculator implements PriceCalculatorInterface
 
             $this->promotionService->apply($promotion, $context);
 
-            $context->appliedPromotions[] = [
+            $innerApplied[] = [
                 'promotion_id' => $promotion->getId(),
                 'promotion_name' => $promotion->getName(),
                 'template_name' => $promotion->getTemplate()->getName(),
@@ -694,7 +695,7 @@ class PromotionCalculator implements PriceCalculatorInterface
         );
         if ($outerPromotion) {
             $this->promotionService->apply($outerPromotion, $context);
-            $context->appliedPromotions[] = [ /* ... */ ];
+            $context->meta['promotion'] = ['inner' => $innerApplied, 'outer' => [...]];
         }
     }
 
@@ -720,20 +721,21 @@ class PriceCalculationContext
 
     /** Store identifier for multi-store promotion filtering */
     public ?string $storeCode = null;
-
-    /** Promotions applied during calculation (for audit/display) */
-    public array $appliedPromotions = [];
 }
+
+// Promotion results are written to context.meta['promotion'] —
+// Trade never reads this structure, maintaining full decoupling.
 ```
 
 ### 9.2 OrderService Change
 
 ```php
-public function calculatePrices(array $items, string $currency = 'CNY', ?string $storeCode = null): PriceCalculationResult
+public function calculatePrices(array $items, string $currency = 'CNY', ?string $storeCode = null, array $meta = []): PriceCalculationResult
 {
     $context = new PriceCalculationContext($items, $currency);
     $context->user = $this->user;
     $context->storeCode = $storeCode;
+    $context->meta = $meta;    // ← bidirectional channel for calculators
 
     // ... existing calculator chain ...
 }
@@ -963,7 +965,7 @@ on `PromotionCalculator` handles the pipeline tag.
    - `getAvailable()` — query + filter + sort
    - `getFirstAvailable()` — top match
    - `apply()` — execute actions via strategy
-5. Add `$user`, `$storeCode`, `$appliedPromotions` to `PriceCalculationContext`.
+5. Add `$user`, `$storeCode` to `PriceCalculationContext`.
 6. Modify `OrderService::calculatePrices()` to inject user + storeCode.
 7. Create `PromotionCalculator` implementing `PriceCalculatorInterface`.
 8. Unit tests for Evaluator, engine, and each strategy.
@@ -977,7 +979,7 @@ on `PromotionCalculator` handles the pipeline tag.
 
 ### Phase 5: Observability and Reporting
 
-1. `appliedPromotions` with before/after snapshots.
+1. Promotion results written to `context.meta['promotion']` with before/after snapshots.
 2. Promotion execution log for debugging.
 3. Endpoint: `/api/v1/app/promotions` with time-window + storeCode filtering.
 
@@ -989,7 +991,7 @@ on `PromotionCalculator` handles the pipeline tag.
 |----------|------------------|
 | Should DSL support inline math expressions? (e.g., `cart.subtotal * 0.8 >= 100`) | No — keep DSL simple. Complex math belongs in strategy classes. |
 | Should `fields` declarations auto-generate admin form? | Reserved: frontend task. `fields` is the contract. |
-| Should `appliedPromotions` be persisted on Order? | No for first phase: stored in calculation result only. |
+| Should `appliedPromotions` be persisted on Order? | No. Results stored in `context.meta['promotion']`, passed through `PriceCalculationResult.meta` to frontend. |
 | Max loop iterations? | 20, configurable constant in `PromotionCalculator`. |
 | AST cache storage: DB JSON column or filesystem? | DB JSON column (`astCache`). Zero deployment dependency. |
 | How to handle circular promotions? | Max iteration + appliedId tracking + lock_item mode. |

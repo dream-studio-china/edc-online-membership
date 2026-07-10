@@ -10,7 +10,7 @@
 - **PHP 8.4+**, Doctrine ORM 3.6, MySQL 8 (Docker), SQLite (tests)
 - JWT authentication (RS256), OTP/SMS login, WeChat Mini Program / Official Account login
 - Expression-based dynamic query engine (`@filter`, `@sort`, `@dql`)
-- Modular architecture: **Core** (framework), **Common** (CMS), **Identity** (auth), **Trade** (e-commerce), **Payment** (invoices), **Wallet** (balances), **Wechat** (login + pay), **Storage** (file upload drivers)
+- Modular architecture: **Core** (framework), **Common** (CMS), **Promotion** (DSL-driven promotions), **Identity** (auth), **Trade** (e-commerce), **Payment** (invoices), **Wallet** (balances), **Wechat** (login + pay), **Storage** (file upload drivers)
 - EasyWeChat 6.x integration (Mini Program, Official Account OAuth, WeChat Pay V3)
 - NelmioApiDoc (Swagger at `/api/doc`), PHPUnit 12.5, Docker Compose (5 services)
 - MkDocs Material + GitHub Pages documentation
@@ -42,11 +42,11 @@
 │   └── Controller/App/ + Manage/ + Public/
 │
 ├── src/Identity/                 # Authentication & Identity
-│   ├── Entity/User.php, RefreshToken.php     # User has __toString(): username fallback to email
+│   ├── Entity/User.php, RefreshToken.php, Profile.php     # User has __toString(): username fallback to email; User::$profile (OneToOne→Profile)
 │   ├── Security/JwtAuthenticator.php, TokenManager.php
 │   ├── Service/OtpService.php, UserService.php, SMS providers
 │   ├── Command/CreateUserCommand.php
-│   └── Controller/AuthController.php, App/UserController.php, Manage/UserController.php
+│   └── Controller/AuthController.php, App/UserController.php, App/ProfileController.php, Manage/UserController.php, Manage/ProfileController.php
 │
 ├── src/Trade/                    # E-commerce module
 │   ├── Entity/                   # Product, Specification, Order, OrderItem
@@ -94,6 +94,16 @@
 │   ├── Service/QiniuStorage.php                # Qiniu Kodo cloud storage (optional SDK)
 │   └── Resources/config/services_storage.yaml
 │
+├── src/Promotion/                # Promotion module (DSL-driven promotion engine)
+│   ├── Entity/                   # PromotionTemplate, Promotion
+│   ├── Repository/
+│   ├── Service/                  # PromotionService, PromotionTemplateService, PromotionCalculator
+│   │   └── Dsl/                  # DSL lexer/parser/evaluator
+│   ├── Strategy/                 # 7 strategies: FullReduction, Discount, Gift, NthItemDiscount, Tiered, FreeShipping, MemberDiscount
+│   ├── Controller/App/           # Read-only endpoints
+│   ├── Controller/Manage/        # Admin CRUD endpoints
+│   └── Exception/
+│
 ├── config/
 │   ├── services.yaml             # Service wiring + imports src/*/Resources/config + exclusions
 │   ├── routes.yaml               # Route imports (wechat, wechat_app, wechat_manage added)
@@ -108,10 +118,10 @@
 ├── docs/
 │   ├── ai/context.md             # This file
 │   ├── design/                   # Design contracts
-│   │   └── bundles/              # Per-module design docs (core, common, trade, wallet, identity, wechat)
+│   │   └── bundles/              # Per-module design docs (core, common, trade, wallet, identity, wechat, payment, storage, promotion)
 │   └── openapi/                       # endpoints.yaml + order/payment frontend flow docs
 ├── scripts/tests/                # Test scripts
-├── tests/                        # 1221 PHPUnit tests, 4199 assertions, 90%+ coverage
+├── tests/                        # 1589 PHPUnit tests, 5165 assertions, 91%+ coverage
 ├── README.md                     # English README
 ├── README.zh-cn.md               # Chinese (Simplified) README
 ├── README.zh-hant.md             # Chinese (Traditional) README
@@ -132,7 +142,7 @@
 ## 3. Request Lifecycle
 
 1. `public/index.php` → `App\Kernel` (MicroKernelTrait)
-2. `config/routes.yaml` imports: `/api/v1` (Common/Trade/Wallet/Payment/Wechat App+Manage), `/api/auth` (Identity), `/api/wechat` (Wechat login), `/system` (introspection), `/api/payment/notify` (webhook)
+2. `config/routes.yaml` imports: `/api/v1` (Common/Trade/Wallet/Payment/Promotion/Wechat App+Manage), `/api/auth` (Identity), `/api/wechat` (Wechat login), `/system` (introspection), `/api/payment/notify` (webhook)
 3. `JwtAuthenticator` intercepts all `/api` routes (except public paths listed in security.yaml)
 4. Controller action (trait mixin or custom method) → `BaseService` methods → Doctrine EntityManager → DB
 5. `RestController::success()` / `warning()` → JSON `{data, code, message, paginator}`
@@ -160,12 +170,27 @@
 | PUT | `/api/v1/app/users/me` | ROLE_USER | Update email, username, phone, optional password |
 | POST | `/api/v1/app/users/change-password` | ROLE_USER | Change password (requires current) |
 
-### 4.2 User Management (Manage)
+### 4.2 Profile (App)
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET | `/api/v1/app/profiles` | ROLE_USER | Current user profile (self-service: nickname, avatar, metadata) |
+| PUT | `/api/v1/app/profiles` | ROLE_USER | Update nickname, avatar, metadata (level is admin-only) |
+
+Profile is auto-created on User registration via a Doctrine lifecycle listener. Points are delegated to Wallet (currency=POINTS). Formerly named Member.
+
+### 4.3 User Management (Manage)
 
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
 | GET/POST/PUT/DELETE | `/api/v1/manage/users/*` | ROLE_ADMIN | Admin user CRUD |
 | POST | `/api/v1/manage/users/{id}/change-password` | ROLE_ADMIN | Admin change user password |
+
+### 4.4 Profile Management (Manage)
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET/POST/PUT/DELETE | `/api/v1/manage/profiles/*` | ROLE_ADMIN | Admin profile CRUD (including level) |
 
 **UserService** (`App\Identity\Service\UserService`): encapsulates register, verifyPassword, changePassword, adminChangePassword, updateProfile. Auto-hashes passwords in `update()`.
 
@@ -220,7 +245,7 @@ draft → pending → confirmed → paid → fulfilled → completed → refunde
 
 | Method | Description |
 |--------|-------------|
-| `calculatePrices(items, currency)` | Pipeline: BasePriceCalculator → QuantityCalculator → TotalAggregator |
+| `calculatePrices(items, currency, storeCode?, meta?)` | Pipeline: BasePriceCalculator → QuantityCalculator → **TotalAggregator (subtotal, priority 55)** → **PromotionCalculator (priority 60)**. `meta` is an opaque bidirectional channel for calculators. |
 | `createOrder(items, user, total, currency, notes, metadata)` | Create Order + OrderItems in transaction. Optional `metadata` is saved as-is to `trade_order.metadata`. |
 | `pay(Order, systemWalletId, paymentMethod)` | User wallet → system wallet via `TransferService`. Sets `paidAt`. |
 | `refund(Order, systemWalletId, reason)` | System wallet → user wallet via `TransferService`. Sets `refundedAt`. |
@@ -244,6 +269,7 @@ draft → pending → confirmed → paid → fulfilled → completed → refunde
 | Method | Path | Description |
 |--------|------|-------------|
 | POST | `/manage/orders` | Create with price calculation |
+| **POST** | **`/manage/orders/quote`** | **Price preview without creating order** |
 | PUT | `/manage/orders/{id}` | Update draft only |
 | DELETE | `/manage/orders/{id}` | Delete draft only |
 | GET | `/manage/orders/{id}/items` | View order items |
@@ -259,6 +285,8 @@ draft → pending → confirmed → paid → fulfilled → completed → refunde
 | Method | Path | Description |
 |--------|------|-------------|
 | POST | `/app/orders` | Create order (auto-assigns user). Accepts optional `metadata` JSON payload and persists it directly. |
+| **POST** | **`/app/orders/quote`** | **Price preview without creating order** |
+| GET | `/app/orders/{id}/items` | View own order items |
 | GET | `/app/orders/{id}/items` | View own order items |
 | POST | `/app/orders/{id}/cancel` | Cancel own order (draft/pending/confirmed) |
 | POST | `/app/orders/{id}/payment` | **Pay order via gateway (wallet, mock, wechat)** |
@@ -501,6 +529,7 @@ Placed in `src/Core/Controller/System/` (framework layer). NelmioApiDoc path_pat
 | **Token rotation + reuse detection** | Identity | HMAC-SHA256 refresh tokens |
 | **Idempotency** | Wallet | `referenceId` unique constraint on WalletTransaction |
 | **Pipeline** | Trade | `PriceCalculatorInterface` with priority ordering |
+| **Meta channel** | Trade | `PriceCalculationContext.meta` / `PriceCalculationResult.meta` — bidirectional opaque channel. Calculators read/write module-specific keys (`meta['promotion']`, `meta['coupon']`). Trade never inspects content. |
 | **Optimistic locking** | Wallet | `#[ORM\Version]` on Wallet |
 | **Post-response enrichment** | Core | `OpenApiEnricherListener` post-processes `/api/doc` and `/api/doc.json` |
 | **commonFilter** | Controllers | Array criteria or QueryBuilder injected into all queries. `[]` = no filter (admin), `['user' => $user]` = user-scoped, `['id' => -1]` = block all, QueryBuilder required for `IS NULL` filters |
@@ -517,6 +546,11 @@ Placed in `src/Core/Controller/System/` (framework layer). NelmioApiDoc path_pat
 | **Locale auto-detection** | Core | `LocaleListener` at kernel.request priority 20: `?_locale=` param > `Accept-Language` header > default_locale fallback. Sub-requests are ignored. |
 | **Apache .htaccess** | public/ | Rewrite all non-file requests to `index.php` + forward `Authorization` header via `SetEnvIf` for JWT in PHP-FPM environments |
 | **System introspection** | Core | Entity metadata + route export via `/system/*` endpoints |
+| **Promotion DSL** | Promotion | Custom lexer/parser/evaluator for human-readable promotion rules |
+| **Promotion strategy tag** | Promotion | `promotion.strategy` auto-tag for strategy implementations, collected via `#[AutowireIterator]` |
+| **Promotion calculator pipeline** | Promotion | `PromotionCalculator` tagged `trade.price_calculator` (priority 60). TotalAggregator runs at priority 55 to establish the subtotal before promotion evaluation. |
+| **Profile auto-creation** | Identity | `Profile` entity created on User registration via Doctrine lifecycle listener; user has `$profile` (OneToOne) instead of `$member` |
+| **Points delegated to Wallet** | Identity | Profile points use Wallet with currency=POINTS |
 
 ## 14. API Documentation System
 
@@ -549,14 +583,16 @@ Enriches all endpoints (90+):
 | `manage-pages-*`, `app-pages-*` | Pages |
 | `manage-media-*`, `app-media-*` | Media |
 | `manage-settings-*`, `app-settings-*` | Settings |
+| `manage-promotions-*`, `app-promotions-*` | Promotions |
+| `manage-promotion-templates-*`, `app-promotion-templates-*` | PromotionTemplates |
 | `manage-wallets-*`, `manage-transactions-*`, `manage-transfers-*` | Wallet |
 | Any other `manage-{X}-*` | {X} (auto-title-cased) |
 
 ### 14.4 Schema Configuration (`config/packages/nelmio_api_doc.yaml`)
 
-42+ named schemas across 11 tags (Auth, Products, Orders, Categories, Tags, Contents, Comments, Pages, Media, Settings, Wallet, System, Wechat). Each with field-level type, description, enum, and example values. `path_patterns` includes both `^/api` and `^/system`.
+44+ named schemas across 13 tags (Auth, Products, Orders, Categories, Tags, Contents, Comments, Pages, Media, Settings, Promotions, PromotionTemplates, Wallet, System, Wechat). Each with field-level type, description, enum, and example values. `path_patterns` includes both `^/api` and `^/system`.
 
-## 15. Database Tables (10 Migrations)
+## 15. Database Tables (12 Migrations)
 
 | Version | Tables |
 |---------|--------|
@@ -570,6 +606,8 @@ Enriches all endpoints (90+):
 | 20260626000000 | `wallet_payment_deduction` (wallet-owned deduction audit, scalar invoice references, FK to `wallet`) |
 | 20260703000000 | Added to `common_media`: `storage`, nullable `user_id` FK to `users` |
 | 20260703010000 | Added to `common_media`: nullable `category_id` FK to `common_category` |
+| 20260703020000 | `identity_profile` (replaces `member` table; level, nickname, avatar, metadata; FK to `users`) |
+| 20260704000000 | `promotion_template`, `promotion` (DSL text, AST cache, per-store config, time range, `IDX_PROMOTION_ACTIVE_STORE` composite index) |
 
 ## 16. Documentation Assets
 
@@ -590,6 +628,7 @@ Enriches all endpoints (90+):
 | `docs/design/bundles/wechat.md` | WeChat module design (Mini Program, Official Account, Pay) |
 | `docs/design/bundles/payment.md` | Payment module design (invoice, gateway, adjustment providers, deduction) |
 | `docs/design/bundles/storage.md` | Storage module design (pluggable file upload drivers) |
+| `docs/design/bundles/promotion.md` | Promotion module design (DSL engine, 7 strategy types, tagged calculator) |
 | `docs/openapi/order-payment-flow.md` | Frontend order/payment/cancel/refund API integration guide, including WeChat Mini Program pay |
 | `docs/openapi/order-payment-flow.zh.md` | Chinese translation of the frontend order/payment/cancel/refund API guide |
 | `docs/ai/context.md` | This file — AI context snapshot |
@@ -601,19 +640,21 @@ Enriches all endpoints (90+):
 
 - **Framework**: PHPUnit 12.5
 - **DB**: SQLite `var/test.db` in test environment
-- **Coverage**: 90% minimum (enforced in CI), currently **90.06% lines** (`4795/5324`) from latest local Xdebug run
-- **Test count**: **1221 tests**, **4199 assertions**
+- **Coverage**: 90% minimum (enforced in CI), currently **91.12% lines** from latest local Xdebug run
+- **Test count**: **1589 tests**, **5165 assertions**
 - **Local PHP note**: default `php` may point to PHP 7.4; use Homebrew PHP 8.5 at `/opt/homebrew/opt/php@8.5/bin/php` for local Symfony/PHPUnit commands.
 - **HTML coverage report**: `XDEBUG_MODE=coverage ./vendor/bin/phpunit --coverage-html var/coverage`
 - **Key test groups**:
   - `tests/Trade/`: 171+ tests + Controller/Manage/OrderControllerTest (16 tests for not-found, workflow guards, payment validation)
   - `tests/Wallet/`: ~105 tests (Entity, Integration, Transfer Service, WalletService, Payment/Gateway, API regression)
   - `tests/Common/`: 69 tests (Entity, Integration, Batch update, media upload/delete)
-  - `tests/Identity/`: 92 tests (Auth, OTP, Token, Black box, UserService, UserController, UserApiIntegration)
+  - `tests/Identity/`: 116+ tests (Auth, OTP, Token, Black box, UserService, UserController, UserApiIntegration, Profile entity, ProfileController)
+   - `tests/Promotion/`: 320+ tests (Entity, DSL lexer/parser/evaluator, Strategies, Engine, Calculator, App/Manage controllers, real SQLite pipeline integration with Doctrine + OrderService)
   - `tests/Payment/`: ~60 tests (Gateway, Registry, Adjustment/Provider, Invoice, Multi-gateway integration)
   - `tests/Wechat/`: 59 tests (Entity, Service, AuthService, Payment/Gateway, Controller, Repository)
   - `tests/Core/`: 70+ tests (BaseService, RestController, Parser, Serializer, LocaleListener, MutationTrait, Utils, System controllers)
-  - `tests/Integration/`: ~20 cross-module tests
+   - `tests/Promotion/Integration/`: 8 real SQLite quote pipeline tests (store isolation, global campaigns, member-targeted item discounts, stacking, best-price conflict, Nth-item, multi-SKU, expiry, mixed rules)
+   - `tests/Integration/`: ~20 cross-module tests
 
 ## 18. Environment Variables (Key)
 
@@ -680,7 +721,9 @@ Requires `.env.prod.local` copied from `.env.prod.example` with `APP_SECRET`, `R
 - `PaymentGatewayInterface` implementations auto-tagged `payment.gateway`, collected via `#[AutowireIterator]`
 - `PaymentAdjustmentProviderInterface` implementations auto-tagged `payment.adjustment_provider`, collected via `#[AutowireIterator]`
 - `MediaStorageInterface` implementations tagged `media.storage`, collected via `#[AutowireIterator]`; `LocalStorage`/`QiniuStorage` are explicitly wired in `src/Storage/Resources/config/services_storage.yaml` because they need scalar/config/repository constructor arguments
-- `PriceCalculatorInterface` implementations auto-tagged `trade.price_calculator`, sorted by `getPriority()`
+- `PriceCalculatorInterface` implementations auto-tagged `trade.price_calculator`, sorted by `getPriority()` — pipeline: BasePriceCalculator(-100) → QuantityCalculator(50) → **TotalAggregator(55)** (establishes subtotal) → **PromotionCalculator(60)** (applies order-level adjustments on the real subtotal)
+- `PromotionCalculator` (`App\Promotion\Service\PromotionCalculator`) implements `PriceCalculatorInterface`, tagged `trade.price_calculator` at priority 60, applies promotions after the subtotal is aggregated
+- Promotion strategies auto-tagged `promotion.strategy` via `_instanceof` rule, collected by `#[AutowireIterator]` in the strategy registry
 - `WechatService` explicitly defined in `services_wechat.yaml` with `%env()` parameter bindings
 - `WechatPayGateway` explicitly defined in `services_wechat.yaml` (excluded from global autowiring scan)
 - `WalletGateway` autowired in Wallet via `PaymentGatewayInterface` tag (no explicit exclusion needed)
