@@ -8,6 +8,7 @@ imports:
     - { resource: '../src/Payment/Resources/config/services_payment.yaml', ignore_errors: true }
     - { resource: '../src/Storage/Resources/config/services_storage.yaml', ignore_errors: true }
     - { resource: '../src/Wechat/Resources/config/services_wechat.yaml', ignore_errors: true }
+    - { resource: '../src/Promotion/Resources/config/services_promotion.yaml', ignore_errors: true }
 
 services:
     _defaults:
@@ -41,6 +42,7 @@ services:
             - '../src/Storage/Service/QiniuStorage.php'
             - '../src/Wechat/Service/WechatService.php'
             - '../src/Wechat/Service/Payment/WechatPayGateway.php'
+            - '../src/Promotion/Exception/*'
 
     App\Core\EventListener\OpenApiEnricherListener:
         tags:
