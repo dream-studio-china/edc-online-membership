@@ -74,7 +74,7 @@ Compared with plain generated boilerplate, it provides:
 - **System Introspection**: Entity metadata and route export endpoints (`/system/*`).
 - **Promotion DSL Engine**: Custom lexer/parser/evaluator for human-readable promotion rules with 7 promotion types (full_reduction, discount, gift, nth_discount, tiered, free_shipping, member_discount). Tagged pricing calculator (priority=60) sits in the Trade price pipeline.
 - **Profile Entity**: Auto-created on User registration via Doctrine listener. Carries level (bronze→diamond), nickname, avatar, metadata. Points delegated to Wallet (currency=POINTS).
-- **Comprehensive Testing**: 1583 tests, 5142 assertions, 91%+ line coverage.
+- **Comprehensive Testing**: 1589 tests, 5157 assertions, 91%+ line coverage.
 - **Docker Compose**: MySQL 8 + Mailpit for development.
 
 ## Tech Stack
@@ -176,7 +176,7 @@ See `composer.json` for the full dependency list.
 ├── config/                       # Symfony configuration
 │   └── packages/                 #   Doctrine, Security, Workflow, Serializer, etc.
 ├── migrations/                   # Doctrine migrations (12 versions)
-├── tests/                        # 1583 PHPUnit tests, 5142 assertions, 91%+ coverage
+├── tests/                        # 1589 PHPUnit tests, 5157 assertions, 91%+ coverage
 ├── docs/                         # Project documentation
 │   ├── design/                   #   Design contracts (system, API, data, module, controller)
 │   │   └── bundles/              #   Per-module design documents
@@ -439,6 +439,7 @@ Resources: `categories`, `contents`, `tags`, `comments`, `pages`, `media`, `sett
 | GET/POST/PUT/DELETE | `/api/v1/manage/products[/{id}]` | Product CRUD |
 | GET/POST/PUT/DELETE | `/api/v1/manage/specifications[/{id}]` | Specification CRUD |
 | POST | `/api/v1/manage/orders` | Create order (with pricing) |
+| **POST** | **`/api/v1/manage/orders/quote`** | **Price preview without creating order** |
 | GET | `/api/v1/manage/orders/todo` | Orders with available transitions |
 | GET | `/api/v1/manage/orders/{id}/transitions` | Enabled workflow transitions |
 | POST | `/api/v1/manage/orders/{id}/do/{transition}` | Execute transition |
@@ -614,7 +615,7 @@ Note on controller construction: Controllers extending `RestController` receive 
 
 ## Testing
 
-**1583 tests · 5142 assertions · 91%+ line coverage**
+**1589 tests · 5157 assertions · 91%+ line coverage**
 
 Run all tests:
 

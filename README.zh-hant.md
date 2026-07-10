@@ -66,7 +66,7 @@
 │   └── Identity/                 # 鑑權模組
 ├── config/                       # Symfony 配置
 ├── migrations/                   # Doctrine 遷移（12 個版本）
-├── tests/                        # 1583 測試、5142 斷言、91%+ 覆蓋率
+├── tests/                        # 1589 測試、5157 斷言、91%+ 覆蓋率
 ├── translations/                 # 多語言翻譯檔案
 └── compose.yaml                  # Docker Compose
 ```
@@ -87,7 +87,7 @@
 
 ## 測試
 
-**1583 個測試 · 5142 個斷言 · 91%+ 行覆蓋率**
+**1589 個測試 · 5157 個斷言 · 91%+ 行覆蓋率**
 
 ```bash
 ./vendor/bin/phpunit

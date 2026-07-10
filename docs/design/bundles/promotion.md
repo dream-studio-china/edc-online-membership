@@ -730,11 +730,12 @@ class PriceCalculationContext
 ### 9.2 OrderService Change
 
 ```php
-public function calculatePrices(array $items, string $currency = 'CNY', ?string $storeCode = null): PriceCalculationResult
+public function calculatePrices(array $items, string $currency = 'CNY', ?string $storeCode = null, array $meta = []): PriceCalculationResult
 {
     $context = new PriceCalculationContext($items, $currency);
     $context->user = $this->user;
     $context->storeCode = $storeCode;
+    $context->meta = $meta;    // ← bidirectional channel for calculators
 
     // ... existing calculator chain ...
 }
