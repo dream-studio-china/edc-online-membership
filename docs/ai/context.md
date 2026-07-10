@@ -121,7 +121,7 @@
 │   │   └── bundles/              # Per-module design docs (core, common, trade, wallet, identity, wechat, payment, storage, promotion)
 │   └── openapi/                       # endpoints.yaml + order/payment frontend flow docs
 ├── scripts/tests/                # Test scripts
-├── tests/                        # 1583 PHPUnit tests, 5142 assertions, 91%+ coverage
+├── tests/                        # 1589 PHPUnit tests, 5157 assertions, 91%+ coverage
 ├── README.md                     # English README
 ├── README.zh-cn.md               # Chinese (Simplified) README
 ├── README.zh-hant.md             # Chinese (Traditional) README
@@ -245,7 +245,7 @@ draft → pending → confirmed → paid → fulfilled → completed → refunde
 
 | Method | Description |
 |--------|-------------|
-| `calculatePrices(items, currency)` | Pipeline: BasePriceCalculator → QuantityCalculator → TotalAggregator |
+| `calculatePrices(items, currency, storeCode?, meta?)` | Pipeline: BasePriceCalculator → QuantityCalculator → **PromotionCalculator** → TotalAggregator. `meta` is an opaque bidirectional channel for calculators. |
 | `createOrder(items, user, total, currency, notes, metadata)` | Create Order + OrderItems in transaction. Optional `metadata` is saved as-is to `trade_order.metadata`. |
 | `pay(Order, systemWalletId, paymentMethod)` | User wallet → system wallet via `TransferService`. Sets `paidAt`. |
 | `refund(Order, systemWalletId, reason)` | System wallet → user wallet via `TransferService`. Sets `refundedAt`. |
@@ -269,6 +269,7 @@ draft → pending → confirmed → paid → fulfilled → completed → refunde
 | Method | Path | Description |
 |--------|------|-------------|
 | POST | `/manage/orders` | Create with price calculation |
+| **POST** | **`/manage/orders/quote`** | **Price preview without creating order** |
 | PUT | `/manage/orders/{id}` | Update draft only |
 | DELETE | `/manage/orders/{id}` | Delete draft only |
 | GET | `/manage/orders/{id}/items` | View order items |
@@ -284,6 +285,8 @@ draft → pending → confirmed → paid → fulfilled → completed → refunde
 | Method | Path | Description |
 |--------|------|-------------|
 | POST | `/app/orders` | Create order (auto-assigns user). Accepts optional `metadata` JSON payload and persists it directly. |
+| **POST** | **`/app/orders/quote`** | **Price preview without creating order** |
+| GET | `/app/orders/{id}/items` | View own order items |
 | GET | `/app/orders/{id}/items` | View own order items |
 | POST | `/app/orders/{id}/cancel` | Cancel own order (draft/pending/confirmed) |
 | POST | `/app/orders/{id}/payment` | **Pay order via gateway (wallet, mock, wechat)** |
@@ -526,6 +529,7 @@ Placed in `src/Core/Controller/System/` (framework layer). NelmioApiDoc path_pat
 | **Token rotation + reuse detection** | Identity | HMAC-SHA256 refresh tokens |
 | **Idempotency** | Wallet | `referenceId` unique constraint on WalletTransaction |
 | **Pipeline** | Trade | `PriceCalculatorInterface` with priority ordering |
+| **Meta channel** | Trade | `PriceCalculationContext.meta` / `PriceCalculationResult.meta` — bidirectional opaque channel. Calculators read/write module-specific keys (`meta['promotion']`, `meta['coupon']`). Trade never inspects content. |
 | **Optimistic locking** | Wallet | `#[ORM\Version]` on Wallet |
 | **Post-response enrichment** | Core | `OpenApiEnricherListener` post-processes `/api/doc` and `/api/doc.json` |
 | **commonFilter** | Controllers | Array criteria or QueryBuilder injected into all queries. `[]` = no filter (admin), `['user' => $user]` = user-scoped, `['id' => -1]` = block all, QueryBuilder required for `IS NULL` filters |
@@ -636,8 +640,8 @@ Enriches all endpoints (90+):
 
 - **Framework**: PHPUnit 12.5
 - **DB**: SQLite `var/test.db` in test environment
-- **Coverage**: 90% minimum (enforced in CI), currently **91.27% lines** from latest local Xdebug run
-- **Test count**: **1583 tests**, **5142 assertions**
+- **Coverage**: 90% minimum (enforced in CI), currently **91.12% lines** from latest local Xdebug run
+- **Test count**: **1589 tests**, **5157 assertions**
 - **Local PHP note**: default `php` may point to PHP 7.4; use Homebrew PHP 8.5 at `/opt/homebrew/opt/php@8.5/bin/php` for local Symfony/PHPUnit commands.
 - **HTML coverage report**: `XDEBUG_MODE=coverage ./vendor/bin/phpunit --coverage-html var/coverage`
 - **Key test groups**:
