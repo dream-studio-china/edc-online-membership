@@ -9,12 +9,14 @@ class PriceCalculationResult
     public int $totalAmount;
     public string $currency;
     public array $items;
+    public array $meta;
 
-    public function __construct(int $totalAmount, string $currency, array $items)
+    public function __construct(int $totalAmount, string $currency, array $items, array $meta = [])
     {
         $this->totalAmount = $totalAmount;
         $this->currency = $currency;
         $this->items = $items;
+        $this->meta = $meta;
     }
 
     public static function fromContext(PriceCalculationContext $context): self
@@ -23,6 +25,7 @@ class PriceCalculationResult
             $context->totalAmount,
             $context->currency,
             $context->items,
+            $context->meta,
         );
     }
 }

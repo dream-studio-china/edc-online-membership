@@ -62,14 +62,16 @@ final class PromotionCalculatorTest extends TestCase
         self::assertCount(2, $appliedPromotions);
         self::assertSame($promotion1, $appliedPromotions[0]);
         self::assertSame($promotion2, $appliedPromotions[1]);
-        self::assertCount(2, $context->appliedPromotions);
-        self::assertSame(1, $context->appliedPromotions[0]['promotionId']);
-        self::assertSame('Summer Sale', $context->appliedPromotions[0]['promotionName']);
-        self::assertSame('full_reduction', $context->appliedPromotions[0]['type']);
-        self::assertSame(0, $context->appliedPromotions[0]['iteration']);
-        self::assertSame(2, $context->appliedPromotions[1]['promotionId']);
-        self::assertSame(1, $context->appliedPromotions[1]['iteration']);
-        self::assertArrayHasKey('snapshot', $context->appliedPromotions[0]);
+
+        $inner = $context->meta['promotion']['inner'];
+        self::assertCount(2, $inner);
+        self::assertSame(1, $inner[0]['promotionId']);
+        self::assertSame('Summer Sale', $inner[0]['promotionName']);
+        self::assertSame('full_reduction', $inner[0]['type']);
+        self::assertSame(0, $inner[0]['iteration']);
+        self::assertSame(2, $inner[1]['promotionId']);
+        self::assertSame(1, $inner[1]['iteration']);
+        self::assertArrayHasKey('snapshot', $inner[0]);
     }
 
     public function testCalculateAppliesOuterPhasePromotion(): void
@@ -96,10 +98,11 @@ final class PromotionCalculatorTest extends TestCase
         $calculator->calculate($context);
 
         self::assertTrue($applied);
-        self::assertCount(1, $context->appliedPromotions);
-        self::assertSame(3, $context->appliedPromotions[0]['promotionId']);
-        self::assertSame('free_shipping', $context->appliedPromotions[0]['type']);
-        self::assertSame('outer', $context->appliedPromotions[0]['phase']);
+
+        $outer = $context->meta['promotion']['outer'];
+        self::assertSame(3, $outer['promotionId']);
+        self::assertSame('free_shipping', $outer['type']);
+        self::assertSame('outer', $outer['phase']);
     }
 
     public function testCalculateNoPromotionsAvailable(): void
@@ -113,7 +116,8 @@ final class PromotionCalculatorTest extends TestCase
         $calculator = new PromotionCalculator($service);
         $calculator->calculate($context);
 
-        self::assertCount(0, $context->appliedPromotions);
+        self::assertSame([], $context->meta['promotion']['inner']);
+        self::assertArrayNotHasKey('outer', $context->meta['promotion']);
     }
 
     public function testCalculateStackableConflictModeLoops(): void
@@ -147,7 +151,7 @@ final class PromotionCalculatorTest extends TestCase
         $calculator->calculate($context);
 
         self::assertSame(2, $applyCount);
-        self::assertCount(2, $context->appliedPromotions);
+        self::assertCount(2, $context->meta['promotion']['inner']);
     }
 
     public function testCalculateLockItemConflictModeTracksIds(): void
@@ -181,7 +185,7 @@ final class PromotionCalculatorTest extends TestCase
         $calculator->calculate($context);
 
         self::assertSame(2, $applyCount);
-        self::assertCount(2, $context->appliedPromotions);
+        self::assertCount(2, $context->meta['promotion']['inner']);
     }
 
     public function testCalculateAppliedPromotionsSnapshot(): void
@@ -207,9 +211,10 @@ final class PromotionCalculatorTest extends TestCase
         $calculator = new PromotionCalculator($service);
         $calculator->calculate($context);
 
-        self::assertCount(1, $context->appliedPromotions);
-        self::assertSame(123456, $context->appliedPromotions[0]['snapshot']['totalAmount']);
-        self::assertSame(1, $context->appliedPromotions[0]['snapshot']['itemsCount']);
+        $inner = $context->meta['promotion']['inner'];
+        self::assertCount(1, $inner);
+        self::assertSame(123456, $inner[0]['snapshot']['totalAmount']);
+        self::assertSame(1, $inner[0]['snapshot']['itemsCount']);
     }
 
     public function testCalculateConfigInAppliedPromotions(): void
@@ -235,12 +240,35 @@ final class PromotionCalculatorTest extends TestCase
         $calculator = new PromotionCalculator($service);
         $calculator->calculate($context);
 
-        self::assertCount(1, $context->appliedPromotions);
-        self::assertSame($config, $context->appliedPromotions[0]['config']);
+        $inner = $context->meta['promotion']['inner'];
+        self::assertCount(1, $inner);
+        self::assertSame($config, $inner[0]['config']);
     }
 
     public function testGetPriority(): void
     {
         self::assertSame(60, PromotionCalculator::getPriority());
+    }
+
+    public function testMetaNotOverwrittenWhenAlreadySet(): void
+    {
+        $context = new PriceCalculationContext([]);
+        $context->totalAmount = 50000;
+        $context->meta['existing'] = 'should-survive';
+
+        $promotion = $this->createMockPromotion(1, 'Test', 'Template', 'full_reduction', []);
+
+        $service = $this->createMock(PromotionServiceInterface::class);
+        $service->method('getFirstAvailable')
+            ->willReturnCallback(function (PriceCalculationContext $ctx, ?int $phase) use ($promotion) {
+                if ($phase === PromotionTemplate::PHASE_INNER) return $promotion;
+                return null;
+            });
+
+        $calculator = new PromotionCalculator($service);
+        $calculator->calculate($context);
+
+        self::assertSame('should-survive', $context->meta['existing']);
+        self::assertIsArray($context->meta['promotion']);
     }
 }

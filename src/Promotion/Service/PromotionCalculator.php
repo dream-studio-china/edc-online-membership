@@ -27,6 +27,8 @@ class PromotionCalculator implements PriceCalculatorInterface
     {
         $appliedIds = [];
 
+        $innerApplied = [];
+
         // Phase INNER: item-level promotions
         for ($i = 0; $i < self::MAX_ITERATIONS; $i++) {
             $promotion = $this->promotionService->getFirstAvailable(
@@ -40,7 +42,7 @@ class PromotionCalculator implements PriceCalculatorInterface
 
             $this->promotionService->apply($promotion, $context);
 
-            $context->appliedPromotions[] = [
+            $innerApplied[] = [
                 'promotionId' => $promotion->getId(),
                 'promotionName' => $promotion->getName(),
                 'templateName' => $promotion->getTemplate()?->getName(),
@@ -53,7 +55,7 @@ class PromotionCalculator implements PriceCalculatorInterface
                 'iteration' => $i,
             ];
 
-            if ($promotion->getConflictMode() === PromotionTemplate::PHASE_OUTER) {
+            if ($promotion->getConflictMode() === 'exclusive') {
                 break;
             }
 
@@ -68,10 +70,11 @@ class PromotionCalculator implements PriceCalculatorInterface
             PromotionTemplate::PHASE_OUTER
         );
 
+        $outerApplied = null;
         if ($outerPromotion !== null) {
             $this->promotionService->apply($outerPromotion, $context);
 
-            $context->appliedPromotions[] = [
+            $outerApplied = [
                 'promotionId' => $outerPromotion->getId(),
                 'promotionName' => $outerPromotion->getName(),
                 'templateName' => $outerPromotion->getTemplate()?->getName(),
@@ -80,5 +83,12 @@ class PromotionCalculator implements PriceCalculatorInterface
                 'phase' => 'outer',
             ];
         }
+
+        // Write to meta channel — Trade never sees this structure
+        $result = ['inner' => $innerApplied];
+        if ($outerApplied !== null) {
+            $result['outer'] = $outerApplied;
+        }
+        $context->meta['promotion'] = $result;
     }
 }

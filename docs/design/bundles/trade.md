@@ -146,11 +146,14 @@ interface PriceCalculatorInterface
 
 ### 5.2 Calculator Chain (Priority Order)
 
-| Priority | Calculator | Responsibility |
-|----------|-----------|----------------|
-| -100 | `BasePriceCalculator` | Resolve Specification entity, validate active/not-deleted, extract unit price, capture snapshots |
-| 50 | `QuantityCalculator` | Compute `price = unitPrice * quantity` for each item |
-| 100 | `TotalAggregator` | Sum all item prices into `context.totalAmount` |
+| Priority | Calculator | Module | Responsibility |
+|----------|-----------|--------|----------------|
+| -100 | `BasePriceCalculator` | Trade | Resolve Specification entity, validate active/not-deleted, extract unit price, capture snapshots |
+| 50 | `QuantityCalculator` | Trade | Compute `price = unitPrice * quantity` for each item |
+| **60** | **`PromotionCalculator`** | **Promotion** | **DSL eval → match → apply (loop)** |
+| 100 | `TotalAggregator` | Trade | Sum all item prices into `context.totalAmount` |
+
+External modules (e.g., `Promotion`, future `Coupon`) hook into the pipeline by implementing `PriceCalculatorInterface` and tagging with `#[AutoconfigureTag('trade.price_calculator')]`. Trade has zero awareness of these modules.
 
 ### 5.3 Pipeline Execution
 
@@ -162,7 +165,18 @@ OrderService::calculatePrices($items, $currency)
   -> Return PriceCalculationResult (items, totalAmount, currency)
 ```
 
-### 5.4 DTOs
+### 5.4 Pipeline Execution
+
+```
+OrderService::calculatePrices($items, $currency, $storeCode = null, $meta = [])
+  -> Create PriceCalculationContext with items, currency, user, storeCode, meta
+  -> Collect all PriceCalculatorInterface implementations (auto-tagged)
+  -> Sort by getPriority() ascending
+  -> Execute each in sequence on PriceCalculationContext
+  -> Return PriceCalculationResult (items, totalAmount, currency, meta)
+```
+
+### 5.5 DTOs
 
 ```php
 class PriceCalculationContext
@@ -171,7 +185,9 @@ class PriceCalculationContext
     public array $items;          // Mutated by calculators
     public int $totalAmount;      // Final total in cents
     public string $currency;      // e.g., 'CNY'
-    public array $meta;           // Extensible metadata
+    public array $meta = [];      // Bidirectional opaque channel for calculators
+    public ?object $user = null;  // Current user (for member-level conditions)
+    public ?string $storeCode = null; // Multi-store routing
 }
 
 class PriceCalculationResult
@@ -179,10 +195,28 @@ class PriceCalculationResult
     public int $totalAmount;
     public string $currency;
     public array $items;          // Calculated order items
+    public array $meta;           // From context.meta (carries promotion/coupon results)
 }
 ```
 
-### 5.5 Registration
+### 5.6 `meta` Channel Contract
+
+`meta` is an opaque array that Trade never inspects. Calculators read from it as input
+and write to it as output. The contract is:
+
+| Direction | Example | Set By |
+|-----------|---------|--------|
+| Client → Calculators | `{coupon: {code: "ABC123"}}` | Request body → `calculatePrices($items, $currency, $storeCode, $meta)` |
+| Calculators → Client | `{promotion: {inner: [...], outer: {...}}}` | `PromotionCalculator` writes to `context.meta['promotion']` |
+| Any key can coexist | `{promotion: {...}, coupon: {...}, existing: "..."}` | Multiple calculators |
+
+**Guarantees**:
+- Trade never reads or mutates `meta` content — it passes through unchanged.
+- `PriceCalculationResult::fromContext()` copies `context.meta` verbatim into the result.
+- New modules (e.g., Coupon) follow the same pattern: implement `PriceCalculatorInterface`,
+  read from `context.meta['coupon']`, write to `context.meta['coupon']`.
+
+### 5.7 Registration
 
 Calculators are auto-discovered and tagged via `config/services.yaml`:
 
@@ -260,12 +294,14 @@ class OrderWorkflowListener
 
 ```
 POST /api/v1/manage/orders
-  Body: {items: [{specification: {id: N}, quantity: N}, ...], currency: "CNY", notes: "..."}
+  Body: {items: [{specification: {id: N}, quantity: N}, ...], currency: "CNY", notes: "...", meta: {coupon: {...}}}
   |
   v
-OrderService::calculatePrices($items, $currency)
-  -> Price Calculation Pipeline
-  -> Returns PriceCalculationResult
+OrderService::calculatePrices($items, $currency, $storeCode, $meta)
+  -> Create PriceCalculationContext(items, currency)
+  -> Set context.user, context.storeCode, context.meta = $meta
+  -> Price Calculation Pipeline (Base → Quantity → Promotion → TotalAggregator)
+  -> Returns PriceCalculationResult (items, totalAmount, currency, meta)
   |
   v
 OrderService::createOrder($calculatedItems, $user, $totalAmount, $currency, $notes)
@@ -276,6 +312,30 @@ OrderService::createOrder($calculatedItems, $user, $totalAmount, $currency, $not
         -> Auto-calculate price = unitPrice * quantity (PrePersist)
      -> Persist + flush
   -> Returns Order entity
+```
+
+### 7.1 Quote Flow (Order Preview)
+
+```
+POST /api/v1/app/orders/quote
+  Body: {items: [{specificationId: N, quantity: N}, ...], meta: {coupon: {code: "ABC"}}}
+  |
+  v
+OrderService::calculatePrices($items, $currency, $storeCode, $meta)
+  -> Returns PriceCalculationResult (items, totalAmount, currency, meta)
+  -> No Order is persisted — pure pricing preview
+  
+Response:
+{
+  data: {
+    items: [{specificationId: 1, unitPrice: 10000, price: 10000, ...}],
+    totalAmount: 8000,
+    currency: "CNY",
+    meta: {
+      promotion: { inner: [{promotionId: 1, promotionName: "满减", ...}] }
+    }
+  }
+}
 ```
 
 ---
@@ -299,6 +359,7 @@ OrderService::createOrder($calculatedItems, $user, $totalAmount, $currency, $not
 | GET | `/api/v1/manage/orders` | List orders |
 | GET | `/api/v1/manage/orders/{id}` | Order detail |
 | POST | `/api/v1/manage/orders` | Create order (custom logic) |
+| **POST** | **`/api/v1/manage/orders/quote`** | **Calculate prices without creating order** |
 | PUT | `/api/v1/manage/orders/{id}` | Update draft order only |
 | DELETE | `/api/v1/manage/orders/{id}` | Delete draft order only |
 | GET | `/api/v1/manage/orders/{id}/items` | View order items |
@@ -322,6 +383,7 @@ OrderService::createOrder($calculatedItems, $user, $totalAmount, $currency, $not
 | GET | `/api/v1/app/orders` | List current user's orders |
 | GET | `/api/v1/app/orders/{id}` | Order detail |
 | POST | `/api/v1/app/orders` | Create order |
+| **POST** | **`/api/v1/app/orders/quote`** | **Calculate prices without creating order** |
 | GET | `/api/v1/app/orders/{id}/items` | View order items |
 | POST | `/api/v1/app/orders/{id}/cancel` | Cancel own order |
 
@@ -408,5 +470,6 @@ Adds columns to `trade_order`: `paid_at`, `refunded_at`, `fulfilled_at`, `paymen
 |-------|-------|
 | `tests/Trade/Entity/` | Product, Order, OrderItem, Specification unit tests |
 | `tests/Trade/Service/` | OrderService create order, OrderItem service |
-| `tests/Trade/Pricing/` | BasePriceCalculator, QuantityCalculator, TotalAggregator |
+| `tests/Trade/Pricing/` | BasePriceCalculator, QuantityCalculator, TotalAggregator, PriceCalculationResult |
+| `tests/Trade/Controller/` | OrderController create/quote/list/detail |
 | `tests/Trade/Integration/` | Product repository, Order repository integration |

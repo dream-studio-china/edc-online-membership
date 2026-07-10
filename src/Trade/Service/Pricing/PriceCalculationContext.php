@@ -22,9 +22,6 @@ class PriceCalculationContext
     /** Store identifier for multi-store promotion filtering */
     public ?string $storeCode = null;
 
-    /** Promotions applied during calculation (for audit/display) */
-    public array $appliedPromotions = [];
-
     public function __construct(array $inputItems, string $currency = 'CNY')
     {
         $this->inputItems = $inputItems;

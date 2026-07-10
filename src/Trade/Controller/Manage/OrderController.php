@@ -49,7 +49,7 @@ class OrderController extends RestController
         $notes = $content['notes'] ?? null;
 
         try {
-            $result = $this->service->calculatePrices($items, $currency);
+            $result = $this->service->calculatePrices($items, $currency, $content['storeCode'] ?? null, $content['meta'] ?? []);
 
             $order = $this->service->createOrder(
                 $result->items,
@@ -60,6 +60,26 @@ class OrderController extends RestController
             );
 
             return $this->success($order, 'SUCCESS', 201);
+        } catch (\Throwable $e) {
+            return $this->warning($e->getMessage(), 400, '', 400);
+        }
+    }
+
+    #[Route('/quote', name: 'quote', methods: ['POST'])]
+    public function quoteAction(Request $request): Response
+    {
+        $content = json_decode($request->getContent(), true) ?: [];
+
+        $items = $content['items'] ?? [];
+        if (empty($items)) {
+            return $this->warning('Items are required.', 400, '', 400);
+        }
+
+        $currency = $content['currency'] ?? 'CNY';
+
+        try {
+            $result = $this->service->calculatePrices($items, $currency, $content['storeCode'] ?? null, $content['meta'] ?? []);
+            return $this->success($result, 'Quote calculated');
         } catch (\Throwable $e) {
             return $this->warning($e->getMessage(), 400, '', 400);
         }
