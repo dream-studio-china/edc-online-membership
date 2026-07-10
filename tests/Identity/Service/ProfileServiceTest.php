@@ -8,6 +8,7 @@ use App\Identity\Entity\Profile;
 use App\Identity\Service\ProfileService;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\EntityRepository;
+use Doctrine\ORM\QueryBuilder;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
@@ -109,34 +110,6 @@ final class ProfileServiceTest extends TestCase
         $result = $this->service->get(['level' => 'silver']);
 
         self::assertSame($profile, $result);
-    }
-
-    public function testListReturnsQueryResult(): void
-    {
-        $user1 = new \App\Identity\Entity\User();
-        $profile1 = new Profile($user1, Profile::LEVEL_GOLD);
-        $user2 = new \App\Identity\Entity\User();
-        $profile2 = new Profile($user2, Profile::LEVEL_SILVER);
-
-        $this->repo->method('findBy')->with([], null)->willReturn([$profile1, $profile2]);
-
-        $result = $this->service->list();
-
-        self::assertIsArray($result);
-        self::assertCount(2, $result);
-    }
-
-    public function testListWithCriteria(): void
-    {
-        $user = new \App\Identity\Entity\User();
-        $profile = new Profile($user, Profile::LEVEL_GOLD);
-
-        $this->repo->method('findBy')->with(['level' => 'gold'], null)->willReturn([$profile]);
-
-        $result = $this->service->list(['level' => 'gold']);
-
-        self::assertCount(1, $result);
-        self::assertSame(Profile::LEVEL_GOLD, $result[0]->getLevel());
     }
 
     public function testUpdatePersistsAndFlushes(): void

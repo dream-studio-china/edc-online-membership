@@ -5,6 +5,7 @@ namespace App\Core\View;
 use OpenApi\Attributes as OA;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Validator\Exception\ValidatorException;
 
@@ -35,26 +36,32 @@ trait SingleCreateAndUpdateApiViewMixin
     #[Route('', name: 'update', methods: ['PUT'])]
     public function updateAction(Request $request): Response
     {
-        $service = $this->service ?? $this->get($this->serviceClass);
-        $content = json_decode($request->getContent(), true) ?: [];
+        try {
+            $service = $this->service ?? $this->get($this->serviceClass);
+            $content = json_decode($request->getContent(), true) ?: [];
 
-        $filter = $this->commonFilter();
-        $entity = $service->get($filter, false);
+            $filter = $this->commonFilter();
+            $entity = $service->get($filter, false);
 
-        if (empty($entity)) {
-            $content = $this->filterCreateProperties($content);
-            $content = array_merge($content, $this->defaultCreateValues());
-            $entity = $service->new();
-        } else {
-            $content = $this->filterUpdateProperties($content);
-            $content = array_merge($content, $this->defaultUpdateValues());
+            if (empty($entity)) {
+                $content = $this->filterCreateProperties($content);
+                $content = array_merge($content, $this->defaultCreateValues());
+                $entity = $service->new();
+            } else {
+                $content = $this->filterUpdateProperties($content);
+                $content = array_merge($content, $this->defaultUpdateValues());
+            }
+
+            if ($entity = $service->update($entity, $content)) {
+                return $this->success($entity);
+            }
+
+            return $this->warning();
+        } catch (ValidatorException $exception) {
+            return $this->warning($exception->getMessage(), 400, '', 400);
+        } catch (NotFoundHttpException $exception) {
+            return $this->warning($exception->getMessage(), 404, '', 404);
         }
-
-        if ($entity = $service->update($entity, $content)) {
-            return $this->success($entity);
-        }
-
-        return $this->warning();
     }
 
     private function filterCreateProperties(array $content): array

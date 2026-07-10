@@ -277,7 +277,7 @@ Test Coverage
 | `ProfileTest` | Unit (21 tests) | Profile entity: constructor defaults, levels, UUID, user/level setters, joinedAt, PrePersist, touch, toString / toStringPrefersNickname, nickname/avatar/metadata accessors, default nulls |
 | `UserProfileListenerTest` | Unit (4 tests) | Auto-creates Profile on User persist, skips when exists, default LEVEL_BRONZE, ignores non-User entities |
 | `ProfileRepositoryTest` | Integration (9 tests) | findById, findByUser, findByUserId, findByLevel, findByLevelOrAbove, nickname storage, edge cases |
-| `ProfileServiceTest` | Unit (13 tests) | new(), get(), list(), update() persist/flush/fields, remove(), joinAsMember create/idempotent/default |
+| `ProfileServiceTest` | Unit (11 tests) | new(), get() by id/criteria, update() persist/flush/fields + clear, remove(), joinAsMember create/idempotent/default |
 | `ProfileControllerTest` (Manage) | Unit (5 tests) | Unauthenticated access rejection for create/list/detail/update/delete |
 | `ProfileControllerTest` (App) | Unit (10 tests) | GET unauthenticated/no profile/existing; PUT unauthenticated/create/existing/level rejected/nickname/unknown fields filtered/defaultCreateValues |
 | `SingleCreateAndUpdateApiViewMixinTest` | Unit (10 tests) | Pass-through (no props), acceptedCreateProperties filter, acceptedUpdateProperties filter, requiredCreateProperties throw/pass, requiredUpdateProperties throw/pass, combined required+accepted, empty accepted no-op |

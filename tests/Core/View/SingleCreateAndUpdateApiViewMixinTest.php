@@ -21,14 +21,27 @@ use Symfony\Component\Validator\Validation;
 
 final class SingleCreateAndUpdateApiViewMixinTest extends TestCase
 {
+    /**
+     * Creates a controller instance with the mixin and given property overrides.
+     */
     private function createController(?array $config, BaseServiceInterface $service): object
     {
-        $controller = new class($service) extends RestController {
+        $controller = new class($service, $config) extends RestController {
             use ApiView, SingleCreateAndUpdateApiViewMixin;
 
-            public function __construct(BaseServiceInterface $service)
+            public array $requiredCreateProperties = [];
+            public array $acceptedCreateProperties = [];
+            public array $requiredUpdateProperties = [];
+            public array $acceptedUpdateProperties = [];
+
+            public function __construct(BaseServiceInterface $service, ?array $config)
             {
                 $this->service = $service;
+                if ($config !== null) {
+                    foreach ($config as $prop => $value) {
+                        $this->{$prop} = $value;
+                    }
+                }
             }
 
             protected function commonFilter(): array
@@ -37,26 +50,24 @@ final class SingleCreateAndUpdateApiViewMixinTest extends TestCase
             }
         };
 
-        if ($config !== null) {
-            foreach ($config as $prop => $value) {
-                (new \ReflectionProperty($controller, $prop))->setValue($controller, $value);
-            }
-        }
-
         $tokenStorage = $this->createMock(TokenStorageInterface::class);
         $tokenStorage->method('getToken')->willReturn(null);
 
         $serializer = new Serializer([new ObjectNormalizer()], [new JsonEncoder()]);
 
+        // Push a dummy request so that success() → requestProcess() never hits null
+        $requestStack = new RequestStack();
+        $requestStack->push(Request::create('/', 'GET'));
+
         $container = new Container();
         $container->set('security.token_storage', $tokenStorage);
-        $container->set('request_stack', new RequestStack());
+        $container->set('request_stack', $requestStack);
         $container->set('serializer', $serializer);
         $container->set('translator', new Translator('en'));
         $container->set('validator', Validation::createValidator());
 
         $controller->setContainer($container);
-        $controller->setRequestStack(new RequestStack());
+        $controller->setRequestStack($requestStack);
         $controller->setSerializer($serializer);
         $controller->setTranslator(new Translator('en'));
 
@@ -151,6 +162,8 @@ final class SingleCreateAndUpdateApiViewMixinTest extends TestCase
     public function testRequiredCreatePropertiesThrowsWhenMissing(): void
     {
         $service = $this->createMock(BaseServiceInterface::class);
+        $service->method('get')->willReturn(null);
+        $service->method('new')->willReturn((object) []);
 
         $controller = $this->createController(['requiredCreateProperties' => ['name']], $service);
 

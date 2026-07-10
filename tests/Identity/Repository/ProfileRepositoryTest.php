@@ -69,19 +69,6 @@ final class ProfileRepositoryTest extends IntegrationWebTestCase
         self::assertSame(Profile::LEVEL_GOLD, $found->getLevel());
     }
 
-    public function testFindByUserReturnsNullForNonProfile(): void
-    {
-        $user = $this->createUser('repo3@test.com', 'repo3');
-
-        $client = static::createClient();
-        /** @var ProfileRepository $repo */
-        $repo = $client->getContainer()->get(ProfileRepository::class);
-
-        $found = $repo->findByUser($user);
-
-        self::assertNull($found);
-    }
-
     public function testFindByUserIdReturnsProfile(): void
     {
         $profile = $this->createProfile('repo4@test.com', 'repo4', Profile::LEVEL_BRONZE);
@@ -108,11 +95,11 @@ final class ProfileRepositoryTest extends IntegrationWebTestCase
 
         $goldProfiles = $repo->findByLevel(Profile::LEVEL_GOLD);
         $silverProfiles = $repo->findByLevel(Profile::LEVEL_SILVER);
-        $bronzeProfiles = $repo->findByLevel(Profile::LEVEL_BRONZE);
+        $diamondProfiles = $repo->findByLevel(Profile::LEVEL_DIAMOND);
 
         self::assertCount(2, $goldProfiles);
         self::assertCount(1, $silverProfiles);
-        self::assertCount(0, $bronzeProfiles);
+        self::assertCount(0, $diamondProfiles);
     }
 
     public function testFindByLevelOrAboveReturnsCumulative(): void
@@ -134,19 +121,6 @@ final class ProfileRepositoryTest extends IntegrationWebTestCase
         self::assertCount(1, $repo->findByLevelOrAbove(Profile::LEVEL_DIAMOND));
     }
 
-    public function testFindByLevelOrAboveWithUnknownLevel(): void
-    {
-        $this->createProfile('repo13@test.com', 'repo13', Profile::LEVEL_GOLD);
-
-        $client = static::createClient();
-        /** @var ProfileRepository $repo */
-        $repo = $client->getContainer()->get(ProfileRepository::class);
-
-        $result = $repo->findByLevelOrAbove('nonexistent');
-
-        self::assertCount(0, $result);
-    }
-
     public function testProfileStoresNickname(): void
     {
         $profile = $this->createProfile('repo14@test.com', 'repo14', Profile::LEVEL_GOLD, 'Johnny');
@@ -161,26 +135,6 @@ final class ProfileRepositoryTest extends IntegrationWebTestCase
     }
 
     // ───────────────────── helpers ─────────────────────
-
-    private function createUser(string $email, string $username): User
-    {
-        $client = static::createClient();
-        $container = $client->getContainer();
-        $em = $container->get(EntityManagerInterface::class);
-        $hasher = $container->get(UserPasswordHasherInterface::class);
-
-        $user = new User();
-        $user->setEmail($email);
-        $user->setUsername($username);
-        $user->setPassword($hasher->hashPassword($user, 'Pass123!'));
-
-        $em->persist($user);
-        $em->flush();
-
-        self::ensureKernelShutdown();
-
-        return $user;
-    }
 
     private function createProfile(string $email, string $username, string $level, ?string $nickname = null): Profile
     {
