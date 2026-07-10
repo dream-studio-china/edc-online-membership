@@ -14,6 +14,7 @@ use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 #[AllowMockObjectsWithoutExpectations]
 final class OtpControllerTest extends TestCase
@@ -32,6 +33,8 @@ final class OtpControllerTest extends TestCase
         $this->hasher = $this->createMock(UserPasswordHasherInterface::class);
         $this->otpService = $this->createMock(OtpService::class);
         $this->em = $this->createMock(EntityManagerInterface::class);
+        $translator = $this->createMock(TranslatorInterface::class);
+        $translator->method('trans')->willReturnCallback(fn(string $msg) => $msg);
 
         $this->controller = new OtpController(
             $this->tokenManager,
@@ -41,6 +44,7 @@ final class OtpControllerTest extends TestCase
             $this->em,
             'TPL_LOGIN',
             'TPL_VERIFY',
+            $translator,
         );
     }
 

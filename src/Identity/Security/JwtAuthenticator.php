@@ -15,12 +15,14 @@ use Symfony\Component\Security\Http\Authenticator\AbstractAuthenticator;
 use Symfony\Component\Security\Http\Authenticator\Passport\Badge\UserBadge;
 use Symfony\Component\Security\Http\Authenticator\Passport\Passport;
 use Symfony\Component\Security\Http\Authenticator\Passport\SelfValidatingPassport;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class JwtAuthenticator extends AbstractAuthenticator
 {
     public function __construct(
         private readonly TokenManager $tokenManager,
         private readonly UserRepository $userRepository,
+        private readonly TranslatorInterface $translator,
     ) {
     }
 
@@ -68,9 +70,12 @@ class JwtAuthenticator extends AbstractAuthenticator
 
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception): ?Response
     {
+        $messageKey = $exception->getMessageKey();
+        $message = $messageKey !== '' ? $this->translator->trans($messageKey) : $this->translator->trans('Authentication failed.');
+
         return new JsonResponse([
             'code' => 401,
-            'message' => $exception->getMessageKey() !== '' ? $exception->getMessageKey() : 'Authentication failed.',
+            'message' => $message,
         ], Response::HTTP_UNAUTHORIZED);
     }
 }

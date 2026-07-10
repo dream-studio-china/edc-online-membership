@@ -2,7 +2,7 @@
 
 一个面向生产实践的 Symfony 8.1 API 骨架，内置可复用的服务层抽象、模块化架构、JWT 鉴权、动态查询引擎以及可插拔的业务模块。
 
-> English version: 见 `README.md`
+> English: [README.md](README.md) · Chinese (Traditional): [README.zh-hant.md](README.zh-hant.md) · Japanese: [README.ja.md](README.ja.md)
 
 > 文档站点: [GitHub Pages](https://immane.github.io/crud-skeleton) | 设计契约: [docs/design/](docs/design/)
 
@@ -26,6 +26,7 @@
 - [Docker 部署](#docker-部署)
 - [常见问题](#常见问题)
 - [贡献指南](#贡献指南)
+- [国际化（i18n）](#国际化i18n)
 - [许可证](#许可证)
 
 ## 快速上手指南
@@ -823,6 +824,51 @@ docker compose -f compose.yaml -f compose.prod.yaml --env-file .env.prod.local e
 3. 保持 PR 小而聚焦。
 4. 行为变化请补充/更新测试。
 5. 使用 conventional commit 信息（如 `feat(module): 描述`）。
+
+## 国际化（i18n）
+
+项目通过 Symfony Translation 组件支持国际化。翻译文件存储在 `translations/` 目录下。
+
+### 支持的语言
+
+| 语言代码 | 文件 | 语言 |
+|----------|------|------|
+| `en` | `translations/messages.en.yaml` | 英语（默认） |
+| `zh` | `translations/messages.zh.yaml` | 简体中文 |
+| `zh_Hant` | `translations/messages.zh_Hant.yaml` | 繁体中文 |
+| `ja` | `translations/messages.ja.yaml` | 日语 |
+
+### 工作原理
+
+1. **异常消息** — 所有 API 路由上未捕获的异常会经过 `ExceptionInterceptor`，调用 `$this->translator->trans($exception->getMessage())`，异常消息原文作为翻译键。
+2. **控制器错误响应** — `RestController::warning()`、`AuthController::error()`、`OtpController::error()`、`LoginController::error()` 均走翻译流程。
+3. **JWT 认证失败** — `JwtAuthenticator::onAuthenticationFailure()` 在返回 JSON 响应前翻译错误消息。
+4. **实体字段名** — `/system/entities/{entityName}` 接口会翻译字段名称（如 `createdAt` → `Created at` → `创建时间`）。
+
+### 语言检测
+
+`LocaleListener`（`src/Core/EventListener/LocaleListener.php`）自动检测用户语言：
+
+1. **查询参数** — `?_locale=zh` 优先级最高
+2. **Accept-Language 请求头** — 读取浏览器 `Accept-Language` 头并映射到支持的语言：
+   - `zh-CN`、`zh-Hans` → `zh`（简体）
+   - `zh-TW`、`zh-HK`、`zh-Hant` → `zh_Hant`（繁体）
+   - `ja-JP` → `ja`（日语）
+3. **回退** — 不支持的语言自动回退到 `en`（配置的 `default_locale`）。
+
+### 添加新语言
+
+1. 创建翻译文件：`translations/messages.{locale}.yaml`
+2. 在 `src/Core/EventListener/LocaleListener.php` 的 `SUPPORTED_LOCALES` 和 `LOCALE_MAP` 中添加语言代码
+3. 翻译配置文件（`config/packages/translation.yaml`）会自动发现 `translations/` 目录下的新文件。
+
+### 多语言文档
+
+| 语言 | 文件 |
+|------|------|
+| English | [README.md](README.md) |
+| Chinese (Traditional) | [README.zh-hant.md](README.zh-hant.md) |
+| Japanese | [README.ja.md](README.ja.md) |
 
 ## 许可证
 

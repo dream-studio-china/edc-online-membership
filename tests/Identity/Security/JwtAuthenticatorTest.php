@@ -13,6 +13,7 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
 use Symfony\Component\Security\Core\Exception\CustomUserMessageAuthenticationException;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 #[AllowMockObjectsWithoutExpectations]
 final class JwtAuthenticatorTest extends TestCase
@@ -25,7 +26,9 @@ final class JwtAuthenticatorTest extends TestCase
     {
         $this->tokenManager = $this->createMock(TokenManager::class);
         $this->userRepository = $this->createMock(UserRepository::class);
-        $this->authenticator = new JwtAuthenticator($this->tokenManager, $this->userRepository);
+        $translator = $this->createMock(TranslatorInterface::class);
+        $translator->method('trans')->willReturnCallback(fn(string $msg) => $msg);
+        $this->authenticator = new JwtAuthenticator($this->tokenManager, $this->userRepository, $translator);
     }
 
     public function testSupportsReturnsTrueForBearerAuthorization(): void
