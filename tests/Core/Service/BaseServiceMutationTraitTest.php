@@ -152,9 +152,21 @@ final class BaseServiceMutationTraitTest extends TestCase
         self::assertFalse($service->remove(1));
     }
 
-    // -------------------------------------------------------
-    //  Entity creation
-    // -------------------------------------------------------
+    public function testUpdateWithoutSerializerThrowsForRichData(): void
+    {
+        $entity = new SimpleEntity();
+        $entity->setId(5);
+        $entity->setName('old');
+
+        $repo = new MutationFakeRepository([5 => $entity]);
+        $em = new MutationFakeEntityManager($repo);
+        $container = new MutationFakeContainer($em);
+        $service = $this->createService($container, SimpleEntity::class);
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Serializer service is not available');
+        $service->update($entity, ['name' => ['new' => 'value']]);
+    }
 }
 
 // -------------------------------------------------------

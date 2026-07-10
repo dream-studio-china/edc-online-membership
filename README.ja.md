@@ -89,7 +89,7 @@ Symfony 8.1 ベースのプロダクション向け API スケルトン。再利
 XDEBUG_MODE=coverage ./vendor/bin/phpunit --coverage-text
 ```
 
-1200+ テスト、90%+ ラインカバレッジ。
+1221 テスト、4199 アサーション、90%+ ラインカバレッジ。
 
 ## Docker デプロイ
 

@@ -72,7 +72,7 @@ Compared with plain generated boilerplate, it provides:
 - **Pluggable File Storage**: `MediaStorageInterface` with local and Qiniu Kodo drivers — tagged iterator auto-discovery.
 - **OpenAPI Documentation**: NelmioApiDocBundle with `#[OA\*]` attributes, Swagger UI at `/api/doc`.
 - **System Introspection**: Entity metadata and route export endpoints (`/system/*`).
-- **Comprehensive Testing**: ~110+ test files, 1069 tests, ~3666 assertions, 87.83% coverage.
+- **Comprehensive Testing**: 1221 tests, 4199 assertions, 90%+ line coverage.
 - **Docker Compose**: MySQL 8 + Mailpit for development.
 
 ## Tech Stack
@@ -160,7 +160,7 @@ See `composer.json` for the full dependency list.
 ├── config/                       # Symfony configuration
 │   └── packages/                 #   Doctrine, Security, Workflow, Serializer, etc.
 ├── migrations/                   # Doctrine migrations (8 versions)
-├── tests/                        # ~110+ PHPUnit test files (1069 tests, ~3666 assertions)
+├── tests/                        # 1221 PHPUnit tests, 4199 assertions, 90%+ coverage
 ├── docs/                         # Project documentation
 │   ├── design/                   #   Design contracts (system, API, data, module, controller)
 │   │   └── bundles/              #   Per-module design documents
@@ -580,25 +580,48 @@ Note on controller construction: Controllers extending `RestController` receive 
 
 ## Testing
 
+**1221 tests · 4199 assertions · 90%+ line coverage**
+
 Run all tests:
 
 ```bash
 ./vendor/bin/phpunit
 ```
 
-Run a single test:
+Run a single test file:
 
 ```bash
 ./vendor/bin/phpunit tests/Core/Service/BaseServiceUnitTest.php
 ```
 
-With coverage (CI enforces minimum coverage):
+With code coverage report (CI enforces 85% threshold):
 
 ```bash
 XDEBUG_MODE=coverage ./vendor/bin/phpunit --coverage-text
 ```
 
-`phpunit.dist.xml` is preconfigured with `APP_ENV=test` and `KERNEL_CLASS=App\Kernel`.
+Generate an HTML coverage report:
+
+```bash
+XDEBUG_MODE=coverage ./vendor/bin/phpunit --coverage-html var/coverage
+```
+
+Then open `var/coverage/index.html` in a browser.
+
+`phpunit.dist.xml` is preconfigured with `APP_ENV=test` and `KERNEL_CLASS=App\Kernel`. Tests use SQLite (`var/test.db`) for isolation.
+
+### Test groups
+
+| Group | Count | What it covers |
+|-------|-------|----------------|
+| Common | 69+ | CMS entities, media upload/delete, batch update |
+| Trade | 171+ | Orders, pricing pipeline, workflow, app order creation with metadata |
+| Wallet | 105+ | Transfers, wallet service, payment gateway, balance audit API |
+| Payment | 60+ | Gateways, registry, adjustments, invoices, multi-gateway integration |
+| Identity | 92+ | Auth, OTP, tokens, UserService, UserController, integration |
+| Wechat | 59+ | Auth, service, payment gateway, controller, repository |
+| Core | 70+ | BaseService, RestController, expression parser, serializer, system controllers |
+| Integration | 20+ | Cross-module integration tests |
 
 ## Docker Deployment
 
@@ -606,9 +629,9 @@ XDEBUG_MODE=coverage ./vendor/bin/phpunit --coverage-text
 
 ```
                 ┌──────────────┐
-   :8080  ──────│    nginx     │────── /api/* ──────┐
-                └──────────────┘                     │
-                                                    ▼
+   :8080  ──────│    nginx     │────── /api/* ─────┐
+                └──────────────┘                   │
+                                                   ▼
                                             ┌──────────────┐
                                             │  PHP-FPM 8.4 │
                                             │   (app)      │
@@ -616,10 +639,10 @@ XDEBUG_MODE=coverage ./vendor/bin/phpunit --coverage-text
                                                    │
                       ┌────────────────────────────┼────────────────────┐
                       │                            │                    │
-                ┌─────▼─────┐              ┌──────▼──────┐      ┌──────▼──────┐
-                │  MySQL 8   │              │    Redis 7   │      │   Mailpit   │
-                │            │              │  (OTP/cache) │      │ (email dev) │
-                └───────────┘              └─────────────┘      └─────────────┘
+                ┌─────▼─────┐               ┌──────▼──────┐      ┌──────▼──────┐
+                │  MySQL 8  │               │   Redis 7   │      │   Mailpit   │
+                │           │               │ (OTP/cache) │      │ (email dev) │
+                └───────────┘               └─────────────┘      └─────────────┘
 ```
 
 | Service | Image | Container | Purpose |

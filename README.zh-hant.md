@@ -92,7 +92,7 @@
 XDEBUG_MODE=coverage ./vendor/bin/phpunit --coverage-text
 ```
 
-1200+ 測試，90%+ 行覆蓋率。
+1221 個測試，4199 個斷言，90%+ 行覆蓋率。
 
 ## Docker 部署
 

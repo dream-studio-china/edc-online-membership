@@ -70,7 +70,7 @@
 - **可插拔文件存储**：`MediaStorageInterface`，本地与七牛 Kodo 驱动 — tagged iterator 自动发现。
 - **OpenAPI 文档**：NelmioApiDocBundle + `#[OA\*]` 属性，`/api/doc` 提供 Swagger UI。
 - **系统自省**：实体元数据和路由导出接口（`/system/*`）。
-- **完善的测试**：约 110+ 个测试文件，1069 个测试，~3666 个断言，87.83% 覆盖。
+- **完善的测试**：1221 个测试，4199 个断言，90%+ 行覆盖率。
 - **Docker Compose**：MySQL 8 + Mailpit 开发环境。
 
 ## 技术栈
@@ -158,7 +158,7 @@
 ├── config/                       # Symfony 配置
 │   └── packages/                 #   Doctrine、Security、Workflow、Serializer 等
 ├── migrations/                   # Doctrine 迁移（8 个版本）
-├── tests/                        # ~110+ 个 PHPUnit 测试文件（1069 测试，~3666 断言）
+├── tests/                        # 1221 个 PHPUnit 测试，4199 个断言，90%+ 覆盖率
 ├── docs/                         # 项目文档
 │   ├── design/                   #   设计契约（系统、API、数据、模块、控制器）
 │   │   └── bundles/              #   各模块设计文档

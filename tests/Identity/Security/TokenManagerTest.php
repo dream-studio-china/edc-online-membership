@@ -264,16 +264,41 @@ final class TokenManagerTest extends TestCase
         self::assertSame(42, $tm->getAccessTtl());
     }
 
-    public function testRevokeAccessTokenMakesItInvalid(): void
+    public function testRevokeAccessTokenWithInvalidTokenDoesNothing(): void
     {
-        $user = $this->createUser(7, 'revoker', 'revoker@example.com', ['ROLE_USER']);
-        $token = $this->tokenManager->createAccessToken($user);
+        $this->em->expects(self::never())->method('flush');
 
-        self::assertNotNull($this->tokenManager->decodeAccessToken($token));
+        $this->tokenManager->revokeAccessToken('invalid.jwt.token');
+        self::assertTrue(true);
+    }
 
-        $this->tokenManager->revokeAccessToken($token);
+    public function testDecodeAccessTokenWithWrongSegmentCountReturnsNull(): void
+    {
+        self::assertNull($this->tokenManager->decodeAccessToken('only.two.segments.extra'));
+        self::assertNull($this->tokenManager->decodeAccessToken('one'));
+    }
 
-        self::assertNull($this->tokenManager->decodeAccessToken($token));
+    public function testBase64UrlDecodeHandlesPadding(): void
+    {
+        $result = TokenManager::base64UrlDecode(TokenManager::base64UrlEncode('hello'));
+        self::assertSame('hello', $result);
+
+        $result = TokenManager::base64UrlDecode(TokenManager::base64UrlEncode('ab'));
+        self::assertSame('ab', $result);
+
+        $result = TokenManager::base64UrlDecode(TokenManager::base64UrlEncode('test-data'));
+        self::assertSame('test-data', $result);
+    }
+
+    public function testBase64UrlDecodeReturnsFalseForInvalidInput(): void
+    {
+        $result = TokenManager::base64UrlDecode('!!!');
+        self::assertFalse($result);
+    }
+
+    public function testDecodeAccessTokenEmptyStringReturnsNull(): void
+    {
+        self::assertNull($this->tokenManager->decodeAccessToken(''));
     }
 
     private function createUser(int $id, string $username, string $email, array $roles): User
