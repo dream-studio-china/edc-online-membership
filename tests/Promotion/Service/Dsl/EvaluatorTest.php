@@ -434,4 +434,75 @@ final class EvaluatorTest extends TestCase
         $result = $this->evaluator()->evaluateCondition($node, $this->context, $this->config);
         self::assertTrue($result);
     }
+
+    // ──────────────────── edge cases ────────────────────
+
+    public function testEvalInWithNonArrayReturnsFalse(): void
+    {
+        $cond = new AstNode('condition', [
+            'op' => 'in',
+            'left' => new AstNode('literal', ['value' => 42]),
+            'right' => new AstNode('literal', ['value' => 'not-an-array']),
+        ]);
+        $result = $this->evaluator()->evaluateCondition($cond, $this->context, $this->config);
+        self::assertFalse($result);
+    }
+
+    public function testEvalIncludesWithArrayReturnsTrue(): void
+    {
+        $cond = new AstNode('condition', [
+            'op' => 'includes',
+            'left' => new AstNode('literal', ['value' => ['a', 'b']]),
+            'right' => new AstNode('literal', ['value' => 'b']),
+        ]);
+        $result = $this->evaluator()->evaluateCondition($cond, $this->context, $this->config);
+        self::assertTrue($result);
+    }
+
+    public function testEvalIncludesWithNonArrayNonStringReturnsFalse(): void
+    {
+        $cond = new AstNode('condition', [
+            'op' => 'includes',
+            'left' => new AstNode('literal', ['value' => 42]),
+            'right' => new AstNode('literal', ['value' => 'x']),
+        ]);
+        $result = $this->evaluator()->evaluateCondition($cond, $this->context, $this->config);
+        self::assertFalse($result);
+    }
+
+    public function testResolvePathWithItemWhenItemsEmpty(): void
+    {
+        $this->context->items = [];
+        $cond = new AstNode('condition', [
+            'op' => '>=',
+            'left' => new AstNode('path', ['value' => 'item.price']),
+            'right' => new AstNode('literal', ['value' => 0.0]),
+        ]);
+        $result = $this->evaluator()->evaluateCondition($cond, $this->context, $this->config);
+        self::assertTrue($result);
+    }
+
+    public function testResolvePathWithUserTagsNonUserObject(): void
+    {
+        $this->context->user = new \stdClass();
+        $cond = new AstNode('condition', [
+            'op' => 'includes',
+            'left' => new AstNode('path', ['value' => 'user.tags']),
+            'right' => new AstNode('literal', ['value' => 'vip']),
+        ]);
+        $result = $this->evaluator()->evaluateCondition($cond, $this->context, $this->config);
+        // user.tags returns null for non-User, includes(null, 'vip') = false
+        self::assertFalse($result);
+    }
+
+    public function testResolveOperandWithRawNonAstNodeValue(): void
+    {
+        $cond = new AstNode('condition', [
+            'op' => '>=',
+            'left' => 100,
+            'right' => 50,
+        ]);
+        $result = $this->evaluator()->evaluateCondition($cond, $this->context, $this->config);
+        self::assertTrue($result);
+    }
 }

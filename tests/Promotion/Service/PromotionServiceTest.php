@@ -892,4 +892,26 @@ final class PromotionServiceTest extends TestCase
 
         self::assertSame(97500, $context->totalAmount);
     }
+
+    public function testGetAvailableSortsByConfigPriorityRef(): void
+    {
+        $context = new PriceCalculationContext([]);
+        $context->storeCode = null;
+
+        $template = $this->createPromotionTemplate();
+        $template->setAstCache([
+            'type' => 'program',
+            'data' => ['priority' => ['value' => 'config.priority_value']],
+            'children' => [],
+        ]);
+
+        $highPriority = $this->createPromotion('High', $template, '', true, null, null, ['priority_value' => 100]);
+        $lowPriority = $this->createPromotion('Low', $template, '', true, null, null, ['priority_value' => 10]);
+
+        $this->rep->method('findBy')->willReturn([$lowPriority, $highPriority]);
+
+        $result = $this->createService()->getAvailable($context);
+        self::assertSame('High', $result[0]->getName());
+        self::assertSame('Low', $result[1]->getName());
+    }
 }

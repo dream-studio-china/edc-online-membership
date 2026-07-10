@@ -648,4 +648,40 @@ final class ParserTest extends TestCase
         self::assertSame('not', $orNode->children[1]->type);
         self::assertSame('condition', $orNode->children[2]->type);
     }
+
+    public function testParseOrWithNestedAnd(): void
+    {
+        // AND inside OR works when AND is the only child before a section keyword
+        $dsl = "type: full_reduction\nwhen:\n  or:\n    and:\n      cart.subtotal >= 100\n      cart.subtotal <= 500";
+        $ast = $this->parse($dsl);
+
+        $whenNode = $this->findChild($ast, 'when');
+        self::assertCount(1, $whenNode->children);
+        $orNode = $whenNode->children[0];
+        self::assertSame('or', $orNode->type);
+        self::assertCount(1, $orNode->children);
+        self::assertSame('and', $orNode->children[0]->type);
+        self::assertCount(2, $orNode->children[0]->children);
+    }
+
+    public function testParseErrorInvalidAction(): void
+    {
+        $dsl = "type: full_reduction\ndo:\n  invalid_action test";
+        $this->expectException(\App\Promotion\Service\Dsl\DslSyntaxException::class);
+        $this->parse($dsl);
+    }
+
+    public function testParseErrorInvalidDiscountTarget(): void
+    {
+        $dsl = "type: full_reduction\ndo:\n  discount unknown 20.00";
+        $this->expectException(\App\Promotion\Service\Dsl\DslSyntaxException::class);
+        $this->parse($dsl);
+    }
+
+    public function testParseErrorInvalidOperator(): void
+    {
+        $dsl = "type: full_reduction\nwhen:\n  cart.subtotal invalid_op 100";
+        $this->expectException(\App\Promotion\Service\Dsl\DslSyntaxException::class);
+        $this->parse($dsl);
+    }
 }

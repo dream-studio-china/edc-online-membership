@@ -118,4 +118,17 @@ final class DiscountStrategyTest extends TestCase
         // 99% off: 1000 * 99 / 100 = 990, new total = 10
         self::assertSame(10, $context->totalAmount);
     }
+
+    public function testApplyWithNonNumericRateDefaultsToZeroRate(): void
+    {
+        $context = new PriceCalculationContext([]);
+        $context->totalAmount = 10000;
+
+        $action = new AstNode('action_discount', ['target' => 'order', 'rate' => 'invalid_string']);
+
+        $this->strategy->apply($action, $context, []);
+
+        // resolveValue returns 0 for non-numeric, non-config strings → 100% discount → total = 0
+        self::assertSame(0, $context->totalAmount);
+    }
 }
