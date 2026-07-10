@@ -585,4 +585,311 @@ final class PromotionServiceTest extends TestCase
 
         self::assertCount(1, $result);
     }
+
+    // ──────────────────── getAvailable with DSL and/or conditions ────────────────────
+
+    public function testGetAvailableWithAndConditionMatches(): void
+    {
+        $context = new PriceCalculationContext([]);
+        $context->totalAmount = 50000;
+        $context->items = [['unitPrice' => 10], ['unitPrice' => 20]];
+        $context->storeCode = null;
+
+        $template = $this->createPromotionTemplate();
+        $ast = [
+            'type' => 'program',
+            'data' => [],
+            'children' => [
+                [
+                    'type' => 'when',
+                    'data' => [],
+                    'children' => [
+                        [
+                            'type' => 'and',
+                            'data' => [],
+                            'children' => [
+                                [
+                                    'type' => 'condition',
+                                    'data' => [
+                                        'op' => '>=',
+                                        'left' => ['type' => 'path', 'data' => ['value' => 'cart.subtotal'], 'children' => []],
+                                        'right' => ['type' => 'literal', 'data' => ['value' => 10000], 'children' => []],
+                                    ],
+                                    'children' => [],
+                                ],
+                                [
+                                    'type' => 'condition',
+                                    'data' => [
+                                        'op' => '>=',
+                                        'left' => ['type' => 'path', 'data' => ['value' => 'cart.items.count'], 'children' => []],
+                                        'right' => ['type' => 'literal', 'data' => ['value' => 2], 'children' => []],
+                                    ],
+                                    'children' => [],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ];
+        $template->setAstCache($ast);
+        $promotion = $this->createPromotion('AND Match', $template);
+
+        $this->rep->method('findBy')->willReturn([$promotion]);
+
+        $result = $this->createService()->getAvailable($context);
+
+        self::assertCount(1, $result);
+    }
+
+    public function testGetAvailableWithAndConditionFails(): void
+    {
+        $context = new PriceCalculationContext([]);
+        $context->totalAmount = 100;
+        $context->items = [];
+        $context->storeCode = null;
+
+        $template = $this->createPromotionTemplate();
+        $ast = [
+            'type' => 'program',
+            'data' => [],
+            'children' => [
+                [
+                    'type' => 'when',
+                    'data' => [],
+                    'children' => [
+                        [
+                            'type' => 'and',
+                            'data' => [],
+                            'children' => [
+                                [
+                                    'type' => 'condition',
+                                    'data' => [
+                                        'op' => '>=',
+                                        'left' => ['type' => 'path', 'data' => ['value' => 'cart.subtotal'], 'children' => []],
+                                        'right' => ['type' => 'literal', 'data' => ['value' => 10000], 'children' => []],
+                                    ],
+                                    'children' => [],
+                                ],
+                                [
+                                    'type' => 'condition',
+                                    'data' => [
+                                        'op' => '==',
+                                        'left' => ['type' => 'path', 'data' => ['value' => 'cart.subtotal'], 'children' => []],
+                                        'right' => ['type' => 'literal', 'data' => ['value' => 10000], 'children' => []],
+                                    ],
+                                    'children' => [],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ];
+        $template->setAstCache($ast);
+        $promotion = $this->createPromotion('AND Fail', $template);
+
+        $this->rep->method('findBy')->willReturn([$promotion]);
+
+        $result = $this->createService()->getAvailable($context);
+
+        self::assertCount(0, $result);
+    }
+
+    public function testGetAvailableWithOrConditionMatchesSecond(): void
+    {
+        $context = new PriceCalculationContext([]);
+        $context->totalAmount = 100;
+        $context->items = [['unitPrice' => 100]];
+        $context->storeCode = null;
+
+        $template = $this->createPromotionTemplate();
+        $ast = [
+            'type' => 'program',
+            'data' => [],
+            'children' => [
+                [
+                    'type' => 'when',
+                    'data' => [],
+                    'children' => [
+                        [
+                            'type' => 'or',
+                            'data' => [],
+                            'children' => [
+                                [
+                                    'type' => 'condition',
+                                    'data' => [
+                                        'op' => '>=',
+                                        'left' => ['type' => 'path', 'data' => ['value' => 'cart.subtotal'], 'children' => []],
+                                        'right' => ['type' => 'literal', 'data' => ['value' => 10000], 'children' => []],
+                                    ],
+                                    'children' => [],
+                                ],
+                                [
+                                    'type' => 'condition',
+                                    'data' => [
+                                        'op' => '>=',
+                                        'left' => ['type' => 'path', 'data' => ['value' => 'cart.items.count'], 'children' => []],
+                                        'right' => ['type' => 'literal', 'data' => ['value' => 1], 'children' => []],
+                                    ],
+                                    'children' => [],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ];
+        $template->setAstCache($ast);
+        $promotion = $this->createPromotion('OR Match Second', $template);
+
+        $this->rep->method('findBy')->willReturn([$promotion]);
+
+        $result = $this->createService()->getAvailable($context);
+        self::assertCount(1, $result);
+    }
+
+    public function testGetAvailableWithNotConditionPasses(): void
+    {
+        $context = new PriceCalculationContext([]);
+        $context->totalAmount = 500;
+        $context->storeCode = null;
+
+        $template = $this->createPromotionTemplate();
+        $ast = [
+            'type' => 'program',
+            'data' => [],
+            'children' => [
+                [
+                    'type' => 'when',
+                    'data' => [],
+                    'children' => [
+                        [
+                            'type' => 'not',
+                            'data' => [],
+                            'children' => [
+                                [
+                                    'type' => 'condition',
+                                    'data' => [
+                                        'op' => '==',
+                                        'left' => ['type' => 'path', 'data' => ['value' => 'cart.subtotal'], 'children' => []],
+                                        'right' => ['type' => 'literal', 'data' => ['value' => 10000], 'children' => []],
+                                    ],
+                                    'children' => [],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ];
+        $template->setAstCache($ast);
+        $promotion = $this->createPromotion('NOT Pass', $template);
+
+        $this->rep->method('findBy')->willReturn([$promotion]);
+
+        $result = $this->createService()->getAvailable($context);
+        self::assertCount(1, $result);
+    }
+
+    public function testGetAvailableWithNotConditionFails(): void
+    {
+        $context = new PriceCalculationContext([]);
+        $context->totalAmount = 50000;
+        $context->storeCode = null;
+
+        $template = $this->createPromotionTemplate();
+        $ast = [
+            'type' => 'program',
+            'data' => [],
+            'children' => [
+                [
+                    'type' => 'when',
+                    'data' => [],
+                    'children' => [
+                        [
+                            'type' => 'not',
+                            'data' => [],
+                            'children' => [
+                                [
+                                    'type' => 'condition',
+                                    'data' => [
+                                        'op' => '>=',
+                                        'left' => ['type' => 'path', 'data' => ['value' => 'cart.subtotal'], 'children' => []],
+                                        'right' => ['type' => 'literal', 'data' => ['value' => 10000], 'children' => []],
+                                    ],
+                                    'children' => [],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ];
+        $template->setAstCache($ast);
+        $promotion = $this->createPromotion('NOT Fail', $template);
+
+        $this->rep->method('findBy')->willReturn([$promotion]);
+
+        $result = $this->createService()->getAvailable($context);
+        self::assertCount(0, $result);
+    }
+
+    // ──────────────────── apply with null template ────────────────────
+
+    public function testApplyWithNullTemplateDoesNothing(): void
+    {
+        $context = new PriceCalculationContext([]);
+        $context->totalAmount = 50000;
+
+        $promotion = new Promotion();
+        $promotion->setName('No Template Attached');
+        // template is null by default
+
+        $this->createService()->apply($promotion, $context);
+
+        self::assertSame(50000, $context->totalAmount);
+    }
+
+    // ──────────────────── apply with actions but no matching strategy ────────────────────
+
+    public function testApplyExecutesMultipleActions(): void
+    {
+        $context = new PriceCalculationContext([]);
+        $context->totalAmount = 100000;
+
+        $ast = [
+            'type' => 'program',
+            'data' => ['type' => 'full_reduction'],
+            'children' => [
+                [
+                    'type' => 'do',
+                    'data' => [],
+                    'children' => [
+                        [
+                            'type' => 'action_discount',
+                            'data' => ['target' => 'order', 'value' => 10.00],
+                            'children' => [],
+                        ],
+                        [
+                            'type' => 'action_discount',
+                            'data' => ['target' => 'order', 'value' => 15.00],
+                            'children' => [],
+                        ],
+                    ],
+                ],
+            ],
+        ];
+
+        $template = $this->createPromotionTemplate(PromotionTemplate::TYPE_FULL_REDUCTION);
+        $template->setAstCache($ast);
+        $promotion = $this->createPromotion('Multi Actions', $template);
+
+        $strategy = new \App\Promotion\Strategy\FullReductionStrategy();
+        $service = $this->createService([$strategy]);
+
+        $service->apply($promotion, $context);
+
+        self::assertSame(97500, $context->totalAmount);
+    }
 }

@@ -6,9 +6,11 @@ namespace App\Promotion\Service;
 
 use App\Core\Service\BaseService;
 use App\Promotion\Entity\PromotionTemplate;
+use App\Promotion\Service\Dsl\DslSyntaxException;
+use App\Promotion\Service\Dsl\Evaluator;
 use App\Promotion\Service\Dsl\Lexer;
 use App\Promotion\Service\Dsl\Parser;
-use App\Promotion\Service\Dsl\DslSyntaxException;
+use App\Trade\Service\Pricing\PriceCalculationContext;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 class PromotionTemplateService extends BaseService implements PromotionTemplateServiceInterface
@@ -45,13 +47,56 @@ class PromotionTemplateService extends BaseService implements PromotionTemplateS
 
     public function simulate(PromotionTemplate $template, array $sampleContext): array
     {
+        $ast = $template->getAstCache();
+        if (!$ast) {
+            $parseResult = $this->parseDsl($template->getDsl());
+            if (!empty($parseResult['errors'])) {
+                return [
+                    'template_id' => $template->getId(),
+                    'type' => $template->getType(),
+                    'dsl' => $template->getDsl(),
+                    'errors' => $parseResult['errors'],
+                ];
+            }
+            $ast = $parseResult['ast'];
+        }
+
+        $context = new PriceCalculationContext($sampleContext['items'] ?? [], $sampleContext['currency'] ?? 'CNY');
+        $context->totalAmount = (int) ($sampleContext['totalAmount'] ?? 0);
+
+        $matched = false;
+        $actions = [];
+
+        if (isset($ast['children'])) {
+            foreach ($ast['children'] as $child) {
+                if (($child['type'] ?? '') === 'when') {
+                    $evaluator = new Evaluator([]);
+                    $allPassed = true;
+                    foreach ($child['children'] ?? [] as $cond) {
+                        $node = $this->astToNode($cond);
+                        if (!$evaluator->evaluateCondition($node, $context, $sampleContext['config'] ?? [])) {
+                            $allPassed = false;
+                            break;
+                        }
+                    }
+                    $matched = $allPassed;
+                }
+
+                if (($child['type'] ?? '') === 'do') {
+                    foreach ($child['children'] ?? [] as $action) {
+                        $actions[] = $action;
+                    }
+                }
+            }
+        }
+
         return [
             'template_id' => $template->getId(),
             'type' => $template->getType(),
             'dsl' => $template->getDsl(),
             'sampleContext' => $sampleContext,
-            'matched' => false,
-            'actions' => [],
+            'matched' => $matched,
+            'actions' => $actions,
         ];
     }
 
@@ -66,5 +111,18 @@ class PromotionTemplateService extends BaseService implements PromotionTemplateS
         }
 
         return parent::update($object, $data, $noFlush);
+    }
+
+    private function astToNode(array $data): \App\Promotion\Service\Dsl\AstNode
+    {
+        $children = [];
+        foreach ($data['children'] ?? [] as $child) {
+            $children[] = $this->astToNode($child);
+        }
+        return new \App\Promotion\Service\Dsl\AstNode(
+            $data['type'] ?? 'unknown',
+            $data['data'] ?? [],
+            $children
+        );
     }
 }

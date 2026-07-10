@@ -431,4 +431,221 @@ final class ParserTest extends TestCase
         self::assertTrue($doNode->children[0]->data['isPercent']);
         self::assertSame(50, $doNode->children[0]->data['maxCap']);
     }
+
+    // ──────────────────────────── OR with nested NOT ────────────────────────────
+
+    public function testParseWhenOrWithNestedNot(): void
+    {
+        $dsl = "type: full_reduction\nwhen:\n  or:\n    cart.subtotal >= 200\n    not:\n      cart.items.count <= 1";
+        $ast = $this->parse($dsl);
+
+        $whenNode = $this->findChild($ast, 'when');
+        self::assertCount(1, $whenNode->children);
+        $orNode = $whenNode->children[0];
+        self::assertSame('or', $orNode->type);
+        self::assertCount(2, $orNode->children);
+        self::assertSame('condition', $orNode->children[0]->type);
+        self::assertSame('not', $orNode->children[1]->type);
+        self::assertCount(1, $orNode->children[1]->children);
+        self::assertSame('<=' , $orNode->children[1]->children[0]->data['op']);
+    }
+
+    // ──────────────────────────── OR at top-level with mixed children ────────────────────────────
+
+    public function testParseWhenOrAtTopLevelWithNestedNot(): void
+    {
+        $dsl = "type: full_reduction\nwhen:\n  or:\n    cart.subtotal >= 500\n    not:\n      cart.items.count == 0";
+        $ast = $this->parse($dsl);
+
+        $whenNode = $this->findChild($ast, 'when');
+        self::assertCount(1, $whenNode->children);
+        $orNode = $whenNode->children[0];
+        self::assertSame('or', $orNode->type);
+        self::assertCount(2, $orNode->children);
+        self::assertSame('condition', $orNode->children[0]->type);
+        self::assertSame('not', $orNode->children[1]->type);
+        self::assertCount(1, $orNode->children[1]->children);
+    }
+
+    // ──────────────────────────── add action: spec with string identifier ────────────────────────────
+
+    public function testParseDoAddGiftWithStringSpec(): void
+    {
+        $dsl = "type: gift\ndo:\n  add gift spec: premium count: 2";
+        $ast = $this->parse($dsl);
+
+        $doNode = $this->findChild($ast, 'do');
+        self::assertSame('action_gift', $doNode->children[0]->type);
+        self::assertSame('premium', $doNode->children[0]->data['spec']);
+        self::assertSame(2, $doNode->children[0]->data['count']);
+    }
+
+    // ──────────────────────────── item discount with decimal rate ────────────────────────────
+
+    public function testParseDoDiscountItemDecimalRate(): void
+    {
+        $dsl = "type: nth_discount\ndo:\n  discount item 3 25.5%";
+        $ast = $this->parse($dsl);
+
+        $doNode = $this->findChild($ast, 'do');
+        self::assertSame('action_discount', $doNode->children[0]->type);
+        self::assertSame('item', $doNode->children[0]->data['target']);
+        self::assertSame(3, $doNode->children[0]->data['position']);
+        self::assertSame(25.5, $doNode->children[0]->data['rate']);
+        self::assertTrue($doNode->children[0]->data['isPercent']);
+    }
+
+    // ──────────────────────────── free_shipping with spacing ────────────────────────────
+
+    public function testParseDoFreeShippingWithExtraNewlines(): void
+    {
+        $dsl = "type: free_shipping\ndo:\n\n  free shipping\n";
+        $ast = $this->parse($dsl);
+
+        $doNode = $this->findChild($ast, 'do');
+        self::assertNotNull($doNode);
+        self::assertCount(1, $doNode->children);
+        self::assertSame('action_free_shipping', $doNode->children[0]->type);
+    }
+
+    // ──────────────────────────── member_discount with decimal rate ────────────────────────────
+
+    public function testParseDoMemberDiscountDecimal(): void
+    {
+        $dsl = "type: member_discount\ndo:\n  member discount 88.5%";
+        $ast = $this->parse($dsl);
+
+        $doNode = $this->findChild($ast, 'do');
+        self::assertSame('action_member_discount', $doNode->children[0]->type);
+        self::assertSame(88.5, $doNode->children[0]->data['rate']);
+    }
+
+    // ──────────────────────────── tiered with three entries and decimal values ────────────────────────────
+
+    public function testParseDoTieredThreeEntriesDecimal(): void
+    {
+        $dsl = "type: full_reduction\ndo:\n  tiered:\n    - threshold: 50.00 discount: 5.00\n    - threshold: 100.00 discount: 15.50\n    - threshold: 200.00 discount: 40.00";
+        $ast = $this->parse($dsl);
+
+        $doNode = $this->findChild($ast, 'do');
+        self::assertSame('action_tiered', $doNode->children[0]->type);
+        self::assertCount(3, $doNode->children[0]->children);
+
+        $tier0 = $doNode->children[0]->children[0];
+        self::assertSame(50.0, $tier0->data['threshold']);
+        self::assertSame(5.0, $tier0->data['discount']);
+
+        $tier1 = $doNode->children[0]->children[1];
+        self::assertSame(100.0, $tier1->data['threshold']);
+        self::assertSame(15.5, $tier1->data['discount']);
+
+        $tier2 = $doNode->children[0]->children[2];
+        self::assertSame(200.0, $tier2->data['threshold']);
+        self::assertSame(40.0, $tier2->data['discount']);
+    }
+
+    // ──────────────────────────── field decl with string and spec types ────────────────────────────
+
+    public function testParseFieldsWithStringAndSpecTypes(): void
+    {
+        $dsl = "type: full_reduction\nfields:\n  label: string: \"Promo Label\"\n  giftSpec: spec: \"Gift Selection\"";
+        $ast = $this->parse($dsl);
+
+        $fieldsNode = $this->findChild($ast, 'fields');
+        self::assertNotNull($fieldsNode);
+        self::assertCount(2, $fieldsNode->children);
+
+        self::assertSame('field', $fieldsNode->children[0]->type);
+        self::assertSame('label', $fieldsNode->children[0]->data['name']);
+        self::assertSame('string', $fieldsNode->children[0]->data['type']);
+        self::assertSame('Promo Label', $fieldsNode->children[0]->data['label']);
+
+        self::assertSame('field', $fieldsNode->children[1]->type);
+        self::assertSame('giftSpec', $fieldsNode->children[1]->data['name']);
+        self::assertSame('spec', $fieldsNode->children[1]->data['type']);
+        self::assertSame('Gift Selection', $fieldsNode->children[1]->data['label']);
+    }
+
+    // ──────────────────────────── error: invalid type identifier ────────────────────────────
+
+    public function testParseInvalidTypeIdentifierThrows(): void
+    {
+        $this->expectException(DslSyntaxException::class);
+        $this->expectExceptionMessage('Expected promotion type identifier');
+
+        $dsl = "type:\n  do:\n    discount order 10";
+        $this->parse($dsl);
+    }
+
+    // ──────────────────────────── error: invalid phase value ────────────────────────────
+
+    public function testParseInvalidPhaseValueThrows(): void
+    {
+        $this->expectException(DslSyntaxException::class);
+        $this->expectExceptionMessage("Expected 'inner' or 'outer'");
+
+        $dsl = "type: full_reduction\nphase: 123";
+        $this->parse($dsl);
+    }
+
+    // ──────────────────────────── error: unexpected keyword in top level ────────────────────────────
+
+    public function testParseUnexpectedKeywordAtTopLevelThrows(): void
+    {
+        $this->expectException(DslSyntaxException::class);
+        $this->expectExceptionMessage("Unexpected keyword 'and'");
+
+        $dsl = "type: full_reduction\nand: something";
+        $this->parse($dsl);
+    }
+
+    // ──────────────────────────── error: invalid operator in single condition ────────────────────────────
+
+    public function testParseInvalidOperatorInDirectConditionThrows(): void
+    {
+        $this->expectException(DslSyntaxException::class);
+        $this->expectExceptionMessage("Invalid operator 'bogus'");
+
+        $dsl = "type: full_reduction\nwhen:\n  cart.subtotal bogus 200";
+        $this->parse($dsl);
+    }
+
+    // ──────────────────────────── error: invalid phase identifier ────────────────────────────
+
+    public function testParsePhaseWithNonIdentifierThrows(): void
+    {
+        $this->expectException(DslSyntaxException::class);
+        $this->expectExceptionMessage("Expected 'inner' or 'outer'");
+
+        $dsl = "type: full_reduction\nphase: \"inner\"";
+        $this->parse($dsl);
+    }
+
+    // ──────────────────────────── discount order with config ref and no suffix ────────────────────────────
+
+    public function testParseDoDiscountOrderConfigWithoutSuffix(): void
+    {
+        $dsl = "type: full_reduction\ndo:\n  discount order config";
+        $ast = $this->parse($dsl);
+
+        $doNode = $this->findChild($ast, 'do');
+        self::assertSame('action_discount', $doNode->children[0]->type);
+        self::assertSame('config', $doNode->children[0]->data['value']);
+    }
+
+    // ──────────────────────────── OR as top-level condition with mixed children ────────────────────────────
+
+    public function testParseWhenOrWithMixedSimpleAndLogicChildren(): void
+    {
+        $dsl = "type: full_reduction\nwhen:\n  or:\n    cart.subtotal >= 500\n    not:\n      cart.items.count == 0\n    cart.subtotal <= 100";
+        $ast = $this->parse($dsl);
+
+        $whenNode = $this->findChild($ast, 'when');
+        $orNode = $whenNode->children[0];
+        self::assertSame('or', $orNode->type);
+        self::assertCount(3, $orNode->children);
+        self::assertSame('condition', $orNode->children[0]->type);
+        self::assertSame('not', $orNode->children[1]->type);
+        self::assertSame('condition', $orNode->children[2]->type);
+    }
 }

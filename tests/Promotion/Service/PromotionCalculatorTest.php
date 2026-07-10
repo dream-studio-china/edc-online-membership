@@ -238,4 +238,9 @@ final class PromotionCalculatorTest extends TestCase
         self::assertCount(1, $context->appliedPromotions);
         self::assertSame($config, $context->appliedPromotions[0]['config']);
     }
+
+    public function testGetPriority(): void
+    {
+        self::assertSame(60, PromotionCalculator::getPriority());
+    }
 }
