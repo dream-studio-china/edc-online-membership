@@ -21,7 +21,7 @@
 <!-- How did you verify this change? Commands, screenshots, manual testing steps. -->
 
 - [ ] `vendor/bin/phpunit` — all tests pass
-- [ ] Coverage does not drop below 85%
+- [ ] Coverage does not drop below 90%
 - [ ] Manual smoke test performed (describe below)
 
 ## Checklist

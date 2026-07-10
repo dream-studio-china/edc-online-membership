@@ -275,4 +275,4 @@ When adding a new business domain, complete these steps in order:
 9. Write entity unit tests
 10. Write service unit tests
 11. Write API integration tests
-12. Verify CI passes (80% coverage minimum)
+12. Verify CI passes (90% coverage minimum)

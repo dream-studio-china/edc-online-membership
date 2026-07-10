@@ -88,13 +88,13 @@ jobs:
             | grep -i "Lines:" > /tmp/coverage_line.txt
           cat /tmp/coverage_line.txt
 
-      - name: Check coverage threshold (85%)
+      - name: Check coverage threshold (90%)
         run: |
           COVERAGE=$(grep "^  Lines:" /tmp/coverage_line.txt | sed -E 's/.*Lines: *([0-9.]+)%.*/\1/')
-          THRESHOLD=85.0
+          THRESHOLD=90.0
           echo "Line coverage: ${COVERAGE}%"
           if [ $(echo "${COVERAGE} < ${THRESHOLD}" | bc) -eq 1 ]; then
             echo "::error::Line coverage ${COVERAGE}% is below ${THRESHOLD}% threshold"
             exit 1
           fi
-          echo "Line coverage ${COVERAGE}% meets 85% threshold"
+          echo "Line coverage ${COVERAGE}% meets 90% threshold"

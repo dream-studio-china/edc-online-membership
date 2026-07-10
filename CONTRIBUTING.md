@@ -70,7 +70,7 @@ Supported scopes: `common`, `trade`, `wallet`, `payment`, `wechat`, `identity`, 
 ### Before Submitting a PR
 
 ```bash
-# Run all tests (CI enforces 85% minimum coverage)
+# Run all tests (CI enforces 90% minimum coverage)
 XDEBUG_MODE=coverage vendor/bin/phpunit --coverage-text
 
 # Run tests for a specific module
@@ -85,7 +85,7 @@ vendor/bin/phpunit tests/Trade/
 - [ ] Branch is up-to-date with `main`
 - [ ] Commits follow conventional commit format
 - [ ] All tests pass (`vendor/bin/phpunit`)
-- [ ] Coverage does not drop below 85% (CI enforced)
+- [ ] Coverage does not drop below 90% (CI enforced)
 - [ ] New features include tests
 - [ ] Behavior changes are reflected in `docs/ai/context.md` where appropriate
 - [ ] API changes are documented with `#[OA\*]` attributes

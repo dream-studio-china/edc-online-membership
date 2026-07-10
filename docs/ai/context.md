@@ -125,7 +125,7 @@
 │   ├── app/entrypoint.sh         # Dev key generation + prod key validation
 │   └── nginx/default.conf        # nginx config (reverse proxy to PHP-FPM)
 └── .github/workflows/
-    ├── ci.yml                    # CI: PHP 8.4, 80% coverage
+    ├── ci.yml                    # CI: PHP 8.4, 90% coverage
     └── docs.yml                  # GitHub Pages deploy
 ```
 
@@ -601,7 +601,7 @@ Enriches all endpoints (90+):
 
 - **Framework**: PHPUnit 12.5
 - **DB**: SQLite `var/test.db` in test environment
-- **Coverage**: 85% minimum (enforced in CI), currently **90.06% lines** (`4795/5324`) from latest local Xdebug run
+- **Coverage**: 90% minimum (enforced in CI), currently **90.06% lines** (`4795/5324`) from latest local Xdebug run
 - **Test count**: **1221 tests**, **4199 assertions**
 - **Local PHP note**: default `php` may point to PHP 7.4; use Homebrew PHP 8.5 at `/opt/homebrew/opt/php@8.5/bin/php` for local Symfony/PHPUnit commands.
 - **HTML coverage report**: `XDEBUG_MODE=coverage ./vendor/bin/phpunit --coverage-html var/coverage`
