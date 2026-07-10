@@ -211,7 +211,7 @@ class WalletTransaction
     #[ORM\PrePersist]
     public function prePersist(): void
     {
-        if (!isset($this->createdAt) || $this->createdAt === null) {
+        if (!isset($this->createdAt)) {
             $this->createdAt = new \DateTimeImmutable();
         }
     }

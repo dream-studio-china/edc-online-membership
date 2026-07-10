@@ -38,7 +38,7 @@ class JwtAuthenticator extends AbstractAuthenticator
         $authHeader = $request->headers->get('Authorization', '');
         $jwt = substr($authHeader, 7);
 
-        if ($jwt === '' || $jwt === false) {
+        if ($jwt === '') {
             throw new CustomUserMessageAuthenticationException('Missing JWT token.');
         }
 

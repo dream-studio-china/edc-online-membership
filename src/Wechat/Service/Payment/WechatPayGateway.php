@@ -17,6 +17,7 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Contracts\HttpClient\ResponseInterface;
 
 final class WechatPayGateway implements PaymentGatewayInterface
 {
@@ -61,7 +62,7 @@ final class WechatPayGateway implements PaymentGatewayInterface
             }
             $body['payer'] = ['openid' => $wechatUser->getOpenid()];
 
-            $response = $app->getClient()->postJson('v3/pay/transactions/jsapi', $body);
+            $response = $this->postJson($app->getClient(), 'v3/pay/transactions/jsapi', $body);
             $result = $response->toArray(false);
 
             $prepayId = $result['prepay_id'] ?? '';
@@ -77,7 +78,7 @@ final class WechatPayGateway implements PaymentGatewayInterface
         }
 
         if ($tradeType === 'native') {
-            $response = $app->getClient()->postJson('v3/pay/transactions/native', $body);
+            $response = $this->postJson($app->getClient(), 'v3/pay/transactions/native', $body);
             $result = $response->toArray(false);
 
             return new PaymentResult(
@@ -96,6 +97,7 @@ final class WechatPayGateway implements PaymentGatewayInterface
         $app = $this->wechatService->getPayApp();
 
         try {
+            /** @var \EasyWeChat\Pay\Server $server */
             $server = $app->getServer();
 
             $notifyResult = null;
@@ -120,7 +122,7 @@ final class WechatPayGateway implements PaymentGatewayInterface
                 return $next($message);
             });
 
-            $response = $server->serve($psrRequest);
+            $response = $server->serve();
 
             if ($notifyResult !== null) {
                 return $notifyResult;
@@ -157,7 +159,7 @@ final class WechatPayGateway implements PaymentGatewayInterface
             ],
         ];
 
-        $response = $app->getClient()->postJson('v3/refund/domestic/refunds', $body);
+        $response = $this->postJson($app->getClient(), 'v3/refund/domestic/refunds', $body);
         $result = $response->toArray(false);
 
         $refundStatus = match ($result['status'] ?? '') {
@@ -181,5 +183,21 @@ final class WechatPayGateway implements PaymentGatewayInterface
         return new JsonResponse(
             json_decode($result->responseBody, true) ?? ['code' => 'SUCCESS', 'message' => '成功']
         );
+    }
+
+    /**
+     * EasyWeChat decorates Symfony's HTTP client with postJson().
+     *
+     * @param object $client
+     * @param array<string, mixed> $body
+     */
+    private function postJson(object $client, string $url, array $body): ResponseInterface
+    {
+        $response = call_user_func([$client, 'postJson'], $url, $body);
+        if (!$response instanceof ResponseInterface) {
+            throw new \RuntimeException('WeChat client returned an invalid response.');
+        }
+
+        return $response;
     }
 }

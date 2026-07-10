@@ -21,7 +21,7 @@ abstract class BaseService implements BaseServiceInterface
     protected $container;
     /** @var \Doctrine\ORM\EntityManager|object */
     protected $em;
-    /** @var \Doctrine\Common\Persistence\ObjectRepository|\Doctrine\ORM\EntityRepository */
+    /** @var \Doctrine\Persistence\ObjectRepository|\Doctrine\ORM\EntityRepository */
     protected $rep;
     /** @var string */
     protected $entityClass;

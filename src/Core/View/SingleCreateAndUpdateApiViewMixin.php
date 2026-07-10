@@ -37,7 +37,7 @@ trait SingleCreateAndUpdateApiViewMixin
     public function updateAction(Request $request): Response
     {
         try {
-            $service = $this->service ?? $this->get($this->serviceClass);
+            $service = $this->service;
             $content = json_decode($request->getContent(), true) ?: [];
 
             $filter = $this->commonFilter();

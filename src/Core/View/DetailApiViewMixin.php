@@ -38,7 +38,7 @@ trait DetailApiViewMixin
     #[Route('/{id}', name: 'detail', requirements: ['id' => '\\d+'], methods: ['GET'])]
     public function detailAction($id): Response
     {
-        $service = $this->service ?? $this->get($this->serviceClass);
+        $service = $this->service;
         $filter = $this->mixIdToCommonFilter($id);
         $filter = $this->detailFilter($filter);
         $entity = $this->detailProcessor(

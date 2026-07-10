@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Trade\Controller\App;
 
+use App\Identity\Entity\User;
 use App\Core\Controller\RestController;
 use App\Core\View\ApiView;
 use App\Core\View\DetailApiViewMixin;
 use App\Core\View\ListApiViewMixin;
-use App\Payment\Service\InvoiceServiceInterface;
 use App\Trade\Entity\Order;
 use App\Trade\Service\OrderServiceInterface;
 use Symfony\Component\DependencyInjection\Attribute\Target;
@@ -28,13 +28,12 @@ class OrderController extends RestController
         protected readonly OrderServiceInterface $service,
         #[Target('state_machine.order')]
         protected readonly WorkflowInterface $workflow,
-        private readonly InvoiceServiceInterface $invoiceService,
     ) {
     }
 
     protected function commonFilter(): array
     {
-        $user = $this->getUser();
+        $user = $this->getCurrentUser();
         if ($user === null) {
             return ['id' => -1];
         }
@@ -54,7 +53,7 @@ class OrderController extends RestController
         $currency = $content['currency'] ?? 'CNY';
         $notes = $content['notes'] ?? null;
         $metadata = isset($content['metadata']) && is_array($content['metadata']) ? $content['metadata'] : null;
-        $user = $this->getUser();
+        $user = $this->getCurrentUser();
 
         try {
             $result = $this->service->calculatePrices($items, $currency, $content['storeCode'] ?? null, $content['meta'] ?? []);
@@ -103,7 +102,7 @@ class OrderController extends RestController
             return $this->warning('Order not found.', 404, '', 404);
         }
 
-        $user = $this->getUser();
+        $user = $this->getCurrentUser();
         if ($user === null || $order->getUser()?->getId() !== $user->getId()) {
             return $this->warning('Order not found.', 404, '', 404);
         }
@@ -141,7 +140,7 @@ class OrderController extends RestController
             return $this->warning('Order not found.', 404, '', 404);
         }
 
-        $user = $this->getUser();
+        $user = $this->getCurrentUser();
         if ($user === null || $order->getUser()?->getId() !== $user->getId()) {
             return $this->warning('Order not found.', 404, '', 404);
         }
@@ -157,6 +156,13 @@ class OrderController extends RestController
         return $this->success($order, $successMessage);
     }
 
+    private function getCurrentUser(): ?User
+    {
+        $user = $this->getUser();
+
+        return $user instanceof User ? $user : null;
+    }
+
     #[Route('/{id<\d+>}/cancel', name: 'cancel', methods: ['POST'])]
     public function cancelAction(int $id): Response
     {
@@ -166,7 +172,7 @@ class OrderController extends RestController
             return $this->warning('Order not found.', 404, '', 404);
         }
 
-        $user = $this->getUser();
+        $user = $this->getCurrentUser();
         if ($user === null || $order->getUser()?->getId() !== $user->getId()) {
             return $this->warning('Order not found.', 404, '', 404);
         }
@@ -195,7 +201,7 @@ class OrderController extends RestController
             return $this->warning('Order not found.', 404, '', 404);
         }
 
-        $user = $this->getUser();
+        $user = $this->getCurrentUser();
         if ($user === null || $order->getUser()?->getId() !== $user->getId()) {
             return $this->warning('Order not found.', 404, '', 404);
         }

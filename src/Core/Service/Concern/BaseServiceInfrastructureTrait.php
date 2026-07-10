@@ -214,6 +214,10 @@ trait BaseServiceInfrastructureTrait
      * The callable receives the EntityManager for convenience.
      * Flushes before commit, rolls back on any Throwable.
      * Falls back to plain execution when the EM is a fake/mock without transaction support.
+     *
+     * @template T
+     * @param callable(\Doctrine\ORM\EntityManagerInterface): T $fn
+     * @return T
      */
     public function wrapInTransaction(callable $fn): mixed
     {

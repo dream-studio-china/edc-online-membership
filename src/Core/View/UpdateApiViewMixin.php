@@ -84,7 +84,7 @@ trait UpdateApiViewMixin
      */
     private function updateSingle($entity, $content, ?array $transformer = null, int $writeMode = 1 /* MODE_UPDATE */, bool $noFlush = false)
     {
-        $service = $this->service ?? $this->get($this->serviceClass);
+        $service = $this->service;
 
         // Properties process.
         // FIXED: Add properties null checker for inherit
@@ -117,40 +117,21 @@ trait UpdateApiViewMixin
 
         // Process content
         // TODO: May be bug occur here. Use other function instead of 'array_merge'
-        $content = array_merge($content,
-            $writeMode
-                ? $this->defaultUpdateValues()
-                : (
-            method_exists($this, 'defaultCreateValues')
-                ? $this->{'defaultCreateValues'}()
-                : $this->defaultValues()
-            )
-        );
+        $content = array_merge($content, $writeMode ? $this->defaultUpdateValues() : $this->defaultCreateValues());
 
         if($transformer) {
             $content = $this->transformContent($content, $transformer, $entity);
         }
         $content = $writeMode
             ? $this->processUpdateContent($content, $entity)
-            : (
-            method_exists($this, 'processCreateContent')
-                ? $this->{'processCreateContent'}($content, $entity)
-                : $this->processContent($content, $entity)
-            )
-        ;
+            : $this->processCreateContent($content, $entity);
 
         // remove id
         unset($content['id']);
 
         // save
         $entity = $service->update($entity, $content, $noFlush);
-        return $writeMode
-            ? $this->afterUpdated($entity)
-            : (
-            method_exists($this, 'afterCreated')
-                ? $this->{'afterCreated'}($entity)
-                : $this->after($entity)
-            );
+        return $writeMode ? $this->afterUpdated($entity) : $this->afterCreated($entity);
     }
 
     /**
@@ -162,7 +143,7 @@ trait UpdateApiViewMixin
     private function updateRecords(Request $request, $id = null)
     {
         // No explicit service injection.
-        $service = $this->service ?? $this->get($this->serviceClass);
+        $service = $this->service;
 
         // External content
         $content = json_decode($request->getContent(), true) ? : [];
@@ -250,7 +231,7 @@ trait UpdateApiViewMixin
             throw new ValidatorException('Content type error.');
         }
 
-        return $response ?? null;
+        return $response;
     }
 
     #[OA\Post(

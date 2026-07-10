@@ -112,7 +112,7 @@ class ExpressionQueryBuilderAssembler
 
         // Prepare existing aliases to avoid duplicate join aliases
         try {
-            $existingAliases = method_exists($qb, 'getAllAliases') ? $qb->getAllAliases() : $qb->getRootAliases();
+            $existingAliases = $qb->getAllAliases();
         } catch (\Exception $e) {
             $existingAliases = $existingRootAliases;
         }

@@ -7,7 +7,7 @@ class StringCase
     /**
      * @param $string
      * @param bool $capitalizeFirstCharacter
-     * @return array|string|string[]|null
+     * @return string
      */
     public static function dashesToCamelCase($string, bool $capitalizeFirstCharacter = false): string
     {

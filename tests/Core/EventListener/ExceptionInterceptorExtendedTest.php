@@ -27,20 +27,8 @@ final class ExceptionInterceptorExtendedTest extends TestCase
             public function getLocale(): string { return 'en'; }
         };
 
-        $serializer = new class implements SerializerInterface {
-            public function serialize(mixed $data, string $format, array $context = []): string
-            {
-                return json_encode($data, JSON_THROW_ON_ERROR);
-            }
-            public function deserialize(mixed $data, string $type, string $format, array $context = []): mixed {
-                return null;
-            }
-        };
-
         return new ExceptionInterceptor(
-            $this->createStub(ContainerInterface::class),
             $translator,
-            $serializer,
             new NullLogger(),
             $env
         );

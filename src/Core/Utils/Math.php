@@ -83,17 +83,23 @@ class Math
     public static function min($value, ...$values) { return min($value, ...$values); }
     public static function mt_getrandmax() { return mt_getrandmax(); }
     public static function mt_rand($x) { return mt_rand($x); }
-    public static function mt_srand($seed = null, $mode = MT_RAND_MT19937) { return mt_srand($seed = null, $mode = MT_RAND_MT19937); }
+    public static function mt_srand(?int $seed = null, int $mode = MT_RAND_MT19937): void { mt_srand($seed, $mode); }
     public static function octdec($x) { return octdec($x); }
     public static function pi() { return pi(); }
     public static function pow($x, $y) { return pow($x, $y); }
     public static function rad2deg($x) { return rad2deg($x); }
     public static function rand($x) { return rand($x); }
-    public static function round($num, int $precision = 0, int $mode = PHP_ROUND_HALF_UP): float { return round($num, $precision, $mode); }
+    public static function round($num, int $precision = 0, int $mode = PHP_ROUND_HALF_UP): float
+    {
+        return match ($mode) {
+            PHP_ROUND_HALF_UP, PHP_ROUND_HALF_DOWN, PHP_ROUND_HALF_EVEN, PHP_ROUND_HALF_ODD => round($num, $precision, $mode),
+            default => throw new \InvalidArgumentException('Invalid rounding mode.'),
+        };
+    }
     public static function sin($x) { return sin($x); }
     public static function sinh($x) { return sinh($x); }
     public static function sqrt($x) { return sqrt($x); }
-    public static function srand($seed = null, $mode = MT_RAND_MT19937) { return srand($seed = null, $mode = MT_RAND_MT19937); }
+    public static function srand(?int $seed = null, int $mode = MT_RAND_MT19937): void { srand($seed, $mode); }
     public static function tan($x) { return tan($x); }
     public static function tanh($x) { return tanh($x); }
 }

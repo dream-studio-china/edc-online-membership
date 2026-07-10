@@ -26,10 +26,10 @@ trait CreateApiViewMixin
 
     /**
      * @param array $content
-     * @param null $entity
+     * @param object $entity
      * @return array
      */
-    protected function processCreateContent(array $content, $entity = null)
+    protected function processCreateContent(array $content, object $entity): array
     {
         /** Default values */
         return $content;
@@ -65,7 +65,7 @@ trait CreateApiViewMixin
     #[Route('', name: 'create', methods: ['POST'])]
     public function createAction(Request $request): Response
     {
-        $service = $this->service ?? $this->get($this->serviceClass);
+        $service = $this->service;
 
         if (FixJSON::getJSONType($request->getContent()) === false) {
             return $this->warning('Invalid JSON', 400, '', 400);

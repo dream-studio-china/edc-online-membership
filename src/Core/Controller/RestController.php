@@ -9,6 +9,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\ORM\Tools\Pagination\Paginator as DoctrinePaginator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\ExpressionLanguage\ExpressionLanguage;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -25,6 +26,7 @@ class RestController extends AbstractController
     private ?RequestStack $requestStack = null;
     private ?SerializerInterface $serializer = null;
     private ?TranslatorInterface $translator = null;
+    private ?ContainerInterface $serviceContainer = null;
 
     /**
      * Constructor accepts optional dependencies so subclasses can call parent::__construct()
@@ -41,12 +43,6 @@ class RestController extends AbstractController
         $this->serializer = $serializer;
         $this->translator = $translator;
     }
-    /** @noinspection PhpPossiblePolymorphicInvocationInspection */
-    public function getService(): object
-    {
-        return $this->service;
-    }
-
     #[Required]
     public function setRequestStack(RequestStack $requestStack): void
     {
@@ -63,6 +59,32 @@ class RestController extends AbstractController
     public function setTranslator(TranslatorInterface $translator): void
     {
         $this->translator = $translator;
+    }
+
+    #[Required]
+    public function setServiceContainer(ContainerInterface $serviceContainer): void
+    {
+        $this->serviceContainer = $serviceContainer;
+    }
+
+    protected function resolveService(string $id): object
+    {
+        if ($this->serviceContainer === null || !$this->serviceContainer->has($id)) {
+            throw new \RuntimeException(sprintf('Service "%s" is not available.', $id));
+        }
+
+        return $this->serviceContainer->get($id);
+    }
+
+    public function getService(): object
+    {
+        $properties = get_object_vars($this);
+        $service = $properties['service'] ?? null;
+        if (!is_object($service)) {
+            throw new \RuntimeException('Controller service is not available.');
+        }
+
+        return $service;
     }
 
     protected function getRequestStack(): RequestStack

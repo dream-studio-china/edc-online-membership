@@ -4,7 +4,6 @@ namespace App\Core\View;
 
 use App\Core\Utils\ArrayCommon;
 use App\Core\Utils\Math;
-use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\ORM\Mapping\ManyToMany;
 use Doctrine\ORM\Mapping\ManyToOne;
 use Doctrine\ORM\Mapping\OneToMany;
@@ -23,10 +22,10 @@ trait TransformContent
     /**
      * @param array $content
      * @param array $transformer
-     * @param null $entity
+     * @param object $entity
      * @return array
      */
-    protected function transformContent(array $content, array $transformer, $entity): array
+    protected function transformContent(array $content, array $transformer, object $entity): array
     {
         $expressionLanguage = new ExpressionLanguage();
 
@@ -39,16 +38,16 @@ trait TransformContent
                 continue;
             }
 
-            $docReader = new AnnotationReader();
-            $reflect = new \ReflectionClass(get_class($entity));
+            $reflect = new \ReflectionClass($entity);
 
             if (!$reflect->hasProperty($field)) {
                 throw new ValidatorException('Invalid content field');
             }
-            $annotations = $docReader->getPropertyAnnotations($reflect->getProperty($field));
+            $property = $reflect->getProperty($field);
             $service = null;
 
-            foreach ($annotations as $annotation) {
+            foreach ($property->getAttributes() as $attribute) {
+                $annotation = $attribute->newInstance();
                 if (
                     $annotation instanceof ManyToOne ||
                     $annotation instanceof OneToOne ||
@@ -59,7 +58,7 @@ trait TransformContent
 
                     // Not accuracy
                     $serviceClass = str_replace( 'Entity', 'Service', $dataClass) . 'Service';
-                    $service = $this->get($serviceClass);
+                    $service = $this->resolveService($serviceClass);
                 }
             }
 

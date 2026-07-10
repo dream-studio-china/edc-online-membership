@@ -25,7 +25,6 @@ class LocaleListener
         'zh-TW' => 'zh_Hant',
         'zh-Hant' => 'zh_Hant',
         'zh-Hant-TW' => 'zh_Hant',
-        'zh-HK' => 'zh_Hant',
         'en-US' => 'en',
         'en-GB' => 'en',
         'ja-JP' => 'ja',

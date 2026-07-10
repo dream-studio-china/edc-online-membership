@@ -22,9 +22,9 @@ class WalletService extends BaseService
 
     public function verifyBalance(): array
     {
-        $totalBalance = $this->rep->getTotalBalance();
+        $totalBalance = $this->getWalletRepository()->getTotalBalance();
         $totalDeposited = $this->transactionRepo->getTotalDeposited();
-        $walletCount = $this->rep->count([]);
+        $walletCount = $this->getWalletRepository()->count([]);
 
         return [
             'totalBalance' => $totalBalance,
@@ -37,9 +37,9 @@ class WalletService extends BaseService
 
     public function verifyBalanceForUser(User $user): array
     {
-        $totalBalance = $this->rep->getTotalBalanceForUser((int) $user->getId());
+        $totalBalance = $this->getWalletRepository()->getTotalBalanceForUser((int) $user->getId());
         $totalDeposited = $this->transactionRepo->getTotalDepositedForUser((int) $user->getId());
-        $walletCount = $this->rep->count(['user' => $user]);
+        $walletCount = $this->getWalletRepository()->count(['user' => $user]);
 
         return [
             'totalBalance' => $totalBalance,
@@ -65,7 +65,7 @@ class WalletService extends BaseService
      */
     public function reconcile(): array
     {
-        $wallets = $this->rep->findAll();
+        $wallets = $this->getWalletRepository()->findAll();
         $adjustments = [];
         $reconciled = 0;
 
@@ -132,5 +132,15 @@ class WalletService extends BaseService
             'reconciled' => $reconciled,
             'adjustments' => $adjustments,
         ];
+    }
+
+    private function getWalletRepository(): \App\Wallet\Repository\WalletRepository
+    {
+        $repository = $this->getRepository(Wallet::class);
+        if (!$repository instanceof \App\Wallet\Repository\WalletRepository) {
+            throw new \LogicException('Wallet repository is not available.');
+        }
+
+        return $repository;
     }
 }

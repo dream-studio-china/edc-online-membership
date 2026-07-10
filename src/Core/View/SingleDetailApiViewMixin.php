@@ -20,7 +20,7 @@ trait SingleDetailApiViewMixin
     #[Route('', name: 'detail', methods: ['GET'])]
     public function detailAction(): Response
     {
-        $service = $this->service ?? $this->get($this->serviceClass);
+        $service = $this->service;
         $filter = $this->commonFilter();
         $entity = $service->get($filter, false);
 

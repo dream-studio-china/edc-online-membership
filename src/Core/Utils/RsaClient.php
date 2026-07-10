@@ -55,7 +55,9 @@ class RsaClient
         openssl_sign($data, $sign, $res, OPENSSL_ALGO_MD5);
 
         if (!$this->checkEmpty($this->rsaPrivateKeyFilePath)) {
-            openssl_free_key($res);
+            if ($res instanceof \OpenSSLAsymmetricKey) {
+                openssl_free_key($res);
+            }
         }
         $sign = base64_encode($sign);
         return $sign;
@@ -104,7 +106,9 @@ class RsaClient
 
         if (!$this->checkEmpty($this->rsaPublicKeyFilePath)) {
             //释放资源
-            openssl_free_key($res);
+            if ($res instanceof \OpenSSLAsymmetricKey) {
+                openssl_free_key($res);
+            }
         }
 
         return $result;
@@ -117,18 +121,11 @@ class RsaClient
      */
     protected function checkEmpty($value)
     {
-        if (!isset($value))
-            return true;
-        if ($value === null)
-            return true;
-        if (trim($value) === "")
-            return true;
-
-        return false;
+        return $value === null || trim((string) $value) === '';
     }
 
     /**
-     * @return false|resource|string
+     * @return false|\OpenSSLAsymmetricKey|string
      */
     public function getPrivateKey()
     {
@@ -150,7 +147,7 @@ class RsaClient
     }
 
     /**
-     * @return false|resource|string
+     * @return false|\OpenSSLAsymmetricKey|string
      */
     public function getPublicKey()
     {
@@ -203,7 +200,7 @@ class RsaClient
     function privateEncryptRsa($plainData = '')
     {
         if (!is_string($plainData)) {
-            return null;
+            return false;
         }
         $encrypted = '';
 
@@ -234,7 +231,7 @@ class RsaClient
     function publicEncryptRsa($plainData = '')
     {
         if (!is_string($plainData)) {
-            return null;
+            return false;
         }
 
         $encrypted = '';
@@ -266,7 +263,7 @@ class RsaClient
     public function privateDecryptRsa($data = '')
     {
         if (!is_string($data)) {
-            return null;
+            return false;
         }
         $decrypted = '';
 
@@ -297,7 +294,7 @@ class RsaClient
     public function publicDecryptRsa($data = '')
     {
         if (!is_string($data)) {
-            return null;
+            return false;
         }
 
         $decrypted = '';

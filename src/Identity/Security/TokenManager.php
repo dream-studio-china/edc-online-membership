@@ -8,7 +8,7 @@ use App\Identity\Entity\RefreshToken;
 use App\Identity\Entity\User;
 use App\Identity\Repository\RefreshTokenRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Contracts\Cache\CacheInterface;
+use Psr\Cache\CacheItemPoolInterface;
 
 class TokenManager
 {
@@ -19,7 +19,7 @@ class TokenManager
     public function __construct(
         private readonly EntityManagerInterface $em,
         private readonly RefreshTokenRepository $refreshRepo,
-        private readonly CacheInterface $cache,
+        private readonly CacheItemPoolInterface $cache,
         string $privateKeyPath,
         string $publicKeyPath,
         ?string $passphrase,

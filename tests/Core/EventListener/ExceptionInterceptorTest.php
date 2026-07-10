@@ -29,22 +29,8 @@ final class ExceptionInterceptorTest extends TestCase
             }
         };
 
-        $serializer = new class implements SerializerInterface {
-            public function serialize(mixed $data, string $format, array $context = []): string
-            {
-                return json_encode($data, JSON_THROW_ON_ERROR);
-            }
-
-            public function deserialize(mixed $data, string $type, string $format, array $context = []): mixed
-            {
-                return null;
-            }
-        };
-
         $listener = new ExceptionInterceptor(
-            $this->createStub(ContainerInterface::class),
             $translator,
-            $serializer,
             new NullLogger(),
             'prod'
         );

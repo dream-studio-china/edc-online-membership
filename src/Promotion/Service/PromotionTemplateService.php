@@ -21,6 +21,9 @@ class PromotionTemplateService extends BaseService implements PromotionTemplateS
         parent::__construct($container, PromotionTemplate::class);
     }
 
+    /**
+     * @return array{ast: array|null, errors: list<array{line: int, col: int, message: string}>}
+     */
     public function parseDsl(string $dsl): array
     {
         try {

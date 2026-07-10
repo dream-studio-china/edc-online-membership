@@ -431,7 +431,7 @@ class ExpressionDqlParser
                 $meta = $em->getClassMetadata($currentClass);
                 if ($meta->hasAssociation($seg)) {
                     $assoc = $meta->getAssociationMapping($seg);
-                    $currentClass = is_array($assoc) ? $assoc['targetEntity'] : $assoc->targetEntity;
+                    $currentClass = $assoc->targetEntity;
                     continue;
                 }
                 if ($meta->hasField($seg)) {

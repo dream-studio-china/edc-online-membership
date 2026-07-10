@@ -13,7 +13,7 @@ trait BaseServiceReadListTrait
 {
     /**
      * @param $object
-     * @param bool $disableRequest
+     * @param bool $directly
      * @return null|object
      */
     public function get($object, bool $directly = false)
@@ -230,9 +230,9 @@ trait BaseServiceReadListTrait
                         $entities,
                         function ($x, $y) use ($sorter) {
                             try {
-                                return $this->getLegacyEvaluator()->evaluateBool($sorter, array_merge(['x' => $x, 'y' => $y], $this->externalExpressionValues()));
+                                return $this->getLegacyEvaluator()->evaluateBool($sorter, array_merge(['x' => $x, 'y' => $y], $this->externalExpressionValues())) ? 1 : -1;
                             } catch (\Exception $e) {
-                                return false;
+                                return 0;
                             }
                         }
                     );

@@ -3,23 +3,19 @@
 namespace App\Core\EventListener;
 
 use Psr\Log\LoggerInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpKernel\Event\ControllerEvent;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
 
 class ControllerListener
 {
-    /** @var ContainerInterface */
-    private $container;
     /** @var TokenStorageInterface */
     private $tokenStorage;
     /** @var LoggerInterface */
     private $logger;
 
-    public function __construct(ContainerInterface $container, TokenStorageInterface $tokenStorage, LoggerInterface $logger)
+    public function __construct(TokenStorageInterface $tokenStorage, LoggerInterface $logger)
     {
-        $this->container = $container;
         $this->tokenStorage = $tokenStorage;
         $this->logger = $logger;
     }

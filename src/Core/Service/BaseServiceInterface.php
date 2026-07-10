@@ -6,6 +6,9 @@ namespace App\Core\Service;
 
 use Doctrine\ORM\QueryBuilder;
 
+/**
+ * @method mixed wrapInTransaction(callable(\Doctrine\ORM\EntityManagerInterface): mixed $callback)
+ */
 interface BaseServiceInterface
 {
     /**
@@ -46,5 +49,5 @@ interface BaseServiceInterface
      * @return bool
      */
     public function remove($object): bool;
-}
 
+}

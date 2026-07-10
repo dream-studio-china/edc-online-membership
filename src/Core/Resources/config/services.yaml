@@ -34,9 +34,7 @@ services:
         tags:
             - { name: kernel.event_listener, event: kernel.exception, method: onKernelException }
         arguments:
-            $container: '@service_container'
             $translator: '@translator'
-            $serializer: '@serializer'
             $logger: '@logger'
             $env: '%kernel.environment%'
 
@@ -44,7 +42,6 @@ services:
         tags:
             - { name: kernel.event_listener, event: kernel.controller, method: onKernelController }
         arguments:
-            $container: '@service_container'
             $tokenStorage: '@security.token_storage'
             $logger: '@logger'
 

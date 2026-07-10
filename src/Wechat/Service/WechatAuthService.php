@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Wechat\Service;
 
 use App\Identity\Entity\User;
-use App\Identity\Repository\UserRepository;
 use App\Wechat\Entity\WechatUser;
 use App\Wechat\Repository\WechatUserRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -15,7 +14,6 @@ class WechatAuthService
     public function __construct(
         private readonly WechatService $wechatService,
         private readonly WechatUserRepository $wechatUserRepository,
-        private readonly UserRepository $userRepository,
         private readonly EntityManagerInterface $em,
     ) {}
 
@@ -30,7 +28,7 @@ class WechatAuthService
             openid: $data['openid'],
             unionid: $data['unionid'] ?? null,
             appType: WechatUser::APP_TYPE_MINIAPP,
-            sessionKey: $data['session_key'] ?? '',
+            sessionKey: $data['session_key'],
         );
     }
 
@@ -61,12 +59,12 @@ class WechatAuthService
             openid: $data['openid'],
             unionid: $data['unionid'] ?? null,
             appType: WechatUser::APP_TYPE_OFFICIAL,
-            nickname: $data['nickname'] ?? '',
-            avatar: $data['avatar'] ?? '',
-            sex: $data['sex'] ?? 0,
-            province: $data['province'] ?? '',
-            city: $data['city'] ?? '',
-            country: $data['country'] ?? '',
+            nickname: $data['nickname'],
+            avatar: $data['avatar'],
+            sex: $data['sex'],
+            province: $data['province'],
+            city: $data['city'],
+            country: $data['country'],
             rawData: $data,
         );
     }

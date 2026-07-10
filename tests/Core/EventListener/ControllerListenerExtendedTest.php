@@ -24,11 +24,7 @@ final class ControllerListenerExtendedTest extends TestCase
             $tokenStorage->method('getToken')->willReturn(null);
         }
 
-        return new ControllerListener(
-            $this->createStub(ContainerInterface::class),
-            $tokenStorage,
-            $logger ?? new NullLogger()
-        );
+        return new ControllerListener($tokenStorage, $logger ?? new NullLogger());
     }
 
     private function createControllerEvent(string $method, string $content = ''): ControllerEvent

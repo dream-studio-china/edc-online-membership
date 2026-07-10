@@ -10,8 +10,6 @@ use Doctrine\ORM\Mapping\ManyToMany;
 use Doctrine\ORM\Mapping\ManyToOne;
 use Doctrine\ORM\Mapping\OneToMany;
 use Doctrine\ORM\Mapping\OneToOne;
-use Doctrine\ORM\OptimisticLockException;
-use Doctrine\ORM\ORMException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Validator\Exception\ValidatorException;
 
@@ -35,8 +33,6 @@ trait BaseServiceMutationTrait
      * @param $object
      * @param array|null $data
      * @return bool
-     * @throws ORMException
-     * @throws OptimisticLockException
      * @throws \ReflectionException
      */
     public function update($object, ?array $data = null, bool $noFlush = false)
@@ -179,7 +175,6 @@ trait BaseServiceMutationTrait
     /**
      * @param $object
      * @return bool
-     * @throws ORMException
      */
     public function remove($object): bool
     {
@@ -203,12 +198,6 @@ trait BaseServiceMutationTrait
 
         foreach ($property->getAttributes() as $attribute) {
             $metadata[] = $attribute->newInstance();
-        }
-
-        if (class_exists('Doctrine\\Common\\Annotations\\AnnotationReader')) {
-            /** @var object $reader */
-            $reader = new \Doctrine\Common\Annotations\AnnotationReader();
-            $metadata = array_merge($metadata, $reader->getPropertyAnnotations($property));
         }
 
         return $metadata;

@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace App\Wallet\Service;
 
+use App\Wallet\Exception\InsufficientFundsException;
+use App\Wallet\Exception\SameWalletTransferException;
+use App\Wallet\Exception\WalletFrozenException;
+
 interface TransferServiceInterface
 {
     /**

@@ -23,7 +23,7 @@ trait DeleteApiViewMixin
     #[Route('/{id}', name: 'delete', requirements: ['id' => '\\d+'], methods: ['DELETE'])]
     public function deleteAction($id): Response
     {
-        $service = $this->service ?? $this->get($this->serviceClass);
+        $service = $this->service;
         $filter = $this->mixIdToCommonFilter($id);
         $filter = $this->deletionFilter($filter);
         $entity = $service->get($filter, false);

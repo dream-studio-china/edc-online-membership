@@ -11,7 +11,6 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
@@ -21,14 +20,12 @@ class OtpController
     public function __construct(
         private readonly TokenManager $tokenManager,
         private readonly UserRepository $userRepository,
-        private readonly UserPasswordHasherInterface $hasher,
         private readonly OtpService $otpService,
         private readonly EntityManagerInterface $em,
         private readonly string $otpLoginTemplate,
         private readonly string $otpVerifyPhoneTemplate,
         private readonly TranslatorInterface $translator,
-    ) {
-    }
+    ) {}
 
     #[Route('/request', methods: ['POST'])]
     public function requestOtp(Request $request): JsonResponse

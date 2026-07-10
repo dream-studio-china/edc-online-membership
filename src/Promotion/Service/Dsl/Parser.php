@@ -633,6 +633,7 @@ class Parser
         return $this->tokens[$this->pos] ?? $this->tokens[count($this->tokens) - 1];
     }
 
+    /** @phpstan-impure */
     private function advance(): Token
     {
         if ($this->isAtEnd()) {
@@ -641,6 +642,7 @@ class Parser
         return $this->tokens[$this->pos++];
     }
 
+    /** @phpstan-impure */
     private function isAtEnd(): bool
     {
         return $this->pos >= count($this->tokens) || $this->tokens[$this->pos]->type === TokenType::EOF;
@@ -686,6 +688,7 @@ class Parser
         ], true);
     }
 
+    /** @phpstan-impure */
     private function isSectionStart(): bool
     {
         $token = $this->peek();

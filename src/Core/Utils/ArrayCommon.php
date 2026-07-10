@@ -26,7 +26,7 @@ class ArrayCommon
     }
 
     /**
-     * @param mixed ...$arrays
+     * @param array ...$arrays
      * @return array
      */
     public static function merge(array ...$arrays): array

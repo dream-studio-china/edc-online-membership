@@ -51,7 +51,7 @@ trait ListApiViewMixin
     #[Route('', name: 'list', methods: ['GET'])]
     public function listAction(): Response
     {
-        $service = $this->service ?? $this->get($this->serviceClass);
+        $service = $this->service;
         $filter = $this->listFilter($this->commonFilter());
         $entities = $this->listProcessor(
             $service->list($filter, null, false)

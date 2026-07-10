@@ -3,33 +3,25 @@
 namespace App\Core\EventListener;
 
 use Psr\Log\LoggerInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\ExceptionEvent;
-use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 class ExceptionInterceptor
 {
     const EFFECTIVE_PATTERN = '/^\/(api)\/.*$/';
 
-    private ContainerInterface $container;
     private TranslatorInterface $translator;
-    private SerializerInterface $serializer;
     private LoggerInterface $logger;
     private string $env;
 
     public function __construct(
-        ContainerInterface $container,
         TranslatorInterface $translator,
-        SerializerInterface $serializer,
         LoggerInterface $logger,
         string $env
     ) {
-        $this->container = $container;
         $this->translator = $translator;
-        $this->serializer = $serializer;
         $this->logger = $logger;
         $this->env = $env;
     }
