@@ -2,7 +2,7 @@
 
 A production-oriented Symfony 8.1 API skeleton with reusable service-layer abstractions, modular architecture, JWT authentication, dynamic query engine, and pluggable business modules.
 
-> Chinese version: see `README.zh-cn.md`
+> Chinese (Simplified): [README.zh-cn.md](README.zh-cn.md) · Chinese (Traditional): [README.zh-hant.md](README.zh-hant.md) · Japanese: [README.ja.md](README.ja.md)
 
 > Documentation site: [GitHub Pages](https://immane.github.io/crud-skeleton) | Design contracts: [docs/design/](docs/design/)
 
@@ -830,6 +830,51 @@ Check serializer service wiring and request parameters like `@display`, `@expand
 3. Keep pull requests focused.
 4. Add/update tests for behavior changes.
 5. Use conventional commit messages (e.g., `feat(module): description`).
+
+## Internationalization (i18n)
+
+The project supports internationalization via Symfony's Translation component. Messages are stored as YAML files in `translations/`.
+
+### Supported Locales
+
+| Locale | File | Language |
+|--------|------|----------|
+| `en` | `translations/messages.en.yaml` | English (default) |
+| `zh` | `translations/messages.zh.yaml` | Chinese (Simplified) |
+| `zh_Hant` | `translations/messages.zh_Hant.yaml` | Chinese (Traditional) |
+| `ja` | `translations/messages.ja.yaml` | Japanese |
+
+### How It Works
+
+1. **Exception messages** — All uncaught exceptions on API routes pass through `ExceptionInterceptor`, which calls `$this->translator->trans($exception->getMessage())`. The message text is used as the translation key.
+2. **Controller error responses** — `RestController::warning()`, `AuthController::error()`, `OtpController::error()`, and `LoginController::error()` all go through the translator.
+3. **JWT authentication failures** — `JwtAuthenticator::onAuthenticationFailure()` translates the error message before returning a JSON response.
+4. **Entity field names** — The `/system/entities/{entityName}` endpoint translates field names (e.g., `createdAt` → `Created at` → Chinese `创建时间`).
+
+### Locale Detection
+
+The `LocaleListener` (`src/Core/EventListener/LocaleListener.php`) detects the language automatically:
+
+1. **Query parameter** — `?_locale=zh` takes highest priority
+2. **Accept-Language header** — Reads the browser's `Accept-Language` header and maps to supported locales:
+   - `zh-CN`, `zh-Hans` → `zh` (Simplified)
+   - `zh-TW`, `zh-HK`, `zh-Hant` → `zh_Hant` (Traditional)
+   - `ja-JP` → `ja` (Japanese)
+3. **Fallback** — Unsupported languages fall back to `en` (the configured `default_locale`).
+
+### Adding a New Language
+
+1. Create a translation file: `translations/messages.{locale}.yaml`
+2. Add the locale code to `SUPPORTED_LOCALES` and `LOCALE_MAP` in `src/Core/EventListener/LocaleListener.php`
+3. Register the file in the translation config (`config/packages/translation.yaml`) — Symfony auto-discovers files in the `translations/` directory.
+
+### Translated Documentation
+
+| Language | File |
+|----------|------|
+| Chinese (Simplified) | [README.zh-cn.md](README.zh-cn.md) |
+| Chinese (Traditional) | [README.zh-hant.md](README.zh-hant.md) |
+| Japanese | [README.ja.md](README.ja.md) |
 
 ## License
 

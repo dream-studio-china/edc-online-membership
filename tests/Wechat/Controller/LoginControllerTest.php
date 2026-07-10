@@ -13,6 +13,7 @@ use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 #[AllowMockObjectsWithoutExpectations]
 final class LoginControllerTest extends TestCase
@@ -27,11 +28,14 @@ final class LoginControllerTest extends TestCase
         $this->authService = $this->createMock(WechatAuthService::class);
         $this->tokenManager = $this->createMock(TokenManager::class);
         $this->wechatService = $this->createMock(WechatService::class);
+        $translator = $this->createMock(TranslatorInterface::class);
+        $translator->method('trans')->willReturnCallback(fn(string $msg) => $msg);
 
         $this->controller = new LoginController(
             $this->authService,
             $this->tokenManager,
             $this->wechatService,
+            $translator,
         );
     }
 

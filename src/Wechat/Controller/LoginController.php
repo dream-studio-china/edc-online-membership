@@ -15,6 +15,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\CurrentUser;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 #[Route('/api/wechat', name: 'wechat-')]
 class LoginController extends AbstractController
@@ -23,6 +24,7 @@ class LoginController extends AbstractController
         private readonly WechatAuthService $wechatAuthService,
         private readonly TokenManager $tokenManager,
         private readonly WechatService $wechatService,
+        private readonly TranslatorInterface $translator,
     ) {}
 
     #[OA\Post(
@@ -186,7 +188,7 @@ class LoginController extends AbstractController
     {
         return new JsonResponse([
             'code' => $status,
-            'message' => $message,
+            'message' => $this->translator->trans($message),
         ], $status);
     }
 }

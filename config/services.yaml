@@ -50,6 +50,10 @@ services:
         tags:
             - { name: kernel.event_listener, event: kernel.response, priority: -5 }
 
+    App\Core\EventListener\LocaleListener:
+        tags:
+            - { name: kernel.event_listener, event: kernel.request, priority: 20 }
+
     Nyholm\Psr7\Factory\Psr17Factory: ~
 
     Symfony\Bridge\PsrHttpMessage\Factory\PsrHttpFactory:

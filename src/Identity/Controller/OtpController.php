@@ -13,6 +13,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 #[Route('/api/auth/otp', name: 'sys-auth-otp-')]
 class OtpController
@@ -25,6 +26,7 @@ class OtpController
         private readonly EntityManagerInterface $em,
         private readonly string $otpLoginTemplate,
         private readonly string $otpVerifyPhoneTemplate,
+        private readonly TranslatorInterface $translator,
     ) {
     }
 
@@ -104,7 +106,7 @@ class OtpController
     {
         return new JsonResponse([
             'code' => $status,
-            'message' => $message,
+            'message' => $this->translator->trans($message),
         ], $status);
     }
 }
