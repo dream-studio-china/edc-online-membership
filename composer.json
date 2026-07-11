@@ -93,7 +93,9 @@
             "@auto-scripts"
         ],
         "phpstan": "@php vendor/bin/phpstan analyse --memory-limit=512M",
-        "phpstan-baseline": "@php vendor/bin/phpstan analyse --memory-limit=512M --generate-baseline"
+        "phpstan-baseline": "@php vendor/bin/phpstan analyse --memory-limit=512M --generate-baseline",
+        "rector": "@php vendor/bin/rector process --dry-run --no-progress-bar --memory-limit=512M",
+        "rector:fix": "@php vendor/bin/rector process --no-progress-bar --memory-limit=512M"
     },
     "conflict": {
         "symfony/symfony": "*"
@@ -110,6 +112,7 @@
         "phpstan/phpstan-symfony": "^2.0",
         "phpunit/phpunit": "^12.5.30",
         "predis/predis": "^3.5.1",
+        "rector/rector": "^2.5",
         "symfony/browser-kit": "8.1.*",
         "symfony/css-selector": "8.1.*",
         "symfony/debug-bundle": "8.1.*",
