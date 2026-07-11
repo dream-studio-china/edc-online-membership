@@ -18,9 +18,6 @@ class PageController extends RestController
         protected readonly PageServiceInterface $service
     ) {}
 
-    /**
-     * @return array<string, string>
-     */
     /** @return array<string, string> */
     protected function commonFilter(): array
     {

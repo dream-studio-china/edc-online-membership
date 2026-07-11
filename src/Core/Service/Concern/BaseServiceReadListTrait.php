@@ -7,6 +7,8 @@ use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
 use Doctrine\ORM\Query\Expr;
 use Doctrine\ORM\QueryBuilder;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\Exception\ValidatorException;
 
 /** @template TEntity of object */
@@ -14,7 +16,6 @@ trait BaseServiceReadListTrait
 {
     /**
      * @param TEntity|int|string|array<string, mixed>|QueryBuilder $object
-     * @param bool $directly
      * @return TEntity|null
      */
     public function get(mixed $object, bool $directly = false)
@@ -46,7 +47,6 @@ trait BaseServiceReadListTrait
     /**
      * @param array<string, mixed>|QueryBuilder|null $object
      * @param array<string, 'ASC'|'DESC'>|null $order
-     * @param bool $disableRequest
      * @return int|mixed|string
      * @throws \Exception
      */
@@ -84,6 +84,10 @@ trait BaseServiceReadListTrait
             }
         }
 
+        if ($request && !$disableRequest) {
+            $this->assertPrivilegedQueryParameters($request);
+        }
+
         if ($request && !$disableRequest && ($subDql = $request->query->get('@dql'))) {
             $subDql = $em->createQuery($subDql);
             $qb->andWhere((new Expr())->in("$alias.id", $subDql->getDQL()));
@@ -107,6 +111,10 @@ trait BaseServiceReadListTrait
             } catch (\Exception $exception) {
                 $this->logger->error('Filter validation exception: '. $exception->getMessage());
                 $this->logger->error('Filter source: '. $filter);
+
+                if (!$this->hasAdminRole()) {
+                    throw new AccessDeniedHttpException('@filter expressions that require in-memory evaluation are restricted to administrators.');
+                }
 
                 $filterError = true;
                 $qb = $backupQb;
@@ -147,7 +155,12 @@ trait BaseServiceReadListTrait
         };
 
         $select = null;
-        if ($request && !$disableRequest && ($select = $request->query->get('@select'))) {
+        $select = $request?->query->all()['@select'] ?? null;
+        if (!$disableRequest && $select !== null && $select !== '') {
+            if (!is_string($select)) {
+                throw new ValidatorException('@select must be a string.');
+            }
+            $this->assertSafeSelect($select);
             $joiner($select, $joins, $alias);
             $qb->select($select);
         }
@@ -245,5 +258,41 @@ trait BaseServiceReadListTrait
 
             return $entities;
         }
+    }
+
+    private function assertPrivilegedQueryParameters(\Symfony\Component\HttpFoundation\Request $request): void
+    {
+        foreach (['@dql', '@sort', '@hints'] as $parameter) {
+            if ($request->query->has($parameter) && !$this->hasAdminRole()) {
+                throw new AccessDeniedHttpException(sprintf('%s is restricted to administrators.', $parameter));
+            }
+        }
+
+        if ($request->query->has('@showDQL') && !$this->isDevelopmentEnvironment()) {
+            throw new AccessDeniedHttpException('@showDQL is only available in the dev environment.');
+        }
+    }
+
+    private function assertSafeSelect(string $select): void
+    {
+        $identityFields = 'user|profile|password|roles|email|phone|phoneVerified|refreshToken|sessionKey|rawData';
+        if (
+            str_starts_with($this->entityClass, 'App\\Identity\\')
+            || preg_match('/(?:^|[.\s,])(?:' . $identityFields . ')\b/i', $select) === 1
+        ) {
+            throw new AccessDeniedHttpException('@select cannot access identity data.');
+        }
+    }
+
+    private function hasAdminRole(): bool
+    {
+        return $this->user instanceof UserInterface
+            && in_array('ROLE_ADMIN', $this->user->getRoles(), true);
+    }
+
+    private function isDevelopmentEnvironment(): bool
+    {
+        return $this->container->hasParameter('kernel.environment')
+            && $this->container->getParameter('kernel.environment') === 'dev';
     }
 }

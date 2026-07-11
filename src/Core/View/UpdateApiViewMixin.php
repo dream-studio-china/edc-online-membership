@@ -70,7 +70,6 @@ trait UpdateApiViewMixin
     /**
      * @param array<string, mixed> $content
      * @param array<string, string>|null $transformer
-     * @param int $writeMode
      */
     private function updateSingle(object $entity, array $content, ?array $transformer = null, int $writeMode = 1 /* MODE_UPDATE */, bool $noFlush = false): mixed
     {
@@ -125,7 +124,6 @@ trait UpdateApiViewMixin
     }
 
     /**
-     * @param Request $request
      * @throws \Exception
      */
     private function updateRecords(Request $request, int|string|null $id = null): mixed

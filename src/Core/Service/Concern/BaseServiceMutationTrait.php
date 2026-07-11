@@ -31,7 +31,6 @@ trait BaseServiceMutationTrait
     }
 
     /**
-     * @param mixed $object
      * @param array<string, mixed>|null $data
      * @return object|false
      * @throws \ReflectionException
@@ -198,7 +197,6 @@ trait BaseServiceMutationTrait
 
     /**
      * @param TEntity|int|string|array<string, mixed> $object
-     * @return bool
      */
     public function remove($object): bool
     {

@@ -24,8 +24,6 @@ class ExpressionService implements ExpressionServiceInterface
 
     /**
      * Build a QueryBuilder (or Query) for a filter expression. Returns ['qb' => Query|QueryBuilder, 'parameters' => array]
-     * @param string $filter
-     * @param string $dataClass
      * @param array<string, mixed> $values
      * @param EntityManagerInterface $em
      * @return array{qb: \Doctrine\ORM\QueryBuilder|\Doctrine\ORM\Query<mixed, mixed>, parameters: array<int, \Doctrine\ORM\Query\Parameter>}

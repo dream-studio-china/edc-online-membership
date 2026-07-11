@@ -15,7 +15,6 @@ interface BaseServiceInterface
     /**
      * Find entity by id or criteria or execute a QueryBuilder to return single result.
      * @param TEntity|int|string|array<string, mixed>|QueryBuilder $object
-     * @param bool $directly
      * @return TEntity|null
      */
     public function get($object, bool $directly = false);
@@ -24,7 +23,6 @@ interface BaseServiceInterface
      * List entities or return a QueryBuilder. When $disableRequest is false, the service may consult current Request.
      * @param mixed|null $object
      * @param mixed|null $order
-     * @param bool $disableRequest
      * @return mixed  array|QueryBuilder|ArrayCollection
      */
     public function list($object = null, $order = null, bool $disableRequest = true);
@@ -47,7 +45,6 @@ interface BaseServiceInterface
     /**
      * Remove the given entity.
      * @param TEntity|int|string|array<string, mixed> $object
-     * @return bool
      */
     public function remove($object): bool;
 

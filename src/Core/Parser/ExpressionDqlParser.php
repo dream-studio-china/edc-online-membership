@@ -247,9 +247,6 @@ class ExpressionDqlParser
      * Recursively compile AST nodes to a DQL fragment (without WHERE prefix).
      * Supports a strict set of node types for safety.
      *
-     * @param Node $node
-     * @param int $depth
-     * @return string
      * @throws ValidatorException
      */
     private function recursiveCompile(Node $node, int $depth = 0): string
@@ -356,7 +353,6 @@ class ExpressionDqlParser
      * Otherwise build a SELECT/FROM/LEFT JOIN[/WHERE] string using internal state.
      *
      * @param QueryBuilder|null $qb
-     * @return string
      * @throws ValidatorException
      */
     public function getSource(?QueryBuilder $qb = null): string

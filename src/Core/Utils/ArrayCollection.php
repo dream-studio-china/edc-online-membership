@@ -12,7 +12,6 @@ class ArrayCollection {
     }
 
     /**
-     * @param string $json
      * @return \Doctrine\Common\Collections\ArrayCollection<array-key, mixed>
      */
     public static function fromJsonString(string $json): \Doctrine\Common\Collections\ArrayCollection

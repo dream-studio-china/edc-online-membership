@@ -41,7 +41,6 @@ class RsaClient
     /**
      * 通过私钥生成签名
      * @param $data
-     * @return string
      */
     public function sign(mixed $data): string
     {
@@ -89,7 +88,6 @@ class RsaClient
      * 公钥验证签名
      * @param $data
      * @param $sign
-     * @return bool
      */
     public function verifySign(mixed $data, mixed $sign) : bool
     {
@@ -113,7 +111,6 @@ class RsaClient
     /**
      * 校验$value是否非空
      * @param $value
-     * @return bool
      */
     protected function checkEmpty(mixed $value): bool
     {
