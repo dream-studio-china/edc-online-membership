@@ -115,7 +115,6 @@ class RestController extends AbstractController
 
 
     /**
-     * @param mixed $collection
      * @return array{items:mixed, paginator:array<string, int|bool>|null}
      */
     protected function pagination(mixed $collection): array
@@ -316,10 +315,6 @@ class RestController extends AbstractController
 
 
     /**
-     * @param mixed $content
-     * @param string $addition_message
-     * @param int $status
-     * @return Response
      * @throws ExceptionInterface
      */
     protected function success(
@@ -351,11 +346,6 @@ class RestController extends AbstractController
     }
 
     /**
-     * @param string $error_msg
-     * @param int $error_code
-     * @param mixed $raw_data
-     * @param int $status
-     * @return Response
      * @throws ExceptionInterface
      */
     protected function warning(

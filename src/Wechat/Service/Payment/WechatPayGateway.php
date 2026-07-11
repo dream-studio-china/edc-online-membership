@@ -190,7 +190,6 @@ final class WechatPayGateway implements PaymentGatewayInterface
     /**
      * EasyWeChat decorates Symfony's HTTP client with postJson().
      *
-     * @param object $client
      * @param array<string, mixed> $body
      */
     private function postJson(object $client, string $url, array $body): ResponseInterface

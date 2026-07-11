@@ -48,7 +48,6 @@ abstract class BaseService implements BaseServiceInterface
     protected $serviceLocator;
 
     /**
-     * @param ContainerInterface $container
      * @param class-string<TEntity> $entityClass
      * @param ServiceLocatorInterface|null $locator
      * @param ExpressionServiceInterface|null $expressionService

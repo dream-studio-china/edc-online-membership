@@ -25,8 +25,6 @@ class QueryBuilderFactory
 
     /**
      * Create a QueryBuilder with a root alias and select the alias.
-     * @param string $dataClass
-     * @param string $rootAlias
      * @return QueryBuilder|mixed
      */
     public function createRootQueryBuilder(string $dataClass, string $rootAlias = 'entity')

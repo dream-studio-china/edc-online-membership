@@ -14,7 +14,6 @@ trait BaseServiceReadListTrait
 {
     /**
      * @param TEntity|int|string|array<string, mixed>|QueryBuilder $object
-     * @param bool $directly
      * @return TEntity|null
      */
     public function get(mixed $object, bool $directly = false)
@@ -46,7 +45,6 @@ trait BaseServiceReadListTrait
     /**
      * @param array<string, mixed>|QueryBuilder|null $object
      * @param array<string, 'ASC'|'DESC'>|null $order
-     * @param bool $disableRequest
      * @return int|mixed|string
      * @throws \Exception
      */

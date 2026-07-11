@@ -27,7 +27,6 @@ class LegacyEvaluator
     /**
      * Evaluate expression in the given context. Returns the raw evaluation result.
      * Catches exceptions and logs them if logger is provided, returning false on error.
-     * @param string $expr
      * @param array<string, mixed> $context
      * @return mixed
      */
@@ -56,4 +55,3 @@ class LegacyEvaluator
         return (bool)$this->evaluate($expr, $context);
     }
 }
-
