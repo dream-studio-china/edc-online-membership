@@ -10,6 +10,8 @@ jobs:
   phpstan:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    env:
+      DATABASE_URL: "sqlite:///%kernel.project_dir%/var/phpstan.db"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -129,6 +131,8 @@ jobs:
   rector:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    env:
+      DATABASE_URL: "sqlite:///%kernel.project_dir%/var/rector.db"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
