@@ -112,6 +112,10 @@ trait BaseServiceReadListTrait
                 $this->logger->error('Filter validation exception: '. $exception->getMessage());
                 $this->logger->error('Filter source: '. $filter);
 
+                if (!$this->hasAdminRole()) {
+                    throw new AccessDeniedHttpException('@filter expressions that require in-memory evaluation are restricted to administrators.');
+                }
+
                 $filterError = true;
                 $qb = $backupQb;
             }
@@ -151,7 +155,8 @@ trait BaseServiceReadListTrait
         };
 
         $select = null;
-        if ($request && !$disableRequest && ($select = $request->query->get('@select'))) {
+        $select = $request?->query->all()['@select'] ?? null;
+        if (!$disableRequest && $select !== null && $select !== '') {
             if (!is_string($select)) {
                 throw new ValidatorException('@select must be a string.');
             }

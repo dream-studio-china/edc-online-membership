@@ -320,6 +320,23 @@ final class BaseServiceReadListTraitTest extends TestCase
         self::assertSame([$alpha], array_values($result));
     }
 
+    public function testListRejectsLegacyFilterFallbackForNonAdmins(): void
+    {
+        $repo = new ReadListFakeRepository([]);
+        $em = new ReadListFakeEntityManager($repo);
+        $container = new ReadListFakeContainer(
+            $em,
+            $this->createRequestStack(new Request(['@filter' => 'entity.setName("changed")'])),
+            $this->createUserWithRoles(['ROLE_USER']),
+        );
+        $expressionService = $this->createMock(ExpressionServiceInterface::class);
+        $expressionService->method('buildFilter')->willThrowException(new \RuntimeException('unsupported filter'));
+        $service = $this->createService($container, ReadListEntity::class, $expressionService, new LegacyEvaluator());
+
+        $this->expectException(AccessDeniedHttpException::class);
+        $service->list(null, null, false);
+    }
+
     private function createRequestStack(Request $request): RequestStack
     {
         $stack = new RequestStack();
@@ -356,6 +373,17 @@ final class BaseServiceReadListTraitTest extends TestCase
         $service->list(null, null, false);
     }
 
+    public function testListRejectsShowDqlInNamedNonDevelopmentEnvironment(): void
+    {
+        $repo = new ReadListFakeRepository([]);
+        $em = new ReadListFakeEntityManager($repo);
+        $container = new ReadListFakeContainer($em, $this->createRequestStack(new Request(['@showDQL' => '1'])), null, 'prod');
+        $service = $this->createService($container, ReadListEntity::class);
+
+        $this->expectException(AccessDeniedHttpException::class);
+        $service->list(null, null, false);
+    }
+
     public function testListRejectsIdentitySelectPaths(): void
     {
         $repo = new ReadListFakeRepository([]);
@@ -367,10 +395,38 @@ final class BaseServiceReadListTraitTest extends TestCase
         $service->list(null, null, false);
     }
 
+    public function testListRejectsSelectsForIdentityEntities(): void
+    {
+        $repo = new ReadListFakeRepository([]);
+        $em = new ReadListFakeEntityManager($repo);
+        $container = new ReadListFakeContainer($em, $this->createRequestStack(new Request(['@select' => 'entity.username'])));
+        $service = $this->createService($container, 'App\\Identity\\Entity\\User');
+
+        $this->expectException(AccessDeniedHttpException::class);
+        $service->list(null, null, false);
+    }
+
+    public function testListRejectsNonStringSelects(): void
+    {
+        $repo = new ReadListFakeRepository([]);
+        $em = new ReadListFakeEntityManager($repo);
+        $container = new ReadListFakeContainer($em, $this->createRequestStack(new Request(['@select' => ['entity.name']])));
+        $service = $this->createService($container, ReadListEntity::class);
+
+        $this->expectException(ValidatorException::class);
+        $service->list(null, null, false);
+    }
+
     private function createAdminUser(): UserInterface
     {
+        return $this->createUserWithRoles(['ROLE_ADMIN']);
+    }
+
+    /** @param list<string> $roles */
+    private function createUserWithRoles(array $roles): UserInterface
+    {
         $user = $this->createMock(UserInterface::class);
-        $user->method('getRoles')->willReturn(['ROLE_ADMIN']);
+        $user->method('getRoles')->willReturn($roles);
 
         return $user;
     }

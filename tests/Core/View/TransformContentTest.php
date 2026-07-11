@@ -9,6 +9,7 @@ use App\Core\View\ApiView;
 use Doctrine\ORM\Mapping as ORM;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\DependencyInjection\Container;
+use Symfony\Component\Validator\Exception\ValidatorException;
 
 final class TransformContentTest extends TestCase
 {
@@ -115,7 +116,135 @@ final class TransformContentTest extends TestCase
         self::assertNull($service->listCriteria);
     }
 
-    private function createController(TransformLookupService $service): object
+    public function testServiceGatewayRejectsNestedCriteriaAndInvalidListResults(): void
+    {
+        $service = new TransformLookupService();
+        $controller = $this->createController($service);
+
+        $nestedCriteriaResult = $controller->transform(
+            ['relation' => 'lookup'],
+            ['relation' => "Service.get({'name': {'nested': 'value'}}).getId()"],
+            new TransformInputEntity(),
+        );
+
+        $service->useListResult = true;
+        $service->listResult = new TransformLookupResult(22);
+        $nonIterableResult = $controller->transform(
+            ['relation' => 'lookup'],
+            ['relation' => "Service.list(':value')[0].getId()"],
+            new TransformInputEntity(),
+        );
+
+        $service->listResult = ['not-an-entity'];
+        $nonObjectResult = $controller->transform(
+            ['relation' => 'lookup'],
+            ['relation' => "Service.list(':value')[0].getId()"],
+            new TransformInputEntity(),
+        );
+
+        self::assertSame('lookup', $nestedCriteriaResult['relation']);
+        self::assertNull($service->getCriteria);
+        self::assertSame('lookup', $nonIterableResult['relation']);
+        self::assertSame('lookup', $nonObjectResult['relation']);
+    }
+
+    public function testServiceGatewayHandlesMissingServicesAndNullResults(): void
+    {
+        $controller = $this->createController(new class {});
+        $entity = new TransformInputEntity();
+
+        $missingMethodResult = $controller->transform(
+            ['relation' => 'lookup'],
+            ['relation' => "Service.get(':value').getId()"],
+            $entity,
+        );
+        $missingListMethodResult = $controller->transform(
+            ['relation' => 'lookup'],
+            ['relation' => "Service.list(':value')[0].getId()"],
+            $entity,
+        );
+        $missingServiceResult = $controller->transform(
+            ['plain' => 'value'],
+            ['plain' => "Service.get(':value').getId()"],
+            $entity,
+        );
+
+        $service = new TransformLookupService();
+        $service->returnNullFromGet = true;
+        $nullResult = $this->createController($service)->transform(
+            ['relation' => 'lookup'],
+            ['relation' => "Service.get(':value').getId()"],
+            $entity,
+        );
+
+        self::assertSame('lookup', $missingMethodResult['relation']);
+        self::assertSame('lookup', $missingListMethodResult['relation']);
+        self::assertSame('value', $missingServiceResult['plain']);
+        self::assertNull($nullResult['relation']);
+    }
+
+    public function testEntityGatewayHandlesEntitiesWithoutAnIdGetter(): void
+    {
+        $controller = $this->createController(new TransformLookupService());
+
+        $result = $controller->transform(
+            ['relation' => 'lookup'],
+            ['relation' => 'entity.getId()'],
+            new TransformInputEntityWithoutId(),
+        );
+
+        self::assertNull($result['relation']);
+    }
+
+    public function testEntityGatewayExposesItsId(): void
+    {
+        $result = $this->createController(new TransformLookupService())->transform(
+            ['relation' => 'lookup'],
+            ['relation' => 'entity.getId()'],
+            new TransformInputEntity(),
+        );
+
+        self::assertSame(7, $result['relation']);
+    }
+
+    public function testTransformSkipsMissingFieldsAndRejectsUnknownFields(): void
+    {
+        $controller = $this->createController(new TransformLookupService());
+
+        self::assertSame([], $controller->transform(
+            [],
+            ['relation' => "Service.get(':value').getId()"],
+            new TransformInputEntity(),
+        ));
+
+        $this->expectException(ValidatorException::class);
+        $controller->transform(
+            ['unknown' => 'value'],
+            ['unknown' => "Service.get(':value').getId()"],
+            new TransformInputEntity(),
+        );
+    }
+
+    public function testServiceGatewaySupportsAllAssociationMappingTypes(): void
+    {
+        $controller = $this->createController(new TransformLookupService());
+
+        foreach ([
+            new TransformOneToOneInputEntity(),
+            new TransformManyToManyInputEntity(),
+            new TransformOneToManyInputEntity(),
+        ] as $entity) {
+            $result = $controller->transform(
+                ['relation' => 'lookup'],
+                ['relation' => "Service.get(':value').getId()"],
+                $entity,
+            );
+
+            self::assertSame(11, $result['relation']);
+        }
+    }
+
+    private function createController(object $service): object
     {
         $controller = new class extends RestController {
             use ApiView;
@@ -141,6 +270,7 @@ final class TransformInputEntity
 {
     #[ORM\ManyToOne(targetEntity: TransformLookupEntity::class)]
     private ?object $relation = null;
+    private string $plain = '';
     public bool $wasMutated = false;
     public bool $userWasRead = false;
 
@@ -167,6 +297,30 @@ final class TransformInputEntity
     }
 }
 
+final class TransformInputEntityWithoutId
+{
+    #[ORM\ManyToOne(targetEntity: TransformLookupEntity::class)]
+    private ?object $relation = null;
+}
+
+final class TransformOneToOneInputEntity
+{
+    #[ORM\OneToOne(targetEntity: TransformLookupEntity::class)]
+    private ?object $relation = null;
+}
+
+final class TransformManyToManyInputEntity
+{
+    #[ORM\ManyToMany(targetEntity: TransformLookupEntity::class)]
+    private ?object $relation = null;
+}
+
+final class TransformOneToManyInputEntity
+{
+    #[ORM\OneToMany(targetEntity: TransformLookupEntity::class, mappedBy: 'relation')]
+    private ?object $relation = null;
+}
+
 final class TransformLookupEntity
 {
 }
@@ -176,20 +330,23 @@ final class TransformLookupService
     public mixed $getCriteria = null;
     public mixed $listCriteria = null;
     public bool $wasErased = false;
+    public bool $returnNullFromGet = false;
+    public bool $useListResult = false;
+    public mixed $listResult = null;
 
-    public function get(mixed $criteria): TransformLookupResult
+    public function get(mixed $criteria): ?TransformLookupResult
     {
         $this->getCriteria = $criteria;
 
-        return new TransformLookupResult(11);
+        return $this->returnNullFromGet ? null : new TransformLookupResult(11);
     }
 
     /** @return list<TransformLookupResult> */
-    public function list(mixed $criteria = null): array
+    public function list(mixed $criteria = null): mixed
     {
         $this->listCriteria = $criteria;
 
-        return [new TransformLookupResult(22)];
+        return $this->useListResult ? $this->listResult : [new TransformLookupResult(22)];
     }
 
     public function eraseEverything(): void
