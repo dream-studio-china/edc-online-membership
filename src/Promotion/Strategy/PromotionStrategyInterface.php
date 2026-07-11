@@ -14,6 +14,7 @@ interface PromotionStrategyInterface
 
     /**
      * Apply the promotion action to mutate the price calculation context.
+     * @param array<string, mixed> $config
      */
     public function apply(AstNode $action, PriceCalculationContext $context, array $config): void;
 }

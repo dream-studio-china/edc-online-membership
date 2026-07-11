@@ -6,6 +6,7 @@ namespace App\Payment\DTO;
 
 final readonly class PaymentAdjustmentResult
 {
+    /** @param array<string, mixed> $payload */
     public function __construct(
         public string $provider,
         public int $amount,

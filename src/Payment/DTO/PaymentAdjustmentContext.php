@@ -8,6 +8,7 @@ use App\Payment\Entity\Invoice;
 
 final readonly class PaymentAdjustmentContext
 {
+    /** @param array<string, mixed> $options */
     public function __construct(
         public Invoice $invoice,
         public string $payment,

@@ -12,6 +12,7 @@ class Parser
 
     /**
      * Parse tokens into an AST program.
+     * @param Token[] $tokens
      */
     public function parse(array $tokens): AstNode
     {
@@ -343,6 +344,7 @@ class Parser
         return new AstNode('action_discount', $data);
     }
 
+    /** @return array<string, float|int|bool|string> */
     private function parseOrderDiscountArgs(): array
     {
         $data = [];
@@ -397,6 +399,9 @@ class Parser
         return $data;
     }
 
+    /**
+     * @return array<string, float|int|bool>
+     */
     private function parseItemDiscountArgs(): array
     {
         $data = [];
@@ -422,6 +427,9 @@ class Parser
         return $data;
     }
 
+    /**
+     * @return array<string, float|int|string|bool>
+     */
     private function parseItemsDiscountArgs(): array
     {
         $valueToken = $this->advance();
@@ -549,6 +557,9 @@ class Parser
         return new AstNode('tier', $data);
     }
 
+    /**
+     * @return array<string, string|bool>
+     */
     private function parsePriority(): array
     {
         $this->advance(); // KEYWORD_PRIORITY
@@ -633,6 +644,7 @@ class Parser
         return $this->tokens[$this->pos] ?? $this->tokens[count($this->tokens) - 1];
     }
 
+    /** @phpstan-impure */
     private function advance(): Token
     {
         if ($this->isAtEnd()) {
@@ -641,6 +653,7 @@ class Parser
         return $this->tokens[$this->pos++];
     }
 
+    /** @phpstan-impure */
     private function isAtEnd(): bool
     {
         return $this->pos >= count($this->tokens) || $this->tokens[$this->pos]->type === TokenType::EOF;
@@ -686,6 +699,7 @@ class Parser
         ], true);
     }
 
+    /** @phpstan-impure */
     private function isSectionStart(): bool
     {
         $token = $this->peek();

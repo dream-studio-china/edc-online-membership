@@ -16,6 +16,9 @@ class FullReductionStrategy implements PromotionStrategyInterface
         return 'full_reduction';
     }
 
+    /**
+     * @param array<string, mixed> $config
+     */
     public function apply(AstNode $action, PriceCalculationContext $context, array $config): void
     {
         $value = $this->resolveValue($action->data['value'] ?? 0, $config);
@@ -23,6 +26,9 @@ class FullReductionStrategy implements PromotionStrategyInterface
         $context->totalAmount = max(0, $context->totalAmount - $amount);
     }
 
+    /**
+     * @param array<string, mixed> $config
+     */
     private function resolveValue(mixed $value, array $config): float
     {
         if (is_numeric($value)) {

@@ -21,6 +21,7 @@ services:
                 - [ setRequestStack, [ '@request_stack' ] ]
                 - [ setSerializer, [ '@serializer' ] ]
                 - [ setTranslator, [ '@translator' ] ]
+                - [ setServiceContainer, [ '@service_container' ] ]
         App\Payment\Service\PaymentGatewayInterface:
             tags: ['payment.gateway']
         App\Payment\Service\Adjustment\PaymentAdjustmentProviderInterface:

@@ -18,12 +18,20 @@ class PageController extends RestController
         protected readonly PageServiceInterface $service
     ) {}
 
-    protected function commonFilter()
+    /**
+     * @return array<string, string>
+     */
+    /** @return array<string, string> */
+    protected function commonFilter(): array
     {
         return ['status' => 'published'];
     }
 
-    protected function detailFilter($filter = null)
+    /**
+     * @param array<string, mixed>|\Doctrine\ORM\QueryBuilder|null $filter
+     * @return array<string, mixed>|\Doctrine\ORM\QueryBuilder|null
+     */
+    protected function detailFilter(array|\Doctrine\ORM\QueryBuilder|null $filter = null)
     {
         if (is_array($filter)) {
             unset($filter['status']);

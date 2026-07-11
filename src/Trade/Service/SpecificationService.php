@@ -7,6 +7,7 @@ namespace App\Trade\Service;
 use App\Core\Service\BaseService;
 use App\Trade\Entity\Specification;
 
+/** @extends BaseService<\App\Trade\Entity\Specification> */
 class SpecificationService extends BaseService implements SpecificationServiceInterface
 {
     public function __construct(

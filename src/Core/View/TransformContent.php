@@ -4,7 +4,6 @@ namespace App\Core\View;
 
 use App\Core\Utils\ArrayCommon;
 use App\Core\Utils\Math;
-use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\ORM\Mapping\ManyToMany;
 use Doctrine\ORM\Mapping\ManyToOne;
 use Doctrine\ORM\Mapping\OneToMany;
@@ -21,12 +20,11 @@ use Symfony\Component\Validator\Exception\ValidatorException;
 trait TransformContent
 {
     /**
-     * @param array $content
-     * @param array $transformer
-     * @param null $entity
-     * @return array
+     * @param array<string, mixed> $content
+     * @param array<string, string> $transformer
+     * @return array<string, mixed>
      */
-    protected function transformContent(array $content, array $transformer, $entity): array
+    protected function transformContent(array $content, array $transformer, object $entity): array
     {
         $expressionLanguage = new ExpressionLanguage();
 
@@ -39,16 +37,16 @@ trait TransformContent
                 continue;
             }
 
-            $docReader = new AnnotationReader();
-            $reflect = new \ReflectionClass(get_class($entity));
+            $reflect = new \ReflectionClass($entity);
 
             if (!$reflect->hasProperty($field)) {
-                throw new ValidatorException('Invalid content field');
+                throw new ValidatorException(ApiViewMessages::INVALID_CONTENT_FIELD);
             }
-            $annotations = $docReader->getPropertyAnnotations($reflect->getProperty($field));
+            $property = $reflect->getProperty($field);
             $service = null;
 
-            foreach ($annotations as $annotation) {
+            foreach ($property->getAttributes() as $attribute) {
+                $annotation = $attribute->newInstance();
                 if (
                     $annotation instanceof ManyToOne ||
                     $annotation instanceof OneToOne ||
@@ -58,13 +56,13 @@ trait TransformContent
                     $dataClass = $annotation->targetEntity;
 
                     // Not accuracy
-                    $serviceClass = str_replace( 'Entity', 'Service', $dataClass) . 'Service';
-                    $service = $this->get($serviceClass);
+                    $serviceClass = str_replace('Entity', 'Service', (string) $dataClass) . 'Service';
+                    $service = $this->resolveService($serviceClass);
                 }
             }
 
 
-            $expression = str_replace( ':value', $value, $expression);
+            $expression = str_replace(':value', (string) $value, $expression);
             try {
                 $content[$field] = $expressionLanguage->evaluate(
                     $expression, [

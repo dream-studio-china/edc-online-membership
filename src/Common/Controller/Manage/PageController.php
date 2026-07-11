@@ -20,8 +20,11 @@ class PageController extends RestController
     use ApiView, DetailApiViewMixin, ListApiViewMixin,
         CreateApiViewMixin, UpdateApiViewMixin, DeleteApiViewMixin;
 
+    /** @var list<string> */
     protected array $requiredCreateProperties = ['title', 'slug'];
+    /** @var list<string> */
     protected array $acceptedCreateProperties = ['title', 'slug', 'body', 'metaTitle', 'metaDescription', 'status', 'publishedAt'];
+    /** @var list<string> */
     protected array $acceptedUpdateProperties = ['title', 'slug', 'body', 'metaTitle', 'metaDescription', 'status', 'publishedAt'];
 
     public function __construct(

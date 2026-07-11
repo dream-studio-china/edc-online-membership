@@ -7,6 +7,7 @@ namespace App\Trade\Service;
 use App\Core\Service\BaseService;
 use App\Trade\Entity\OrderItem;
 
+/** @extends BaseService<\App\Trade\Entity\OrderItem> */
 class OrderItemService extends BaseService implements OrderItemServiceInterface
 {
     public function __construct(

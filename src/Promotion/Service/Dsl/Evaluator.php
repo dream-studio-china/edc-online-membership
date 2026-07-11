@@ -16,6 +16,7 @@ class Evaluator
 
     /**
      * Evaluate a condition node against the context.
+     * @param array<string, mixed> $config
      */
     public function evaluateCondition(AstNode $condition, PriceCalculationContext $context, array $config): bool
     {
@@ -32,6 +33,8 @@ class Evaluator
 
     /**
      * Execute action nodes against the context.
+     * @param AstNode[] $actions
+     * @param array<string, mixed> $config
      */
     public function executeActions(array $actions, string $promotionType, PriceCalculationContext $context, array $config): void
     {
@@ -42,6 +45,7 @@ class Evaluator
         }
     }
 
+    /** @param array<string, mixed> $config */
     private function evalSingle(AstNode $cond, PriceCalculationContext $context, array $config): bool
     {
         $left = $this->resolveOperand($cond->data['left'] ?? null, $context, $config);
@@ -80,6 +84,7 @@ class Evaluator
         return false;
     }
 
+    /** @param array<string, mixed> $config */
     private function evalAnd(AstNode $node, PriceCalculationContext $context, array $config): bool
     {
         foreach ($node->children as $child) {
@@ -90,6 +95,7 @@ class Evaluator
         return true;
     }
 
+    /** @param array<string, mixed> $config */
     private function evalOr(AstNode $node, PriceCalculationContext $context, array $config): bool
     {
         foreach ($node->children as $child) {
@@ -100,6 +106,7 @@ class Evaluator
         return false;
     }
 
+    /** @param array<string, mixed> $config */
     private function evalNot(AstNode $node, PriceCalculationContext $context, array $config): bool
     {
         foreach ($node->children as $child) {
@@ -110,6 +117,7 @@ class Evaluator
         return true;
     }
 
+    /** @param array<string, mixed> $config */
     private function resolveOperand(mixed $operand, PriceCalculationContext $context, array $config): mixed
     {
         if ($operand === null) {
@@ -128,6 +136,9 @@ class Evaluator
         return $operand;
     }
 
+    /**
+     * @param array<string, mixed> $config
+     */
     private function resolvePath(string $path, PriceCalculationContext $context, array $config): mixed
     {
         $parts = explode('.', $path);

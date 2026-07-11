@@ -16,6 +16,9 @@ class TieredStrategy implements PromotionStrategyInterface
         return 'tiered';
     }
 
+    /**
+     * @param array<string, mixed> $config
+     */
     public function apply(AstNode $action, PriceCalculationContext $context, array $config): void
     {
         $subt = $context->totalAmount;

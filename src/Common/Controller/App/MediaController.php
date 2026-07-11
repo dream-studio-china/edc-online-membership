@@ -24,6 +24,7 @@ class MediaController extends RestController
         protected readonly MediaServiceInterface $service
     ) {}
 
+    /** @return array<string, mixed> */
     protected function commonFilter(): array
     {
         return ['user' => $this->getUser()];
@@ -40,7 +41,7 @@ class MediaController extends RestController
         try {
             $media = $this->service->createFromUpload(
                 $file,
-                $request->request->get('storage'),
+                $request->request->has('storage') ? (string) $request->request->get('storage') : null,
                 $request->request->all(),
                 $this->uploadOwner(),
             );

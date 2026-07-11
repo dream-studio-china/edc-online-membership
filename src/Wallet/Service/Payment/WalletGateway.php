@@ -30,6 +30,9 @@ final class WalletGateway implements PaymentGatewayInterface
         return Invoice::PAYMENT_WALLET;
     }
 
+    /**
+     * @param array<string, mixed> $options
+     */
     public function pay(Invoice $invoice, int $amount, array $options = []): PaymentResult
     {
         $systemWalletId = (int) ($options['systemWalletId'] ?? $this->systemWalletId ?? 0);
@@ -69,6 +72,9 @@ final class WalletGateway implements PaymentGatewayInterface
         throw new PaymentVerificationException('Wallet gateway does not accept external notify callbacks.');
     }
 
+    /**
+     * @param array<string, mixed> $options
+     */
     public function refund(Invoice $invoice, int $amount, int $paidAmount, string $reason, array $options = []): PaymentRefundResult
     {
         $systemWalletId = (int) ($options['systemWalletId'] ?? $this->systemWalletId ?? 0);

@@ -6,6 +6,9 @@ use App\Common\Entity\Content;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
+/**
+ * @extends \Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository<\App\Common\Entity\Content>
+ */
 class ContentRepository extends ServiceEntityRepository implements ContentRepositoryInterface
 {
     public function __construct(ManagerRegistry $registry)

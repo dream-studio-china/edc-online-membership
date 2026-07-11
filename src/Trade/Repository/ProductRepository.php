@@ -8,6 +8,9 @@ use App\Trade\Entity\Product;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
+/**
+ * @extends \Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository<\App\Trade\Entity\Product>
+ */
 class ProductRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
@@ -20,11 +23,17 @@ class ProductRepository extends ServiceEntityRepository
         return $this->find($id);
     }
 
+    /**
+     * @return list<Product>
+     */
     public function findNotDeleted(): array
     {
         return $this->findBy(['isDeleted' => false]);
     }
 
+    /**
+     * @return list<Product>
+     */
     public function findActive(): array
     {
         return $this->findBy(['status' => Product::STATUS_ACTIVE, 'isDeleted' => false]);

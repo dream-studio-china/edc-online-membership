@@ -51,9 +51,11 @@ class PromotionTemplate
     #[ORM\Column(type: 'text')]
     private string $dsl = '';
 
+    /** @var array<string, mixed>|null */
     #[ORM\Column(type: 'json', nullable: true)]
     private ?array $fields = null;
 
+    /** @var array<string, mixed>|null */
     #[ORM\Column(type: 'json', nullable: true)]
     private ?array $astCache = null;
 
@@ -156,11 +158,13 @@ class PromotionTemplate
         return $this;
     }
 
+    /** @return array<string, mixed>|null */
     public function getFields(): ?array
     {
         return $this->fields;
     }
 
+    /** @param array<string, mixed>|null $fields */
     public function setFields(?array $fields): self
     {
         $this->fields = $fields;
@@ -168,11 +172,13 @@ class PromotionTemplate
         return $this;
     }
 
+    /** @return array<string, mixed>|null */
     public function getAstCache(): ?array
     {
         return $this->astCache;
     }
 
+    /** @param array<string, mixed>|null $astCache */
     public function setAstCache(?array $astCache): self
     {
         $this->astCache = $astCache;

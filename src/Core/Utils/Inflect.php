@@ -31,7 +31,8 @@ namespace App\Core\Utils;
 
 class Inflect
 {
-    static $plural = array(
+    /** @var array<string, string> */
+    public static array $plural = array(
         '/(quiz)$/i' => "$1zes",
         '/^(ox)$/i' => "$1en",
         '/([m|l])ouse$/i' => "$1ice",
@@ -53,7 +54,8 @@ class Inflect
         '/$/' => "s"
     );
 
-    static $singular = array(
+    /** @var array<string, string> */
+    public static array $singular = array(
         '/(quiz)zes$/i' => "$1",
         '/(matr)ices$/i' => "$1ix",
         '/(vert|ind)ices$/i' => "$1ex",
@@ -84,7 +86,8 @@ class Inflect
         '/s$/i' => ""
     );
 
-    static $irregular = array(
+    /** @var array<string, string> */
+    public static array $irregular = array(
         'move' => 'moves',
         'foot' => 'feet',
         'goose' => 'geese',
@@ -95,7 +98,8 @@ class Inflect
         'person' => 'people'
     );
 
-    static $uncountable = array(
+    /** @var array<int, string> */
+    public static array $uncountable = array(
         'sheep',
         'fish',
         'deer',
@@ -107,7 +111,7 @@ class Inflect
         'equipment'
     );
 
-    public static function pluralize($string)
+    public static function pluralize(string $string): string
     {
         // save some time in the case that singular and plural are the same
         if (in_array(strtolower($string), self::$uncountable))
@@ -119,19 +123,19 @@ class Inflect
             $pattern = '/' . $pattern . '$/i';
 
             if (preg_match($pattern, $string))
-                return preg_replace($pattern, $result, $string);
+                return preg_replace($pattern, $result, $string) ?? $string;
         }
 
         // check for matches using regular expressions
         foreach (self::$plural as $pattern => $result) {
             if (preg_match($pattern, $string))
-                return preg_replace($pattern, $result, $string);
+                return preg_replace($pattern, $result, $string) ?? $string;
         }
 
         return $string;
     }
 
-    public static function singularize($string)
+    public static function singularize(string $string): string
     {
         // save some time in the case that singular and plural are the same
         if (in_array(strtolower($string), self::$uncountable))
@@ -142,19 +146,19 @@ class Inflect
             $pattern = '/' . $pattern . '$/i';
 
             if (preg_match($pattern, $string))
-                return preg_replace($pattern, $result, $string);
+                return preg_replace($pattern, $result, $string) ?? $string;
         }
 
         // check for matches using regular expressions
         foreach (self::$singular as $pattern => $result) {
             if (preg_match($pattern, $string))
-                return preg_replace($pattern, $result, $string);
+                return preg_replace($pattern, $result, $string) ?? $string;
         }
 
         return $string;
     }
 
-    public static function pluralize_if($count, $string)
+    public static function pluralize_if(mixed $count, string $string): string
     {
         if ($count == 1)
             return "1 $string";

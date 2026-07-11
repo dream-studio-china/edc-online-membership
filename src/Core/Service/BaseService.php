@@ -7,27 +7,34 @@ use App\Core\Service\Concern\BaseServiceInfrastructureTrait;
 use App\Core\Service\Concern\BaseServiceMutationTrait;
 use App\Core\Service\Concern\BaseServiceReadListTrait;
 use Monolog\Logger;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\SerializerInterface as SymfonySerializerInterface;
 
+/**
+ * @template TEntity of object
+ * @implements BaseServiceInterface<TEntity>
+ */
 abstract class BaseService implements BaseServiceInterface
 {
     use BaseServiceInfrastructureTrait;
+    /** @use BaseServiceReadListTrait<TEntity> */
     use BaseServiceReadListTrait;
+    /** @use BaseServiceMutationTrait<TEntity> */
     use BaseServiceMutationTrait;
 
     /** @var ContainerInterface */
     protected $container;
-    /** @var \Doctrine\ORM\EntityManager|object */
+    /** @var \Doctrine\ORM\EntityManagerInterface */
     protected $em;
-    /** @var \Doctrine\Common\Persistence\ObjectRepository|\Doctrine\ORM\EntityRepository */
+    /** @var \Doctrine\Persistence\ObjectRepository<TEntity> */
     protected $rep;
-    /** @var string */
+    /** @var class-string<TEntity> */
     protected $entityClass;
-    /** @var Logger */
+    /** @var LoggerInterface */
     protected $logger;
-    /** @var UserInterface */
+    /** @var UserInterface|null */
     protected $user;
     /** @var QueryBuilderFactory|null */
     protected $qbFactory;
@@ -42,7 +49,7 @@ abstract class BaseService implements BaseServiceInterface
 
     /**
      * @param ContainerInterface $container
-     * @param string $entityClass
+     * @param class-string<TEntity> $entityClass
      * @param ServiceLocatorInterface|null $locator
      * @param ExpressionServiceInterface|null $expressionService
      * @param LegacyEvaluator|null $legacyEvaluator

@@ -14,6 +14,7 @@ use App\Trade\Service\Pricing\PriceCalculationContext;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Validator\Exception\ValidatorException;
 
+/** @extends BaseService<\App\Promotion\Entity\PromotionTemplate> */
 class PromotionTemplateService extends BaseService implements PromotionTemplateServiceInterface
 {
     public function __construct(ContainerInterface $container)
@@ -21,6 +22,9 @@ class PromotionTemplateService extends BaseService implements PromotionTemplateS
         parent::__construct($container, PromotionTemplate::class);
     }
 
+    /**
+     * @return array{ast: array<string, mixed>|null, errors: list<array{line: int, col: int, message: string}>}
+     */
     public function parseDsl(string $dsl): array
     {
         try {
@@ -31,7 +35,7 @@ class PromotionTemplateService extends BaseService implements PromotionTemplateS
             $ast = $parser->parse($tokens);
 
             return [
-                'ast' => json_decode(json_encode($ast), true),
+                'ast' => json_decode((string) json_encode($ast), true),
                 'errors' => [],
             ];
         } catch (DslSyntaxException $e) {
@@ -46,6 +50,10 @@ class PromotionTemplateService extends BaseService implements PromotionTemplateS
         }
     }
 
+    /**
+     * @param array<string, mixed> $sampleContext
+     * @return array<string, mixed>
+     */
     public function simulate(PromotionTemplate $template, array $sampleContext): array
     {
         $ast = $template->getAstCache();
@@ -101,7 +109,7 @@ class PromotionTemplateService extends BaseService implements PromotionTemplateS
         ];
     }
 
-    public function update($object, ?array $data = null, bool $noFlush = false)
+    public function update(mixed $object, ?array $data = null, bool $noFlush = false): object|false
     {
         if (is_array($data) && isset($data['dsl']) && is_string($data['dsl'])) {
             $result = $this->parseDsl($data['dsl']);
@@ -111,8 +119,8 @@ class PromotionTemplateService extends BaseService implements PromotionTemplateS
             }
 
             $program = $result['ast']['data'] ?? [];
-            $type = $data['type'] ?? $object->getType();
-            $phase = $data['phase'] ?? $object->getPhase();
+            $type = $data['type'] ?? ($object instanceof PromotionTemplate ? $object->getType() : '');
+            $phase = $data['phase'] ?? ($object instanceof PromotionTemplate ? $object->getPhase() : 0);
             if (($program['type'] ?? $type) !== $type) {
                 throw new ValidatorException('Template type must match DSL type.');
             }
@@ -126,6 +134,9 @@ class PromotionTemplateService extends BaseService implements PromotionTemplateS
         return parent::update($object, $data, $noFlush);
     }
 
+    /**
+     * @param array<string, mixed> $data
+     */
     private function astToNode(array $data): \App\Promotion\Service\Dsl\AstNode
     {
         $children = [];

@@ -9,7 +9,6 @@ use App\Core\Service\BaseService;
 use App\Core\View\ApiView;
 use App\Core\View\DetailApiViewMixin;
 use App\Core\View\ListApiViewMixin;
-use App\Payment\Service\InvoiceServiceInterface;
 use App\Trade\Entity\Order;
 use App\Trade\Service\OrderServiceInterface;
 use Symfony\Component\DependencyInjection\Attribute\Target;
@@ -30,7 +29,6 @@ class OrderController extends RestController
         protected readonly OrderServiceInterface $service,
         #[Target('state_machine.order')]
         protected readonly WorkflowInterface $workflow,
-        private readonly InvoiceServiceInterface $invoiceService,
     ) {
     }
 
@@ -280,8 +278,8 @@ class OrderController extends RestController
             $this->service->list(null, null, false)
         )->toArray();
 
-        $entities = array_filter($entities, function ($entity) {
-            return count($this->workflow->getEnabledTransitions($entity));
+        $entities = array_filter($entities, function ($entity): bool {
+            return count($this->workflow->getEnabledTransitions($entity)) > 0;
         });
 
         return $this->success(array_values($entities));

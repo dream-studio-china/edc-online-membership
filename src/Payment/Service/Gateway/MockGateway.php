@@ -20,6 +20,7 @@ final class MockGateway implements PaymentGatewayInterface
         return Invoice::PAYMENT_MOCK;
     }
 
+    /** @param array<string, mixed> $options */
     public function pay(Invoice $invoice, int $amount, array $options = []): PaymentResult
     {
         $status = !empty($options['autoPaid']) ? Invoice::STATUS_PAID : Invoice::STATUS_PAYING;
@@ -56,6 +57,7 @@ final class MockGateway implements PaymentGatewayInterface
         );
     }
 
+    /** @param array<string, mixed> $options */
     public function refund(Invoice $invoice, int $amount, int $paidAmount, string $reason, array $options = []): PaymentRefundResult
     {
         return new PaymentRefundResult(

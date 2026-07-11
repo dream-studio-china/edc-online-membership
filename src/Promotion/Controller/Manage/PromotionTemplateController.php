@@ -25,10 +25,13 @@ class PromotionTemplateController extends RestController
     use ApiView, DetailApiViewMixin, ListApiViewMixin,
         CreateApiViewMixin, UpdateApiViewMixin, DeleteApiViewMixin;
 
+    /** @var list<string> */
     protected array $requiredCreateProperties = ['name', 'type', 'dsl'];
+    /** @var list<string> */
     protected array $acceptedCreateProperties = [
         'name', 'description', 'type', 'phase', 'enabled', 'dsl', 'fields',
     ];
+    /** @var list<string> */
     protected array $acceptedUpdateProperties = [
         'name', 'description', 'type', 'phase', 'enabled', 'dsl', 'fields',
     ];

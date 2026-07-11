@@ -6,6 +6,10 @@ namespace App\Promotion\Service\Dsl;
 
 class AstNode
 {
+    /**
+     * @param array<string, mixed> $data
+     * @param AstNode[] $children
+     */
     public function __construct(
         public readonly string $type,
         public array $data = [],

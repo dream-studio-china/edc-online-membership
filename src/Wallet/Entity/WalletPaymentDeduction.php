@@ -71,6 +71,7 @@ class WalletPaymentDeduction
     #[ORM\Column(name: 'reference_id', type: 'string', length: 64, unique: true)]
     private string $referenceId;
 
+    /** @var array<string, mixed>|null */
     #[ORM\Column(type: 'json', nullable: true)]
     private ?array $metadata = null;
 
@@ -119,12 +120,16 @@ class WalletPaymentDeduction
     public function getWalletTransactionId(): ?string { return $this->walletTransactionId; }
     public function getReversalTransactionId(): ?string { return $this->reversalTransactionId; }
     public function getReferenceId(): string { return $this->referenceId; }
+    /** @return array<string, mixed>|null */
     public function getMetadata(): ?array { return $this->metadata; }
     public function getCreatedAt(): \DateTimeImmutable { return $this->createdAt; }
     public function getAppliedAt(): ?\DateTimeImmutable { return $this->appliedAt; }
     public function getReleasedAt(): ?\DateTimeImmutable { return $this->releasedAt; }
     public function getRefundedAt(): ?\DateTimeImmutable { return $this->refundedAt; }
 
+    /**
+     * @param array<string, mixed>|null $metadata
+     */
     public function markApplied(string $walletTransactionId, ?array $metadata = null): self
     {
         $this->status = self::STATUS_APPLIED;

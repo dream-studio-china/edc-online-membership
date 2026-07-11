@@ -23,6 +23,9 @@ final class WalletBalanceAdjustmentProvider implements PaymentAdjustmentProvider
         return WalletPaymentDeduction::TYPE_WALLET_BALANCE;
     }
 
+    /**
+     * @param array<string, mixed> $options
+     */
     public function supports(Invoice $invoice, string $payment, array $options): bool
     {
         return $this->deductionService->createRequestFromOptions($invoice, $options) !== null;

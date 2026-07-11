@@ -89,6 +89,7 @@ class Invoice
     #[ORM\Column(type: 'text', nullable: true)]
     private ?string $description = null;
 
+    /** @var array<string, mixed>|null */
     #[ORM\Column(name: 'extra_data', type: 'json', nullable: true)]
     private ?array $extraData = null;
 
@@ -158,7 +159,9 @@ class Invoice
     public function setSubject(?string $subject): self { $this->subject = $subject; $this->touch(); return $this; }
     public function getDescription(): ?string { return $this->description; }
     public function setDescription(?string $description): self { $this->description = $description; $this->touch(); return $this; }
+    /** @return array<string, mixed>|null */
     public function getExtraData(): ?array { return $this->extraData; }
+    /** @param array<string, mixed>|null $extraData */
     public function setExtraData(?array $extraData): self { $this->extraData = $extraData; $this->touch(); return $this; }
     public function getCreatedAt(): \DateTimeImmutable { return $this->createdAt; }
     public function getPaidAt(): ?\DateTimeImmutable { return $this->paidAt; }
@@ -169,6 +172,7 @@ class Invoice
     public function setRefundedAt(?\DateTimeImmutable $refundedAt): self { $this->refundedAt = $refundedAt; $this->touch(); return $this; }
     public function getUpdatedAt(): ?\DateTimeImmutable { return $this->updatedAt; }
 
+    /** @param array<string, mixed> $data */
     public function appendExtraData(string $key, array $data): self
     {
         $extraData = $this->extraData ?? [];

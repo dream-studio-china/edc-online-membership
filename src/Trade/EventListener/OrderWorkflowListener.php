@@ -45,11 +45,16 @@ class OrderWorkflowListener implements EventSubscriberInterface
         ];
     }
 
+    /**
+     * @param TransitionEvent<object> $event
+     */
     public function onTransition(TransitionEvent $event): void
     {
-        /** @var Order $order */
         $order = $event->getSubject();
-        $transitionName = $event->getTransition()->getName();
+        \assert($order instanceof Order);
+        $transition = $event->getTransition();
+        \assert($transition !== null);
+        $transitionName = $transition->getName();
 
         $this->logger->info(sprintf(
             'Order #%d transition: %s',

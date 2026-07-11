@@ -14,6 +14,7 @@ use App\Trade\Service\Pricing\PriceCalculationContext;
 use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
+/** @extends BaseService<\App\Promotion\Entity\Promotion> */
 class PromotionService extends BaseService implements PromotionServiceInterface
 {
     /** @param iterable<PromotionStrategyInterface> $strategies */
@@ -25,6 +26,10 @@ class PromotionService extends BaseService implements PromotionServiceInterface
         parent::__construct($container, Promotion::class);
     }
 
+    /**
+     * @param list<int> $excludedIds
+     * @return Promotion[]
+     */
     public function getAvailable(
         PriceCalculationContext $context,
         ?int $phase = null,
@@ -74,6 +79,9 @@ class PromotionService extends BaseService implements PromotionServiceInterface
         return $sorted;
     }
 
+    /**
+     * @param list<int> $excludedIds
+     */
     public function getFirstAvailable(
         PriceCalculationContext $context,
         ?int $phase = null,
@@ -108,6 +116,7 @@ class PromotionService extends BaseService implements PromotionServiceInterface
         }
     }
 
+    /** @param array<string, mixed> $config */
     private function evaluateDslConditions(
         PromotionTemplate $template,
         Evaluator $evaluator,
@@ -134,6 +143,10 @@ class PromotionService extends BaseService implements PromotionServiceInterface
         return true;
     }
 
+    /**
+     * @param array<string, mixed> $ast
+     * @return array<string, mixed>|null
+     */
     private function findWhenNode(array $ast): ?array
     {
         foreach ($ast['children'] ?? [] as $child) {
@@ -144,6 +157,10 @@ class PromotionService extends BaseService implements PromotionServiceInterface
         return null;
     }
 
+    /**
+     * @param array<string, mixed> $ast
+     * @return \App\Promotion\Service\Dsl\AstNode[]
+     */
     private function findDoActions(array $ast): array
     {
         $actions = [];
@@ -157,6 +174,9 @@ class PromotionService extends BaseService implements PromotionServiceInterface
         return $actions;
     }
 
+    /**
+     * @param array<string, mixed> $data
+     */
     private function arrayToAstNode(array $data): \App\Promotion\Service\Dsl\AstNode
     {
         $children = [];

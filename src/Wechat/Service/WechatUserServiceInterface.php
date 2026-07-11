@@ -6,6 +6,7 @@ namespace App\Wechat\Service;
 
 use App\Core\Service\BaseServiceInterface;
 
+/** @extends BaseServiceInterface<\App\Wechat\Entity\WechatUser> */
 interface WechatUserServiceInterface extends BaseServiceInterface
 {
 }

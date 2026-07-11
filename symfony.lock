@@ -56,6 +56,9 @@
             "config/packages/nyholm_psr7.yaml"
         ]
     },
+    "phpstan/phpstan": {
+        "version": "2.2.5"
+    },
     "phpunit/phpunit": {
         "version": "12.5",
         "recipe": {

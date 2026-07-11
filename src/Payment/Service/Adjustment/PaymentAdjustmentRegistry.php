@@ -22,7 +22,10 @@ final class PaymentAdjustmentRegistry
         }
     }
 
-    /** @return PaymentAdjustmentProviderInterface[] */
+    /**
+     * @param array<string, mixed> $options
+     * @return PaymentAdjustmentProviderInterface[]
+     */
     public function applicable(Invoice $invoice, string $payment, array $options): array
     {
         return array_values(array_filter(
@@ -31,7 +34,10 @@ final class PaymentAdjustmentRegistry
         ));
     }
 
-    /** @return PaymentAdjustmentResult[] */
+    /**
+     * @param array<string, mixed> $options
+     * @return PaymentAdjustmentResult[]
+     */
     public function apply(Invoice $invoice, string $payment, array $options): array
     {
         $context = new PaymentAdjustmentContext($invoice, $payment, $invoice->getAmount(), $invoice->getCurrency(), $options);

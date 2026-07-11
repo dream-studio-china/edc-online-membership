@@ -36,11 +36,7 @@ final class ControllerListenerTest extends TestCase
             }
         };
 
-        $listener = new ControllerListener(
-            $this->createStub(ContainerInterface::class),
-            $tokenStorage,
-            $logger
-        );
+        $listener = new ControllerListener($tokenStorage, $logger);
 
         $kernel = $this->createStub(HttpKernelInterface::class);
 

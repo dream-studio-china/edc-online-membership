@@ -15,12 +15,13 @@ trait SingleCreateAndUpdateApiViewMixin
     // protected array $acceptedCreateProperties = [];
     // protected array $requiredUpdateProperties = [];
     // protected array $acceptedUpdateProperties = [];
-
+    /** @return array<string, mixed> */
     protected function defaultCreateValues(): array
     {
         return [];
     }
 
+    /** @return array<string, mixed> */
     protected function defaultUpdateValues(): array
     {
         return [];
@@ -37,7 +38,7 @@ trait SingleCreateAndUpdateApiViewMixin
     public function updateAction(Request $request): Response
     {
         try {
-            $service = $this->service ?? $this->get($this->serviceClass);
+            $service = $this->service;
             $content = json_decode($request->getContent(), true) ?: [];
 
             $filter = $this->commonFilter();
@@ -64,6 +65,10 @@ trait SingleCreateAndUpdateApiViewMixin
         }
     }
 
+    /**
+     * @param array<string, mixed> $content
+     * @return array<string, mixed>
+     */
     private function filterCreateProperties(array $content): array
     {
         return $this->filterProperties(
@@ -73,6 +78,10 @@ trait SingleCreateAndUpdateApiViewMixin
         );
     }
 
+    /**
+     * @param array<string, mixed> $content
+     * @return array<string, mixed>
+     */
     private function filterUpdateProperties(array $content): array
     {
         return $this->filterProperties(
@@ -82,6 +91,10 @@ trait SingleCreateAndUpdateApiViewMixin
         );
     }
 
+    /**
+     * @param array<string, mixed> $content
+     * @return array<string, mixed>
+     */
     private function filterProperties(array $content, string $requiredProp, string $acceptedProp): array
     {
         $hasRequired = property_exists($this, $requiredProp) && $this->{$requiredProp};
@@ -96,7 +109,7 @@ trait SingleCreateAndUpdateApiViewMixin
         if ($hasRequired) {
             foreach ($this->{$requiredProp} as $property) {
                 if (!array_key_exists($property, $content)) {
-                    throw new ValidatorException(ucfirst($property) . ' is required');
+                    throw new ValidatorException(ApiViewMessages::propertyRequired($property));
                 }
                 $data[$property] = $content[$property];
             }

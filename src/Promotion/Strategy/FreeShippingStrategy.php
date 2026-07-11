@@ -16,6 +16,9 @@ class FreeShippingStrategy implements PromotionStrategyInterface
         return 'free_shipping';
     }
 
+    /**
+     * @param array<string, mixed> $config
+     */
     public function apply(AstNode $action, PriceCalculationContext $context, array $config): void
     {
         $context->meta['freeShipping'] = true;

@@ -57,6 +57,7 @@ class WechatUser
     #[ORM\Column(name: 'app_type', type: 'string', length: 20)]
     private string $appType;
 
+    /** @var array<string, mixed>|null */
     #[ORM\Column(name: 'raw_data', type: 'json', nullable: true)]
     private ?array $rawData = null;
 
@@ -125,8 +126,10 @@ class WechatUser
 
     public function getAppType(): string { return $this->appType; }
 
+    /** @return array<string, mixed>|null */
     public function getRawData(): ?array { return $this->rawData; }
 
+    /** @param array<string, mixed>|null $rawData */
     public function setRawData(?array $rawData): self { $this->rawData = $rawData; $this->touch(); return $this; }
 
     public function getLastLoginAt(): \DateTimeImmutable { return $this->lastLoginAt; }
@@ -150,6 +153,9 @@ class WechatUser
         }
     }
 
+    /**
+     * @return array<string, int|string|null>
+     */
     public function __metadata(): array
     {
         return [

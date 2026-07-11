@@ -9,6 +9,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\ORM\Tools\Pagination\Paginator as DoctrinePaginator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\ExpressionLanguage\ExpressionLanguage;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -25,6 +26,7 @@ class RestController extends AbstractController
     private ?RequestStack $requestStack = null;
     private ?SerializerInterface $serializer = null;
     private ?TranslatorInterface $translator = null;
+    private ?ContainerInterface $serviceContainer = null;
 
     /**
      * Constructor accepts optional dependencies so subclasses can call parent::__construct()
@@ -41,12 +43,6 @@ class RestController extends AbstractController
         $this->serializer = $serializer;
         $this->translator = $translator;
     }
-    /** @noinspection PhpPossiblePolymorphicInvocationInspection */
-    public function getService(): object
-    {
-        return $this->service;
-    }
-
     #[Required]
     public function setRequestStack(RequestStack $requestStack): void
     {
@@ -65,6 +61,32 @@ class RestController extends AbstractController
         $this->translator = $translator;
     }
 
+    #[Required]
+    public function setServiceContainer(ContainerInterface $serviceContainer): void
+    {
+        $this->serviceContainer = $serviceContainer;
+    }
+
+    protected function resolveService(string $id): object
+    {
+        if ($this->serviceContainer === null || !$this->serviceContainer->has($id)) {
+            throw new \RuntimeException(sprintf('Service "%s" is not available.', $id));
+        }
+
+        return $this->serviceContainer->get($id);
+    }
+
+    public function getService(): object
+    {
+        $properties = get_object_vars($this);
+        $service = $properties['service'] ?? null;
+        if (!is_object($service)) {
+            throw new \RuntimeException('Controller service is not available.');
+        }
+
+        return $service;
+    }
+
     protected function getRequestStack(): RequestStack
     {
         if ($this->requestStack instanceof RequestStack) {
@@ -73,7 +95,7 @@ class RestController extends AbstractController
         throw new \RuntimeException('RequestStack is not available in RestController');
     }
 
-    protected function getSerializer()
+    protected function getSerializer(): SerializerInterface
     {
         if ($this->serializer instanceof SerializerInterface) {
             return $this->serializer;
@@ -82,7 +104,7 @@ class RestController extends AbstractController
         throw new \RuntimeException('Serializer is not available in RestController');
     }
 
-    protected function getTranslator()
+    protected function getTranslator(): TranslatorInterface
     {
         if ($this->translator instanceof TranslatorInterface) {
             return $this->translator;
@@ -94,9 +116,9 @@ class RestController extends AbstractController
 
     /**
      * @param mixed $collection
-     * @return array{items:mixed,paginator:?array}
+     * @return array{items:mixed, paginator:array<string, int|bool>|null}
      */
-    protected function pagination($collection)
+    protected function pagination(mixed $collection): array
     {
         // get current request
         $request = $this->getRequestStack()->getCurrentRequest();
@@ -144,11 +166,14 @@ class RestController extends AbstractController
     }
 
     /**
-     * @param $entity
-     * @param array $attributeSets
+     * @param object $entity
+     * @param mixed[] $attributeSets
      */
-    private function expandObjects($entity, array $attributeSets)
+    private function expandObjects(mixed $entity, array $attributeSets): void
     {
+        if (!is_object($entity)) {
+            return;
+        }
         foreach ($attributeSets as $attributeSet) {
             $attributeChain = explode('.', $attributeSet);
 
@@ -160,11 +185,10 @@ class RestController extends AbstractController
     }
 
     /**
-     * @param $entity
-     * @param array $attributeChain
-     * @param int $level
+     * @param object $entity
+     * @param list<string> $attributeChain
      */
-    private function expandObjectToMetadata(&$entity, array $attributeChain, int $level = -1)
+    private function expandObjectToMetadata(mixed &$entity, array $attributeChain, int $level = -1): void
     {
         if (empty($entity) || 0 === count($attributeChain) || 0 === $level) return;
 
@@ -186,18 +210,14 @@ class RestController extends AbstractController
         }
     }
 
-    /**
-     * @param $collection
-     * @return array|array[]|ArrayCollection|mixed
-     */
-    private function requestProcess($collection)
+    private function requestProcess(mixed $collection): mixed
     {
         $request = $this->getRequestStack()->getCurrentRequest();
 
         // Expend Object
+        $rawExpand = $request?->query?->get('@expands', '[]') ?? '[]';
         $expands = json_decode(
-            str_replace('\'', '"',
-                $request->query->get('@expands', '[]')), true);
+            str_replace('\'', '"', (string) $rawExpand), true);
         try {
             if (is_array($expands)) {
                 if ($collection && (
@@ -220,11 +240,13 @@ class RestController extends AbstractController
                 is_array($collection)
                 || $collection instanceof ArrayCollection)
         ) {
-            $display = $request->query->get('@display', 'complex');
-            $displayRequest = FixJSON::fixJSON($display);
-            $display = json_decode($displayRequest) ?? $display;
+            $rawDisplay = $request?->query?->get('@display', 'complex') ?? 'complex';
+            $displayRequest = is_string($rawDisplay) ? FixJSON::fixJSON($rawDisplay) : '';
+            $decoded = is_string($displayRequest) ? json_decode($displayRequest) : null;
+            $display = $decoded ?? $displayRequest;
 
             if (is_array($display)) {
+                $items = $collection instanceof ArrayCollection ? $collection->toArray() : $collection;
                 return array_map(function ($entity) use ($display) {
                     $result = [];
                     foreach ($display as $part) {
@@ -249,14 +271,15 @@ class RestController extends AbstractController
                     }
 
                     return $result;
-                }, $collection);
-            } elseif (is_object($display)) {
-                $display = json_decode($displayRequest, true) ?? $display;
-                $result = [];
+                }, $items);
+            }
 
+            if ($display instanceof \stdClass) {
+                $displayArray = get_object_vars($display);
+                $result = [];
                 foreach ($collection as $item) {
                     $set = [];
-                    foreach ($display as $key => $value) {
+                    foreach ($displayArray as $key => $value) {
                         try {
                             $expressionLanguage = new ExpressionLanguage();
                             $set[$key] = $expressionLanguage->evaluate(
@@ -273,18 +296,19 @@ class RestController extends AbstractController
                 }
 
                 return $result;
-            } else {
-                if ($display === 'reduce') {
-                    return array_map(function ($entity) {
-                        return [
-                            'id' => $entity->getId(),
-                            '__toString' => $entity->__toString(),
-                        ];
-                    }, $collection);
-                } else {
-                    return $collection;
-                }
             }
+
+            if ($display === 'reduce') {
+                $items = $collection instanceof ArrayCollection ? $collection->toArray() : $collection;
+                return array_map(function ($entity) {
+                    return [
+                        'id' => $entity->getId(),
+                        '__toString' => $entity->__toString(),
+                    ];
+                }, $items);
+            }
+
+            return $collection;
         }
 
         return $collection;

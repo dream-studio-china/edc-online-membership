@@ -22,8 +22,11 @@ class ProductController extends RestController
     use ApiView, DetailApiViewMixin, ListApiViewMixin,
         CreateApiViewMixin, UpdateApiViewMixin, DeleteApiViewMixin;
 
+    /** @var list<string> */
     protected array $requiredCreateProperties = ['name'];
+    /** @var list<string> */
     protected array $acceptedCreateProperties = ['name', 'description', 'status', 'metadata'];
+    /** @var list<string> */
     protected array $acceptedUpdateProperties = ['name', 'description', 'status', 'metadata'];
 
     public function __construct(

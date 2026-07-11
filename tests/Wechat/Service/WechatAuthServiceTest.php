@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Tests\Wechat\Service;
 
 use App\Identity\Entity\User;
-use App\Identity\Repository\UserRepository;
 use App\Wechat\Entity\WechatUser;
 use App\Wechat\Repository\WechatUserRepository;
 use App\Wechat\Service\WechatAuthService;
@@ -19,7 +18,6 @@ final class WechatAuthServiceTest extends TestCase
 {
     private WechatService $wechatService;
     private WechatUserRepository $wechatUserRepo;
-    private UserRepository $userRepo;
     private EntityManagerInterface $em;
     private WechatAuthService $authService;
 
@@ -27,13 +25,11 @@ final class WechatAuthServiceTest extends TestCase
     {
         $this->wechatService = $this->createMock(WechatService::class);
         $this->wechatUserRepo = $this->createMock(WechatUserRepository::class);
-        $this->userRepo = $this->createMock(UserRepository::class);
         $this->em = $this->createMock(EntityManagerInterface::class);
 
         $this->authService = new WechatAuthService(
             $this->wechatService,
             $this->wechatUserRepo,
-            $this->userRepo,
             $this->em,
         );
     }

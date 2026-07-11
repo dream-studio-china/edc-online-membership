@@ -28,7 +28,7 @@ class BasePriceCalculator implements PriceCalculatorInterface
             $specificationId = $inputItem['specificationId'];
             $quantity = $inputItem['quantity'] ?? 1;
 
-            /** @var Specification $specification */
+            /** @var Specification|null $specification */
             $specification = $this->specificationService->get(['id' => $specificationId]);
 
             if ($specification === null || $specification->getIsDeleted()) {

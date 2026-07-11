@@ -24,6 +24,9 @@ class WalletPaymentDeductionService
         private readonly ?int $systemWalletId = null,
     ) {}
 
+    /**
+     * @param array<string, mixed> $options
+     */
     public function createRequestFromOptions(Invoice $invoice, array $options): ?WalletPaymentDeductionRequest
     {
         if (isset($options['walletAmount'])) {
@@ -53,6 +56,9 @@ class WalletPaymentDeductionService
         );
     }
 
+    /**
+     * @param array<string, mixed> $options
+     */
     public function applyFromOptions(Invoice $invoice, array $options): ?WalletPaymentDeduction
     {
         $request = $this->createRequestFromOptions($invoice, $options);
@@ -63,6 +69,9 @@ class WalletPaymentDeductionService
         return $this->apply($invoice, $request->amount, $request->currency, $request->options, $request->type);
     }
 
+    /**
+     * @param array<string, mixed> $options
+     */
     public function apply(Invoice $invoice, int $amount, string $currency, array $options = [], string $type = WalletPaymentDeduction::TYPE_WALLET_BALANCE): WalletPaymentDeduction
     {
         $this->validate($invoice, $amount, $currency, $type);
@@ -175,9 +184,12 @@ class WalletPaymentDeductionService
 
     private function reverse(WalletPaymentDeduction $deduction, string $referenceId, string $reason, bool $refund): WalletPaymentDeduction
     {
+        $walletId = $deduction->getWallet()->getId();
+        \assert($walletId !== null);
+
         $result = $this->transferService->transfer(
             $deduction->getSystemWalletId(),
-            $deduction->getWallet()->getId(),
+            $walletId,
             $deduction->getAmount(),
             $referenceId,
             $reason,

@@ -9,14 +9,15 @@ use Doctrine\ORM\Query\Expr;
 use Doctrine\ORM\QueryBuilder;
 use Symfony\Component\Validator\Exception\ValidatorException;
 
+/** @template TEntity of object */
 trait BaseServiceReadListTrait
 {
     /**
-     * @param $object
-     * @param bool $disableRequest
-     * @return null|object
+     * @param TEntity|int|string|array<string, mixed>|QueryBuilder $object
+     * @param bool $directly
+     * @return TEntity|null
      */
-    public function get($object, bool $directly = false)
+    public function get(mixed $object, bool $directly = false)
     {
         if ($object === null) {
             return null;
@@ -43,17 +44,17 @@ trait BaseServiceReadListTrait
     }
 
     /**
-     * @param null $object
-     * @param null $order
+     * @param array<string, mixed>|QueryBuilder|null $object
+     * @param array<string, 'ASC'|'DESC'>|null $order
      * @param bool $disableRequest
      * @return int|mixed|string
      * @throws \Exception
      */
     public function list(
-        $object = null,
-        $order = null,
+        mixed $object = null,
+        mixed $order = null,
         bool $disableRequest = true
-    ) {
+    ): mixed {
         $em = $this->getEntityManager();
         $request = $this->getCurrentRequest();
 
@@ -115,14 +116,17 @@ trait BaseServiceReadListTrait
         $object = $qb;
 
         $joins = [];
-        $joiner = function(string &$expression, array &$joins, string $rootAlias) {
+        $joiner = function(?string &$expression, array &$joins, string $rootAlias): void {
+            if (!is_string($expression)) {
+                return;
+            }
             $expressionAlias = 'entity';
             $aliasPattern = "/$expressionAlias((\.\w+)+)/";
             $aliasReplacement = "$rootAlias$1";
             $expression = preg_replace($aliasPattern, $aliasReplacement, $expression);
 
             $joinPattern = '/(\w+\s*\.\s*)+\w+/';
-            if(preg_match_all($joinPattern, $expression, $matches)) {
+            if(preg_match_all($joinPattern, $expression, $matches)) { // @phpstan-ignore argument.type
                 foreach ($matches[0] as $item) {
                     $itemParts = explode('.', $item);
                     $joinKey = '';
@@ -139,7 +143,7 @@ trait BaseServiceReadListTrait
                 }
             }
 
-            $expression = preg_replace('/\.(\w+)(?=\.)/', '_$1', $expression);
+            $expression = preg_replace('/\.(\w+)(?=\.)/', '_$1', $expression); // @phpstan-ignore argument.type
         };
 
         $select = null;
@@ -230,9 +234,9 @@ trait BaseServiceReadListTrait
                         $entities,
                         function ($x, $y) use ($sorter) {
                             try {
-                                return $this->getLegacyEvaluator()->evaluateBool($sorter, array_merge(['x' => $x, 'y' => $y], $this->externalExpressionValues()));
+                                return $this->getLegacyEvaluator()->evaluateBool($sorter, array_merge(['x' => $x, 'y' => $y], $this->externalExpressionValues())) ? 1 : -1;
                             } catch (\Exception $e) {
-                                return false;
+                                return 0;
                             }
                         }
                     );

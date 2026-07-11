@@ -20,8 +20,11 @@ class MediaController extends AppMediaController
     use DetailApiViewMixin, ListApiViewMixin,
         CreateApiViewMixin, UpdateApiViewMixin, DeleteApiViewMixin;
 
+    /** @var list<string> */
     protected array $requiredCreateProperties = ['filename', 'originalFilename', 'mimeType', 'size', 'path'];
+    /** @var list<string> */
     protected array $acceptedCreateProperties = ['filename', 'originalFilename', 'mimeType', 'size', 'path', 'storage', 'user', 'category', 'alt', 'title', 'width', 'height'];
+    /** @var list<string> */
     protected array $acceptedUpdateProperties = ['filename', 'originalFilename', 'mimeType', 'size', 'path', 'storage', 'user', 'category', 'alt', 'title', 'width', 'height'];
 
     public function __construct(
@@ -30,6 +33,7 @@ class MediaController extends AppMediaController
         parent::__construct($service);
     }
 
+    /** @return array<string, mixed> */
     protected function commonFilter(): array
     {
         return [];

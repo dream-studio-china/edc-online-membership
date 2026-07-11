@@ -49,6 +49,7 @@ class Order
     #[ORM\Column(type: 'text', nullable: true)]
     private ?string $notes = null;
 
+    /** @var array<string, mixed>|null */
     #[ORM\Column(type: 'json', nullable: true)]
     private ?array $metadata = null;
 
@@ -94,6 +95,9 @@ class Order
     #[ORM\Column(type: 'datetime_immutable', nullable: true)]
     private ?\DateTimeImmutable $updatedAt = null;
 
+    /**
+     * @var Collection<int, OrderItem>
+     */
     #[ORM\OneToMany(targetEntity: OrderItem::class, mappedBy: 'order', cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $items;
 
@@ -187,11 +191,17 @@ class Order
         return $this;
     }
 
+    /**
+     * @return array<string, mixed>|null
+     */
     public function getMetadata(): ?array
     {
         return $this->metadata;
     }
 
+    /**
+     * @param array<string, mixed>|null $metadata
+     */
     public function setMetadata(?array $metadata): self
     {
         $this->metadata = $metadata;
@@ -358,6 +368,9 @@ class Order
         $this->updatedAt = new \DateTimeImmutable();
     }
 
+    /**
+     * @return \Doctrine\Common\Collections\Collection<int, \App\Trade\Entity\OrderItem>
+     */
     public function getItems(): Collection
     {
         return $this->items;

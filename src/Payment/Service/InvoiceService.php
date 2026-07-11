@@ -23,6 +23,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Workflow\WorkflowInterface;
 
+/** @extends BaseService<\App\Payment\Entity\Invoice> */
 class InvoiceService extends BaseService implements InvoiceServiceInterface
 {
     public function __construct(
@@ -60,6 +61,7 @@ class InvoiceService extends BaseService implements InvoiceServiceInterface
         });
     }
 
+    /** @param array<string, mixed> $options */
     public function pay(Invoice $invoice, string $payment, array $options = []): PaymentResult
     {
         return $this->wrapInTransaction(function () use ($invoice, $payment, $options) {
@@ -229,6 +231,7 @@ class InvoiceService extends BaseService implements InvoiceServiceInterface
         });
     }
 
+    /** @param array<string, mixed> $options */
     public function refund(Invoice $invoice, int $amount, string $reason, array $options = []): PaymentRefundResult
     {
         if ($amount <= 0) {
@@ -288,11 +291,17 @@ class InvoiceService extends BaseService implements InvoiceServiceInterface
         });
     }
 
+    /** @return list<Invoice> */
     public function findBySource(string $sourceType, string $sourceId): array
     {
+        /** @var list<Invoice> */
         return $this->getRepository()->findBy(['sourceType' => $sourceType, 'sourceId' => $sourceId], ['id' => 'DESC']);
     }
 
+    /**
+     * @param array<string, mixed> $payload
+     * @return array<string, mixed>
+     */
     private function sanitizePayload(array $payload): array
     {
         foreach (['password', 'secret', 'token', 'privateKey', 'signature'] as $key) {
@@ -314,7 +323,8 @@ class InvoiceService extends BaseService implements InvoiceServiceInterface
         return $sum;
     }
 
-    /** @param PaymentAdjustmentResult[] $adjustments */
+    /** @param PaymentAdjustmentResult[] $adjustments
+     * @return mixed[][] */
     private static function serializeAdjustments(array $adjustments): array
     {
         return array_map(static fn (PaymentAdjustmentResult $adjustment): array => [

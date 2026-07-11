@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Core\EventListener;
 
+use App\Identity\Entity\User;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\HttpKernel\Event\ResponseEvent;
@@ -74,13 +75,13 @@ final class AccessLogListener
         }
 
         $user = $token->getUser();
-        if (!is_object($user) || !method_exists($user, 'getId')) {
+        if (!$user instanceof User) {
             return '(anon)';
         }
 
         $id = $user->getId();
 
-        return sprintf('@%s#%d', (string) $user, $id ?? 0);
+        return sprintf('@%s#%d', $user->__toString(), $id ?? 0);
     }
 
     private function isAuthPath(string $pathInfo): bool

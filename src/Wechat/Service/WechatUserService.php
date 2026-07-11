@@ -8,6 +8,7 @@ use App\Core\Service\BaseService;
 use App\Wechat\Entity\WechatUser;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
+/** @extends BaseService<\App\Wechat\Entity\WechatUser> */
 class WechatUserService extends BaseService implements WechatUserServiceInterface
 {
     public function __construct(ContainerInterface $container)

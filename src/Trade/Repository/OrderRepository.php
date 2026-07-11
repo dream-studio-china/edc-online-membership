@@ -8,6 +8,9 @@ use App\Trade\Entity\Order;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
+/**
+ * @extends \Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository<\App\Trade\Entity\Order>
+ */
 class OrderRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
@@ -20,6 +23,9 @@ class OrderRepository extends ServiceEntityRepository
         return $this->find($id);
     }
 
+    /**
+     * @return list<Order>
+     */
     public function findByUser(int $userId): array
     {
         return $this->findBy(['user' => $userId], ['createdAt' => 'DESC']);

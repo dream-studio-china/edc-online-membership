@@ -16,6 +16,9 @@ class DiscountStrategy implements PromotionStrategyInterface
         return 'discount';
     }
 
+    /**
+     * @param array<string, mixed> $config
+     */
     public function apply(AstNode $action, PriceCalculationContext $context, array $config): void
     {
         $rate = $this->resolveValue($action->data['rate'] ?? $action->data['value'] ?? 100, $config);
@@ -36,6 +39,9 @@ class DiscountStrategy implements PromotionStrategyInterface
         $context->totalAmount = max(0, $context->totalAmount - $discount);
     }
 
+    /**
+     * @param array<string, mixed> $config
+     */
     private function applyToMatchingItems(float $rate, PriceCalculationContext $context, array $config): void
     {
         $specificationIds = array_map('intval', $config['specification_ids'] ?? []);
@@ -54,6 +60,9 @@ class DiscountStrategy implements PromotionStrategyInterface
         unset($item);
     }
 
+    /**
+     * @param array<string, mixed> $config
+     */
     private function resolveValue(mixed $value, array $config): float
     {
         if (is_numeric($value)) {

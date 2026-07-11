@@ -20,8 +20,11 @@ class CommentController extends RestController
     use ApiView, DetailApiViewMixin, ListApiViewMixin,
         CreateApiViewMixin, UpdateApiViewMixin, DeleteApiViewMixin;
 
+    /** @var list<string> */
     protected array $requiredCreateProperties = ['body', 'entityType', 'entityId'];
+    /** @var list<string> */
     protected array $acceptedCreateProperties = ['body', 'entityType', 'entityId', 'authorName', 'authorEmail', 'author', 'parent', 'status'];
+    /** @var list<string> */
     protected array $acceptedUpdateProperties = ['body', 'authorName', 'authorEmail', 'status'];
 
     public function __construct(

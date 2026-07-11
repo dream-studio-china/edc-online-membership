@@ -13,7 +13,6 @@ use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 #[AllowMockObjectsWithoutExpectations]
@@ -21,7 +20,6 @@ final class OtpControllerTest extends TestCase
 {
     private TokenManager $tokenManager;
     private UserRepository $userRepository;
-    private UserPasswordHasherInterface $hasher;
     private OtpService $otpService;
     private EntityManagerInterface $em;
     private OtpController $controller;
@@ -30,7 +28,6 @@ final class OtpControllerTest extends TestCase
     {
         $this->tokenManager = $this->createMock(TokenManager::class);
         $this->userRepository = $this->createMock(UserRepository::class);
-        $this->hasher = $this->createMock(UserPasswordHasherInterface::class);
         $this->otpService = $this->createMock(OtpService::class);
         $this->em = $this->createMock(EntityManagerInterface::class);
         $translator = $this->createMock(TranslatorInterface::class);
@@ -39,7 +36,6 @@ final class OtpControllerTest extends TestCase
         $this->controller = new OtpController(
             $this->tokenManager,
             $this->userRepository,
-            $this->hasher,
             $this->otpService,
             $this->em,
             'TPL_LOGIN',

@@ -6,6 +6,7 @@ namespace App\Trade\Service;
 
 use App\Core\Service\BaseServiceInterface;
 
+/** @extends BaseServiceInterface<\App\Trade\Entity\Specification> */
 interface SpecificationServiceInterface extends BaseServiceInterface
 {
 }

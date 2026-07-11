@@ -5,11 +5,8 @@ namespace App\Core\Utils;
 class StringCase
 {
     /**
-     * @param $string
-     * @param bool $capitalizeFirstCharacter
-     * @return array|string|string[]|null
      */
-    public static function dashesToCamelCase($string, bool $capitalizeFirstCharacter = false): string
+    public static function dashesToCamelCase(string $string, bool $capitalizeFirstCharacter = false): string
     {
         $str = str_replace('-', '', ucwords($string, '-'));
 

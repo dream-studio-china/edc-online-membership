@@ -25,8 +25,11 @@ class UserController extends RestController
     use ApiView, DetailApiViewMixin, ListApiViewMixin,
         CreateApiViewMixin, UpdateApiViewMixin, DeleteApiViewMixin;
 
+    /** @var list<string> */
     protected array $requiredCreateProperties = ['email', 'username', 'password'];
+    /** @var list<string> */
     protected array $acceptedCreateProperties = ['email', 'username', 'password', 'phone', 'phoneVerified', 'roles'];
+    /** @var list<string> */
     protected array $acceptedUpdateProperties = ['email', 'username', 'password', 'phone', 'phoneVerified', 'roles'];
 
     public function __construct(

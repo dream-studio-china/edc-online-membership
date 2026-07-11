@@ -9,34 +9,31 @@ namespace App\Core\Utils;
 class RsaClient
 {
     // 私钥文件路径
-    public $rsaPrivateKeyFilePath;
+    public mixed $rsaPrivateKeyFilePath = null;
 
     // 私钥值
-    public $rsaPrivateKey;
+    public mixed $rsaPrivateKey = null;
 
     // 公钥文件路径
-    public $rsaPublicKeyFilePath;
+    public mixed $rsaPublicKeyFilePath = null;
 
     // 公钥值
-    public $rsaPublicKey;
+    public mixed $rsaPublicKey = null;
 
     /**
      * 生成签名
-     * @param $params
-     * @return string
+     * @param array<array-key, mixed> $params
      */
-    public function rsaSign($params)
+    public function rsaSign(array $params): string
     {
         return $this->sign($this->getSignContent($params));
     }
 
     /**
      * 验证签名
-     * @param $params
-     * @param $sign
-     * @return bool
+     * @param array<array-key, mixed> $params
      */
-    public function rsaVerifySign($params, $sign)
+    public function rsaVerifySign(array $params, mixed $sign): bool
     {
         return $this->verifySign($this->getSignContent($params), $sign);
     }
@@ -46,16 +43,18 @@ class RsaClient
      * @param $data
      * @return string
      */
-    public function sign($data) : string
+    public function sign(mixed $data): string
     {
         $res = $this->getPrivateKey();
 
         if (!$res) return "";
 
-        openssl_sign($data, $sign, $res, OPENSSL_ALGO_MD5);
+        openssl_sign((string) $data, $sign, $res, OPENSSL_ALGO_MD5);
 
         if (!$this->checkEmpty($this->rsaPrivateKeyFilePath)) {
-            openssl_free_key($res);
+            if ($res instanceof \OpenSSLAsymmetricKey) {
+                openssl_free_key($res);
+            }
         }
         $sign = base64_encode($sign);
         return $sign;
@@ -63,10 +62,9 @@ class RsaClient
 
     /**
      * 获取签名字符串
-     * @param $params
-     * @return string
+     * @param array<array-key, mixed> $params
      */
-    public  function getSignContent($params)
+    public function getSignContent(array $params): string
     {
         ksort($params);
         reset($params);
@@ -93,18 +91,20 @@ class RsaClient
      * @param $sign
      * @return bool
      */
-    public  function verifySign($data, $sign) : bool
+    public function verifySign(mixed $data, mixed $sign) : bool
     {
         $res = $this->getPublicKey();
 
         if (!$res) return false;
 
         //调用openssl内置方法验签，返回bool值
-        $result = (openssl_verify($data, base64_decode($sign), $res, OPENSSL_ALGO_MD5) === 1);
+        $result = (openssl_verify((string) $data, base64_decode((string) $sign), $res, OPENSSL_ALGO_MD5) === 1);
 
         if (!$this->checkEmpty($this->rsaPublicKeyFilePath)) {
             //释放资源
-            openssl_free_key($res);
+            if ($res instanceof \OpenSSLAsymmetricKey) {
+                openssl_free_key($res);
+            }
         }
 
         return $result;
@@ -115,22 +115,15 @@ class RsaClient
      * @param $value
      * @return bool
      */
-    protected function checkEmpty($value)
+    protected function checkEmpty(mixed $value): bool
     {
-        if (!isset($value))
-            return true;
-        if ($value === null)
-            return true;
-        if (trim($value) === "")
-            return true;
-
-        return false;
+        return $value === null || trim((string) $value) === '';
     }
 
     /**
-     * @return false|resource|string
+     * @return false|\OpenSSLAsymmetricKey|string
      */
-    public function getPrivateKey()
+    public function getPrivateKey(): \OpenSSLAsymmetricKey|string|false
     {
         if ($this->checkEmpty($this->rsaPrivateKeyFilePath)) {
             $priKey = $this->rsaPrivateKey;
@@ -143,16 +136,19 @@ class RsaClient
                     "\n-----END RSA PRIVATE KEY-----";
             }
         } else {
-            $priKey = file_get_contents($this->rsaPrivateKeyFilePath);
+            $priKey = file_get_contents((string) $this->rsaPrivateKeyFilePath);
+            if ($priKey === false) {
+                return false;
+            }
             $res = openssl_get_privatekey($priKey);
         }
         return $res;
     }
 
     /**
-     * @return false|resource|string
+     * @return false|\OpenSSLAsymmetricKey|string
      */
-    public function getPublicKey()
+    public function getPublicKey(): \OpenSSLAsymmetricKey|string|false
     {
         if ($this->checkEmpty($this->rsaPublicKeyFilePath)) {
 
@@ -168,7 +164,10 @@ class RsaClient
 
         } else {
             //读取公钥文件
-            $pubKey = file_get_contents($this->rsaPublicKeyFilePath);
+            $pubKey = file_get_contents((string) $this->rsaPublicKeyFilePath);
+            if ($pubKey === false) {
+                return false;
+            }
             //转换为openssl格式密钥
             $res = openssl_get_publickey($pubKey);
         }
@@ -177,41 +176,69 @@ class RsaClient
 
     /**
      * 返回私钥的长度 512 1024 2408
-     * @return mixed
+     * @return int|false
      */
-    public function getPrivateKenLen()
+    public function getPrivateKenLen(): int|false
     {
-        $pub_id = openssl_get_privatekey($this->getPrivateKey());
+        $key = $this->getPrivateKey();
+        if ($key === false) {
+            return false;
+        }
+        $pubId = openssl_get_privatekey($key);
+        if ($pubId === false) {
+            return false;
+        }
 
-        return openssl_pkey_get_details($pub_id)['bits'];
+        $details = openssl_pkey_get_details($pubId);
+
+        return $details === false ? false : $details['bits'];
     }
     /**
      * 返回公钥的长度 512 1024 2408
-     * @return mixed
+     * @return int|false
      */
-    public function getPublicKenLen()
+    public function getPublicKenLen(): int|false
     {
-        $pub_id = openssl_get_publickey($this->getPublicKey());
+        $key = $this->getPublicKey();
+        if ($key === false) {
+            return false;
+        }
+        $pubId = openssl_get_publickey($key);
+        if ($pubId === false) {
+            return false;
+        }
 
-        return openssl_pkey_get_details($pub_id)['bits'];
+        $details = openssl_pkey_get_details($pubId);
+
+        return $details === false ? false : $details['bits'];
     }
     /**
      * RSA私钥加密数据
      * @param $plainData
-     * @return bool|string
+     * @return string|false
      */
-    function privateEncryptRsa($plainData = '')
+    public function privateEncryptRsa(mixed $plainData = ''): string|false
     {
         if (!is_string($plainData)) {
-            return null;
+            return false;
         }
         $encrypted = '';
 
-        $partLen = $this->getPrivateKenLen()/8 - 11;
+        $keyLength = $this->getPrivateKenLen();
+        if ($keyLength === false) {
+            return false;
+        }
+        $partLen = intdiv($keyLength, 8) - 11;
+        if ($partLen < 1) {
+            return false;
+        }
 
         $plainData = str_split($plainData, $partLen);
 
         $privatePEMKey = $this->getPrivateKey();
+        if ($privatePEMKey === false) {
+            return false;
+        }
 
         foreach ($plainData as $chunk) {
             $partialEncrypted = '';
@@ -229,21 +256,31 @@ class RsaClient
     /**
      * RSA公钥加密数据
      * @param $plainData
-     * @return bool|string
+     * @return string|false
      */
-    function publicEncryptRsa($plainData = '')
+    public function publicEncryptRsa(mixed $plainData = ''): string|false
     {
         if (!is_string($plainData)) {
-            return null;
+            return false;
         }
 
         $encrypted = '';
 
-        $partLen = $this->getPublicKenLen()/8 - 11;
+        $keyLength = $this->getPublicKenLen();
+        if ($keyLength === false) {
+            return false;
+        }
+        $partLen = intdiv($keyLength, 8) - 11;
+        if ($partLen < 1) {
+            return false;
+        }
 
         $plainData = str_split($plainData, $partLen);
 
         $publicPEMKey = $this->getPublicKey();
+        if ($publicPEMKey === false) {
+            return false;
+        }
 
         foreach ($plainData as $chunk) {
             $partialEncrypted = '';
@@ -261,20 +298,30 @@ class RsaClient
     /**
      * 私钥解密数据
      * @param $data
-     * @return bool|string
+     * @return string|false
      */
-    public function privateDecryptRsa($data = '')
+    public function privateDecryptRsa(mixed $data = ''): string|false
     {
         if (!is_string($data)) {
-            return null;
+            return false;
         }
         $decrypted = '';
 
-        $partLen = $this->getPrivateKenLen() / 8;
+        $keyLength = $this->getPrivateKenLen();
+        if ($keyLength === false) {
+            return false;
+        }
+        $partLen = intdiv($keyLength, 8);
+        if ($partLen < 1) {
+            return false;
+        }
         //decode must be done before spliting for getting the binary String
         $data = str_split(base64_decode($data), $partLen);
 
         $privatePEMKey = $this->getPrivateKey();
+        if ($privatePEMKey === false) {
+            return false;
+        }
 
         foreach ($data as $chunk) {
             $partial = '';
@@ -292,21 +339,31 @@ class RsaClient
     /**
      * 公钥解密数据
      * @param $data
-     * @return bool|string
+     * @return string|false
      */
-    public function publicDecryptRsa($data = '')
+    public function publicDecryptRsa(mixed $data = ''): string|false
     {
         if (!is_string($data)) {
-            return null;
+            return false;
         }
 
         $decrypted = '';
 
-        $partLen = $this->getPublicKenLen() / 8;
+        $keyLength = $this->getPublicKenLen();
+        if ($keyLength === false) {
+            return false;
+        }
+        $partLen = intdiv($keyLength, 8);
+        if ($partLen < 1) {
+            return false;
+        }
         //decode must be done before spliting for getting the binary String
         $data = str_split(base64_decode($data), $partLen);
 
         $publicPEMKey = $this->getPublicKey();
+        if ($publicPEMKey === false) {
+            return false;
+        }
 
         foreach ($data as $chunk) {
             $partial = '';

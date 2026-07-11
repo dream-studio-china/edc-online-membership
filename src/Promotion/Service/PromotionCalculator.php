@@ -45,7 +45,7 @@ class PromotionCalculator implements PriceCalculatorInterface
             $this->promotionService->apply($promotion, $context);
 
             // Every promotion instance is applied at most once per quotation.
-            $appliedIds[] = $promotion->getId();
+            $appliedIds[] = (int) $promotion->getId();
 
             $innerApplied[] = [
                 'promotionId' => $promotion->getId(),
@@ -90,7 +90,7 @@ class PromotionCalculator implements PriceCalculatorInterface
                 'config' => $outerPromotion->getConfig(),
                 'phase' => 'outer',
             ];
-            $appliedIds[] = $outerPromotion->getId();
+            $appliedIds[] = (int) $outerPromotion->getId();
         }
 
         $bestPricePromotion = $this->applyBestPricePromotion($context, $appliedIds);
@@ -106,6 +106,9 @@ class PromotionCalculator implements PriceCalculatorInterface
         $context->meta['promotion'] = $result;
     }
 
+    /**
+     * @param list<int> $excludedIds
+     */
     private function getFirstStandardAvailable(PriceCalculationContext $context, int $phase, array $excludedIds): ?Promotion
     {
         $skippedIds = [];
@@ -117,10 +120,14 @@ class PromotionCalculator implements PriceCalculatorInterface
             if ($promotion->getConflictMode() !== Promotion::CONFLICT_BEST_PRICE) {
                 return $promotion;
             }
-            $skippedIds[] = $promotion->getId();
+            $skippedIds[] = (int) $promotion->getId();
         }
     }
 
+    /**
+     * @param list<int> $excludedIds
+     * @return array<string, mixed>|null
+     */
     private function applyBestPricePromotion(PriceCalculationContext $context, array $excludedIds): ?array
     {
         $candidates = array_merge(

@@ -4,9 +4,12 @@ namespace App\Core\Serializer\Callbacks;
 
 class ObjectCallback
 {
-    public static function handle($object)
+    /**
+     * @return mixed
+     */
+    public static function handle(object $object): mixed
     {
-        if (is_object($object) && method_exists($object, 'getId')) {
+        if (method_exists($object, 'getId')) {
             return $object->getId();
         }
 

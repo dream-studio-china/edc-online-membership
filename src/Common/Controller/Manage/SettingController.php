@@ -20,8 +20,11 @@ class SettingController extends RestController
     use ApiView, DetailApiViewMixin, ListApiViewMixin,
         CreateApiViewMixin, UpdateApiViewMixin, DeleteApiViewMixin;
 
+    /** @var list<string> */
     protected array $requiredCreateProperties = ['key'];
+    /** @var list<string> */
     protected array $acceptedCreateProperties = ['key', 'value', 'type', 'groupName', 'label', 'description', 'sortOrder'];
+    /** @var list<string> */
     protected array $acceptedUpdateProperties = ['key', 'value', 'type', 'groupName', 'label', 'description', 'sortOrder'];
 
     public function __construct(

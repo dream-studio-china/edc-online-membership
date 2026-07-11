@@ -22,8 +22,11 @@ class ProfileController extends RestController
     use ApiView, DetailApiViewMixin, ListApiViewMixin,
         CreateApiViewMixin, UpdateApiViewMixin, DeleteApiViewMixin;
 
+    /** @var list<string> */
     protected array $requiredCreateProperties = ['user', 'level'];
+    /** @var list<string> */
     protected array $acceptedCreateProperties = ['user', 'level', 'nickname', 'avatar', 'metadata', 'joinedAt'];
+    /** @var list<string> */
     protected array $acceptedUpdateProperties = ['level', 'nickname', 'avatar', 'metadata', 'joinedAt'];
 
     public function __construct(

@@ -10,6 +10,7 @@ use App\Identity\Repository\UserRepository;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
+/** @extends BaseService<\App\Identity\Entity\User> */
 class UserService extends BaseService
 {
     public function __construct(
@@ -20,9 +21,9 @@ class UserService extends BaseService
         parent::__construct($container, User::class);
     }
 
-    public function update($object, ?array $data = null, bool $noFlush = false)
+    public function update(mixed $object, ?array $data = null, bool $noFlush = false): object|false
     {
-        if (is_array($data) && isset($data['password']) && is_string($data['password']) && $data['password'] !== '') {
+        if ($object instanceof User && is_array($data) && isset($data['password']) && is_string($data['password']) && $data['password'] !== '') {
             $data['password'] = $this->passwordHasher->hashPassword($object, $data['password']);
         } elseif (is_array($data) && isset($data['password']) && $data['password'] === '') {
             unset($data['password']);
@@ -106,6 +107,9 @@ class UserService extends BaseService
         $this->em->flush();
     }
 
+    /**
+     * @param array<string, mixed> $data
+     */
     public function updateProfile(User $user, array $data): User
     {
         if (isset($data['email'])) {

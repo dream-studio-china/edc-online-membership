@@ -9,6 +9,9 @@ use App\Wallet\Entity\WalletTransaction;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
+/**
+ * @extends \Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository<\App\Wallet\Entity\WalletTransaction>
+ */
 class WalletTransactionRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)

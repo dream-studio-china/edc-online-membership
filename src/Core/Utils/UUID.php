@@ -3,7 +3,7 @@
 namespace App\Core\Utils;
 
 class UUID {
-    public static function v3($namespace, $name) {
+    public static function v3(string $namespace, string $name): string|false {
         if(!self::is_valid($namespace)) return false;
 
         // Get hexadecimal components of namespace
@@ -14,7 +14,9 @@ class UUID {
 
         // Convert Namespace UUID to bits
         for($i = 0; $i < strlen($nhex); $i+=2) {
-            $nstr .= chr(hexdec($nhex[$i].$nhex[$i+1]));
+            $codepoint = (int) hexdec($nhex[$i].$nhex[$i+1]);
+            if ($codepoint < 0 || $codepoint > 255) return false;
+            $nstr .= chr($codepoint);
         }
 
         // Calculate hash value
@@ -42,7 +44,7 @@ class UUID {
         );
     }
 
-    public static function v4() {
+    public static function v4(): string {
         return sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
 
             // 32 bits for "time_low"
@@ -65,11 +67,11 @@ class UUID {
         );
     }
 
-    public static function v4c() {
+    public static function v4c(): string {
         return str_replace('-', '', self::v4() );
     }
 
-    public static function v5($namespace, $name) {
+    public static function v5(string $namespace, string $name): string|false {
         if(!self::is_valid($namespace)) return false;
 
         // Get hexadecimal components of namespace
@@ -80,7 +82,9 @@ class UUID {
 
         // Convert Namespace UUID to bits
         for($i = 0; $i < strlen($nhex); $i+=2) {
-            $nstr .= chr(hexdec($nhex[$i].$nhex[$i+1]));
+            $codepoint = (int) hexdec($nhex[$i].$nhex[$i+1]);
+            if ($codepoint < 0 || $codepoint > 255) return false;
+            $nstr .= chr($codepoint);
         }
 
         // Calculate hash value
@@ -108,7 +112,7 @@ class UUID {
         );
     }
 
-    public static function is_valid($uuid) {
+    public static function is_valid(string $uuid): bool {
         return preg_match('/^\{?[0-9a-f]{8}\-?[0-9a-f]{4}\-?[0-9a-f]{4}\-?'.
                 '[0-9a-f]{4}\-?[0-9a-f]{12}\}?$/i', $uuid) === 1;
     }

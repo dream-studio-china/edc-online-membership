@@ -11,7 +11,7 @@ class Location {
     const GET_ADDRESS_API = 'https://apis.map.qq.com/ws/geocoder/v1/?key=%s&location=%s,%s';
     const GET_DISTANCE_API = 'https://apis.map.qq.com/ws/distance/v1/?key=%s&mode=driving&from=%s&to=%s';
 
-    public static function getLocation($address) {
+    public static function getLocation(mixed $address): mixed {
         $api_url = sprintf(self::GET_LOCATION_API, self::KEY, $address);
 
         try {
@@ -25,7 +25,7 @@ class Location {
         }
     }
 
-    public static function getAddress($latitude, $longitude)
+    public static function getAddress(mixed $latitude, mixed $longitude): mixed
     {
         $api_url = sprintf(self::GET_ADDRESS_API, self::KEY, $latitude, $longitude);
 
@@ -40,7 +40,7 @@ class Location {
         }
     }
 
-    public static function getDistance($longitude1, $latitude1, $longitude2, $latitude2) {
+    public static function getDistance(mixed $longitude1, mixed $latitude1, mixed $longitude2, mixed $latitude2): mixed {
         $from = sprintf('%lf,%lf', $latitude1, $longitude1 );
         $to = sprintf('%lf,%lf', $latitude2, $longitude2 );
 

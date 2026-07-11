@@ -27,6 +27,9 @@ class MemberDiscountStrategy implements PromotionStrategyInterface
         return 'member_discount';
     }
 
+    /**
+     * @param array<string, mixed> $config
+     */
     public function apply(AstNode $action, PriceCalculationContext $context, array $config): void
     {
         $minLevel = $config['min_level'] ?? 'bronze';

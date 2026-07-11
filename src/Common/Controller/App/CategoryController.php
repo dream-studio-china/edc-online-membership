@@ -18,12 +18,20 @@ class CategoryController extends RestController
         protected readonly CategoryServiceInterface $service
     ) {}
 
-    protected function commonFilter()
+    /**
+     * @return array<string, bool>
+     */
+    /** @return array<string, mixed> */
+    protected function commonFilter(): array
     {
         return ['enabled' => true];
     }
 
-    protected function detailFilter($filter = null)
+    /**
+     * @param array<string, mixed>|\Doctrine\ORM\QueryBuilder|null $filter
+     * @return array<string, mixed>|\Doctrine\ORM\QueryBuilder|null
+     */
+    protected function detailFilter(array|\Doctrine\ORM\QueryBuilder|null $filter = null)
     {
         if (is_array($filter)) {
             unset($filter['enabled']);
