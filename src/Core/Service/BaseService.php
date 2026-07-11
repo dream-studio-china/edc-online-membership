@@ -11,6 +11,12 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\SerializerInterface as SymfonySerializerInterface;
 
+/**
+ * @template TEntity of object
+ * @implements BaseServiceInterface<TEntity>
+ * @use BaseServiceReadListTrait<TEntity>
+ * @use BaseServiceMutationTrait<TEntity>
+ */
 abstract class BaseService implements BaseServiceInterface
 {
     use BaseServiceInfrastructureTrait;
@@ -19,11 +25,11 @@ abstract class BaseService implements BaseServiceInterface
 
     /** @var ContainerInterface */
     protected $container;
-    /** @var \Doctrine\ORM\EntityManager|object */
+    /** @var \Doctrine\ORM\EntityManagerInterface */
     protected $em;
-    /** @var \Doctrine\Persistence\ObjectRepository|\Doctrine\ORM\EntityRepository */
+    /** @var \Doctrine\Persistence\ObjectRepository<TEntity> */
     protected $rep;
-    /** @var string */
+    /** @var class-string<TEntity> */
     protected $entityClass;
     /** @var Logger */
     protected $logger;
@@ -42,7 +48,7 @@ abstract class BaseService implements BaseServiceInterface
 
     /**
      * @param ContainerInterface $container
-     * @param string $entityClass
+     * @param class-string<TEntity> $entityClass
      * @param ServiceLocatorInterface|null $locator
      * @param ExpressionServiceInterface|null $expressionService
      * @param LegacyEvaluator|null $legacyEvaluator

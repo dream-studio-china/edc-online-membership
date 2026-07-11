@@ -8,19 +8,23 @@ use Symfony\Component\Routing\Attribute\Route;
 
 trait DetailApiViewMixin
 {
-    protected function detailFilter($filter = null)
+    /**
+     * @param array<string, mixed>|\Doctrine\ORM\QueryBuilder|null $filter
+     * @return array<string, mixed>|\Doctrine\ORM\QueryBuilder|null
+     */
+    protected function detailFilter(array|\Doctrine\ORM\QueryBuilder|null $filter = null): array|\Doctrine\ORM\QueryBuilder|null
     {
         /** list filter for list entities */
         return $filter;
     }
 
-    protected function detailProcessor($entity)
+    protected function detailProcessor(?object $entity): ?object
     {
         /** detail processor */
         return $entity;
     }
 
-    protected function detailResponse($entity)
+    protected function detailResponse(?object $entity): mixed
     {
         /** detail response */
         return $entity;
@@ -36,7 +40,7 @@ trait DetailApiViewMixin
         ]
     )]
     #[Route('/{id}', name: 'detail', requirements: ['id' => '\\d+'], methods: ['GET'])]
-    public function detailAction($id): Response
+    public function detailAction(int|string $id): Response
     {
         $service = $this->service;
         $filter = $this->mixIdToCommonFilter($id);

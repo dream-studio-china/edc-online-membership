@@ -23,6 +23,9 @@ class FullReductionStrategy implements PromotionStrategyInterface
         $context->totalAmount = max(0, $context->totalAmount - $amount);
     }
 
+    /**
+     * @param array<string, mixed> $config
+     */
     private function resolveValue(mixed $value, array $config): float
     {
         if (is_numeric($value)) {

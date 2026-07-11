@@ -8,6 +8,7 @@ use App\Payment\Entity\Invoice;
 
 final readonly class PaymentResult
 {
+    /** @param array<string, mixed>|null $payload */
     public function __construct(
         public Invoice $invoice,
         public string $status,

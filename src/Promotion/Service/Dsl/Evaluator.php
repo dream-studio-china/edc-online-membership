@@ -128,6 +128,9 @@ class Evaluator
         return $operand;
     }
 
+    /**
+     * @param array<string, mixed> $config
+     */
     private function resolvePath(string $path, PriceCalculationContext $context, array $config): mixed
     {
         $parts = explode('.', $path);

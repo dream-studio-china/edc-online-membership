@@ -8,6 +8,7 @@ use App\Payment\Entity\Invoice;
 
 final readonly class PaymentRefundResult
 {
+    /** @param array<string, mixed> $rawData */
     public function __construct(
         public Invoice $invoice,
         public int $amount,

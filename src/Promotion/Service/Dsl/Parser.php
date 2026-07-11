@@ -397,6 +397,9 @@ class Parser
         return $data;
     }
 
+    /**
+     * @return array<string, float|int|bool>
+     */
     private function parseItemDiscountArgs(): array
     {
         $data = [];
@@ -422,6 +425,9 @@ class Parser
         return $data;
     }
 
+    /**
+     * @return array<string, float|int|string|bool>
+     */
     private function parseItemsDiscountArgs(): array
     {
         $valueToken = $this->advance();
@@ -549,6 +555,9 @@ class Parser
         return new AstNode('tier', $data);
     }
 
+    /**
+     * @return array<string, string|bool>
+     */
     private function parsePriority(): array
     {
         $this->advance(); // KEYWORD_PRIORITY

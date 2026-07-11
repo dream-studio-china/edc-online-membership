@@ -8,6 +8,7 @@ use App\Core\Service\BaseServiceInterface;
 use App\Identity\Entity\Profile;
 use App\Identity\Entity\User;
 
+/** @extends BaseServiceInterface<\App\Identity\Entity\Profile> */
 interface ProfileServiceInterface extends BaseServiceInterface
 {
     /**

@@ -21,6 +21,9 @@ class ProductController extends RestController
     ) {
     }
 
+    /**
+     * @return array<string, string|bool>
+     */
     protected function commonFilter(): array
     {
         return ['status' => 'active', 'isDeleted' => false];

@@ -34,6 +34,7 @@ final class WechatPayGateway implements PaymentGatewayInterface
         return Invoice::PAYMENT_WECHAT;
     }
 
+    /** @param array<string, mixed> $options */
     public function pay(Invoice $invoice, int $amount, array $options = []): PaymentResult
     {
         $app = $this->wechatService->getPayApp();
@@ -116,7 +117,7 @@ final class WechatPayGateway implements PaymentGatewayInterface
                         ? new \DateTimeImmutable($message->success_time)
                         : new \DateTimeImmutable(),
                     rawData: $message->toArray(),
-                    responseBody: json_encode(['code' => 'SUCCESS', 'message' => '成功']),
+                    responseBody: (string) json_encode(['code' => 'SUCCESS', 'message' => '成功']),
                 );
 
                 return $next($message);
@@ -143,6 +144,7 @@ final class WechatPayGateway implements PaymentGatewayInterface
         }
     }
 
+    /** @param array<string, mixed> $options */
     public function refund(Invoice $invoice, int $amount, int $paidAmount, string $reason, array $options = []): PaymentRefundResult
     {
         $app = $this->wechatService->getPayApp();
@@ -193,7 +195,12 @@ final class WechatPayGateway implements PaymentGatewayInterface
      */
     private function postJson(object $client, string $url, array $body): ResponseInterface
     {
-        $response = call_user_func([$client, 'postJson'], $url, $body);
+        $postJson = [$client, 'postJson'];
+        if (!is_callable($postJson)) {
+            throw new \RuntimeException('WeChat client does not support JSON requests.');
+        }
+
+        $response = $postJson($url, $body);
         if (!$response instanceof ResponseInterface) {
             throw new \RuntimeException('WeChat client returned an invalid response.');
         }

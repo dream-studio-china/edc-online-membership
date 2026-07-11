@@ -135,6 +135,9 @@ class OpenApiEnricherListener
         }
     }
 
+    /**
+     * @param array<string, mixed> $spec
+     */
     private function enrich(array $spec): array
     {
         // Start with known tags; dynamically detected ones will be appended
@@ -189,6 +192,9 @@ class OpenApiEnricherListener
         return $spec;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     private function mediaUploadRequestBody(): array
     {
         return [
@@ -235,6 +241,7 @@ class OpenApiEnricherListener
      *
      * Known resources are matched explicitly. Unknown resources are
      * title-cased from the route prefix automatically.
+     * @param array<string, mixed> $operation
      */
     private function detectTag(array $operation): ?string
     {
@@ -281,6 +288,7 @@ class OpenApiEnricherListener
 
     /**
      * Ensure dynamically detected tags appear in the spec's tag list.
+     * @param array<mixed, array<string, string>> $tags
      */
     private function ensureTag(array &$tags, string $name): void
     {

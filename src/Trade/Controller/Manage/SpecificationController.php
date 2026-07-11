@@ -31,12 +31,18 @@ class SpecificationController extends RestController
     ) {
     }
 
+    /**
+     * @return array<string, int|null>
+     */
     protected function commonFilter(): array
     {
         $productId = $this->getRequestStack()->getCurrentRequest()?->attributes->getInt('productId', 0);
         return ['product' => $productId];
     }
 
+    /**
+     * @return array<string, int|null>
+     */
     protected function defaultCreateValues(): array
     {
         $productId = $this->getRequestStack()->getCurrentRequest()?->attributes->getInt('productId', 0);

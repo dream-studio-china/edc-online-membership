@@ -9,14 +9,15 @@ use Doctrine\ORM\Query\Expr;
 use Doctrine\ORM\QueryBuilder;
 use Symfony\Component\Validator\Exception\ValidatorException;
 
+/** @template TEntity of object */
 trait BaseServiceReadListTrait
 {
     /**
-     * @param $object
+     * @param TEntity|int|string|array<string, mixed>|QueryBuilder $object
      * @param bool $directly
-     * @return null|object
+     * @return TEntity|null
      */
-    public function get($object, bool $directly = false)
+    public function get(mixed $object, bool $directly = false)
     {
         if ($object === null) {
             return null;
@@ -43,17 +44,17 @@ trait BaseServiceReadListTrait
     }
 
     /**
-     * @param null $object
-     * @param null $order
+     * @param array<string, mixed>|QueryBuilder|null $object
+     * @param array<string, 'ASC'|'DESC'>|null $order
      * @param bool $disableRequest
      * @return int|mixed|string
      * @throws \Exception
      */
     public function list(
-        $object = null,
-        $order = null,
+        mixed $object = null,
+        mixed $order = null,
         bool $disableRequest = true
-    ) {
+    ): mixed {
         $em = $this->getEntityManager();
         $request = $this->getCurrentRequest();
 

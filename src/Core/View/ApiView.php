@@ -11,21 +11,27 @@ trait ApiView
     // protected $service = null;
     protected ?string $serviceClass = null;
 
-    /**
-     * @return mixed
-     */
-    protected function commonFilter()
+    /** @return array<string, mixed>|QueryBuilder */
+    protected function commonFilter(): array|QueryBuilder
     {
         /** common filter for all entities */
         return [];
     }
 
-    protected function mixIdToCommonFilter($id, $commonFilter = null)
+    /**
+     * @param array<string, mixed>|QueryBuilder|null $commonFilter
+     * @return array<string, mixed>|QueryBuilder
+     */
+    protected function mixIdToCommonFilter(int|string $id, array|QueryBuilder|null $commonFilter = null): array|QueryBuilder
     {
         return $this->mixToCommonFilter(['id' => $id], $commonFilter);
     }
 
-    protected function mixToCommonFilter(array $data, $commonFilter = null)
+    /**
+     * @param array<string, mixed>|QueryBuilder|null $commonFilter
+     * @return array<string, mixed>|QueryBuilder
+     */
+    protected function mixToCommonFilter(array $data, array|QueryBuilder|null $commonFilter = null): array|QueryBuilder
     {
         $filter = $this->commonFilter();
 

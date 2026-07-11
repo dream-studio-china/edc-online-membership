@@ -10,19 +10,23 @@ use Symfony\Component\Routing\Attribute\Route;
 
 trait ListApiViewMixin
 {
-    protected function listFilter($filter = null)
+    /**
+     * @param array<string, mixed>|\Doctrine\ORM\QueryBuilder|null $filter
+     * @return array<string, mixed>|\Doctrine\ORM\QueryBuilder|null
+     */
+    protected function listFilter(array|\Doctrine\ORM\QueryBuilder|null $filter = null): array|\Doctrine\ORM\QueryBuilder|null
     {
         /** list filter for list entities */
         return $filter;
     }
 
-    protected function listProcessor($entities)
+    protected function listProcessor(mixed $entities): mixed
     {
         /** list processor for list entities */
         return $entities;
     }
 
-    protected function listResponses($entities)
+    protected function listResponses(mixed $entities): mixed
     {
         /** list responses for list entities */
         return $entities;

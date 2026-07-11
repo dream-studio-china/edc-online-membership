@@ -6,6 +6,9 @@ use App\Common\Entity\Setting;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
+/**
+ * @extends \Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository<\App\Common\Entity\Setting>
+ */
 class SettingRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)

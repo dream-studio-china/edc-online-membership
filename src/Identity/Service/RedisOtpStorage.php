@@ -37,11 +37,15 @@ class RedisOtpStorage implements OtpStorageInterface
 
     public function del(string ...$keys): int
     {
-        return $this->redis->del(...$keys);
+        $result = $this->redis->del(...$keys);
+
+        return is_int($result) ? $result : 0;
     }
 
     public function ttl(string $key): int
     {
-        return $this->redis->ttl($key) ?: 0;
+        $result = $this->redis->ttl($key);
+
+        return is_int($result) ? $result : 0;
     }
 }

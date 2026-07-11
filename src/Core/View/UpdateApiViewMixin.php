@@ -16,10 +16,7 @@ trait UpdateApiViewMixin
 
     //protected $requiredUpdateProperties = [];
     //protected $acceptedUpdateProperties = [];
-
-    /**
-     * @return array
-     */
+    /** @return array<string, mixed> */
     protected function defaultValues(): array
     {
         /** Default values */
@@ -27,21 +24,18 @@ trait UpdateApiViewMixin
     }
 
     /**
-     * @param array $content
-     * @param null $entity
-     * @return array
+     * @param array<string, mixed> $content
+     * @return array<string, mixed>
      */
-    protected function processContent(array $content, $entity = null): array
+    protected function processContent(array $content, ?object $entity = null): array
     {
         /** Default values */
         return $content;
     }
 
     /**
-     * @param $entity
-     * @return mixed
      */
-    protected function after($entity)
+    protected function after(object|false $entity): mixed
     {
         /** Updated entity */
         return $entity;
@@ -49,7 +43,7 @@ trait UpdateApiViewMixin
 
 
     /**
-     * @return array
+     * @return array<string, mixed>
      */
     protected function defaultUpdateValues(): array
     {
@@ -57,32 +51,27 @@ trait UpdateApiViewMixin
     }
 
     /**
-     * @param array $content
-     * @param null $entity
-     * @return array
+     * @param array<string, mixed> $content
+     * @return array<string, mixed>
      */
-    protected function processUpdateContent(array $content, $entity = null): array
+    protected function processUpdateContent(array $content, ?object $entity = null): array
     {
         return $this->processContent($content, $entity);
     }
 
     /**
-     * @param $entity
-     * @return mixed
      */
-    protected function afterUpdated($entity)
+    protected function afterUpdated(object|false $entity): mixed
     {
         return $this->after($entity);
     }
 
     /**
-     * @param $entity
-     * @param $content
-     * @param array|null $transformer
+     * @param array<string, mixed> $content
+     * @param array<string, string>|null $transformer
      * @param int $writeMode
-     * @return mixed
      */
-    private function updateSingle($entity, $content, ?array $transformer = null, int $writeMode = 1 /* MODE_UPDATE */, bool $noFlush = false)
+    private function updateSingle(object $entity, array $content, ?array $transformer = null, int $writeMode = 1 /* MODE_UPDATE */, bool $noFlush = false): mixed
     {
         $service = $this->service;
 
@@ -136,11 +125,9 @@ trait UpdateApiViewMixin
 
     /**
      * @param Request $request
-     * @param null $id
-     * @return array|mixed
      * @throws \Exception
      */
-    private function updateRecords(Request $request, $id = null)
+    private function updateRecords(Request $request, int|string|null $id = null): mixed
     {
         // No explicit service injection.
         $service = $this->service;
@@ -271,7 +258,7 @@ trait UpdateApiViewMixin
         ]
     )]
     #[Route('/{id}', name: 'update', methods: ['PUT'], requirements: ['id' => '\\d+'])]
-    public function updateAction(Request $request, $id): Response
+    public function updateAction(Request $request, int|string $id): Response
     {
         try {
             $response = $this->updateRecords($request, $id);

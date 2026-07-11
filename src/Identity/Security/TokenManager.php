@@ -10,6 +10,18 @@ use App\Identity\Repository\RefreshTokenRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Cache\CacheItemPoolInterface;
 
+/**
+ * @phpstan-type AccessTokenPayload array{
+ *     sub: string,
+ *     username: string,
+ *     email: string,
+ *     roles: list<string>,
+ *     iat: int,
+ *     exp: int,
+ *     jti: string,
+ *     iss: string
+ * }
+ */
 class TokenManager
 {
     private \OpenSSLAsymmetricKey $privateKey;
@@ -95,6 +107,7 @@ class TokenManager
     /**
      * Decode and verify a JWT access token. Returns payload or null on failure.
      */
+    /** @return AccessTokenPayload|null */
     public function decodeAccessToken(string $token): ?array
     {
         $payload = $this->decodeAccessTokenWithoutBlacklist($token);
@@ -115,6 +128,7 @@ class TokenManager
      * Decode and verify a JWT access token without checking the revocation blacklist.
      * Used internally for revocation operations.
      */
+    /** @return AccessTokenPayload|null */
     private function decodeAccessTokenWithoutBlacklist(string $token): ?array
     {
         $parts = explode('.', $token);
@@ -144,6 +158,21 @@ class TokenManager
         if (!\is_array($payload) || !isset($payload['exp'], $payload['sub'])) {
             return null;
         }
+
+        if (
+            !is_string($payload['sub']) ||
+            !is_string($payload['username'] ?? null) ||
+            !is_string($payload['email'] ?? null) ||
+            !is_array($payload['roles'] ?? null) ||
+            !is_int($payload['iat'] ?? null) ||
+            !is_int($payload['exp']) ||
+            !is_string($payload['jti'] ?? null) ||
+            !is_string($payload['iss'] ?? null)
+        ) {
+            return null;
+        }
+
+        /** @var AccessTokenPayload $payload */
 
         // Check expiration
         if ($payload['exp'] < time()) {
@@ -201,6 +230,7 @@ class TokenManager
      * Returns ['access_token' => string, 'refresh_token' => string] or throws.
      *
      * Implements reuse detection: if a revoked/replaced token is presented, all user tokens are revoked.
+     * @return array<string, string>
      */
     public function rotateRefreshToken(string $oldPlainToken): array
     {

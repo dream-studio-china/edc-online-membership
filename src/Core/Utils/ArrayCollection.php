@@ -2,21 +2,18 @@
 
 namespace App\Core\Utils;
 
-use Curl\Curl;
-
 class ArrayCollection {
     /**
-     * @param array $array
-     * @return \Doctrine\Common\Collections\ArrayCollection
+     * @return \Doctrine\Common\Collections\ArrayCollection<array-key, mixed>
      */
-    public static function init($array): \Doctrine\Common\Collections\ArrayCollection
+    public static function init(mixed $array): \Doctrine\Common\Collections\ArrayCollection
     {
         return new \Doctrine\Common\Collections\ArrayCollection(is_array($array) ? $array : []);
     }
 
     /**
      * @param string $json
-     * @return \Doctrine\Common\Collections\ArrayCollection
+     * @return \Doctrine\Common\Collections\ArrayCollection<array-key, mixed>
      */
     public static function fromJsonString(string $json): \Doctrine\Common\Collections\ArrayCollection
     {
@@ -24,11 +21,9 @@ class ArrayCollection {
     }
 
     /**
-     * @param $array
-     * @param $key
-     * @return \Doctrine\Common\Collections\ArrayCollection
+     * @return \Doctrine\Common\Collections\ArrayCollection<array-key, mixed>
      */
-    public static function map($array, $key): \Doctrine\Common\Collections\ArrayCollection
+    public static function map(mixed $array, mixed $key): \Doctrine\Common\Collections\ArrayCollection
     {
         if(!($array instanceof \Doctrine\Common\Collections\ArrayCollection)) {
             $array = new \Doctrine\Common\Collections\ArrayCollection($array);

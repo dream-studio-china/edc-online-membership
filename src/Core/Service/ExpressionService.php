@@ -80,7 +80,7 @@ class ExpressionService implements ExpressionServiceInterface
      * @param string $dataClass
      * @param array $values
      * @param mixed $em
-     * @return array ['qb' => QueryBuilder|Query, 'parameters' => array]
+     * @return array<string, \Doctrine\ORM\QueryBuilder|\Doctrine\Common\Collections\ArrayCollection<int, \Doctrine\ORM\Query\Parameter>> ['qb' => QueryBuilder|Query, 'parameters' => array]
      * @throws \Exception
      */
     protected function parseAndAssemble(string $filter, string $dataClass, array $values, $em): array

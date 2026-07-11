@@ -17,7 +17,7 @@ trait CreateApiViewMixin
 
     //protected $requiredCreateProperties = [];
     //protected $acceptedCreateProperties = [];
-
+    /** @return array<string, mixed> */
     protected function defaultCreateValues(): array
     {
         /** Default values */
@@ -25,9 +25,8 @@ trait CreateApiViewMixin
     }
 
     /**
-     * @param array $content
-     * @param object $entity
-     * @return array
+     * @param array<string, mixed> $content
+     * @return array<string, mixed>
      */
     protected function processCreateContent(array $content, object $entity): array
     {
@@ -36,16 +35,14 @@ trait CreateApiViewMixin
     }
 
     /**
-     * @param $content
-     * @param $entity
-     * @return mixed
+     * @param array<string, mixed> $content
      */
-    protected function processEntity($content, $entity)
+    protected function processEntity(array $content, object $entity): object
     {
         return $entity;
     }
 
-    protected function afterCreated($entity)
+    protected function afterCreated(object|false $entity): mixed
     {
         /** Created entity */
         return $entity;

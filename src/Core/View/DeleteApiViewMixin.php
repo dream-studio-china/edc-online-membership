@@ -8,7 +8,11 @@ use Symfony\Component\Routing\Attribute\Route;
 
 trait DeleteApiViewMixin
 {
-    protected function deletionFilter($filter = null)
+    /**
+     * @param array<string, mixed>|\Doctrine\ORM\QueryBuilder|null $filter
+     * @return array<string, mixed>|\Doctrine\ORM\QueryBuilder|null
+     */
+    protected function deletionFilter(array|\Doctrine\ORM\QueryBuilder|null $filter = null): array|\Doctrine\ORM\QueryBuilder|null
     {
         /** list filter for list entities */
         return $filter;
@@ -21,7 +25,7 @@ trait DeleteApiViewMixin
         ]
     )]
     #[Route('/{id}', name: 'delete', requirements: ['id' => '\\d+'], methods: ['DELETE'])]
-    public function deleteAction($id): Response
+    public function deleteAction(int|string $id): Response
     {
         $service = $this->service;
         $filter = $this->mixIdToCommonFilter($id);

@@ -7,15 +7,16 @@ namespace App\Core\Service;
 use Doctrine\ORM\QueryBuilder;
 
 /**
+ * @template TEntity of object
  * @method mixed wrapInTransaction(callable(\Doctrine\ORM\EntityManagerInterface): mixed $callback)
  */
 interface BaseServiceInterface
 {
     /**
      * Find entity by id or criteria or execute a QueryBuilder to return single result.
-     * @param mixed $object
+     * @param TEntity|int|string|array<string, mixed>|QueryBuilder $object
      * @param bool $directly
-     * @return object|null
+     * @return TEntity|null
      */
     public function get($object, bool $directly = false);
 
@@ -30,22 +31,22 @@ interface BaseServiceInterface
 
     /**
      * Create a new instance of the entity managed by the service.
-     * @return object
+     * @return TEntity
      */
     public function new();
 
     /**
      * Update an entity with provided data (may persist and flush).
-     * @param mixed $object
-     * @param array|null $data
+     * @param TEntity $object
+     * @param array<string, mixed>|null $data
      * @param bool $noFlush When true, persist but do not call flush(). Caller is responsible for flushing.
-     * @return mixed
+     * @return TEntity|false
      */
     public function update($object, ?array $data = null, bool $noFlush = false);
 
     /**
      * Remove the given entity.
-     * @param mixed $object
+     * @param TEntity|int|string|array<string, mixed> $object
      * @return bool
      */
     public function remove($object): bool;

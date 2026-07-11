@@ -22,6 +22,7 @@ use App\Wallet\Service\TransferServiceInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
+/** @extends BaseService<\App\Trade\Entity\Order> */
 class OrderService extends BaseService implements OrderServiceInterface
 {
     public function __construct(

@@ -13,12 +13,13 @@ use Doctrine\ORM\Mapping\OneToOne;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Validator\Exception\ValidatorException;
 
+/** @template TEntity of object */
 trait BaseServiceMutationTrait
 {
     /**
-     * @return mixed
+     * @return TEntity
      */
-    public function new()
+    public function new(): object
     {
         $ref = new \ReflectionClass($this->entityClass);
         $ctor = $ref->getConstructor();
@@ -30,12 +31,12 @@ trait BaseServiceMutationTrait
     }
 
     /**
-     * @param $object
-     * @param array|null $data
-     * @return bool
+     * @param TEntity $object
+     * @param array<string, mixed>|null $data
+     * @return TEntity|false
      * @throws \ReflectionException
      */
-    public function update($object, ?array $data = null, bool $noFlush = false)
+    public function update(mixed $object, ?array $data = null, bool $noFlush = false): object|false
     {
         if (empty($object)) {
             $this->logger->error('Object error, original data: '. json_encode($data));
@@ -173,7 +174,7 @@ trait BaseServiceMutationTrait
     }
 
     /**
-     * @param $object
+     * @param TEntity|int|string|array<string, mixed> $object
      * @return bool
      */
     public function remove($object): bool

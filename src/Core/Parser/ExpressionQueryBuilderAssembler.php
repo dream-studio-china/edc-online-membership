@@ -22,7 +22,7 @@ class ExpressionQueryBuilderAssembler
      * Create a QueryBuilder for the parser's dataClass and apply compiled fragments.
      *
      * @param ExpressionDqlParser $parser
-     * @param array $options optional ['rootAlias' => string]
+     * @param array<string, mixed> $options optional ['rootAlias' => string]
      * @return QueryBuilder
      * @throws ValidatorException
      */
@@ -69,8 +69,8 @@ class ExpressionQueryBuilderAssembler
      *
      * @param QueryBuilder $qb
      * @param ExpressionDqlParser $parser
-     * @param array $fragments
-     * @param array $options
+     * @param array<string, string>|array<string, mixed[]> $fragments
+     * @param array<string, mixed> $options
      */
     private function applyFragmentsToQueryBuilder(QueryBuilder $qb, ExpressionDqlParser $parser, array $fragments, array $options = []): void
     {

@@ -83,6 +83,8 @@ class WechatAuthService
 
     /**
      * Find existing WechatUser by openid, or create new User + WechatUser
+     *
+     * @param array<string, mixed>|null $rawData
      */
     private function findOrCreateUser(
         string $openid,

@@ -18,6 +18,9 @@ class CategoryController extends RestController
         protected readonly CategoryServiceInterface $service
     ) {}
 
+    /**
+     * @return array<string, bool>
+     */
     protected function commonFilter()
     {
         return ['enabled' => true];

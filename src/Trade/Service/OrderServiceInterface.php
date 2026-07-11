@@ -10,6 +10,7 @@ use App\Payment\DTO\PaymentResult;
 use App\Trade\Entity\Order;
 use App\Trade\Service\Pricing\PriceCalculationResult;
 
+/** @extends BaseServiceInterface<\App\Trade\Entity\Order> */
 interface OrderServiceInterface extends BaseServiceInterface
 {
     public function calculatePrices(array $items, string $currency = 'CNY', ?string $storeCode = null, array $meta = []): PriceCalculationResult;

@@ -183,7 +183,7 @@ class RestController extends AbstractController
 
     /**
      * @param $entity
-     * @param array $attributeChain
+     * @param string[] $attributeChain
      * @param int $level
      */
     private function expandObjectToMetadata(&$entity, array $attributeChain, int $level = -1)

@@ -7,18 +7,15 @@ use Symfony\Component\ExpressionLanguage\ExpressionLanguage;
 class ArrayCommon
 {
     /**
-     * @param $needle
-     * @param array $array
-     * @return bool
+     * @param array<array-key, mixed> $array
      */
-    public static function in_array($needle, array $array): bool
+    public static function in_array(mixed $needle, array $array): bool
     {
         return in_array($needle, $array);
     }
 
     /**
-     * @param array $array
-     * @return int
+     * @param array<array-key, mixed> $array
      */
     public static function count(array $array): int
     {
@@ -26,8 +23,8 @@ class ArrayCommon
     }
 
     /**
-     * @param array ...$arrays
-     * @return array
+     * @param array<array-key, mixed> ...$arrays
+     * @return array<array-key, mixed>
      */
     public static function merge(array ...$arrays): array
     {
@@ -35,33 +32,29 @@ class ArrayCommon
     }
 
     /**
-     * @param array $array
-     * @param $arrayPush
-     * @return array
+     * @param array<array-key, mixed> $array
+     * @return array<array-key, mixed>
      */
-    public static function push(array $array, $arrayPush): array
+    public static function push(array $array, mixed $arrayPush): array
     {
         $array[] = $arrayPush;
         return $array;
     }
 
     /**
-     * @param $key
-     * @param array $array
-     * @return bool
+     * @param array<array-key, mixed> $array
      */
-    public static function key_exist($key, array $array): bool
+    public static function key_exist(int|string $key, array $array): bool
     {
         return array_key_exists($key, $array);
     }
 
     /**
-     * @param $array
-     * @param $expression
-     * @param array $external
-     * @return array
+     * @param array<array-key, mixed> $array
+     * @param array<string, mixed> $external
+     * @return array<array-key, mixed>
      */
-    public static function filter($array, $expression, array $external = []): array
+    public static function filter(array $array, mixed $expression, array $external = []): array
     {
         return array_filter($array, function ($value) use ($expression, $external) {
             $expressionLanguage = new ExpressionLanguage();
@@ -72,12 +65,11 @@ class ArrayCommon
     }
 
     /**
-     * @param $array
-     * @param $expression
-     * @param array $external
-     * @return array
+     * @param array<array-key, mixed> $array
+     * @param array<string, mixed> $external
+     * @return array<array-key, mixed>
      */
-    public static function map($array, $expression, array $external = []): array
+    public static function map(array $array, mixed $expression, array $external = []): array
     {
         return array_map(function($item) use ($expression, $external) {
             $expressionLanguage = new ExpressionLanguage();
@@ -88,13 +80,10 @@ class ArrayCommon
     }
 
     /**
-     * @param $array
-     * @param $expression
-     * @param null $initial
-     * @param array $external
-     * @return mixed|null
+     * @param array<array-key, mixed> $array
+     * @param array<string, mixed> $external
      */
-    public static function reduce($array, $expression, $initial = null, array $external = [])
+    public static function reduce(array $array, mixed $expression, mixed $initial = null, array $external = []): mixed
     {
         return array_reduce($array, function($carry, $item) use ($expression, $external) {
             $expressionLanguage = new ExpressionLanguage();

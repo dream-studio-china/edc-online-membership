@@ -95,7 +95,9 @@
         "phpstan": "@php vendor/bin/phpstan analyse --memory-limit=512M",
         "phpstan-baseline": "@php vendor/bin/phpstan analyse --memory-limit=512M --generate-baseline",
         "rector": "@php vendor/bin/rector process --dry-run --no-progress-bar --memory-limit=512M",
-        "rector:fix": "@php vendor/bin/rector process --no-progress-bar --memory-limit=512M"
+        "rector:fix": "@php vendor/bin/rector process --no-progress-bar --memory-limit=512M",
+        "rector:types": "@php vendor/bin/rector process --config=rector-types.php --no-progress-bar --memory-limit=512M",
+        "rector:types:check": "@php vendor/bin/rector process --config=rector-types.php --dry-run --no-progress-bar --memory-limit=512M"
     },
     "conflict": {
         "symfony/symfony": "*"

@@ -7,6 +7,7 @@ namespace App\Promotion\Service;
 use App\Core\Service\BaseServiceInterface;
 use App\Promotion\Entity\PromotionTemplate;
 
+/** @extends BaseServiceInterface<\App\Promotion\Entity\PromotionTemplate> */
 interface PromotionTemplateServiceInterface extends BaseServiceInterface
 {
     /**

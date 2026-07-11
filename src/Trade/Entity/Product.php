@@ -141,6 +141,9 @@ class Product
         return $this;
     }
 
+    /**
+     * @return \Doctrine\Common\Collections\Collection<int, \App\Trade\Entity\Specification>
+     */
     public function getSpecifications(): Collection
     {
         return $this->specifications;

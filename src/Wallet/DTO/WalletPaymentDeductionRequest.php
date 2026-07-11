@@ -6,6 +6,9 @@ namespace App\Wallet\DTO;
 
 final readonly class WalletPaymentDeductionRequest
 {
+    /**
+     * @param array<string, mixed> $options
+     */
     public function __construct(
         public string $type,
         public int $amount,

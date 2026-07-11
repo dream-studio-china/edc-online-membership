@@ -8,7 +8,13 @@ class PriceCalculationResult
 {
     public int $totalAmount;
     public string $currency;
+    /**
+     * @var mixed[]
+     */
     public array $items;
+    /**
+     * @var mixed[]
+     */
     public array $meta;
 
     public function __construct(int $totalAmount, string $currency, array $items, array $meta = [])

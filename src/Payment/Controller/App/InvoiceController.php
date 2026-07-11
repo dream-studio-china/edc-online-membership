@@ -15,6 +15,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 #[Route('/app/invoices', name: 'app-invoices-')]
 #[IsGranted('ROLE_USER')]
@@ -26,6 +27,7 @@ class InvoiceController extends RestController
     {
     }
 
+    /** @return array{payer: UserInterface}|array{id: -1} */
     protected function commonFilter(): array
     {
         $user = $this->getUser();

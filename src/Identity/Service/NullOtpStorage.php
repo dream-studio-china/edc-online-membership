@@ -10,7 +10,9 @@ namespace App\Identity\Service;
  */
 class NullOtpStorage implements OtpStorageInterface
 {
+    /** @var array<string, string> */
     private array $data = [];
+    /** @var array<string, int> */
     private array $ttls = [];
 
     public function exists(string $key): bool
@@ -51,6 +53,6 @@ class NullOtpStorage implements OtpStorageInterface
             return -2;
         }
         $remaining = $this->ttls[$key] - time();
-        return $remaining > 0 ? $remaining : -2;
+        return $remaining > 0 ? (int) $remaining : -2;
     }
 }

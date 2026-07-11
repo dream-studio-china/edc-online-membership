@@ -6,6 +6,9 @@ namespace App\Trade\Service\Pricing;
 
 class PriceCalculationContext
 {
+    /**
+     * @var mixed[]
+     */
     public array $inputItems = [];
 
     public array $items = [];

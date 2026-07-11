@@ -11,6 +11,7 @@ use App\Wallet\Entity\WalletTransaction;
 use App\Wallet\Repository\WalletTransactionRepository;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
+/** @extends BaseService<\App\Wallet\Entity\Wallet> */
 class WalletService extends BaseService
 {
     public function __construct(
@@ -20,6 +21,9 @@ class WalletService extends BaseService
         parent::__construct($container, Wallet::class);
     }
 
+    /**
+     * @return array<string, bool|int>
+     */
     public function verifyBalance(): array
     {
         $totalBalance = $this->getWalletRepository()->getTotalBalance();
@@ -35,6 +39,9 @@ class WalletService extends BaseService
         ];
     }
 
+    /**
+     * @return array<string, bool|int>
+     */
     public function verifyBalanceForUser(User $user): array
     {
         $totalBalance = $this->getWalletRepository()->getTotalBalanceForUser((int) $user->getId());

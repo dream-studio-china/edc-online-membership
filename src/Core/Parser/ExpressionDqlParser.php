@@ -179,6 +179,9 @@ class ExpressionDqlParser
         return $this->where;
     }
 
+    /**
+     * @return array<string, string>
+     */
     public function getJoins(): array
     {
         return $this->joins;

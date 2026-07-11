@@ -5,10 +5,9 @@ namespace App\Core\Utils;
 class FixJSON
 {
     /**
-     * @param $json
-     * @return array|string|string[]|null
+     * @return array<int, string>|string|null
      */
-    public static function fixJSON($json)
+    public static function fixJSON(string $json): array|string|null
     {
         $regex = <<<'REGEX'
 ~
@@ -24,10 +23,8 @@ REGEX;
     }
 
     /**
-     * @param $json
-     * @return false|string
      */
-    public static function getJSONType($json)
+    public static function getJSONType(string $json): string|false
     {
         $obj = json_decode($json);
 

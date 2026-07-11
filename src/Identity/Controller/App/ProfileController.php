@@ -20,13 +20,16 @@ class ProfileController extends RestController
 {
     use ApiView, SingleDetailApiViewMixin, SingleCreateAndUpdateApiViewMixin;
 
+    /** @var list<string> */
     protected array $acceptedCreateProperties = ['nickname', 'avatar', 'metadata'];
+    /** @var list<string> */
     protected array $acceptedUpdateProperties = ['nickname', 'avatar', 'metadata'];
 
     public function __construct(
         protected readonly ProfileServiceInterface $service,
     ) {}
 
+    /** @return array<string, User|int> */
     protected function commonFilter(): array
     {
         $user = $this->getUser();
@@ -34,6 +37,9 @@ class ProfileController extends RestController
         return $user instanceof User ? ['user' => $user] : ['id' => -1];
     }
 
+    /**
+     * @return array<string, \App\Identity\Entity\User|null|string>
+     */
     protected function defaultCreateValues(): array
     {
         $user = $this->getUser();

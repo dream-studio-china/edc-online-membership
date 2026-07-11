@@ -6,6 +6,7 @@ namespace App\Payment\DTO;
 
 final readonly class PaymentNotifyResult
 {
+    /** @param array<string, mixed> $rawData */
     public function __construct(
         public string $payment,
         public string $outTradeNo,

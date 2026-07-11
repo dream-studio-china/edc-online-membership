@@ -358,6 +358,9 @@ class Order
         $this->updatedAt = new \DateTimeImmutable();
     }
 
+    /**
+     * @return \Doctrine\Common\Collections\Collection<int, \App\Trade\Entity\OrderItem>
+     */
     public function getItems(): Collection
     {
         return $this->items;

@@ -14,6 +14,7 @@ use App\Trade\Service\Pricing\PriceCalculationContext;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Validator\Exception\ValidatorException;
 
+/** @extends BaseService<\App\Promotion\Entity\PromotionTemplate> */
 class PromotionTemplateService extends BaseService implements PromotionTemplateServiceInterface
 {
     public function __construct(ContainerInterface $container)
@@ -104,7 +105,7 @@ class PromotionTemplateService extends BaseService implements PromotionTemplateS
         ];
     }
 
-    public function update($object, ?array $data = null, bool $noFlush = false)
+    public function update(mixed $object, ?array $data = null, bool $noFlush = false): object|false
     {
         if (is_array($data) && isset($data['dsl']) && is_string($data['dsl'])) {
             $result = $this->parseDsl($data['dsl']);
@@ -129,6 +130,9 @@ class PromotionTemplateService extends BaseService implements PromotionTemplateS
         return parent::update($object, $data, $noFlush);
     }
 
+    /**
+     * @param array<string, mixed> $data
+     */
     private function astToNode(array $data): \App\Promotion\Service\Dsl\AstNode
     {
         $children = [];

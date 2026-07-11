@@ -20,10 +20,9 @@ use Symfony\Component\Validator\Exception\ValidatorException;
 trait TransformContent
 {
     /**
-     * @param array $content
-     * @param array $transformer
-     * @param object $entity
-     * @return array
+     * @param array<string, mixed> $content
+     * @param array<string, string> $transformer
+     * @return array<string, mixed>
      */
     protected function transformContent(array $content, array $transformer, object $entity): array
     {

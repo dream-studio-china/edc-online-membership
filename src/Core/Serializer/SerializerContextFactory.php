@@ -12,8 +12,8 @@ final class SerializerContextFactory
      * - max_depth: int
      * - enable_max_depth: bool
      *
-     * @param array $options
-     * @return array
+     * @param array<string, mixed> $options
+     * @return array<string, mixed[]>
      */
     public function create(array $options = []): array
     {

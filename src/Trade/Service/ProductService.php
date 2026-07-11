@@ -7,6 +7,7 @@ namespace App\Trade\Service;
 use App\Core\Service\BaseService;
 use App\Trade\Entity\Product;
 
+/** @extends BaseService<\App\Trade\Entity\Product> */
 class ProductService extends BaseService implements ProductServiceInterface
 {
     public function __construct(

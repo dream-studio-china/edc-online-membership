@@ -8,6 +8,7 @@ use App\Core\Service\BaseServiceInterface;
 use App\Promotion\Entity\Promotion;
 use App\Trade\Service\Pricing\PriceCalculationContext;
 
+/** @extends BaseServiceInterface<\App\Promotion\Entity\Promotion> */
 interface PromotionServiceInterface extends BaseServiceInterface
 {
     /**

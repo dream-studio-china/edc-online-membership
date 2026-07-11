@@ -93,6 +93,9 @@ class Content
         return $this;
     }
 
+    /**
+     * @return \Doctrine\Common\Collections\Collection<int, \App\Common\Entity\Tag>
+     */
     public function getTags(): Collection
     {
         if ($this->tags === null) {

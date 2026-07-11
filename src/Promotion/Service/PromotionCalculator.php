@@ -106,6 +106,9 @@ class PromotionCalculator implements PriceCalculatorInterface
         $context->meta['promotion'] = $result;
     }
 
+    /**
+     * @param int[]|null[] $excludedIds
+     */
     private function getFirstStandardAvailable(PriceCalculationContext $context, int $phase, array $excludedIds): ?Promotion
     {
         $skippedIds = [];
@@ -121,6 +124,9 @@ class PromotionCalculator implements PriceCalculatorInterface
         }
     }
 
+    /**
+     * @param int[]|null[] $excludedIds
+     */
     private function applyBestPricePromotion(PriceCalculationContext $context, array $excludedIds): ?array
     {
         $candidates = array_merge(

@@ -12,6 +12,7 @@ interface PaymentAdjustmentProviderInterface
 {
     public static function getName(): string;
 
+    /** @param array<string, mixed> $options */
     public function supports(Invoice $invoice, string $payment, array $options): bool;
 
     public function apply(PaymentAdjustmentContext $context): PaymentAdjustmentResult;

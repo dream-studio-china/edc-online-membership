@@ -8,6 +8,7 @@ use App\Identity\Entity\User;
 
 final readonly class CreateInvoiceRequest
 {
+    /** @param array<string, mixed> $extraData */
     public function __construct(
         public string $sourceType,
         public string $sourceId,
