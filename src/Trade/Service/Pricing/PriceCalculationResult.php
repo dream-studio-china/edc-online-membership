@@ -9,14 +9,18 @@ class PriceCalculationResult
     public int $totalAmount;
     public string $currency;
     /**
-     * @var mixed[]
+     * @var list<array<string, mixed>>
      */
     public array $items;
     /**
-     * @var mixed[]
+     * @var array<string, mixed>
      */
     public array $meta;
 
+    /**
+     * @param list<array<string, mixed>> $items
+     * @param array<string, mixed>       $meta
+     */
     public function __construct(int $totalAmount, string $currency, array $items, array $meta = [])
     {
         $this->totalAmount = $totalAmount;

@@ -38,9 +38,13 @@ class Product
     #[ORM\Column(type: 'boolean', options: ['default' => false])]
     private bool $isDeleted = false;
 
+    /** @var array<string, mixed>|null */
     #[ORM\Column(type: 'json', nullable: true)]
     private ?array $metadata = null;
 
+    /**
+     * @var Collection<int, Specification>
+     */
     #[ORM\OneToMany(targetEntity: Specification::class, mappedBy: 'product', cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $specifications;
 
@@ -129,11 +133,17 @@ class Product
         return $this;
     }
 
+    /**
+     * @return array<string, mixed>|null
+     */
     public function getMetadata(): ?array
     {
         return $this->metadata;
     }
 
+    /**
+     * @param array<string, mixed>|null $metadata
+     */
     public function setMetadata(?array $metadata): self
     {
         $this->metadata = $metadata;

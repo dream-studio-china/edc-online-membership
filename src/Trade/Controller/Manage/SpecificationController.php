@@ -22,8 +22,11 @@ class SpecificationController extends RestController
     use ApiView, DetailApiViewMixin, ListApiViewMixin,
         CreateApiViewMixin, UpdateApiViewMixin, DeleteApiViewMixin;
 
+    /** @var list<string> */
     protected array $requiredCreateProperties = ['name', 'price'];
+    /** @var list<string> */
     protected array $acceptedCreateProperties = ['name', 'price', 'status', 'sort'];
+    /** @var list<string> */
     protected array $acceptedUpdateProperties = ['name', 'price', 'status', 'sort'];
 
     public function __construct(

@@ -16,6 +16,9 @@ class FullReductionStrategy implements PromotionStrategyInterface
         return 'full_reduction';
     }
 
+    /**
+     * @param array<string, mixed> $config
+     */
     public function apply(AstNode $action, PriceCalculationContext $context, array $config): void
     {
         $value = $this->resolveValue($action->data['value'] ?? 0, $config);

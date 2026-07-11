@@ -9,14 +9,41 @@ use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
+/**
+ * Return types intentionally omitted from the signature to keep
+ * test fakes lightweight (no need to implement full framework interfaces).
+ * Production locators (DefaultServiceLocator) add native return types.
+ * See phpstan.neon for per-method exclusions.
+ */
 interface ServiceLocatorInterface
 {
-    // Return types intentionally omitted to keep test fakes lightweight and avoid requiring full framework
-    // implementations in unit tests. Production locators can still return the concrete interfaces.
+    /**
+     * @phpstan-return EntityManagerInterface
+     */
     public function getEntityManager();
+
+    /**
+     * @phpstan-return LoggerInterface
+     */
     public function getLogger();
+
+    /**
+     * @phpstan-return TokenStorageInterface|null
+     */
     public function getTokenStorage();
+
+    /**
+     * @phpstan-return RequestStack|null
+     */
     public function getRequestStack();
+
+    /**
+     * @phpstan-return SerializerInterface|null
+     */
     public function getSerializer();
+
+    /**
+     * @phpstan-return ValidatorInterface|null
+     */
     public function getValidator();
 }

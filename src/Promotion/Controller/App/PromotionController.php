@@ -24,6 +24,7 @@ class PromotionController extends RestController
         private readonly ?EntityManagerInterface $entityManager = null,
     ) {}
 
+    /** @return array<string, mixed>|QueryBuilder */
     protected function commonFilter(): array|QueryBuilder
     {
         if ($this->entityManager === null) {

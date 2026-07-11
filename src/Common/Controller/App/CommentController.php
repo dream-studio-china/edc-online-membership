@@ -16,13 +16,16 @@ class CommentController extends RestController
 {
     use ApiView, ListApiViewMixin, DetailApiViewMixin, CreateApiViewMixin;
 
+    /** @var list<string> */
     protected array $requiredCreateProperties = ['body', 'entityType', 'entityId'];
+    /** @var list<string> */
     protected array $acceptedCreateProperties = ['parent'];
 
     public function __construct(
         protected readonly CommentServiceInterface $service
     ) {}
 
+    /** @return array<string, mixed> */
     protected function commonFilter()
     {
         return [
@@ -30,6 +33,7 @@ class CommentController extends RestController
         ];
     }
 
+    /** @return array<string, mixed> */
     protected function defaultCreateValues(): array
     {
         $user = $this->getUser();

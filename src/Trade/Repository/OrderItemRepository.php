@@ -23,6 +23,9 @@ class OrderItemRepository extends ServiceEntityRepository
         return $this->find($id);
     }
 
+    /**
+     * @return list<OrderItem>
+     */
     public function findByOrder(int $orderId): array
     {
         return $this->findBy(['order' => $orderId]);

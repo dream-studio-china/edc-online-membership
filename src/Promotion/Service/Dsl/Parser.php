@@ -12,6 +12,7 @@ class Parser
 
     /**
      * Parse tokens into an AST program.
+     * @param Token[] $tokens
      */
     public function parse(array $tokens): AstNode
     {
@@ -343,6 +344,7 @@ class Parser
         return new AstNode('action_discount', $data);
     }
 
+    /** @return array<string, float|int|bool|string> */
     private function parseOrderDiscountArgs(): array
     {
         $data = [];

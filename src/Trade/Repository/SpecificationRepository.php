@@ -24,6 +24,9 @@ class SpecificationRepository extends ServiceEntityRepository
         return $this->find($id);
     }
 
+    /**
+     * @return list<Specification>
+     */
     public function findByProduct(int $productId): array
     {
         return $this->findBy([
@@ -32,6 +35,9 @@ class SpecificationRepository extends ServiceEntityRepository
         ], ['sort' => 'ASC']);
     }
 
+    /**
+     * @return list<Specification>
+     */
     public function findActiveByProduct(int $productId): array
     {
         return $this->findBy([

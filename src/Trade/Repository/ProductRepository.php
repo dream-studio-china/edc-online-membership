@@ -23,11 +23,17 @@ class ProductRepository extends ServiceEntityRepository
         return $this->find($id);
     }
 
+    /**
+     * @return list<Product>
+     */
     public function findNotDeleted(): array
     {
         return $this->findBy(['isDeleted' => false]);
     }
 
+    /**
+     * @return list<Product>
+     */
     public function findActive(): array
     {
         return $this->findBy(['status' => Product::STATUS_ACTIVE, 'isDeleted' => false]);

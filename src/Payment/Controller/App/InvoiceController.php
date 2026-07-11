@@ -27,7 +27,7 @@ class InvoiceController extends RestController
     {
     }
 
-    /** @return array{payer: UserInterface}|array{id: -1} */
+    /** @return array<string, mixed> */
     protected function commonFilter(): array
     {
         $user = $this->getUser();

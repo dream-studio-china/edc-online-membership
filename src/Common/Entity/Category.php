@@ -29,6 +29,7 @@ class Category
     #[ORM\JoinColumn(name: 'parent_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
     private ?Category $parent = null;
 
+    /** @var Collection<int, Category> */
     #[ORM\OneToMany(targetEntity: self::class, mappedBy: 'parent')]
     #[ORM\OrderBy(['name' => 'ASC'])]
     private ?Collection $children = null;
@@ -111,6 +112,9 @@ class Category
         return $this;
     }
 
+    /**
+     * @return Collection<int, Category>
+     */
     public function getChildren(): Collection
     {
         if ($this->children === null) {

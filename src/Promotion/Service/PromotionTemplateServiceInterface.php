@@ -12,12 +12,14 @@ interface PromotionTemplateServiceInterface extends BaseServiceInterface
 {
     /**
      * Parse DSL text and return AST. Throws DslSyntaxException on failure.
-     * @return array{ast: array, errors: array}
+     * @return array{ast: array<string, mixed>|null, errors: list<array{line: int, col: int, message: string}>}
      */
     public function parseDsl(string $dsl): array;
 
     /**
      * Simulate promotion application against a sample context.
+     * @param array<string, mixed> $sampleContext
+     * @return array<string, mixed>
      */
     public function simulate(PromotionTemplate $template, array $sampleContext): array;
 }

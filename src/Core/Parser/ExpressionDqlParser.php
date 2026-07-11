@@ -25,7 +25,9 @@ use Symfony\Component\Validator\Exception\ValidatorException;
 class ExpressionDqlParser
 {
     private string $expression = '';
+    /** @var array<string, mixed> */
     private array $values = [];
+    /** @var list<string> */
     private array $names = [];
     private string $where = '';
     private string $dataClass = '';
@@ -79,6 +81,7 @@ class ExpressionDqlParser
         return $this;
     }
 
+    /** @param array<string, mixed> $values */
     public function setValues(array $values): self
     {
         // keep entity signature key present for compatibility
@@ -211,7 +214,7 @@ class ExpressionDqlParser
      *
      * This keeps the parser DB-agnostic; actual QueryBuilder assembly is done by ExpressionQueryBuilderAssembler.
      *
-     * @return array{joins: array, where: string, params: array}
+     * @return array{joins: array<string, string>, where: string, params: array<string, mixed>}
      */
     public function getFragments(): array
     {
@@ -431,6 +434,7 @@ class ExpressionDqlParser
 
             // Traverse remaining segments on the currentClass
             foreach ($segments as $i => $seg) {
+                /** @var class-string<object> $currentClass */
                 $meta = $em->getClassMetadata($currentClass);
                 if ($meta->hasAssociation($seg)) {
                     $assoc = $meta->getAssociationMapping($seg);

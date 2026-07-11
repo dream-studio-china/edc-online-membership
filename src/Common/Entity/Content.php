@@ -26,6 +26,7 @@ class Content
     #[ORM\JoinColumn(name: 'category_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
     private ?Category $category = null;
 
+    /** @var Collection<int, Tag> */
     #[ORM\ManyToMany(targetEntity: Tag::class)]
     #[ORM\JoinTable(name: 'common_content_tag')]
     #[ORM\JoinColumn(name: 'content_id', referencedColumnName: 'id', onDelete: 'CASCADE')]

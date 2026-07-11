@@ -31,6 +31,7 @@ class OrderController extends RestController
     ) {
     }
 
+    /** @return array<string, mixed> */
     protected function commonFilter(): array
     {
         $user = $this->getCurrentUser();

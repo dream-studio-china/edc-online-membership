@@ -23,6 +23,9 @@ class OrderRepository extends ServiceEntityRepository
         return $this->find($id);
     }
 
+    /**
+     * @return list<Order>
+     */
     public function findByUser(int $userId): array
     {
         return $this->findBy(['user' => $userId], ['createdAt' => 'DESC']);

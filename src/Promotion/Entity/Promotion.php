@@ -48,6 +48,7 @@ class Promotion
     #[ORM\Column(type: 'datetime_immutable', nullable: true)]
     private ?\DateTimeImmutable $endTime = null;
 
+    /** @var array<string, mixed>|null */
     #[ORM\Column(type: 'json', nullable: true)]
     private ?array $config = null;
 
@@ -165,11 +166,13 @@ class Promotion
         return $this;
     }
 
+    /** @return array<string, mixed>|null */
     public function getConfig(): ?array
     {
         return $this->config;
     }
 
+    /** @param array<string, mixed>|null $config */
     public function setConfig(?array $config): self
     {
         $this->config = $config;

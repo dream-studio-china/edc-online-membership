@@ -16,6 +16,9 @@ class DiscountStrategy implements PromotionStrategyInterface
         return 'discount';
     }
 
+    /**
+     * @param array<string, mixed> $config
+     */
     public function apply(AstNode $action, PriceCalculationContext $context, array $config): void
     {
         $rate = $this->resolveValue($action->data['rate'] ?? $action->data['value'] ?? 100, $config);

@@ -47,12 +47,15 @@ class OrderItem
     #[ORM\Column(type: 'bigint', options: ['default' => 0])]
     private int $profit = 0;
 
+    /** @var array<string, mixed>|null */
     #[ORM\Column(type: 'json', nullable: true)]
     private ?array $specSnapshot = null;
 
+    /** @var array<string, mixed>|null */
     #[ORM\Column(type: 'json', nullable: true)]
     private ?array $productSnapshot = null;
 
+    /** @var array<string, mixed>|null */
     #[ORM\Column(type: 'json', nullable: true)]
     private ?array $metadata = null;
 
@@ -173,33 +176,51 @@ class OrderItem
         return $this;
     }
 
+    /**
+     * @return array<string, mixed>|null
+     */
     public function getSpecSnapshot(): ?array
     {
         return $this->specSnapshot;
     }
 
+    /**
+     * @param array<string, mixed>|null $specSnapshot
+     */
     public function setSpecSnapshot(?array $specSnapshot): self
     {
         $this->specSnapshot = $specSnapshot;
         return $this;
     }
 
+    /**
+     * @return array<string, mixed>|null
+     */
     public function getProductSnapshot(): ?array
     {
         return $this->productSnapshot;
     }
 
+    /**
+     * @param array<string, mixed>|null $productSnapshot
+     */
     public function setProductSnapshot(?array $productSnapshot): self
     {
         $this->productSnapshot = $productSnapshot;
         return $this;
     }
 
+    /**
+     * @return array<string, mixed>|null
+     */
     public function getMetadata(): ?array
     {
         return $this->metadata;
     }
 
+    /**
+     * @param array<string, mixed>|null $metadata
+     */
     public function setMetadata(?array $metadata): self
     {
         $this->metadata = $metadata;

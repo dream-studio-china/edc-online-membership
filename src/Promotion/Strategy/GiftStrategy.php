@@ -16,6 +16,9 @@ class GiftStrategy implements PromotionStrategyInterface
         return 'gift';
     }
 
+    /**
+     * @param array<string, mixed> $config
+     */
     public function apply(AstNode $action, PriceCalculationContext $context, array $config): void
     {
         $specRef = $action->data['spec'] ?? $action->data['spec:config.gift_spec_id'] ?? null;

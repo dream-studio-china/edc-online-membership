@@ -13,6 +13,7 @@ interface PromotionServiceInterface extends BaseServiceInterface
 {
     /**
      * Find all available promotions matching the current context.
+     * @param list<int> $excludedIds
      * @return Promotion[]
      */
     public function getAvailable(
@@ -23,6 +24,7 @@ interface PromotionServiceInterface extends BaseServiceInterface
 
     /**
      * Get the top-ranked available promotion, or null.
+     * @param list<int> $excludedIds
      */
     public function getFirstAvailable(
         PriceCalculationContext $context,

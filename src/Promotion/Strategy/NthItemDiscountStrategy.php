@@ -16,6 +16,9 @@ class NthItemDiscountStrategy implements PromotionStrategyInterface
         return 'nth_discount';
     }
 
+    /**
+     * @param array<string, mixed> $config
+     */
     public function apply(AstNode $action, PriceCalculationContext $context, array $config): void
     {
         $position = (int) ($action->data['position'] ?? 0);

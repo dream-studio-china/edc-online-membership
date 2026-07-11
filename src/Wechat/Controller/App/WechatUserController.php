@@ -31,9 +31,7 @@ class WechatUserController extends RestController
         protected readonly WechatUserServiceInterface $service
     ) {}
 
-    /**
-     * @return array{user: UserInterface}|array{id: -1}
-     */
+    /** @return array<string, mixed> */
     protected function commonFilter(): array
     {
         $user = $this->getUser();

@@ -54,7 +54,7 @@ class ExpressionQueryBuilderAssembler
      *
      * @param QueryBuilder $qb
      * @param ExpressionDqlParser $parser
-     * @param array $options optional ['targetRootAlias' => string]
+     * @param array<string, mixed> $options optional ['targetRootAlias' => string]
      * @return QueryBuilder
      */
     public function applyToQueryBuilder(QueryBuilder $qb, ExpressionDqlParser $parser, array $options = []): QueryBuilder
@@ -69,7 +69,7 @@ class ExpressionQueryBuilderAssembler
      *
      * @param QueryBuilder $qb
      * @param ExpressionDqlParser $parser
-     * @param array<string, string>|array<string, mixed[]> $fragments
+     * @param array{joins?: array<string, string>, where?: string, params?: array<string, mixed>} $fragments
      * @param array<string, mixed> $options
      */
     private function applyFragmentsToQueryBuilder(QueryBuilder $qb, ExpressionDqlParser $parser, array $fragments, array $options = []): void

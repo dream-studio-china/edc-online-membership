@@ -30,6 +30,9 @@ class MediaService extends BaseService implements MediaServiceInterface
         parent::__construct($container, Media::class);
     }
 
+    /**
+     * @param array<string, mixed> $meta
+     */
     public function createFromUpload(UploadedFile $file, ?string $storage = null, array $meta = [], ?User $owner = null): Media
     {
         $this->validateUpload($file);

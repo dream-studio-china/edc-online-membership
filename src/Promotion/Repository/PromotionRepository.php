@@ -26,6 +26,7 @@ class PromotionRepository extends ServiceEntityRepository
 
     /**
      * @return Promotion[]
+     * @param int[] $excludedIds
      */
     public function findActiveForStore(string $storeCode, \DateTimeImmutable $now, ?int $phase, array $excludedIds = []): array
     {

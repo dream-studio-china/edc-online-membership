@@ -24,9 +24,7 @@ class WalletController extends RestController
         protected readonly WalletService $service,
     ) {}
 
-    /**
-     * @return array{user: User}|array{id: int}
-     */
+    /** @return array<string, mixed> */
     protected function commonFilter(): array
     {
         $user = $this->getUser();

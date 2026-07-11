@@ -20,8 +20,11 @@ class TagController extends RestController
     use ApiView, DetailApiViewMixin, ListApiViewMixin,
         CreateApiViewMixin, UpdateApiViewMixin, DeleteApiViewMixin;
 
+    /** @var list<string> */
     protected array $requiredCreateProperties = ['name', 'slug'];
+    /** @var list<string> */
     protected array $acceptedCreateProperties = ['name', 'slug', 'color'];
+    /** @var list<string> */
     protected array $acceptedUpdateProperties = ['name', 'slug', 'color'];
 
     public function __construct(

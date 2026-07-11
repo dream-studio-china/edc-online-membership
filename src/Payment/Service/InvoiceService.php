@@ -291,9 +291,10 @@ class InvoiceService extends BaseService implements InvoiceServiceInterface
         });
     }
 
-    /** @return Invoice[] */
+    /** @return list<Invoice> */
     public function findBySource(string $sourceType, string $sourceId): array
     {
+        /** @var list<Invoice> */
         return $this->getRepository()->findBy(['sourceType' => $sourceType, 'sourceId' => $sourceId], ['id' => 'DESC']);
     }
 
