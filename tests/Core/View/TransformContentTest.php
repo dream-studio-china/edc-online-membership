@@ -25,7 +25,7 @@ final class TransformContentTest extends TestCase
         );
         $listResult = $controller->transform(
             ['relation' => 'all'],
-            ['relation' => "Service.list(':value').getId()"],
+            ['relation' => "Service.list(':value')[0].getId()"],
             $entity,
         );
 
@@ -48,6 +48,71 @@ final class TransformContentTest extends TestCase
 
         self::assertSame('lookup', $result['relation']);
         self::assertFalse($service->wasErased);
+    }
+
+    public function testServiceGatewayDoesNotExposeRetrievedEntityMethods(): void
+    {
+        $controller = $this->createController(new TransformLookupService());
+
+        $result = $controller->transform(
+            ['relation' => 'lookup'],
+            ['relation' => "Service.get(':value').getSecret()"],
+            new TransformInputEntity(),
+        );
+
+        self::assertSame('lookup', $result['relation']);
+    }
+
+    public function testEntityGatewayBlocksMutatorsAndRelationGetters(): void
+    {
+        $entity = new TransformInputEntity();
+        $controller = $this->createController(new TransformLookupService());
+
+        $mutatorResult = $controller->transform(
+            ['relation' => 'lookup'],
+            ['relation' => "entity.setSensitive(':value')"],
+            $entity,
+        );
+        $relationResult = $controller->transform(
+            ['relation' => 'lookup'],
+            ['relation' => 'entity.getUser().getEmail()'],
+            $entity,
+        );
+
+        self::assertSame('lookup', $mutatorResult['relation']);
+        self::assertSame('lookup', $relationResult['relation']);
+        self::assertFalse($entity->wasMutated);
+        self::assertFalse($entity->userWasRead);
+    }
+
+    public function testServiceGatewayRejectsObjectCriteria(): void
+    {
+        $service = new TransformLookupService();
+        $controller = $this->createController($service);
+
+        $result = $controller->transform(
+            ['relation' => 'lookup'],
+            ['relation' => 'Service.get(entity).getId()'],
+            new TransformInputEntity(),
+        );
+
+        self::assertSame('lookup', $result['relation']);
+        self::assertNull($service->getCriteria);
+    }
+
+    public function testServiceGatewayRejectsUnboundedListQueries(): void
+    {
+        $service = new TransformLookupService();
+        $controller = $this->createController($service);
+
+        $result = $controller->transform(
+            ['relation' => 'lookup'],
+            ['relation' => 'Service.list()[0].getId()'],
+            new TransformInputEntity(),
+        );
+
+        self::assertSame('lookup', $result['relation']);
+        self::assertNull($service->listCriteria);
     }
 
     private function createController(TransformLookupService $service): object
@@ -76,6 +141,30 @@ final class TransformInputEntity
 {
     #[ORM\ManyToOne(targetEntity: TransformLookupEntity::class)]
     private ?object $relation = null;
+    public bool $wasMutated = false;
+    public bool $userWasRead = false;
+
+    public function getId(): int
+    {
+        return 7;
+    }
+
+    public function setSensitive(string $value): void
+    {
+        $this->wasMutated = true;
+    }
+
+    public function getUser(): object
+    {
+        $this->userWasRead = true;
+
+        return new class {
+            public function getEmail(): string
+            {
+                return 'private@example.test';
+            }
+        };
+    }
 }
 
 final class TransformLookupEntity
@@ -95,11 +184,12 @@ final class TransformLookupService
         return new TransformLookupResult(11);
     }
 
-    public function list(mixed $criteria = null): TransformLookupResult
+    /** @return list<TransformLookupResult> */
+    public function list(mixed $criteria = null): array
     {
         $this->listCriteria = $criteria;
 
-        return new TransformLookupResult(22);
+        return [new TransformLookupResult(22)];
     }
 
     public function eraseEverything(): void
@@ -117,5 +207,10 @@ final class TransformLookupResult
     public function getId(): int
     {
         return $this->id;
+    }
+
+    public function getSecret(): string
+    {
+        return 'secret';
     }
 }

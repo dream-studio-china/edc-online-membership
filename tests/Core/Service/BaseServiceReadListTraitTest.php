@@ -12,6 +12,8 @@ use Doctrine\ORM\QueryBuilder;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Validator\Exception\ValidatorException;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 final class BaseServiceReadListTraitTest extends TestCase
 {
@@ -208,7 +210,7 @@ final class BaseServiceReadListTraitTest extends TestCase
             '@order' => 'entity.name|DESC',
             '@hints' => '{"HINT_CUSTOM_OUTPUT_WALKER":"walker"}',
         ]);
-        $container = new ReadListFakeContainer($em, $this->createRequestStack($request));
+        $container = new ReadListFakeContainer($em, $this->createRequestStack($request), $this->createAdminUser());
 
         $service = $this->createService($container, ReadListEntity::class);
         $result = $service->list(null, null, false);
@@ -241,7 +243,7 @@ final class BaseServiceReadListTraitTest extends TestCase
     {
         $repo = new ReadListFakeRepository([]);
         $em = new ReadListFakeEntityManager($repo);
-        $container = new ReadListFakeContainer($em, $this->createRequestStack(new Request(['@showDQL' => '1'])));
+        $container = new ReadListFakeContainer($em, $this->createRequestStack(new Request(['@showDQL' => '1'])), null, 'dev');
 
         $service = $this->createService($container, ReadListEntity::class);
 
@@ -259,7 +261,7 @@ final class BaseServiceReadListTraitTest extends TestCase
             '@select' => 'entity.name',
             '@sort' => 'x.getId() > y.getId()',
         ]);
-        $container = new ReadListFakeContainer($em, $this->createRequestStack($request));
+        $container = new ReadListFakeContainer($em, $this->createRequestStack($request), $this->createAdminUser());
 
         $service = $this->createService($container, ReadListEntity::class);
 
@@ -307,7 +309,7 @@ final class BaseServiceReadListTraitTest extends TestCase
             '@filter' => 'entity.getName() == "alpha"',
             '@sort' => 'x.getId() > y.getId()',
         ]);
-        $container = new ReadListFakeContainer($em, $this->createRequestStack($request));
+        $container = new ReadListFakeContainer($em, $this->createRequestStack($request), $this->createAdminUser());
 
         $expressionService = $this->createMock(ExpressionServiceInterface::class);
         $expressionService->method('buildFilter')->willThrowException(new \RuntimeException('unsupported filter'));
@@ -324,6 +326,53 @@ final class BaseServiceReadListTraitTest extends TestCase
         $stack->push($request);
 
         return $stack;
+    }
+
+    public function testListRejectsPrivilegedParametersForNonAdmins(): void
+    {
+        foreach (['@dql' => 'SELECT i.id FROM Items i', '@sort' => 'x.getId()', '@hints' => '{}'] as $parameter => $value) {
+            $repo = new ReadListFakeRepository([]);
+            $em = new ReadListFakeEntityManager($repo);
+            $container = new ReadListFakeContainer($em, $this->createRequestStack(new Request([$parameter => $value])));
+            $service = $this->createService($container, ReadListEntity::class);
+
+            try {
+                $service->list(null, null, false);
+                self::fail(sprintf('%s should require ROLE_ADMIN.', $parameter));
+            } catch (AccessDeniedHttpException) {
+                self::addToAssertionCount(1);
+            }
+        }
+    }
+
+    public function testListRejectsShowDqlOutsideDevelopment(): void
+    {
+        $repo = new ReadListFakeRepository([]);
+        $em = new ReadListFakeEntityManager($repo);
+        $container = new ReadListFakeContainer($em, $this->createRequestStack(new Request(['@showDQL' => '1'])));
+        $service = $this->createService($container, ReadListEntity::class);
+
+        $this->expectException(AccessDeniedHttpException::class);
+        $service->list(null, null, false);
+    }
+
+    public function testListRejectsIdentitySelectPaths(): void
+    {
+        $repo = new ReadListFakeRepository([]);
+        $em = new ReadListFakeEntityManager($repo);
+        $container = new ReadListFakeContainer($em, $this->createRequestStack(new Request(['@select' => 'entity.user.password'])));
+        $service = $this->createService($container, ReadListEntity::class);
+
+        $this->expectException(AccessDeniedHttpException::class);
+        $service->list(null, null, false);
+    }
+
+    private function createAdminUser(): UserInterface
+    {
+        $user = $this->createMock(UserInterface::class);
+        $user->method('getRoles')->willReturn(['ROLE_ADMIN']);
+
+        return $user;
     }
 }
 
@@ -421,6 +470,8 @@ final class ReadListFakeContainer implements ContainerInterface
     public function __construct(
         private readonly ReadListFakeEntityManager $em,
         private readonly ?RequestStack $requestStack = null,
+        private readonly ?UserInterface $user = null,
+        private readonly ?string $environment = null,
     ) {}
 
     public function get(string $id, int $invalidBehavior = self::EXCEPTION_ON_INVALID_REFERENCE): ?object
@@ -429,7 +480,16 @@ final class ReadListFakeContainer implements ContainerInterface
             'doctrine.orm.entity_manager' => $this->em,
             'logger' => new NullLogger(),
             'request_stack' => $this->requestStack ?? new RequestStack(),
-            'security.token_storage' => new class { public function getToken(): ?object { return null; } },
+            'security.token_storage' => new class($this->user) {
+                public function __construct(private readonly ?UserInterface $user) {}
+                public function getToken(): ?object
+                {
+                    return $this->user === null ? null : new class($this->user) {
+                        public function __construct(private readonly UserInterface $user) {}
+                        public function getUser(): UserInterface { return $this->user; }
+                    };
+                }
+            },
             'serializer' => new \Symfony\Component\Serializer\Serializer([
                 new \Symfony\Component\Serializer\Normalizer\ObjectNormalizer()
             ], [new \Symfony\Component\Serializer\Encoder\JsonEncoder()]),
@@ -441,7 +501,7 @@ final class ReadListFakeContainer implements ContainerInterface
     public function has(string $id): bool { return true; }
     public function initialized(string $id): bool { return true; }
     public function set(string $id, ?object $service): void {}
-    public function getParameter(string $name): array|bool|string|int|float|\UnitEnum|null { return null; }
-    public function hasParameter(string $name): bool { return false; }
+    public function getParameter(string $name): array|bool|string|int|float|\UnitEnum|null { return $name === 'kernel.environment' ? $this->environment : null; }
+    public function hasParameter(string $name): bool { return $name === 'kernel.environment' && $this->environment !== null; }
     public function setParameter(string $name, array|bool|string|int|float|\UnitEnum|null $value): void {}
 }

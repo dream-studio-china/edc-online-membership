@@ -72,7 +72,7 @@ trait TransformContent
                         throw new \RuntimeException('Related service does not support get().');
                     }
 
-                    return $this->service->get($criteria);
+                    return $this->identity($this->service->get($this->validateCriteria($criteria)));
                 }
 
                 public function list(mixed $criteria = null): mixed
@@ -81,7 +81,72 @@ trait TransformContent
                         throw new \RuntimeException('Related service does not support list().');
                     }
 
-                    return $this->service->list($criteria);
+                    $results = $this->service->list($this->validateCriteria($criteria));
+                    if (!is_iterable($results)) {
+                        throw new \RuntimeException('Related service list() must return an iterable result.');
+                    }
+
+                    $identities = [];
+                    foreach ($results as $result) {
+                        if (!is_object($result)) {
+                            throw new \RuntimeException('Related service list() returned a non-object result.');
+                        }
+                        $identities[] = $this->identity($result);
+                    }
+
+                    return $identities;
+                }
+
+                private function validateCriteria(mixed $criteria): mixed
+                {
+                    if (is_scalar($criteria)) {
+                        return $criteria;
+                    }
+
+                    if (!is_array($criteria) || $criteria === []) {
+                        throw new \InvalidArgumentException('Service criteria must be a non-empty scalar value or array of scalar values.');
+                    }
+
+                    foreach ($criteria as $value) {
+                        if (!is_scalar($value) && $value !== null) {
+                            throw new \InvalidArgumentException('Service criteria must not contain objects or nested arrays.');
+                        }
+                    }
+
+                    return $criteria;
+                }
+
+                private function identity(?object $entity): object
+                {
+                    return new class($entity) {
+                        public function __construct(private readonly ?object $entity)
+                        {
+                        }
+
+                        public function getId(): mixed
+                        {
+                            if ($this->entity === null || !method_exists($this->entity, 'getId')) {
+                                return null;
+                            }
+
+                            return $this->entity->getId();
+                        }
+                    };
+                }
+            };
+
+            $entityGateway = new class($entity) {
+                public function __construct(private readonly object $entity)
+                {
+                }
+
+                public function getId(): mixed
+                {
+                    if (!method_exists($this->entity, 'getId')) {
+                        return null;
+                    }
+
+                    return $this->entity->getId();
                 }
             };
 
@@ -91,7 +156,7 @@ trait TransformContent
                 $content[$field] = $expressionLanguage->evaluate(
                     $expression, [
                         'Service' => $serviceGateway,
-                        'entity' => $entity,
+                        'entity' => $entityGateway,
                         'Math' => new Math(),
                         'ArrayCommon' => new ArrayCommon()
                     ]
