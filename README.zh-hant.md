@@ -66,7 +66,7 @@
 │   └── Identity/                 # 鑑權模組
 ├── config/                       # Symfony 配置
 ├── migrations/                   # Doctrine 遷移（12 個版本）
-├── tests/                        # 1589 測試、5165 斷言、91%+ 覆蓋率
+├── tests/                        # 1593 測試、5185 斷言、91%+ 覆蓋率
 ├── translations/                 # 多語言翻譯檔案
 └── compose.yaml                  # Docker Compose
 ```
@@ -87,7 +87,7 @@
 
 ## 測試
 
-**1589 個測試 · 5165 個斷言 · 91%+ 行覆蓋率**
+**1593 個測試 · 5185 個斷言 · 91%+ 行覆蓋率**
 
 ```bash
 ./vendor/bin/phpunit
@@ -102,6 +102,17 @@ XDEBUG_MODE=coverage ./vendor/bin/phpunit --coverage-text
 ```bash
 XDEBUG_MODE=coverage ./vendor/bin/phpunit --coverage-html var/coverage
 ```
+
+### 靜態分析
+
+專案需要 PHP 8.4 或更新版本。執行與 CI 相同的靜態檢查：
+
+```bash
+composer phpstan
+composer rector:types:check
+```
+
+PHPStan 以 Level 8 檢查設定的 `src/` 範圍。CI 的 Rector 僅檢查 Doctrine Collection/Repository PHPDoc 型別規則；`composer rector` 是範圍較廣的選用重構命令，套用前應先審查變更。
 
 ### 測試分組
 

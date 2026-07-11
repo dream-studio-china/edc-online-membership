@@ -74,7 +74,7 @@ Compared with plain generated boilerplate, it provides:
 - **System Introspection**: Entity metadata and route export endpoints (`/system/*`).
 - **Promotion DSL Engine**: Custom lexer/parser/evaluator for human-readable promotion rules with 7 promotion types (full_reduction, discount, gift, nth_discount, tiered, free_shipping, member_discount). Tagged pricing calculator (priority=60) runs in the Trade price pipeline after the subtotal is aggregated. Supports member-targeted SKU discounts, multi-store routing, global campaigns, and `best_price` conflict mode with simulated candidate comparison.
 - **Profile Entity**: Auto-created on User registration via Doctrine listener. Carries level (bronze→diamond), nickname, avatar, metadata. Points delegated to Wallet (currency=POINTS).
-- **Comprehensive Testing**: 1589 tests, 5165 assertions, 91%+ line coverage.
+- **Quality Gates**: PHPUnit coverage, PHPStan Level 8, and Rector type-rule checks in CI.
 - **Docker Compose**: MySQL 8 + Mailpit for development.
 
 ## Tech Stack
@@ -88,6 +88,7 @@ Compared with plain generated boilerplate, it provides:
 | Auth | JWT (RS256) + OTP (SMS) |
 | API Docs | NelmioApiDocBundle (OpenAPI 3) |
 | Testing | PHPUnit `^12.5` |
+| Static analysis | PHPStan Level 8 + Rector type rules |
 | Frontend | Stimulus + Turbo (AssetMapper) |
 | Docs | MkDocs Material (GitHub Pages) |
 
@@ -176,7 +177,7 @@ See `composer.json` for the full dependency list.
 ├── config/                       # Symfony configuration
 │   └── packages/                 #   Doctrine, Security, Workflow, Serializer, etc.
 ├── migrations/                   # Doctrine migrations (12 versions)
-├── tests/                        # 1589 PHPUnit tests, 5157 assertions, 91%+ coverage
+├── tests/                        # 1593 PHPUnit tests, 5185 assertions, 91%+ coverage
 ├── docs/                         # Project documentation
 │   ├── design/                   #   Design contracts (system, API, data, module, controller)
 │   │   └── bundles/              #   Per-module design documents
@@ -615,7 +616,7 @@ Note on controller construction: Controllers extending `RestController` receive 
 
 ## Testing
 
-**1589 tests · 5165 assertions · 91%+ line coverage**
+**1593 tests · 5185 assertions · 91%+ line coverage**
 
 Run all tests:
 
@@ -644,6 +645,19 @@ XDEBUG_MODE=coverage ./vendor/bin/phpunit --coverage-html var/coverage
 Then open `var/coverage/index.html` in a browser.
 
 `phpunit.dist.xml` is preconfigured with `APP_ENV=test` and `KERNEL_CLASS=App\Kernel`. Tests use SQLite (`var/test.db`) for isolation.
+
+### Static analysis
+
+PHP 8.4+ is required. Run the same static-analysis checks enforced by CI:
+
+```bash
+composer phpstan
+composer rector:types:check
+```
+
+PHPStan runs at Level 8 over its configured `src/` scope. Rector's CI check is
+limited to Doctrine Collection/Repository PHPDoc rules; `composer rector` is a
+broader opt-in refactoring command and should be reviewed before applying it.
 
 ### Test groups
 
@@ -888,7 +902,8 @@ Check serializer service wiring and request parameters like `@display`, `@expand
 2. Follow the [design contracts](docs/design/) for consistency.
 3. Keep pull requests focused.
 4. Add/update tests for behavior changes.
-5. Use conventional commit messages (e.g., `feat(module): description`).
+5. Run `composer phpstan` and `composer rector:types:check`.
+6. Use conventional commit messages (e.g., `feat(module): description`).
 
 ## Internationalization (i18n)
 

@@ -257,6 +257,13 @@ Supported via `SerializerContextFactory`:
 - Test data fixtures are inserted per-test or per-class
 - Transactions are wrapped per test and rolled back (auto-rollback)
 
+### 7.5 Static Analysis Contract
+
+- **PHPStan**: Level 8 over the configured `src/` scope; run `composer phpstan`
+- **Rector**: CI dry-runs `composer rector:types:check` for Doctrine Collection/Repository PHPDoc rules
+- **Broader Rector**: `composer rector` is opt-in and must be reviewed before applying changes
+- **Runtime**: Use PHP 8.4 or newer for Composer, Symfony, PHPUnit, PHPStan, and Rector commands
+
 ---
 
 ## 8. Code Style Contract
@@ -372,11 +379,11 @@ class XxxCommand extends Command
 | Step | Action |
 |------|--------|
 | 1 | Set up PHP 8.4 |
-| 2 | Start PostgreSQL service |
-| 3 | Install dependencies (`composer install`) |
-| 4 | Run migrations (test DB) |
-| 5 | Run PHPUnit with coverage |
-| 6 | Enforce 90% line coverage minimum |
+| 2 | Install dependencies (`composer install`) |
+| 3 | Run PHPStan Level 8 with an isolated SQLite URL |
+| 4 | Run Rector type-rule dry-run with an isolated SQLite URL |
+| 5 | Start PostgreSQL service and prepare the test database |
+| 6 | Run PHPUnit with coverage and enforce 90% line coverage minimum |
 
 ### 11.2 Docker
 

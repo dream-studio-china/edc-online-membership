@@ -9,6 +9,9 @@
    composer install
    ```
 
+   Use PHP 8.4 or newer. `composer install` runs Symfony's cache-clear script,
+   so configure `DATABASE_URL` before installing dependencies.
+
 3. Set up local environment:
 
    ```bash
@@ -70,15 +73,24 @@ Supported scopes: `common`, `trade`, `wallet`, `payment`, `wechat`, `identity`, 
 ### Before Submitting a PR
 
 ```bash
+# Run PHPStan at Level 8
+composer phpstan
+
+# Verify Doctrine Collection/Repository PHPDoc rules without modifying files
+composer rector:types:check
+
 # Run all tests (CI enforces 90% minimum coverage)
 XDEBUG_MODE=coverage vendor/bin/phpunit --coverage-text
 
 # Run tests for a specific module
 vendor/bin/phpunit tests/Trade/
 
-# Check PHP syntax (optional — your IDE should handle this)
-# The project does not use a PHP linter; rely on PHPUnit and type checking.
+# Apply the focused Rector type rules when needed
+composer rector:types
 ```
+
+`composer rector` runs the broader opt-in Rector configuration. Do not use it
+as a formatting step without reviewing its proposed changes.
 
 ### PR Checklist
 
@@ -86,6 +98,8 @@ vendor/bin/phpunit tests/Trade/
 - [ ] Commits follow conventional commit format
 - [ ] All tests pass (`vendor/bin/phpunit`)
 - [ ] Coverage does not drop below 90% (CI enforced)
+- [ ] PHPStan passes (`composer phpstan`)
+- [ ] Rector type-rule check passes (`composer rector:types:check`)
 - [ ] New features include tests
 - [ ] Behavior changes are reflected in `docs/ai/context.md` where appropriate
 - [ ] API changes are documented with `#[OA\*]` attributes
@@ -106,7 +120,7 @@ config/           # Symfony configuration
 ├── packages/     # Per-component config (security, workflow, translation, etc.)
 migrations/       # Doctrine migrations
 translations/     # i18n translation files (en, zh, zh_Hant, ja)
-tests/            # 1221 PHPUnit tests, 90%+ coverage
+tests/            # PHPUnit tests, 90%+ coverage
 docs/
 ├── ai/           # AI context snapshot
 ├── design/       # Design contracts and bundle docs

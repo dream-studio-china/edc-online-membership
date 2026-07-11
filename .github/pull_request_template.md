@@ -22,6 +22,8 @@
 
 - [ ] `vendor/bin/phpunit` — all tests pass
 - [ ] Coverage does not drop below 90%
+- [ ] `composer phpstan` — Level 8 check passes
+- [ ] `composer rector:types:check` — no PHPDoc type changes required
 - [ ] Manual smoke test performed (describe below)
 
 ## Checklist
