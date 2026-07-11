@@ -21,12 +21,17 @@ class CategoryController extends RestController
     /**
      * @return array<string, bool>
      */
-    protected function commonFilter()
+    /** @return array<string, mixed> */
+    protected function commonFilter(): array
     {
         return ['enabled' => true];
     }
 
-    protected function detailFilter($filter = null)
+    /**
+     * @param array<string, mixed>|\Doctrine\ORM\QueryBuilder|null $filter
+     * @return array<string, mixed>|\Doctrine\ORM\QueryBuilder|null
+     */
+    protected function detailFilter(array|\Doctrine\ORM\QueryBuilder|null $filter = null)
     {
         if (is_array($filter)) {
             unset($filter['enabled']);

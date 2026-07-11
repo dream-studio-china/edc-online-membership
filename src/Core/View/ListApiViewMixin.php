@@ -14,7 +14,7 @@ trait ListApiViewMixin
      * @param array<string, mixed>|\Doctrine\ORM\QueryBuilder|null $filter
      * @return array<string, mixed>|\Doctrine\ORM\QueryBuilder|null
      */
-    protected function listFilter(array|\Doctrine\ORM\QueryBuilder|null $filter = null): array|\Doctrine\ORM\QueryBuilder|null
+    protected function listFilter(array|\Doctrine\ORM\QueryBuilder|null $filter = null)
     {
         /** list filter for list entities */
         return $filter;

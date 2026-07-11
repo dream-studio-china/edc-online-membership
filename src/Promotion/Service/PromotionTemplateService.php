@@ -23,7 +23,7 @@ class PromotionTemplateService extends BaseService implements PromotionTemplateS
     }
 
     /**
-     * @return array{ast: array|null, errors: list<array{line: int, col: int, message: string}>}
+     * @return array{ast: array<string, mixed>|null, errors: list<array{line: int, col: int, message: string}>}
      */
     public function parseDsl(string $dsl): array
     {
@@ -35,7 +35,7 @@ class PromotionTemplateService extends BaseService implements PromotionTemplateS
             $ast = $parser->parse($tokens);
 
             return [
-                'ast' => json_decode(json_encode($ast), true),
+                'ast' => json_decode((string) json_encode($ast), true),
                 'errors' => [],
             ];
         } catch (DslSyntaxException $e) {
@@ -50,6 +50,10 @@ class PromotionTemplateService extends BaseService implements PromotionTemplateS
         }
     }
 
+    /**
+     * @param array<string, mixed> $sampleContext
+     * @return array<string, mixed>
+     */
     public function simulate(PromotionTemplate $template, array $sampleContext): array
     {
         $ast = $template->getAstCache();
@@ -115,8 +119,8 @@ class PromotionTemplateService extends BaseService implements PromotionTemplateS
             }
 
             $program = $result['ast']['data'] ?? [];
-            $type = $data['type'] ?? $object->getType();
-            $phase = $data['phase'] ?? $object->getPhase();
+            $type = $data['type'] ?? ($object instanceof PromotionTemplate ? $object->getType() : '');
+            $phase = $data['phase'] ?? ($object instanceof PromotionTemplate ? $object->getPhase() : 0);
             if (($program['type'] ?? $type) !== $type) {
                 throw new ValidatorException('Template type must match DSL type.');
             }

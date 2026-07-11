@@ -19,7 +19,7 @@ trait BaseServiceMutationTrait
     /**
      * @return TEntity
      */
-    public function new(): object
+    public function new()
     {
         $ref = new \ReflectionClass($this->entityClass);
         $ctor = $ref->getConstructor();
@@ -31,9 +31,9 @@ trait BaseServiceMutationTrait
     }
 
     /**
-     * @param TEntity $object
+     * @param mixed $object
      * @param array<string, mixed>|null $data
-     * @return TEntity|false
+     * @return object|false
      * @throws \ReflectionException
      */
     public function update(mixed $object, ?array $data = null, bool $noFlush = false): object|false
@@ -42,14 +42,23 @@ trait BaseServiceMutationTrait
             $this->logger->error('Object error, original data: '. json_encode($data));
             throw new ValidatorException('Update object cannot be null');
         }
-        else {
-            $object = $object->getId() ? $this->get($object->getId()) : $object;
+
+        if (!is_object($object)) {
+            $this->logger->error('Object error, original data: '. json_encode($data));
+            throw new ValidatorException('Update object cannot be null');
+        }
+
+        if (method_exists($object, 'getId') && $object->getId()) {
+            $object = $this->get($object->getId()) ?: $object;
         }
 
         if (!empty($data)) {
             $serializer = $this->getSerializer();
 
             try {
+                if (!is_object($object)) {
+                    throw new \RuntimeException('Object became invalid during update');
+                }
                 $reflect = new \ReflectionClass(get_class($object));
 
                 foreach ($data as $key => $val) {
@@ -64,6 +73,9 @@ trait BaseServiceMutationTrait
                             $annotation instanceof OneToOne
                         ) {
                             $dataClass = $annotation->targetEntity;
+                            if ($dataClass === null) {
+                                continue;
+                            }
                             $rep = $this->em->getRepository($dataClass);
 
                             $entity = null;
@@ -82,6 +94,9 @@ trait BaseServiceMutationTrait
                             $annotation instanceof OneToMany
                         ) {
                             $dataClass = $annotation->targetEntity;
+                            if ($dataClass === null) {
+                                continue;
+                            }
                             $rep = $this->em->getRepository($dataClass);
 
                             $ucfirst = ucfirst($key);
@@ -136,8 +151,12 @@ trait BaseServiceMutationTrait
                 throw $e;
             }
 
-            if ($serializer === null) {
+            if ($serializer === null) { // @phpstan-ignore identical.alwaysFalse
                 throw new \RuntimeException('Serializer service is not available. Ensure the Symfony serializer is registered and that ServiceLocator provides it.');
+            }
+
+            if (!is_object($object)) { // @phpstan-ignore function.alreadyNarrowedType
+                throw new \RuntimeException('Object became invalid during update');
             }
 
             $serializer->deserialize(
@@ -155,6 +174,10 @@ trait BaseServiceMutationTrait
         if (count($errors) > 0) {
             $errorsString = (string)$errors;
             throw new ValidatorException($errorsString);
+        }
+
+        if (!is_object($object)) { // @phpstan-ignore function.alreadyNarrowedType
+            throw new \RuntimeException('Object became invalid during update');
         }
 
         try {
@@ -180,6 +203,10 @@ trait BaseServiceMutationTrait
     public function remove($object): bool
     {
         $object = $this->get($object);
+
+        if (!is_object($object)) {
+            return false;
+        }
 
         $this->em->remove($object);
         try {

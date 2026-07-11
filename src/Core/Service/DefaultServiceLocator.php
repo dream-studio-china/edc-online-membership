@@ -17,37 +17,62 @@ class DefaultServiceLocator implements ServiceLocatorInterface
         $this->container = $container;
     }
 
+    /**
+     * @return \Doctrine\ORM\EntityManagerInterface
+     */
     public function getEntityManager()
     {
+        /** @var \Doctrine\ORM\EntityManagerInterface */
         return $this->container->get('doctrine.orm.entity_manager');
     }
 
+    /**
+     * @return \Psr\Log\LoggerInterface
+     */
     public function getLogger()
     {
         if ($this->container->has('logger')) {
+            /** @var \Psr\Log\LoggerInterface */
             return $this->container->get('logger');
         }
         return new \Psr\Log\NullLogger();
     }
 
+    /**
+     * @return \Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface|null
+     */
     public function getTokenStorage()
     {
-        return $this->container->has('security.token_storage') ? $this->container->get('security.token_storage') : null;
+        if ($this->container->has('security.token_storage')) {
+            /** @var \Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface */
+            return $this->container->get('security.token_storage');
+        }
+        return null;
     }
 
+    /**
+     * @return \Symfony\Component\HttpFoundation\RequestStack|null
+     */
     public function getRequestStack()
     {
-        return $this->container->has('request_stack') ? $this->container->get('request_stack') : null;
+        if ($this->container->has('request_stack')) {
+            /** @var \Symfony\Component\HttpFoundation\RequestStack */
+            return $this->container->get('request_stack');
+        }
+        return null;
     }
 
+    /**
+     * @return \Symfony\Component\Serializer\SerializerInterface|null
+     */
     public function getSerializer()
     {
         try {
-            // First try to fetch by the interface id (we alias it in services.yaml).
+            /** @var \Symfony\Component\Serializer\SerializerInterface */
             return $this->container->get(\Symfony\Component\Serializer\SerializerInterface::class);
         } catch (\Throwable $e) {
-            // Fallback to the service id 'serializer' which may exist in some setups.
             try {
+                /** @var \Symfony\Component\Serializer\SerializerInterface */
                 return $this->container->get('serializer');
             } catch (\Throwable $e) {
                 return null;
@@ -55,8 +80,15 @@ class DefaultServiceLocator implements ServiceLocatorInterface
         }
     }
 
+    /**
+     * @return \Symfony\Component\Validator\Validator\ValidatorInterface|null
+     */
     public function getValidator()
     {
-        return $this->container->has('validator') ? $this->container->get('validator') : null;
+        if ($this->container->has('validator')) {
+            /** @var \Symfony\Component\Validator\Validator\ValidatorInterface */
+            return $this->container->get('validator');
+        }
+        return null;
     }
 }

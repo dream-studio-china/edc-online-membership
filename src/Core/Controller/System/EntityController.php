@@ -87,7 +87,8 @@ class EntityController extends RestController
     {
         $entityName = str_replace('/', '\\', $entityName);
 
-        /** @var ClassMetadata $metadata */
+        /** @var class-string<object> $entityName */
+        /** @var ClassMetadata<object> $metadata */
         $metadata = $this->entityManager->getClassMetadata($entityName);
         $entityFields = [];
 
@@ -131,7 +132,8 @@ class EntityController extends RestController
 
     private function toPlainText(string $camelCase): string
     {
-        $plantext = ucwords(implode(' ', preg_split('/(?=[A-Z])/', $camelCase)));
+        $parts = preg_split('/(?=[A-Z])/', $camelCase);
+        $plantext = ucwords(implode(' ', is_array($parts) ? $parts : [$camelCase]));
         return ucfirst(strtolower($plantext));
     }
 }

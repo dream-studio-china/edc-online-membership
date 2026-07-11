@@ -118,7 +118,10 @@ class OpenApiEnricherListener
                 return;
             }
             $spec = $this->enrich($spec);
-            $response->setContent(json_encode($spec, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+            $encoded = json_encode($spec, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+            if (is_string($encoded)) {
+                $response->setContent($encoded);
+            }
             return;
         }
 
@@ -129,14 +132,17 @@ class OpenApiEnricherListener
             if (is_array($wrapper) && isset($wrapper['spec'])) {
                 $wrapper['spec'] = $this->enrich($wrapper['spec']);
                 $newJson = json_encode($wrapper, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+            if (is_string($newJson)) {
                 $content = str_replace($matches[1], $newJson, $content);
                 $response->setContent($content);
+            }
             }
         }
     }
 
     /**
      * @param array<string, mixed> $spec
+     * @return array<string, mixed>
      */
     private function enrich(array $spec): array
     {

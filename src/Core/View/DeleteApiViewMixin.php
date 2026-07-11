@@ -12,7 +12,7 @@ trait DeleteApiViewMixin
      * @param array<string, mixed>|\Doctrine\ORM\QueryBuilder|null $filter
      * @return array<string, mixed>|\Doctrine\ORM\QueryBuilder|null
      */
-    protected function deletionFilter(array|\Doctrine\ORM\QueryBuilder|null $filter = null): array|\Doctrine\ORM\QueryBuilder|null
+    protected function deletionFilter(array|\Doctrine\ORM\QueryBuilder|null $filter = null)
     {
         /** list filter for list entities */
         return $filter;
@@ -30,13 +30,16 @@ trait DeleteApiViewMixin
         $service = $this->service;
         $filter = $this->mixIdToCommonFilter($id);
         $filter = $this->deletionFilter($filter);
+        if ($filter === null) {
+            return $this->warning(ApiViewMessages::ENTITY_NOT_FOUND, 404, '', 404);
+        }
         $entity = $service->get($filter, false);
 
         if (!$entity) {
-            return $this->warning('Entity is not found', 404, '', 404);
+            return $this->warning(ApiViewMessages::ENTITY_NOT_FOUND, 404, '', 404);
         }
 
         return $service->remove($entity) ?
-            $this->success('', 'SUCCESS', 204) : $this->warning();
+            $this->success('', ApiViewMessages::SUCCESS, 204) : $this->warning();
     }
 }

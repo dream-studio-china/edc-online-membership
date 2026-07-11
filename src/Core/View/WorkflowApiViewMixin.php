@@ -75,7 +75,7 @@ trait WorkflowApiViewMixin
             $workflow = $this->container->get($this->workflow);
 
             if (!$workflow->can($entity, $transition)) {
-                throw new ValidatorException('Current transition cannot be applied.');
+                throw new ValidatorException(ApiViewMessages::TRANSITION_CANNOT_APPLY);
             }
 
             $content = json_decode($request->getContent(), true);

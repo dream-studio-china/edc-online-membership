@@ -40,7 +40,7 @@ trait TransformContent
             $reflect = new \ReflectionClass($entity);
 
             if (!$reflect->hasProperty($field)) {
-                throw new ValidatorException('Invalid content field');
+                throw new ValidatorException(ApiViewMessages::INVALID_CONTENT_FIELD);
             }
             $property = $reflect->getProperty($field);
             $service = null;
@@ -56,13 +56,13 @@ trait TransformContent
                     $dataClass = $annotation->targetEntity;
 
                     // Not accuracy
-                    $serviceClass = str_replace( 'Entity', 'Service', $dataClass) . 'Service';
+                    $serviceClass = str_replace('Entity', 'Service', (string) $dataClass) . 'Service';
                     $service = $this->resolveService($serviceClass);
                 }
             }
 
 
-            $expression = str_replace( ':value', $value, $expression);
+            $expression = str_replace(':value', (string) $value, $expression);
             try {
                 $content[$field] = $expressionLanguage->evaluate(
                     $expression, [

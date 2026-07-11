@@ -22,8 +22,8 @@ trait BaseServiceInfrastructureTrait
     /**
      * TODO: List result will HIGHLY REDUCE PERFORMANCE in database, MUST OPTIMIZE
      *
-     * @param $list
-     * @return ArrayCollection
+     * @param QueryBuilder|array<int, object>|null $list
+     * @return ArrayCollection<int, object>
      */
     public static function listResultToCollection($list): ArrayCollection
     {
@@ -41,7 +41,7 @@ trait BaseServiceInfrastructureTrait
     }
 
     /**
-     * @return array
+     * @return array<string, object>
      */
     public function externalExpressionValues(): array
     {
@@ -56,6 +56,7 @@ trait BaseServiceInfrastructureTrait
 
     /**
      * Get EntityManager (resolved from locator or container). Lazily initializes $this->em if needed.
+     * Return type intentionally uses PHPDoc only to allow test fakes.
      * @return \Doctrine\ORM\EntityManagerInterface
      */
     protected function getEntityManager()
@@ -70,6 +71,9 @@ trait BaseServiceInfrastructureTrait
 
     /**
      * Get repository for given class (or default entityClass).
+     * Return type intentionally uses PHPDoc only to allow test fakes.
+     * @param class-string<object>|null $class
+     * @return \Doctrine\Persistence\ObjectRepository<object>
      */
     protected function getRepository(?string $class = null)
     {
@@ -80,6 +84,8 @@ trait BaseServiceInfrastructureTrait
 
     /**
      * Get logger (from locator or container).
+     * Return type intentionally uses PHPDoc only to allow test fakes.
+     * @return \Psr\Log\LoggerInterface
      */
     protected function getLogger()
     {
@@ -98,6 +104,8 @@ trait BaseServiceInfrastructureTrait
 
     /**
      * Get serializer if available.
+     * Return type intentionally uses PHPDoc only to allow test fakes.
+     * @return \Symfony\Component\Serializer\SerializerInterface
      */
     protected function getSerializer()
     {
@@ -142,6 +150,8 @@ trait BaseServiceInfrastructureTrait
 
     /**
      * Get validator if available.
+     * Return type intentionally uses PHPDoc only to allow test fakes.
+     * @return \Symfony\Component\Validator\Validator\ValidatorInterface|null
      */
     protected function getValidator()
     {
@@ -153,6 +163,8 @@ trait BaseServiceInfrastructureTrait
 
     /**
      * Get request stack if available.
+     * Return type intentionally uses PHPDoc only to allow test fakes.
+     * @return \Symfony\Component\HttpFoundation\RequestStack|null
      */
     protected function getRequestStack()
     {
@@ -223,9 +235,9 @@ trait BaseServiceInfrastructureTrait
     {
         $em = $this->getEntityManager();
 
-        if (!method_exists($em, 'beginTransaction') || !method_exists($em, 'commit')) {
+        if (!method_exists($em, 'beginTransaction') || !method_exists($em, 'commit')) { // @phpstan-ignore function.alreadyNarrowedType, function.alreadyNarrowedType
             $result = $fn($em);
-            if (method_exists($em, 'flush')) {
+            if (method_exists($em, 'flush')) { // @phpstan-ignore function.alreadyNarrowedType
                 $em->flush();
             }
             return $result;

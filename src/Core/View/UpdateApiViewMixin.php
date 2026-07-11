@@ -8,11 +8,12 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Validator\Exception\ValidatorException;
+use App\Core\View\ApiViewMessages;
 
 trait UpdateApiViewMixin
 {
-    protected static $MODE_CREATE = 0;
-    protected static $MODE_UPDATE = 1;
+    protected static int $MODE_CREATE = 0;
+    protected static int $MODE_UPDATE = 1;
 
     //protected $requiredUpdateProperties = [];
     //protected $acceptedUpdateProperties = [];
@@ -86,7 +87,7 @@ trait UpdateApiViewMixin
             if (property_exists($this, 'requiredUpdateProperties')) {
                 foreach ($this->requiredUpdateProperties as $property) {
                     if (!array_key_exists($property, $content)) {
-                        throw new ValidatorException(ucfirst($property) . " cannot be empty.");
+                        throw new ValidatorException(ApiViewMessages::propertyCannotBeEmpty($property));
                     }
                     $data[$property] = $content[$property];
                 }
@@ -161,7 +162,7 @@ trait UpdateApiViewMixin
             $entity = $service->get($filter, false);
 
             if (!$entity) {
-                throw new NotFoundHttpException('Entity is not found');
+                throw new NotFoundHttpException(ApiViewMessages::ENTITY_NOT_FOUND);
             }
 
             return $this->updateSingle($entity, $content, $transformer);
@@ -215,7 +216,7 @@ trait UpdateApiViewMixin
             }
         }
         else {
-            throw new ValidatorException('Content type error.');
+            throw new ValidatorException(ApiViewMessages::CONTENT_TYPE_ERROR);
         }
 
         return $response;
@@ -240,7 +241,7 @@ trait UpdateApiViewMixin
         $response = $this->updateRecords($request);
 
         if($response === null) {
-            throw new ValidatorException('Batch update error');
+            throw new ValidatorException(ApiViewMessages::BATCH_UPDATE_ERROR);
         }
         else {
             return $this->success($response);

@@ -21,6 +21,6 @@ final class ObjectCallbackTest extends TestCase
 
     public function testHandleReturnsNullForUnsupportedInput(): void
     {
-        self::assertNull(ObjectCallback::handle('plain-string'));
+        self::assertNull(ObjectCallback::handle(new class {}));
     }
 }

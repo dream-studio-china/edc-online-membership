@@ -1,5 +1,5 @@
 parameters:
-    level: 5
+    level: 8
     paths:
         - src/
     excludePaths:
@@ -47,6 +47,16 @@ parameters:
         -
             message: '#Property .+::\$createdAt in isset\(\) is not nullable nor uninitialized#'
             path: src/
+
+        # --- ServiceLocatorInterface: return types intentionally omitted for test fakes ---
+        -
+            message: '#Method App\\Core\\Service\\ServiceLocatorInterface::\w+\(\) has no return type specified\.#'
+            path: src/Core/Service/ServiceLocatorInterface.php
+
+        # --- DefaultServiceLocator: return types intentionally omitted for test fakes ---
+        -
+            message: '#Method App\\Core\\Service\\DefaultServiceLocator::\w+\(\) has no return type specified\.#'
+            path: src/Core/Service/DefaultServiceLocator.php
 
 includes:
     - vendor/phpstan/phpstan-symfony/extension.neon

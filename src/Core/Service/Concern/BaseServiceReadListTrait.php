@@ -116,14 +116,17 @@ trait BaseServiceReadListTrait
         $object = $qb;
 
         $joins = [];
-        $joiner = function(string &$expression, array &$joins, string $rootAlias) {
+        $joiner = function(?string &$expression, array &$joins, string $rootAlias): void {
+            if (!is_string($expression)) {
+                return;
+            }
             $expressionAlias = 'entity';
             $aliasPattern = "/$expressionAlias((\.\w+)+)/";
             $aliasReplacement = "$rootAlias$1";
             $expression = preg_replace($aliasPattern, $aliasReplacement, $expression);
 
             $joinPattern = '/(\w+\s*\.\s*)+\w+/';
-            if(preg_match_all($joinPattern, $expression, $matches)) {
+            if(preg_match_all($joinPattern, $expression, $matches)) { // @phpstan-ignore argument.type
                 foreach ($matches[0] as $item) {
                     $itemParts = explode('.', $item);
                     $joinKey = '';
@@ -140,7 +143,7 @@ trait BaseServiceReadListTrait
                 }
             }
 
-            $expression = preg_replace('/\.(\w+)(?=\.)/', '_$1', $expression);
+            $expression = preg_replace('/\.(\w+)(?=\.)/', '_$1', $expression); // @phpstan-ignore argument.type
         };
 
         $select = null;

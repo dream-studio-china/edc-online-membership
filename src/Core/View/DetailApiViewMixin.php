@@ -12,7 +12,7 @@ trait DetailApiViewMixin
      * @param array<string, mixed>|\Doctrine\ORM\QueryBuilder|null $filter
      * @return array<string, mixed>|\Doctrine\ORM\QueryBuilder|null
      */
-    protected function detailFilter(array|\Doctrine\ORM\QueryBuilder|null $filter = null): array|\Doctrine\ORM\QueryBuilder|null
+    protected function detailFilter(array|\Doctrine\ORM\QueryBuilder|null $filter = null)
     {
         /** list filter for list entities */
         return $filter;
@@ -45,6 +45,9 @@ trait DetailApiViewMixin
         $service = $this->service;
         $filter = $this->mixIdToCommonFilter($id);
         $filter = $this->detailFilter($filter);
+        if ($filter === null) {
+            return $this->warning(ApiViewMessages::ENTITY_NOT_FOUND, 404, '', 404);
+        }
         $entity = $this->detailProcessor(
             $service->get($filter, false)
         );
@@ -52,6 +55,6 @@ trait DetailApiViewMixin
 
         return $response ?
             $this->success($response):
-            $this->warning('Entity is not found', 404, '', 404);
+            $this->warning(ApiViewMessages::ENTITY_NOT_FOUND, 404, '', 404);
     }
 }

@@ -109,7 +109,7 @@ trait SingleCreateAndUpdateApiViewMixin
         if ($hasRequired) {
             foreach ($this->{$requiredProp} as $property) {
                 if (!array_key_exists($property, $content)) {
-                    throw new ValidatorException(ucfirst($property) . ' is required');
+                    throw new ValidatorException(ApiViewMessages::propertyRequired($property));
                 }
                 $data[$property] = $content[$property];
             }

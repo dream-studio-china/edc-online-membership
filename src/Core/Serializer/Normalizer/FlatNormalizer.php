@@ -38,8 +38,14 @@ class FlatNormalizer implements NormalizerInterface, DenormalizerInterface, Norm
      */
     public function normalize($object, ?string $format = null, array $context = []): float|array|bool|\ArrayObject|int|string|null
     {
+        if (!is_object($object)) {
+            return null;
+        }
+
+        $className = get_class($object);
+
         // Avoid normalizing Doctrine internal objects (ClassMetadata, etc.)
-        if (str_starts_with(get_class($object), 'Doctrine\\ORM\\') || str_starts_with(get_class($object), 'Doctrine\\Persistence\\')) {
+        if (str_starts_with($className, 'Doctrine\\ORM\\') || str_starts_with($className, 'Doctrine\\Persistence\\')) {
             if (method_exists($object, '__toString')) {
                 return (string) $object;
             }
@@ -79,7 +85,7 @@ class FlatNormalizer implements NormalizerInterface, DenormalizerInterface, Norm
             }
 
             // Reduce transform function for related objects
-            $reduceTransform = function ($o) {
+            $reduceTransform = function (object $o): array {
                 $res = [];
                 if (method_exists($o, 'getId')) {
                     $res['id'] = $o->getId();

@@ -40,8 +40,13 @@ class LocaleListener
         $request = $event->getRequest();
 
         if ($request->query->has('_locale')) {
-            $locale = $this->resolveLocale($request->query->get('_locale'));
-            $request->setLocale($locale);
+            $rawLocale = $request->query->get('_locale');
+            if (is_string($rawLocale)) {
+                $locale = $this->resolveLocale($rawLocale);
+                if ($locale !== null) {
+                    $request->setLocale($locale);
+                }
+            }
 
             return;
         }

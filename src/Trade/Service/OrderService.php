@@ -25,6 +25,9 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 /** @extends BaseService<\App\Trade\Entity\Order> */
 class OrderService extends BaseService implements OrderServiceInterface
 {
+    /**
+     * @param iterable<PriceCalculatorInterface> $priceCalculators
+     */
     public function __construct(
         ContainerInterface $container,
         #[AutowireIterator('trade.price_calculator')]
@@ -36,6 +39,10 @@ class OrderService extends BaseService implements OrderServiceInterface
         parent::__construct($container, Order::class);
     }
 
+    /**
+     * @param list<array<string, mixed>> $items
+     * @param array<string, mixed>       $meta
+     */
     public function calculatePrices(array $items, string $currency = 'CNY', ?string $storeCode = null, array $meta = []): PriceCalculationResult
     {
         $context = new PriceCalculationContext($items, $currency);
@@ -51,6 +58,10 @@ class OrderService extends BaseService implements OrderServiceInterface
         return PriceCalculationResult::fromContext($context);
     }
 
+    /**
+     * @param list<array<string, mixed>> $calculatedItems
+     * @param array<string, mixed>|null  $metadata
+     */
     public function createOrder(array $calculatedItems, mixed $user, int $totalAmount, string $currency = 'CNY', ?string $notes = null, ?array $metadata = null): Order
     {
         return $this->wrapInTransaction(function () use ($calculatedItems, $user, $totalAmount, $currency, $notes, $metadata) {
@@ -110,7 +121,12 @@ class OrderService extends BaseService implements OrderServiceInterface
             throw new \RuntimeException('Order has no associated user.');
         }
 
-        $userWallet = $this->walletRepository->findByUserAndCurrency($user->getId(), $order->getCurrency());
+        $userId = $user->getId();
+        if ($userId === null) {
+            throw new \RuntimeException('User has not been persisted yet (no ID).');
+        }
+
+        $userWallet = $this->walletRepository->findByUserAndCurrency($userId, $order->getCurrency());
         if ($userWallet === null) {
             throw new \RuntimeException(sprintf(
                 'No %s wallet found for user #%d.',
@@ -118,9 +134,13 @@ class OrderService extends BaseService implements OrderServiceInterface
                 $user->getId(),
             ));
         }
+        $userWalletId = $userWallet->getId();
+        if ($userWalletId === null) {
+            throw new \RuntimeException('Wallet has not been persisted yet (no ID).');
+        }
 
         $this->transferService->transfer(
-            $userWallet->getId(),
+            $userWalletId,
             $systemWalletId,
             $order->getTotalAmount(),
             $referenceId ?? 'order-pay-' . $order->getUuid(),
@@ -150,7 +170,12 @@ class OrderService extends BaseService implements OrderServiceInterface
             throw new \RuntimeException('Order has no associated user.');
         }
 
-        $userWallet = $this->walletRepository->findByUserAndCurrency($user->getId(), $order->getCurrency());
+        $userId = $user->getId();
+        if ($userId === null) {
+            throw new \RuntimeException('User has not been persisted yet (no ID).');
+        }
+
+        $userWallet = $this->walletRepository->findByUserAndCurrency($userId, $order->getCurrency());
         if ($userWallet === null) {
             throw new \RuntimeException(sprintf(
                 'No %s wallet found for user #%d.',
@@ -158,10 +183,14 @@ class OrderService extends BaseService implements OrderServiceInterface
                 $user->getId(),
             ));
         }
+        $userWalletId = $userWallet->getId();
+        if ($userWalletId === null) {
+            throw new \RuntimeException('Wallet has not been persisted yet (no ID).');
+        }
 
         $this->transferService->transfer(
             $systemWalletId,
-            $userWallet->getId(),
+            $userWalletId,
             $order->getTotalAmount(),
             $referenceId ?? 'order-refund-' . $order->getUuid(),
             sprintf('Refund for order #%d: %s', $order->getId() ?? 0, $reason),
@@ -171,6 +200,9 @@ class OrderService extends BaseService implements OrderServiceInterface
         $order->setRefundReason($reason);
     }
 
+    /**
+     * @param array<string, mixed> $data
+     */
     public function fulfill(Order $order, array $data): void
     {
         if ($order->getStatus() !== Order::STATUS_PAID) {
@@ -191,6 +223,9 @@ class OrderService extends BaseService implements OrderServiceInterface
         $order->setFulfilledAt(new \DateTimeImmutable());
     }
 
+    /**
+     * @param array<string, mixed> $options
+     */
     public function createPayment(Order $order, string $payment = Invoice::PAYMENT_MOCK, array $options = []): PaymentResult
     {
         if ($this->invoiceService === null) {
@@ -226,6 +261,9 @@ class OrderService extends BaseService implements OrderServiceInterface
         return $this->invoiceService->pay($invoice, $payment, $options);
     }
 
+    /**
+     * @param array<string, mixed> $options
+     */
     public function refundPayment(Order $order, string $reason, array $options = []): PaymentRefundResult
     {
         if ($this->invoiceService === null) {
@@ -252,6 +290,9 @@ class OrderService extends BaseService implements OrderServiceInterface
         }
     }
 
+    /**
+     * @return list<PriceCalculatorInterface>
+     */
     private function getSortedCalculators(): array
     {
         $calculators = is_array($this->priceCalculators)

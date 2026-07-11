@@ -12,8 +12,8 @@ use Symfony\Component\Validator\Exception\ValidatorException;
 
 trait CreateApiViewMixin
 {
-    private static $TYPE_OBJECT = 'object';
-    private static $TYPE_ARRAY = 'array';
+    private static string $TYPE_OBJECT = 'object';
+    private static string $TYPE_ARRAY = 'array';
 
     //protected $requiredCreateProperties = [];
     //protected $acceptedCreateProperties = [];
@@ -65,7 +65,7 @@ trait CreateApiViewMixin
         $service = $this->service;
 
         if (FixJSON::getJSONType($request->getContent()) === false) {
-            return $this->warning('Invalid JSON', 400, '', 400);
+            return $this->warning(ApiViewMessages::INVALID_JSON, 400, '', 400);
         }
 
         // External content
@@ -110,7 +110,7 @@ trait CreateApiViewMixin
                 if(property_exists($this, 'requiredCreateProperties')) {
                     foreach ($this->requiredCreateProperties as $property) {
                         if (!array_key_exists($property, $content))
-                            throw new ValidatorException(ucfirst($property) . " is required");
+                            throw new ValidatorException(ApiViewMessages::propertyRequired($property));
                         $data[$property] = $content[$property];
                     }
                 }
@@ -173,9 +173,9 @@ trait CreateApiViewMixin
             return $this->warning($exception->getMessage(), 404, '', 404);
         }
         catch (\Exception $exception) {
-            return $this->warning($exception->getMessage() ?: 'Create failed', 500, '', 500);
+            return $this->warning($exception->getMessage() ?: ApiViewMessages::CREATE_FAILED, 500, '', 500);
         }
 
-        return $this->success($response, 'SUCCESS', 201);
+        return $this->success($response, ApiViewMessages::SUCCESS, 201);
     }
 }

@@ -7,6 +7,7 @@ use App\Core\Service\Concern\BaseServiceInfrastructureTrait;
 use App\Core\Service\Concern\BaseServiceMutationTrait;
 use App\Core\Service\Concern\BaseServiceReadListTrait;
 use Monolog\Logger;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\SerializerInterface as SymfonySerializerInterface;
@@ -14,13 +15,13 @@ use Symfony\Component\Serializer\SerializerInterface as SymfonySerializerInterfa
 /**
  * @template TEntity of object
  * @implements BaseServiceInterface<TEntity>
- * @use BaseServiceReadListTrait<TEntity>
- * @use BaseServiceMutationTrait<TEntity>
  */
 abstract class BaseService implements BaseServiceInterface
 {
     use BaseServiceInfrastructureTrait;
+    /** @use BaseServiceReadListTrait<TEntity> */
     use BaseServiceReadListTrait;
+    /** @use BaseServiceMutationTrait<TEntity> */
     use BaseServiceMutationTrait;
 
     /** @var ContainerInterface */
@@ -31,9 +32,9 @@ abstract class BaseService implements BaseServiceInterface
     protected $rep;
     /** @var class-string<TEntity> */
     protected $entityClass;
-    /** @var Logger */
+    /** @var LoggerInterface */
     protected $logger;
-    /** @var UserInterface */
+    /** @var UserInterface|null */
     protected $user;
     /** @var QueryBuilderFactory|null */
     protected $qbFactory;

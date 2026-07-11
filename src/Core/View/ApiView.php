@@ -6,13 +6,15 @@ use Doctrine\ORM\QueryBuilder;
 
 trait ApiView
 {
+    protected function entityNotFoundMessage(): string { return 'Entity not found'; }
+
     use TransformContent;
 
     // protected $service = null;
     protected ?string $serviceClass = null;
 
     /** @return array<string, mixed>|QueryBuilder */
-    protected function commonFilter(): array|QueryBuilder
+    protected function commonFilter()
     {
         /** common filter for all entities */
         return [];
@@ -22,27 +24,31 @@ trait ApiView
      * @param array<string, mixed>|QueryBuilder|null $commonFilter
      * @return array<string, mixed>|QueryBuilder
      */
-    protected function mixIdToCommonFilter(int|string $id, array|QueryBuilder|null $commonFilter = null): array|QueryBuilder
+    protected function mixIdToCommonFilter(int|string $id, array|QueryBuilder|null $commonFilter = null)
     {
         return $this->mixToCommonFilter(['id' => $id], $commonFilter);
     }
 
     /**
+     * @param array<string, mixed> $data
      * @param array<string, mixed>|QueryBuilder|null $commonFilter
      * @return array<string, mixed>|QueryBuilder
      */
-    protected function mixToCommonFilter(array $data, array|QueryBuilder|null $commonFilter = null): array|QueryBuilder
+    protected function mixToCommonFilter(array $data, array|QueryBuilder|null $commonFilter = null)
     {
         $filter = $this->commonFilter();
 
-        if($filter instanceof QueryBuilder) {
+        if ($filter instanceof QueryBuilder) {
             $alias = $filter->getRootAliases()[0];
             foreach ($data as $key => $item) {
                 $filter->andWhere("$alias.$key = :$key")->setParameter($key, $item);
             }
         }
         else {
-            $filter = array_merge($data, $commonFilter ?? $this->commonFilter());
+            $base = $commonFilter ?? $this->commonFilter();
+            if (is_array($base)) {
+                $filter = array_merge($data, $base);
+            }
         }
 
         return $filter;
