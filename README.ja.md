@@ -63,7 +63,7 @@ Symfony 8.1 ベースのプロダクション向け API スケルトン。再利
 │   └── Identity/                 # 認証モジュール
 ├── config/                       # Symfony 設定
 ├── migrations/                   # Doctrine マイグレーション（12 バージョン）
-├── tests/                        # 1589 テスト、5165 アサーション、91%+ カバレッジ
+├── tests/                        # 1593 テスト、5185 アサーション、91%+ カバレッジ
 ├── translations/                 # 多言語翻訳ファイル
 └── compose.yaml                  # Docker Compose
 ```
@@ -84,7 +84,7 @@ Symfony 8.1 ベースのプロダクション向け API スケルトン。再利
 
 ## テスト
 
-**1589 テスト · 5165 アサーション · 91%+ ラインカバレッジ**
+**1593 テスト · 5185 アサーション · 91%+ ラインカバレッジ**
 
 ```bash
 ./vendor/bin/phpunit
@@ -99,6 +99,17 @@ HTML カバレッジレポートの生成：
 ```bash
 XDEBUG_MODE=coverage ./vendor/bin/phpunit --coverage-html var/coverage
 ```
+
+### 静的解析
+
+PHP 8.4 以上が必要です。CI と同じ静的チェックを実行します。
+
+```bash
+composer phpstan
+composer rector:types:check
+```
+
+PHPStan は設定済みの `src/` を Level 8 で検査します。CI の Rector は Doctrine Collection/Repository の PHPDoc 型ルールのみを検査します。`composer rector` はより広範な任意のリファクタリングコマンドであり、適用前に差分を確認してください。
 
 ### テストグループ
 

@@ -122,7 +122,7 @@
 │   │   └── bundles/              # Per-module design docs (core, common, trade, wallet, identity, wechat, payment, storage, promotion)
 │   └── openapi/                       # endpoints.yaml + order/payment frontend flow docs
 ├── scripts/tests/                # Test scripts
-├── tests/                        # 1589 PHPUnit tests, 5165 assertions, 91%+ coverage
+├── tests/                        # 1593 PHPUnit tests, 5185 assertions, 91%+ coverage
 ├── README.md                     # English README
 ├── README.zh-cn.md               # Chinese (Simplified) README
 ├── README.zh-hant.md             # Chinese (Traditional) README

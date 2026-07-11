@@ -25,7 +25,8 @@ src/
 | Database | MySQL 8 |
 | Auth | JWT (RS256) + OTP (SMS via Alibaba Cloud) |
 | API Docs | Swagger UI (`/api/doc`) via NelmioApiDocBundle |
-| Testing | PHPUnit 12.5 (90% coverage minimum, currently 90.06%) |
+| Testing | PHPUnit 12.5 (90% coverage minimum) |
+| Static analysis | PHPStan Level 8 + Rector type-rule dry-run |
 | Assets | Stimulus + Turbo via AssetMapper |
 
 ## Key Features
@@ -62,6 +63,19 @@ docker compose exec app php bin/console app:identity:user:create admin@example.c
 - **[Design Contracts](design/system-architecture.md)** -- System architecture rules, API design, data model, controller contract
 - **[Bundles](design/bundles/core.md)** -- Per-module design documents (Core, Common, Trade, Wallet, Identity)
 - **[API Docs](/api/doc)** -- Interactive Swagger UI (when running)
+
+## Quality Checks
+
+Use PHP 8.4 or newer, then run the checks enforced by CI:
+
+```bash
+composer phpstan
+composer rector:types:check
+XDEBUG_MODE=coverage vendor/bin/phpunit --coverage-text
+```
+
+The PHPStan and Rector jobs use isolated SQLite URLs so Composer's cache-clear
+script can run without a locally configured development database.
 
 ## License
 

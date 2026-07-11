@@ -72,7 +72,7 @@
 - **系统自省**：实体元数据和路由导出接口（`/system/*`）。
 - **促销 DSL 引擎**：自定义词法/语法/求值器，支持 7 种促销类型（满减、折扣、赠品、第 N 件折扣、阶梯、免运费、会员折扣）。作为标签定价计算器（优先级 60）运行在 Trade 价格管道汇总小计之后。支持会员定向 SKU 折扣、多门店路由、全平台活动，以及 `best_price` 冲突模式（模拟候选活动并选择最低总价）。
 - **Profile 实体**：用户注册时通过 Doctrine 监听器自动创建。包含等级（青铜→钻石）、昵称、头像、元数据。积分委托给 Wallet（currency=POINTS）。
-- **完善的测试**：1589 个测试，5165 个断言，91%+ 行覆盖率。
+- **完善的测试**：1593 个测试，5185 个断言，91%+ 行覆盖率。
 - **Docker Compose**：MySQL 8 + Mailpit 开发环境。
 
 ## 技术栈
@@ -169,7 +169,7 @@
 ├── config/                       # Symfony 配置
 │   └── packages/                 #   Doctrine、Security、Workflow、Serializer 等
 ├── migrations/                   # Doctrine 迁移（12 个版本）
-├── tests/                        # 1589 个 PHPUnit 测试，5157 个断言，91%+ 覆盖率
+├── tests/                        # 1593 个 PHPUnit 测试，5185 个断言，91%+ 覆盖率
 ├── docs/                         # 项目文档
 │   ├── design/                   #   设计契约（系统、API、数据、模块、控制器）
 │   │   │   └── bundles/              #   各模块设计文档（含 Promotion）
@@ -603,7 +603,7 @@ class ContentController extends RestController
 
 ## 测试
 
-**1589 个测试 · 5165 个断言 · 91%+ 行覆盖率**
+**1593 个测试 · 5185 个断言 · 91%+ 行覆盖率**
 
 运行全部测试：
 
@@ -630,6 +630,17 @@ XDEBUG_MODE=coverage ./vendor/bin/phpunit --coverage-html var/coverage
 ```
 
 `phpunit.dist.xml` 已配置 `APP_ENV=test` 以及 `KERNEL_CLASS=App\Kernel`。
+
+### 静态分析
+
+项目需要 PHP 8.4 或更高版本。运行与 CI 相同的静态检查：
+
+```bash
+composer phpstan
+composer rector:types:check
+```
+
+PHPStan 以 Level 8 检查其配置的 `src/` 范围。CI 中的 Rector 仅检查 Doctrine Collection/Repository 的 PHPDoc 类型规则；`composer rector` 是更广泛的可选重构命令，应用前应审查其改动。
 
 ### 测试分组
 
