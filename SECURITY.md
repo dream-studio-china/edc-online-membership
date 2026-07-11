@@ -69,9 +69,25 @@ CRUD Skeleton is a Symfony 8.1 API backend skeleton. Security-critical component
 ### File Upload Security
 
 - File size limits enforced before persistence
-- MIME type validation
+- MIME type validation (see [security-hardening.md](docs/design/security-hardening.md) for planned improvements)
+- Extension allow-list planned (deny executable types: `.php`, `.phtml`, etc.)
+- PHP execution disabled in upload directory (planned `.htaccess` for `public/uploads/`)
 - User-scoped media ownership via `commonFilter()`
 - Public media endpoints only expose ownerless media (`user IS NULL`)
+- Rate limiting on upload endpoints planned
+
+### Dynamic Query Security
+
+- `@dql`, `@sort`, `@hints` restricted to `ROLE_ADMIN`
+- `@showDQL` restricted to `dev` environment only
+- `@select` blocks Identity module entities and sensitive field paths
+- `@filter` in-memory fallback restricted to `ROLE_ADMIN`
+- TransformContent `Service` and `entity` bindings use identity-only proxies (only `getId()` exposed)
+
+### Serialization Safety
+
+- Serializer groups and `#[Ignore]` attributes planned for entities with sensitive getters
+- `@expands` and `@display` field allow-lists planned to prevent traversal into sensitive data
 
 ---
 
