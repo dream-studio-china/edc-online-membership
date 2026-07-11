@@ -1,6 +1,6 @@
 # CRUD Skeleton - Full Codebase Context
 
-> Context snapshot. Last updated: 2026-07-10
+> Context snapshot. Last updated: 2026-07-11
 
 ---
 
@@ -28,8 +28,9 @@
 │   ├── Controller/RestController.php    # Base API controller (success/warning/pagination)
 │   ├── Controller/System/               # System introspection (EntityController, RouterController)
 │   ├── View/                     # PHP traits: List, Detail, Create, Update, Delete, Workflow, Single, Transform
-│   ├── Service/BaseService.php          # Abstract CRUD service
-│   ├── Service/Concern/                 # Traits: Infrastructure, ReadList, Mutation
+│   ├── View/ApiViewMessages.php         # Extracted message constants for View traits (ENTITY_NOT_FOUND, SUCCESS, INVALID_JSON, propertyRequired(), etc.)
+│   ├── Service/BaseService.php          # Abstract CRUD service (@template TEntity generics)
+│   ├── Service/Concern/                 # Traits: Infrastructure, ReadList, Mutation (@template TEntity)
 │   ├── Parser/ExpressionDqlParser.php   # Expression → DQL compiler
 │   ├── Serializer/FlatNormalizer.php    # Custom object normalizer (Doctrine internal objects → class names)
 │   ├── EventListener/                   # ExceptionInterceptor, ControllerListener, OpenApiEnricherListener, LocaleListener, AccessLogListener
@@ -135,7 +136,7 @@
 │   ├── app/entrypoint.sh         # Dev key generation + prod key validation
 │   └── nginx/default.conf        # nginx config (reverse proxy to PHP-FPM)
 └── .github/workflows/
-    ├── ci.yml                    # CI: PHP 8.4, 90% coverage
+    ├── ci.yml                    # CI: PHP 8.4, PHPStan Level 8, 90% coverage, Rector type-rule dry-run
     └── docs.yml                  # GitHub Pages deploy
 ```
 
@@ -219,17 +220,21 @@ Profile is auto-created on User registration via a Doctrine lifecycle listener. 
 
 ## 6. BaseService Architecture
 
+`BaseServiceInterface` and `BaseService` use `@template TEntity of object` to propagate entity types through the service layer. Concrete services declare `@extends BaseService<Entity>` and interfaces declare `@extends BaseServiceInterface<Entity>`. This enables PHPStan to infer return types from `get()`, `new()`, and `update()` at call sites.
+
 ```
-BaseService (abstract)
+BaseService<Order> (abstract, @template TEntity, @implements BaseServiceInterface<TEntity>)
 ├── BaseServiceInfrastructureTrait    # EM, Logger, Serializer, Validator, Transactions
-├── BaseServiceReadListTrait          # get(), list() with dynamic queries
-└── BaseServiceMutationTrait          # new(), update(), updateWithoutListener(), remove()
+├── BaseServiceReadListTrait<TEntity>          # get(mixed): TEntity|null, list(): mixed
+└── BaseServiceMutationTrait<TEntity>          # new(): object, update(mixed): object|false, remove(): bool
 ```
 
-- **`get(mixed $criteria)`**: QueryBuilder, entity, array criteria, or scalar ID
-- **`list(array $params)`**: Dynamic query + pagination
-- **`update()`**: Relation mapping (M:1, 1:M, M:M by ID), date fields, Serializer for scalars
-- **`remove()`**: Find → remove → flush
+Key PHPDoc contracts:
+- **`get(mixed $criteria)`**: Accepts `TEntity|int|string|array<string, mixed>|QueryBuilder` → returns `TEntity|null`
+- **`list(array $params)`**: Returns `mixed` (QueryBuilder, Entity[], or scalar arrays depending on @select/@groupBy)
+- **`new()`**: Returns `object` (native), `@return TEntity` (PHPDoc)
+- **`update(mixed $object, ?array $data)`**: Returns `object|false` — native `mixed` param with PHPDoc `@param mixed` for trait compatibility
+- **`remove($object)`**: Accepts `TEntity|int|string|array<string, mixed>`
 - **`wrapInTransaction(callable $fn)`**: Transaction with commit/rollback
 
 ## 7. Trade Module — Order Lifecycle
@@ -519,6 +524,8 @@ Placed in `src/Core/Controller/System/` (framework layer). NelmioApiDoc path_pat
 | Pattern | Where | Detail |
 |---------|-------|--------|
 | **Trait mixins** | View layer | 9 PHP traits composed into controllers |
+| **View message constants** | Core/View | `ApiViewMessages` extracts all hardcoded strings from View traits into constants + formatters |
+| **Generic services** | Core/Service | `@template TEntity` + `@extends BaseService<Entity>` enables static analysis inference across the service layer |
 | **Field whitelisting** | Controllers | `$requiredCreateProperties`, `$acceptedCreateProperties`, `$acceptedUpdateProperties` |
 | **Money in cents** | Wallet + Trade + Payment | `bigint` cents, API boundary converts ×/÷100 |
 | **UUID v4** | Trade + Wallet | `UUID::v4()` for external identity |
@@ -641,7 +648,8 @@ Enriches all endpoints (90+):
 - **Framework**: PHPUnit 12.5
 - **DB**: SQLite `var/test.db` in test environment
 - **Coverage**: 90% minimum (enforced in CI), currently **91.12% lines** from latest local Xdebug run
-- **Test count**: **1589 tests**, **5165 assertions**
+- **Test count**: **1593 tests**, **5185 assertions**
+- **Static analysis**: PHPStan Level 8 with zero errors in its configured scope (`src/`, excluding optional SDK code, exception classes, and documented false-positive suppressions). Generic contract via `@template TEntity` on `BaseServiceInterface`/`BaseService` + `@extends` on 18 concrete service pairs. Rector automates Doctrine Collection/Repository PHPDoc with `composer rector:types`; CI enforces `composer rector:types:check` as a dry-run.
 - **Local PHP note**: default `php` may point to PHP 7.4; use Homebrew PHP 8.5 at `/opt/homebrew/opt/php@8.5/bin/php` for local Symfony/PHPUnit commands.
 - **HTML coverage report**: `XDEBUG_MODE=coverage ./vendor/bin/phpunit --coverage-html var/coverage`
 - **Key test groups**:
@@ -652,7 +660,7 @@ Enriches all endpoints (90+):
    - `tests/Promotion/`: 320+ tests (Entity, DSL lexer/parser/evaluator, Strategies, Engine, Calculator, App/Manage controllers, real SQLite pipeline integration with Doctrine + OrderService)
   - `tests/Payment/`: ~60 tests (Gateway, Registry, Adjustment/Provider, Invoice, Multi-gateway integration)
   - `tests/Wechat/`: 59 tests (Entity, Service, AuthService, Payment/Gateway, Controller, Repository)
-  - `tests/Core/`: 70+ tests (BaseService, RestController, Parser, Serializer, LocaleListener, MutationTrait, Utils, System controllers)
+  - `tests/Core/`: 70+ tests (BaseService, RestController, Parser, Serializer, LocaleListener, MutationTrait, Utils, System controllers — all PHPStan Level 8 compliant)
    - `tests/Promotion/Integration/`: 8 real SQLite quote pipeline tests (store isolation, global campaigns, member-targeted item discounts, stacking, best-price conflict, Nth-item, multi-SKU, expiry, mixed rules)
    - `tests/Integration/`: ~20 cross-module tests
 

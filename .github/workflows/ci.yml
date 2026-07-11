@@ -150,5 +150,5 @@ jobs:
       - name: Install dependencies
         run: composer install --prefer-dist --no-progress --no-interaction
 
-      - name: Run Rector (dry-run)
-        run: composer rector
+      - name: Run Rector type rules (dry-run)
+        run: composer rector:types:check

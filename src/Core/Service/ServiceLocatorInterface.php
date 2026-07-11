@@ -11,9 +11,8 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 /**
  * Return types intentionally omitted from the signature to keep
- * test fakes lightweight (no need to implement full framework interfaces).
- * Production locators (DefaultServiceLocator) add native return types.
- * See phpstan.neon for per-method exclusions.
+ * test fakes lightweight. DefaultServiceLocator also preserves the untyped
+ * boundary because the test container supplies lightweight fake services.
  */
 interface ServiceLocatorInterface
 {

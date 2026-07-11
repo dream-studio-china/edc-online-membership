@@ -8,8 +8,6 @@ parameters:
     bootstrapFiles:
         - vendor/autoload.php
     tmpDir: var/cache/phpstan
-    reportUnmatchedIgnoredErrors: false
-
     # Project uses extensive trait mixins with dynamic property/method access.
     # Controllers use $this->service (defined on subclass) and $this->get() (from
     # Symfony AbstractController). PHPStan cannot fully resolve these in trait
@@ -47,16 +45,6 @@ parameters:
         -
             message: '#Property .+::\$createdAt in isset\(\) is not nullable nor uninitialized#'
             path: src/
-
-        # --- ServiceLocatorInterface: return types intentionally omitted for test fakes ---
-        -
-            message: '#Method App\\Core\\Service\\ServiceLocatorInterface::\w+\(\) has no return type specified\.#'
-            path: src/Core/Service/ServiceLocatorInterface.php
-
-        # --- DefaultServiceLocator: return types intentionally omitted for test fakes ---
-        -
-            message: '#Method App\\Core\\Service\\DefaultServiceLocator::\w+\(\) has no return type specified\.#'
-            path: src/Core/Service/DefaultServiceLocator.php
 
 includes:
     - vendor/phpstan/phpstan-symfony/extension.neon
