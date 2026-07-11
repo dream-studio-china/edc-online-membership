@@ -61,12 +61,36 @@ trait TransformContent
                 }
             }
 
+            $serviceGateway = new class($service) {
+                public function __construct(private readonly ?object $service)
+                {
+                }
+
+                public function get(mixed $criteria): mixed
+                {
+                    if ($this->service === null || !method_exists($this->service, 'get')) {
+                        throw new \RuntimeException('Related service does not support get().');
+                    }
+
+                    return $this->service->get($criteria);
+                }
+
+                public function list(mixed $criteria = null): mixed
+                {
+                    if ($this->service === null || !method_exists($this->service, 'list')) {
+                        throw new \RuntimeException('Related service does not support list().');
+                    }
+
+                    return $this->service->list($criteria);
+                }
+            };
+
 
             $expression = str_replace(':value', (string) $value, $expression);
             try {
                 $content[$field] = $expressionLanguage->evaluate(
                     $expression, [
-                        'Service' => $service,
+                        'Service' => $serviceGateway,
                         'entity' => $entity,
                         'Math' => new Math(),
                         'ArrayCommon' => new ArrayCommon()
