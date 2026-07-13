@@ -45,6 +45,7 @@ Symfony 8.1 ベースのプロダクション向け API スケルトン。再利
 | 認証 | JWT（RS256）+ OTP（SMS） |
 | API ドキュメント | NelmioApiDocBundle（OpenAPI 3） |
 | テスト | PHPUnit `^12.5` |
+| フロントエンド | [crud-admin](https://github.com/immane/crud-admin) — 設定駆動の管理画面 |
 | ドキュメント | MkDocs Material（GitHub Pages） |
 
 ## プロジェクト構成

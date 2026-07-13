@@ -89,7 +89,7 @@ Compared with plain generated boilerplate, it provides:
 | API Docs | NelmioApiDocBundle (OpenAPI 3) |
 | Testing | PHPUnit `^12.5` |
 | Static analysis | PHPStan Level 8 + Rector type rules |
-| Frontend | Stimulus + Turbo (AssetMapper) |
+| Frontend | [crud-admin](https://github.com/immane/crud-admin) — configuration-driven admin panel |
 | Docs | MkDocs Material (GitHub Pages) |
 
 See `composer.json` for the full dependency list.
