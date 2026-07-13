@@ -36,8 +36,8 @@
 │   ├── EventListener/                   # ExceptionInterceptor, ControllerListener, OpenApiEnricherListener, LocaleListener, AccessLogListener
 │   └── Utils/                           # UUID, Math, RSA, Location, Inflect, etc.
 │
-├── src/Common/                   # CMS module: Category, Tag, Content, Comment, Page, Media, Setting
-│   ├── Entity/                   # 7 entities
+├── src/Common/                   # CMS module: Category, Tag, Content, Comment, Page, Media, Setting, Picture
+│   ├── Entity/                   # 8 entities
 │   ├── Repository/
 │   ├── Service/
 │   └── Controller/App/ + Manage/ + Public/
@@ -615,6 +615,7 @@ Enriches all endpoints (90+):
 | 20260703010000 | Added to `common_media`: nullable `category_id` FK to `common_category` |
 | 20260703020000 | `identity_profile` (replaces `member` table; level, nickname, avatar, metadata; FK to `users`) |
 | 20260704000000 | `promotion_template`, `promotion` (DSL text, AST cache, per-store config, time range, `IDX_PROMOTION_ACTIVE_STORE` composite index) |
+| 20260713000000 | `common_picture` (nullable `user_id` FK→`users` ON DELETE SET NULL, required `category_id` FK→`common_category` ON DELETE CASCADE, nullable `title`, required `image`, nullable `metadata` json) |
 
 ## 16. Documentation Assets
 
