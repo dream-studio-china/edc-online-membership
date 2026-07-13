@@ -27,7 +27,7 @@ src/
 | API Docs | Swagger UI (`/api/doc`) via NelmioApiDocBundle |
 | Testing | PHPUnit 12.5 (90% coverage minimum) |
 | Static analysis | PHPStan Level 8 + Rector type-rule dry-run |
-| Assets | Stimulus + Turbo via AssetMapper |
+| Frontend | [crud-admin](https://github.com/immane/crud-admin) — configuration-driven admin panel |
 
 ## Key Features
 

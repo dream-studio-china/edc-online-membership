@@ -86,7 +86,7 @@
 | 鉴权 | JWT (RS256) + OTP (短信) |
 | API 文档 | NelmioApiDocBundle (OpenAPI 3) |
 | 测试 | PHPUnit `^12.5` |
-| 前端 | Stimulus + Turbo（AssetMapper） |
+| 前端 | [crud-admin](https://github.com/immane/crud-admin) — 配置驱动的管理后台 |
 | 文档 | MkDocs Material (GitHub Pages) |
 
 完整依赖请查看 `composer.json`。

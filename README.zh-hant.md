@@ -48,6 +48,7 @@
 | 鑑權 | JWT (RS256) + OTP (簡訊) |
 | API 文件 | NelmioApiDocBundle (OpenAPI 3) |
 | 測試 | PHPUnit `^12.5` |
+| 前端 | [crud-admin](https://github.com/immane/crud-admin) — 配置驅動的管理後台 |
 | 文件 | MkDocs Material (GitHub Pages) |
 
 ## 項目結構
