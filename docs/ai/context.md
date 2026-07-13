@@ -1,6 +1,6 @@
 # CRUD Skeleton - Full Codebase Context
 
-> Context snapshot. Last updated: 2026-07-11
+> Context snapshot. Last updated: 2026-07-13
 
 ---
 
@@ -114,7 +114,7 @@
 │       ├── translation.yaml      # Translator config: default_locale en, translations/ path
 │       ├── workflow.yaml         # Order state machine (draft→completed)
 │       └── ...
-├── migrations/                   # Doctrine migrations (latest adds media category relation)
+├── migrations/                   # 13 migrations (latest creates common_picture table)
 ├── translations/                 # i18n translation files (messages.en/zh/zh_Hant/ja.yaml)
 ├── docs/
 │   ├── ai/context.md             # This file
@@ -122,7 +122,7 @@
 │   │   └── bundles/              # Per-module design docs (core, common, trade, wallet, identity, wechat, payment, storage, promotion)
 │   └── openapi/                       # endpoints.yaml + order/payment frontend flow docs
 ├── scripts/tests/                # Test scripts
-├── tests/                        # 1593 PHPUnit tests, 5185 assertions, 91%+ coverage
+├── tests/                        # 1635 PHPUnit tests, 5320 assertions, 91%+ coverage
 ├── README.md                     # English README
 ├── README.zh-cn.md               # Chinese (Simplified) README
 ├── README.zh-hant.md             # Chinese (Traditional) README
@@ -439,7 +439,7 @@ Symfony Translation component with 4 locales. Translation files are YAML-based u
 | `zh_Hant` | `translations/messages.zh_Hant.yaml` | Chinese (Traditional) |
 | `ja` | `translations/messages.ja.yaml` | Japanese |
 
-**~280 translation keys** per locale covering: entity names (18), field names (95), status/enum values (17), authentication/JWT messages, WeChat errors, Core framework errors (View mixins, Service traits), success messages, Wallet/Trade/Payment/media/Storage errors, expression parser errors, and more.
+**~280 translation keys** per locale covering: entity names (19), field names (96), status/enum values (17), authentication/JWT messages, WeChat errors, Core framework errors (View mixins, Service traits), success messages, Wallet/Trade/Payment/media/Storage errors, expression parser errors, and more.
 
 ### 10.2 Translation Flow
 
@@ -599,7 +599,7 @@ Enriches all endpoints (90+):
 
 44+ named schemas across 13 tags (Auth, Products, Orders, Categories, Tags, Contents, Comments, Pages, Media, Settings, Promotions, PromotionTemplates, Wallet, System, Wechat). Each with field-level type, description, enum, and example values. `path_patterns` includes both `^/api` and `^/system`.
 
-## 15. Database Tables (12 Migrations)
+## 15. Database Tables (13 Migrations)
 
 | Version | Tables |
 |---------|--------|
@@ -649,14 +649,14 @@ Enriches all endpoints (90+):
 - **Framework**: PHPUnit 12.5
 - **DB**: SQLite `var/test.db` in test environment
 - **Coverage**: 90% minimum (enforced in CI), currently **91.12% lines** from latest local Xdebug run
-- **Test count**: **1593 tests**, **5185 assertions**
+- **Test count**: **1635 tests**, **5320 assertions**
 - **Static analysis**: PHPStan Level 8 with zero errors in its configured scope (`src/`, excluding optional SDK code, exception classes, and documented false-positive suppressions). Generic contract via `@template TEntity` on `BaseServiceInterface`/`BaseService` + `@extends` on 18 concrete service pairs. Rector automates Doctrine Collection/Repository PHPDoc with `composer rector:types`; CI enforces `composer rector:types:check` as a dry-run.
 - **Local PHP note**: default `php` may point to PHP 7.4; use Homebrew PHP 8.5 at `/opt/homebrew/opt/php@8.5/bin/php` for local Symfony/PHPUnit commands.
 - **HTML coverage report**: `XDEBUG_MODE=coverage ./vendor/bin/phpunit --coverage-html var/coverage`
 - **Key test groups**:
-  - `tests/Trade/`: 171+ tests + Controller/Manage/OrderControllerTest (16 tests for not-found, workflow guards, payment validation)
+  - `tests/Trade/`: 216+ tests + Controller/Manage/OrderControllerTest (16 tests for not-found, workflow guards, payment validation)
   - `tests/Wallet/`: ~105 tests (Entity, Integration, Transfer Service, WalletService, Payment/Gateway, API regression)
-  - `tests/Common/`: 69 tests (Entity, Integration, Batch update, media upload/delete)
+  - `tests/Common/`: 118 tests (Entity, Integration, Batch update, media upload/delete, Picture CRUD)
   - `tests/Identity/`: 116+ tests (Auth, OTP, Token, Black box, UserService, UserController, UserApiIntegration, Profile entity, ProfileController)
    - `tests/Promotion/`: 320+ tests (Entity, DSL lexer/parser/evaluator, Strategies, Engine, Calculator, App/Manage controllers, real SQLite pipeline integration with Doctrine + OrderService)
   - `tests/Payment/`: ~60 tests (Gateway, Registry, Adjustment/Provider, Invoice, Multi-gateway integration)
