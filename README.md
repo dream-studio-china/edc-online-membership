@@ -596,8 +596,6 @@ class ContentController extends RestController
 {
     use ApiView, DetailApiViewMixin, ListApiViewMixin;
 
-    protected ?string $serviceClass = ContentServiceInterface::class;
-
     public function __construct(
         protected readonly ContentServiceInterface $service
     ) {}
