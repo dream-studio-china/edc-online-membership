@@ -123,17 +123,17 @@ class OrderService extends BaseService implements OrderServiceInterface
                     'customerUserUuid' => $order->getUser()?->getUuid(),
                     'currency' => $order->getCurrency(),
                     'totalAmount' => $order->getTotalAmount(),
-                    'items' => array_map(static fn (array $item): array => [
-                        'lineId' => $item['specification'] instanceof Specification ? $item['specification']->getUuid() : '',
-                        'catalogReference' => $item['specification'] instanceof Specification ? $item['specification']->getUuid() : '',
-                        'quantity' => (int) $item['quantity'],
-                        'unitPrice' => (int) $item['unitPrice'],
-                        'lineAmount' => (int) $item['price'],
+                    'items' => array_map(static fn (OrderItem $item): array => [
+                        'lineId' => $item->getUuid(),
+                        'catalogReference' => $item->getSpecification()?->getUuid() ?? '',
+                        'quantity' => $item->getQuantity(),
+                        'unitPrice' => $item->getUnitPrice(),
+                        'lineAmount' => $item->getPrice(),
                         'snapshot' => [
-                            'specification' => $item['specSnapshot'] ?? [],
-                            'product' => $item['productSnapshot'] ?? [],
+                            'specification' => $item->getSpecSnapshot() ?? [],
+                            'product' => $item->getProductSnapshot() ?? [],
                         ],
-                    ], $calculatedItems),
+                    ], $order->getItems()->toArray()),
                     'delivery' => is_array($metadata['delivery'] ?? null) ? $metadata['delivery'] : [],
                     'placedAt' => $order->getCreatedAt()->format(DATE_ATOM),
                 ]);
