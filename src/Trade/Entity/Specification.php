@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace App\Trade\Entity;
 
+use App\Core\Utils\UUID;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: \App\Trade\Repository\SpecificationRepository::class)]
 #[ORM\Table(name: 'trade_specification')]
 #[ORM\HasLifecycleCallbacks]
+#[ORM\UniqueConstraint(name: 'uniq_trade_specification_uuid', columns: ['uuid'])]
 class Specification
 {
     public const STATUS_ACTIVE = 'active';
@@ -18,6 +20,9 @@ class Specification
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
     private ?int $id = null;
+
+    #[ORM\Column(type: 'string', length: 36, unique: true)]
+    private string $uuid;
 
     #[ORM\ManyToOne(targetEntity: Product::class, inversedBy: 'specifications')]
     #[ORM\JoinColumn(name: 'product_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
@@ -46,6 +51,7 @@ class Specification
 
     public function __construct()
     {
+        $this->uuid = UUID::v4();
         $this->createdAt = new \DateTimeImmutable();
     }
 
@@ -58,6 +64,11 @@ class Specification
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    public function getUuid(): string
+    {
+        return $this->uuid;
     }
 
     public function getProduct(): ?Product

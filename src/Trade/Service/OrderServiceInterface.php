@@ -7,6 +7,7 @@ namespace App\Trade\Service;
 use App\Core\Service\BaseServiceInterface;
 use App\Payment\DTO\PaymentRefundResult;
 use App\Payment\DTO\PaymentResult;
+use App\Trade\DTO\StoreContext;
 use App\Trade\Entity\Order;
 use App\Trade\Service\Pricing\PriceCalculationResult;
 
@@ -23,7 +24,7 @@ interface OrderServiceInterface extends BaseServiceInterface
      * @param list<array<string, mixed>> $calculatedItems
      * @param array<string, mixed>|null  $metadata
      */
-    public function createOrder(array $calculatedItems, mixed $user, int $totalAmount, string $currency = 'CNY', ?string $notes = null, ?array $metadata = null): Order;
+    public function createOrder(array $calculatedItems, mixed $user, int $totalAmount, string $currency = 'CNY', ?string $notes = null, ?array $metadata = null, ?StoreContext $storeContext = null): Order;
 
     public function pay(Order $order, int $systemWalletId, string $paymentMethod = 'wallet', ?string $referenceId = null): void;
 

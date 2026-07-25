@@ -11,6 +11,7 @@ use App\Payment\DTO\PaymentRefundResult;
 use App\Payment\DTO\PaymentResult;
 use App\Payment\Entity\Invoice;
 use App\Payment\Service\InvoiceServiceInterface;
+use App\Trade\DTO\StoreContext;
 use App\Trade\Entity\Order;
 use App\Trade\Entity\OrderItem;
 use App\Trade\Entity\Specification;
@@ -20,7 +21,9 @@ use App\Trade\Service\Pricing\PriceCalculatorInterface;
 use App\Wallet\Repository\WalletRepository;
 use App\Wallet\Service\TransferServiceInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
+use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\Workflow\WorkflowInterface;
 
 /** @extends BaseService<\App\Trade\Entity\Order> */
 class OrderService extends BaseService implements OrderServiceInterface
@@ -35,6 +38,9 @@ class OrderService extends BaseService implements OrderServiceInterface
         private readonly ?WalletRepository $walletRepository = null,
         private readonly ?TransferServiceInterface $transferService = null,
         private readonly ?InvoiceServiceInterface $invoiceService = null,
+        private readonly ?TradeOutboxService $outboxService = null,
+        #[Target('state_machine.order')]
+        private readonly ?WorkflowInterface $workflow = null,
     ) {
         parent::__construct($container, Order::class);
     }
@@ -62,9 +68,9 @@ class OrderService extends BaseService implements OrderServiceInterface
      * @param list<array<string, mixed>> $calculatedItems
      * @param array<string, mixed>|null  $metadata
      */
-    public function createOrder(array $calculatedItems, mixed $user, int $totalAmount, string $currency = 'CNY', ?string $notes = null, ?array $metadata = null): Order
+    public function createOrder(array $calculatedItems, mixed $user, int $totalAmount, string $currency = 'CNY', ?string $notes = null, ?array $metadata = null, ?StoreContext $storeContext = null): Order
     {
-        return $this->wrapInTransaction(function () use ($calculatedItems, $user, $totalAmount, $currency, $notes, $metadata) {
+        return $this->wrapInTransaction(function () use ($calculatedItems, $user, $totalAmount, $currency, $notes, $metadata, $storeContext) {
             $order = new Order();
             if ($user instanceof User) {
                 $order->setUser($user);
@@ -74,6 +80,10 @@ class OrderService extends BaseService implements OrderServiceInterface
             $order->setTotalAmount($totalAmount);
             $order->setCurrency($currency);
             $order->setNotes($notes);
+            if ($storeContext !== null) {
+                $metadata ??= [];
+                $metadata['_store'] = $storeContext->toSnapshot();
+            }
             $order->setMetadata($metadata);
 
             foreach ($calculatedItems as $item) {
@@ -97,6 +107,37 @@ class OrderService extends BaseService implements OrderServiceInterface
 
             $this->getEntityManager()->persist($order);
             $this->getEntityManager()->flush();
+
+            if ($storeContext !== null) {
+                if ($this->workflow === null || $this->outboxService === null) {
+                    throw new \RuntimeException('Store order orchestration is not configured.');
+                }
+                if (!$this->workflow->can($order, 'store_submit')) {
+                    throw new \RuntimeException('Order cannot be submitted for store acceptance.');
+                }
+
+                $this->workflow->apply($order, 'store_submit');
+                $this->outboxService->record('trade.order.created.v1', 'trade_order', $order->getUuid(), [
+                    'orderUuid' => $order->getUuid(),
+                    'store' => $storeContext->toSnapshot(),
+                    'customerUserUuid' => $order->getUser()?->getUuid(),
+                    'currency' => $order->getCurrency(),
+                    'totalAmount' => $order->getTotalAmount(),
+                    'items' => array_map(static fn (array $item): array => [
+                        'lineId' => $item['specification'] instanceof Specification ? $item['specification']->getUuid() : '',
+                        'catalogReference' => $item['specification'] instanceof Specification ? $item['specification']->getUuid() : '',
+                        'quantity' => (int) $item['quantity'],
+                        'unitPrice' => (int) $item['unitPrice'],
+                        'lineAmount' => (int) $item['price'],
+                        'snapshot' => [
+                            'specification' => $item['specSnapshot'] ?? [],
+                            'product' => $item['productSnapshot'] ?? [],
+                        ],
+                    ], $calculatedItems),
+                    'delivery' => is_array($metadata['delivery'] ?? null) ? $metadata['delivery'] : [],
+                    'placedAt' => $order->getCreatedAt()->format(DATE_ATOM),
+                ]);
+            }
 
             return $order;
         });
