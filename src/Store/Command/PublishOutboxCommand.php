@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Store\Command;
 
 use App\Store\Repository\StoreOutboxMessageRepository;
+use App\Inventory\Message\InventoryReservationReleaseRequestedMessage;
+use App\Inventory\Message\InventoryReservationRequestedMessage;
 use App\Trade\Message\StoreOrderAcceptedMessage;
 use App\Trade\Message\StoreOrderRejectedMessage;
 use Doctrine\ORM\EntityManagerInterface;
@@ -29,6 +31,10 @@ final class PublishOutboxCommand extends Command
     {
         $count = 0;
         foreach ($this->repository->findUnpublished() as $message) {
+            $id = $message->getId();
+            if ($id === null || !$this->repository->claim($id, new \DateTimeImmutable('+1 minute'))) {
+                continue;
+            }
             $envelope = [
                 'eventId' => $message->getEventId(),
                 'type' => str_replace('.v1', '', $message->getTopic()),
@@ -39,14 +45,21 @@ final class PublishOutboxCommand extends Command
             $busMessage = match ($message->getTopic()) {
                 'store.order.accepted.v1' => new StoreOrderAcceptedMessage($envelope),
                 'store.order.rejected.v1' => new StoreOrderRejectedMessage($envelope),
+                'inventory.reservation.requested.v1' => new InventoryReservationRequestedMessage($envelope),
+                'inventory.reservation.release.requested.v1' => new InventoryReservationReleaseRequestedMessage($envelope),
                 default => null,
             };
             if ($busMessage === null) {
+                $this->repository->defer($id, 'Unsupported Store outbox topic: ' . $message->getTopic(), new \DateTimeImmutable('+5 minutes'));
                 continue;
             }
-            $this->messageBus->dispatch($busMessage);
-            $message->markPublished();
-            ++$count;
+            try {
+                $this->messageBus->dispatch($busMessage);
+                $message->markPublished();
+                ++$count;
+            } catch (\Throwable $exception) {
+                $this->repository->defer($id, $exception->getMessage(), new \DateTimeImmutable('+5 minutes'));
+            }
         }
         $this->entityManager->flush();
         $output->writeln(sprintf('Published %d Store outbox message(s).', $count));
