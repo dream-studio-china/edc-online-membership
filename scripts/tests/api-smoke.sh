@@ -123,8 +123,8 @@ SPEC3_ID=$(api "create spec Base" POST "/api/v1/manage/products/${PROD2_ID}/spec
 echo "  products=$PROD1_ID,$PROD2_ID | specs=$SPEC1_ID,$SPEC2_ID,$SPEC3_ID"
 echo "  Price table: 128GB=699¥ | 256GB=899¥ | Base=1499¥"
 
-api "user access admin route (403)" GET /api/v1/manage/users "$USER_TOKEN" none "403 500" >/dev/null
-api "no token protected route (401)" GET /api/v1/app/users/me none none "401 500" >/dev/null
+api "user access admin route (403)" GET /api/v1/manage/users "$USER_TOKEN" none 403 >/dev/null
+api "no token protected route (401)" GET /api/v1/app/users/me none none 401 >/dev/null
 
 # ══════════════════════════════════════════════════════════════════════════════
 #  PHASE 4 — Wallets
@@ -162,7 +162,7 @@ echo "  user wallet balance BEFORE payments: $USR_BAL_BEFORE cent ($(python3 -c 
 api "transfer insufficient (402)"   POST /api/v1/manage/transfers "$ADMIN_TOKEN" "{\"fromWalletId\":$USR_WID,\"toWalletId\":$BANK_WID,\"amount\":999999}" 402 >/dev/null
 api "transfer same wallet (400)"    POST /api/v1/manage/transfers "$ADMIN_TOKEN" "{\"fromWalletId\":$BANK_WID,\"toWalletId\":$BANK_WID,\"amount\":100}" 400 >/dev/null
 api "deposit negative (400)"        POST /api/v1/manage/transfers/deposit "$ADMIN_TOKEN" '{"toWalletId":1,"amount":-100}' 400 >/dev/null
-api "deposit nonexistent (500)"     POST /api/v1/manage/transfers/deposit "$ADMIN_TOKEN" '{"toWalletId":99999,"amount":100}' 500 >/dev/null
+api "deposit nonexistent (404)"     POST /api/v1/manage/transfers/deposit "$ADMIN_TOKEN" '{"toWalletId":99999,"amount":100}' 404 >/dev/null
 
 # ══════════════════════════════════════════════════════════════════════════════
 #  PHASE 5 — Browse + Profile
@@ -239,10 +239,9 @@ for label, actual, expected in results:
     ok = actual == expected
     all_ok = all_ok and ok
     print(f"    {'✅' if ok else '❌'} {label}: {actual} cent {'==' if ok else '!='} {expected} cent ({actual/100:.2f} ¥)")
-if all_ok:
-    print("    ✅ ALL PRICES CORRECT")
-else:
-    print("    ❌ PRICE MISMATCH DETECTED")
+if not all_ok:
+    raise SystemExit("PRICE MISMATCH DETECTED")
+print("    ✅ ALL PRICES CORRECT")
 PYEOF
 
 # ─── 6.2 Cancel draft order ───
@@ -316,10 +315,9 @@ bank_ok = bank_bal == expected_bank
 
 print(f"    User wallet: {usr_bal} cent (expected {expected_usr}) {'✅' if usr_ok else '❌'}")
 print(f"    Bank wallet: {bank_bal} cent (expected {expected_bank}) {'✅' if bank_ok else '❌'}")
-if usr_ok and bank_ok:
-    print("    ✅ WALLET BALANCES CORRECT AFTER PAYMENTS")
-else:
-    print("    ❌ WALLET BALANCE MISMATCH")
+if not (usr_ok and bank_ok):
+    raise SystemExit("WALLET BALANCE MISMATCH")
+print("    ✅ WALLET BALANCES CORRECT AFTER PAYMENTS")
 PYEOF
 
 # ══════════════════════════════════════════════════════════════════════════════
