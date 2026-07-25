@@ -43,7 +43,7 @@ class Order
     #[ORM\Column(type: 'string', length: 10, options: ['default' => 'CNY'])]
     private string $currency = 'CNY';
 
-    #[ORM\Column(type: 'string', length: 20, options: ['default' => 'draft'])]
+    #[ORM\Column(type: 'string', length: 40, options: ['default' => 'draft'])]
     private string $status = self::STATUS_DRAFT;
 
     #[ORM\Column(type: 'text', nullable: true)]
