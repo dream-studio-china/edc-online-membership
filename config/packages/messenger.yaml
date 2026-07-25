@@ -25,8 +25,14 @@ framework:
             Symfony\Component\Notifier\Message\ChatMessage: async
             Symfony\Component\Notifier\Message\SmsMessage: async
             App\Trade\Message\TradeOrderCreatedMessage: async
+            App\Trade\Message\TradeOrderCancelledMessage: async
             App\Trade\Message\StoreOrderAcceptedMessage: async
             App\Trade\Message\StoreOrderRejectedMessage: async
+            App\Inventory\Message\InventoryReservationRequestedMessage: async
+            App\Inventory\Message\InventoryReservationReleaseRequestedMessage: async
+            App\Inventory\Message\InventoryReservationConfirmedMessage: async
+            App\Inventory\Message\InventoryReservationRejectedMessage: async
+            App\Inventory\Message\InventoryReservationReleasedMessage: async
 
             # Route your messages to the transports
             # 'App\Message\YourMessage': async
