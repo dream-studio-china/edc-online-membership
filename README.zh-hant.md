@@ -22,7 +22,7 @@
 - **CRUD 服務抽象**：`new()`、`get()`、`list()`、`update()`、`remove()`
 - **動態查詢系統**：透過請求參數控制篩選/排序/分組/欄位選擇，表達式編譯為 DQL
 - **Trait 組合式控制器**：9 個 mixin trait（List、Detail、Create、Update、Delete、Workflow、Singleton、Transform）可按需組合
-- **模組化架構**：Core 框架 + Common（CMS）+ Promotion（DSL 驅動促銷引擎）+ Trade（電商）+ Payment（支付）+ Wallet（錢包）+ Wechat（微信登入+支付）+ Storage（檔案儲存驅動）+ Identity（鑑權）
+- **模組化架構**：Core 框架 + Common（CMS）+ Promotion（DSL 驅動促銷引擎）+ Trade（電商）+ Store（門店交易發件箱）+ Inventory（物料、庫存、配方、預留）+ Payment（支付）+ Wallet（錢包）+ Wechat（微信登入+支付）+ Storage（檔案儲存驅動）+ Identity（鑑權）
 - **JWT 鑑權**：RS256 存取令牌，HMAC-SHA256 Refresh Token 輪換，含重用檢測
 - **OTP 登入**：基於手機驗證碼的簡訊登入，含頻率限制（阿里雲）
 - **訂單狀態機**：Symfony Workflow（草稿 → 完成），含完整工作流 API
@@ -64,10 +64,12 @@
 │   ├── Wechat/                   # 微信模組
 │   ├── Storage/                  # 儲存模組
 │   ├── Promotion/                # 促銷模組（DSL 引擎）
+│   ├── Store/                     # 門店模組
+│   ├── Inventory/                 # 庫存模組（物料、庫存、配方、預留）
 │   └── Identity/                 # 鑑權模組
 ├── config/                       # Symfony 配置
 ├── migrations/                   # Doctrine 遷移（12 個版本）
-├── tests/                        # 1593 測試、5185 斷言、91%+ 覆蓋率
+├── tests/                        # 1711 測試、5652 斷言、91%+ 覆蓋率
 ├── translations/                 # 多語言翻譯檔案
 └── compose.yaml                  # Docker Compose
 ```
@@ -79,6 +81,7 @@
 | **Core** | `App\Core` | 框架基礎 | RestController、BaseService、View mixin、表達式解析器 |
 | **Common** | `App\Common` | CMS | 分類（樹）、標籤、內容、評論、頁面、媒體、設定 |
 | **Trade** | `App\Trade` | 電商 | 產品 + 規格、訂單（狀態機）、價格計算管道 |
+| **Inventory** | `App\Inventory` | 庫存管理 | 門店物料庫存 + 規格配方 + 預留（原子庫存鎖）+ 庫存台帳審計 + 負庫存策略 |
 | **Wallet** | `App\Wallet` | 錢包與抵扣 | 餘額（分）、原子轉帳、系統注資、冪等、對帳 |
 | **Payment** | `App\Payment` | 支付編排 | 發票（分+工作流）、網關抽象、支付抵扣提供方契約 |
 | **Wechat** | `App\Wechat` | 微信整合 | 小程式/公眾號登入、微信支付 V3 |
@@ -88,7 +91,7 @@
 
 ## 測試
 
-**1593 個測試 · 5185 個斷言 · 91%+ 行覆蓋率**
+**1711 個測試 · 5652 個斷言 · 91%+ 行覆蓋率**
 
 ```bash
 ./vendor/bin/phpunit

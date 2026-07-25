@@ -60,7 +60,7 @@ Compared with plain generated boilerplate, it provides:
 - **CRUD Service Abstraction**: `new()`, `get()`, `list()`, `update()`, `remove()`.
 - **Dynamic Query System**: Filter, sort, order, select, group by via request parameters with expression-to-DQL compilation.
 - **Trait-Based Controller Composition**: 9 mixin traits (List, Detail, Create, Update, Delete, Workflow, Singleton, Transform) composed into controllers.
-- **Modular Architecture**: Core framework + Common (CMS) + Promotion (DSL-driven promotions) + Trade (E-Commerce) + Payment + Wallet + Wechat (Login + Pay) + Storage (file upload drivers) + Identity (Auth) modules.
+- **Modular Architecture**: Core framework + Common (CMS) + Promotion (DSL-driven promotions) + Trade (E-Commerce) + Store (per-store trade outbox) + Inventory (material, stock, recipes, reservations) + Payment + Wallet + Wechat (Login + Pay) + Storage (file upload drivers) + Identity (Auth) modules.
 - **JWT Authentication**: RS256 access tokens, HMAC-SHA256 refresh token rotation with reuse detection.
 - **OTP Login**: Phone-based one-time password via Alibaba Cloud SMS, rate-limited.
 - **Password Registration**: Self-service sign-up with email/username/phone uniqueness validation.
@@ -122,6 +122,12 @@ See `composer.json` for the full dependency list.
 │   │   ├── Entity/               #   Product, Specification, Order, OrderItem
 │   │   ├── Service/              #   OrderService, price calculation pipeline
 │   │   └── Service/Pricing/      #   PriceCalculatorInterface + 3 implementations
+│   ├── Store/                     # Store module
+│   │   ├── Controller/Manage/    #   Store CRUD
+│   │   ├── Entity/               #   Store
+│   │   ├── Repository/
+│   │   ├── Service/              #   StoreService
+│   │   └── MessageHandler/       #   Create/accept/reject/cancel outcome consumers
 │   ├── Wallet/                    # Wallet module
 │   │   ├── Controller/Manage/    #   Wallet, Transaction, Transfer (deposit) endpoints
 │   │   ├── DTO/                  #   WalletPaymentDeductionRequest
@@ -168,6 +174,13 @@ See `composer.json` for the full dependency list.
 │   │   │   └── Dsl/              #   DSL lexer/parser/evaluator
 │   │   ├── Strategy/             #   7 promotion strategies
 │   │   └── Exception/
+│   ├── Inventory/                # Inventory module (material, stock, recipes, reservations)
+│   │   ├── Controller/Manage/    #   Material, Stock, Recipe management
+│   │   ├── Entity/               #   Material, InventoryStock, SpecificationRecipe, InventoryReservation, etc.
+│   │   ├── Repository/
+│   │   ├── Service/              #   InventoryService (reserve/release/adjust)
+│   │   ├── MessageHandler/       #   Reservation request/release handlers
+│   │   └── Command/              #   PublishOutboxCommand, ReleaseExpiredReservationsCommand
 │   └── Identity/                 # Authentication module
 │       ├── Controller/           #   AuthController, OtpController
 │       ├── Controller/App/       #   UserController (profile, change-password), ProfileController
@@ -179,7 +192,7 @@ See `composer.json` for the full dependency list.
 ├── config/                       # Symfony configuration
 │   └── packages/                 #   Doctrine, Security, Workflow, Serializer, etc.
 ├── migrations/                   # Doctrine migrations (12 versions)
-├── tests/                        # 1593 PHPUnit tests, 5185 assertions, 91%+ coverage
+├── tests/                        # 1711 PHPUnit tests, 5652 assertions, 91%+ coverage
 ├── docs/                         # Project documentation
 │   ├── design/                   #   Design contracts (system, API, data, module, controller)
 │   │   └── bundles/              #   Per-module design documents
@@ -368,6 +381,7 @@ The app runs at `http://localhost:${APP_PORT:-8080}`.
 | **Core** | `App\Core` | Framework foundation | RestController, BaseService, View mixins, Expression parser |
 | **Common** | `App\Common` | CMS | Category (tree), Tag, Content, Comment (polymorphic), Page, Media, Setting (KV) |
 | **Trade** | `App\Trade` | E-Commerce | Product + Specification, Order (state machine), Price pipeline |
+| **Inventory** | `App\Inventory` | Inventory Management | Per-store stock + Specification Recipes + Reservation + Stock Ledger + Negative Inventory Policy |
 | **Wallet** | `App\Wallet` | Payments & deduction | Balance (cents), Atomic transfers, System deposits, Idempotency, Wallet balance deduction adjustment provider, Balance verification + reconciliation |
 | **Payment** | `App\Payment` | Invoicing & orchestration | Invoice (cents + workflow), Gateway abstraction (mock/wallet/wechat), **Payment adjustment provider contract**, Webhooks, Events |
 | **Wechat** | `App\Wechat` | WeChat integration | Mini Program/Official Account login, WeChat Pay V3, WechatUser (OneToOne→User) |
@@ -616,7 +630,7 @@ Note on controller construction: Controllers extending `RestController` receive 
 
 ## Testing
 
-**1593 tests · 5185 assertions · 91%+ line coverage**
+**1711 tests · 5652 assertions · 91%+ line coverage**
 
 Run all tests:
 
