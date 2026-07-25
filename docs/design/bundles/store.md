@@ -116,6 +116,19 @@ cross-module delivery:
 
 No component may assume an exactly-once message broker guarantee.
 
+### 2.4 Runtime Workers
+
+The modular monolith starts asynchronous processing as Compose services, not inside the
+PHP-FPM request process:
+
+| Service | Command | Responsibility |
+|---|---|---|
+| `worker` | `messenger:consume async` | Consume Trade and Store integration messages with Messenger retry handling |
+| `scheduler` | Trade/Store Outbox publisher loop | Relay unpublished Outbox rows every `OUTBOX_PUBLISH_INTERVAL` seconds (default `5`) |
+
+The scheduler and worker use the same application image and environment as `app`. This
+keeps the Outbox pattern durable in SQL while making the monolith operationally automatic.
+
 ### 2.4 Stable Scalar References
 
 Cross-boundary references are UUIDs and scalar snapshots, never Doctrine associations.

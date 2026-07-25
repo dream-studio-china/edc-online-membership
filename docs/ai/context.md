@@ -696,6 +696,7 @@ Enriches all endpoints (90+):
 | `WECHAT_OFFICIAL_APP_ID`, `WECHAT_OFFICIAL_SECRET`, `WECHAT_OFFICIAL_TOKEN`, `WECHAT_OFFICIAL_AES_KEY` | Official Account |
 | `WECHAT_PAY_MCH_ID`, `WECHAT_PAY_SECRET_KEY`, `WECHAT_PAY_PRIVATE_KEY`, `WECHAT_PAY_CERTIFICATE`, `WECHAT_PAY_NOTIFY_URL` | WeChat Pay V3 |
 | `MESSENGER_TRANSPORT_DSN` | Async transport |
+| `OUTBOX_PUBLISH_INTERVAL` | Seconds between automatic Trade/Store Outbox relay runs (default `5`) |
 | `DEFAULT_URI` | Base URL for CLI contexts |
 | `MAILER_DSN` | Mailer transport |
 | `MEDIA_STORAGE_DEFAULT` | Default media storage driver (`local` by default) |
@@ -706,7 +707,7 @@ Qiniu configuration is intentionally **not** environment-variable based. Configu
 
 ### 17.1 Architecture
 
-5 services in `compose.yaml`: **nginx** (reverse proxy), **app** (PHP-FPM 8.4, built from `Dockerfile`), **database** (MySQL 8), **redis** (Redis 7 Alpine), **mailer** (Mailpit).
+7 services in `compose.yaml`: **nginx** (reverse proxy), **app** (PHP-FPM 8.4), **worker** (Messenger async consumer), **scheduler** (Trade/Store Outbox relay), **database** (MySQL 8), **redis** (Redis 7 Alpine), **mailer** (Mailpit).
 
 ### 17.2 Development (zero-config)
 
