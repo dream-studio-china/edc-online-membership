@@ -65,6 +65,36 @@ services:
       - internal
 
   # ========================
+  # Async Worker (Messenger)
+  # ========================
+  worker:
+    extends:
+      service: app
+    command: ["php", "bin/console", "messenger:consume", "async", "--time-limit=3600", "--memory-limit=256M", "--no-interaction"]
+    depends_on:
+      app:
+        condition: service_started
+
+  # ========================
+  # Outbox Scheduler
+  # ========================
+  scheduler:
+    extends:
+      service: app
+    command:
+      - /bin/sh
+      - -ec
+      - |
+        while :; do
+          php bin/console app:trade:outbox:publish --no-interaction
+          php bin/console app:store:outbox:publish --no-interaction
+          sleep "${OUTBOX_PUBLISH_INTERVAL:-5}"
+        done
+    depends_on:
+      app:
+        condition: service_started
+
+  # ========================
   # Web Server (nginx)
   # ========================
   nginx:

@@ -184,20 +184,54 @@ Every relationship MUST declare:
 
 ## 7. Special Patterns
 
-### 7.1 UUID for External Identity
+### 7.1 UUID for External And Cross-Boundary Identity
 
-Some entities expose a UUID v4 alongside the integer `id`:
+Entities retain an integer auto-increment `id` for local Doctrine relations, joins, and
+storage efficiency. A UUID is a separate, stable identity for an entity that leaves its
+bounded context.
+
+An entity MUST have a UUID when it is any of the following:
+
+- Addressable through a public API, URL, webhook, or third-party integration.
+- Included in a cross-module or cross-service event payload.
+- A domain aggregate that may later move to its own database/service.
+- Referenced by an idempotency, audit, payment, inventory, or external correlation flow.
+
+Purely internal implementation records do not need a separate entity UUID. Examples
+include a private join table or an Inbox record already uniquely identified by its
+incoming `eventId`. An independently managed relation exposed through an API should
+still receive a UUID.
+
+```text
+Local database key / Doctrine relation: integer id
+Public API path and response identity: uuid
+Cross-module/service reference: uuid or immutable business key
+Event aggregateId, sourceId, correlationId: uuid
+```
+
+New cross-boundary entities use a canonical UUID string alongside the integer `id`:
 
 ```php
-#[ORM\Column(type: 'string', length: 32, unique: true)]
+#[ORM\Column(type: 'string', length: 36, unique: true)]
 private string $uuid;
 
 public function __construct() {
-    $this->uuid = UUID::v4c(); // compact, no dashes
+    $this->uuid = UUID::v4();
 }
 ```
 
-**Use when**: The entity is referenced externally (URLs, APIs shared with third parties).
+UUIDs are not an authorization mechanism. Every lookup still requires row-level
+authorization and ownership checks.
+
+### 7.1.1 UUID Version Policy
+
+- Existing entities using UUID v4 retain their current identifiers; migrations MUST NOT
+  rewrite identifiers merely for version uniformity.
+- New cross-service aggregates SHOULD use UUID v7 once the shared UUID utility supports
+  it, because time ordering improves index locality.
+- Until UUID v7 is available, UUID v4 is acceptable for new entities and events.
+- UUID format and version are implementation details behind the external UUID string
+  contract. Consumers must not infer business meaning from UUID bytes.
 
 ### 7.2 Soft Delete
 

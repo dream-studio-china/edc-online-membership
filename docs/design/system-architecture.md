@@ -105,6 +105,25 @@ src/{Module}/
 - Other modules **consume** only those interfaces, never concrete implementations
 - Interfaces are auto-discovered via `services.yaml`
 
+### 3.4 Cross-Boundary Identity Contract
+
+Modules and future services MUST NOT exchange local auto-increment database IDs as
+durable references. Each cross-boundary aggregate exposes a UUID or another explicitly
+documented immutable business key.
+
+| Context | Identifier to use |
+|---------|-------------------|
+| Local Doctrine relation inside one module | Integer `id` is allowed |
+| Public API route/response | UUID |
+| Service interface crossing module boundary | UUID or documented immutable business key |
+| Integration event aggregate/source/correlation id | UUID |
+| Future service database relation | UUID/business key only; no cross-service FK |
+
+An event carries scalar snapshots and external identities only. It MUST NOT carry a
+Doctrine entity, repository, EntityManager, or a local primary key as a durable
+reference. UUID lookup does not grant access; the receiving module still enforces its
+own authorization and ownership rules.
+
 ---
 
 ## 4. Core Framework (`src/Core/`)

@@ -122,6 +122,81 @@ final class BaseServiceMutationTraitTest extends TestCase
         $service->update(null, ['name' => 'test']);
     }
 
+    public function testUpdateWithNonObjectThrows(): void
+    {
+        $em = new MutationFakeEntityManager(new MutationFakeRepository([]));
+        $service = $this->createService(new MutationFakeContainer($em), SimpleEntity::class);
+
+        $this->expectException(\Symfony\Component\Validator\Exception\ValidatorException::class);
+        $service->update(42, ['name' => 'test']);
+    }
+
+    public function testUpdateCanSkipFlush(): void
+    {
+        $entity = new SimpleEntity();
+        $em = new MutationFakeEntityManager(new MutationFakeRepository([]));
+        $service = $this->createService(new MutationFakeContainer($em), SimpleEntity::class);
+
+        self::assertSame($entity, $service->update($entity, null, true));
+        self::assertSame([$entity], $em->persisted());
+        self::assertSame(0, $em->flushCount());
+    }
+
+    public function testUpdateRejectsValidationErrors(): void
+    {
+        $em = new MutationFakeEntityManager(new MutationFakeRepository([]));
+        $validator = $this->createMock(ValidatorInterface::class);
+        $validator->method('validate')->willReturn(new ConstraintViolationList([
+            $this->createMock(\Symfony\Component\Validator\ConstraintViolationInterface::class),
+        ]));
+        $service = $this->createService(new MutationFakeContainer($em, null, $validator), SimpleEntity::class);
+
+        $this->expectException(\Symfony\Component\Validator\Exception\ValidatorException::class);
+        $service->update(new SimpleEntity());
+    }
+
+    public function testUpdateResolvesToOneRelationship(): void
+    {
+        $owner = new MutationRelatedEntity(7);
+        $entity = new MutationRelationEntity();
+        $em = new MutationFakeEntityManager(new MutationFakeRepository([7 => $owner]));
+        $serializer = $this->createMock(SerializerInterface::class);
+        $serializer->expects(self::once())->method('deserialize')->with('[]', MutationRelationEntity::class, 'json', self::isType('array'));
+        $service = $this->createService(new MutationFakeContainer($em, $serializer), MutationRelationEntity::class);
+
+        self::assertSame($entity, $service->update($entity, ['owner' => 7]));
+        self::assertSame($owner, $entity->getOwner());
+    }
+
+    public function testUpdateSynchronizesToManyRelationship(): void
+    {
+        $old = new MutationRelatedEntity(1);
+        $kept = new MutationRelatedEntity(2);
+        $added = new MutationRelatedEntity(3);
+        $entity = new MutationCollectionEntity([$old, $kept]);
+        $em = new MutationFakeEntityManager(new MutationFakeRepository([1 => $old, 2 => $kept, 3 => $added]));
+        $serializer = $this->createMock(SerializerInterface::class);
+        $serializer->expects(self::once())->method('deserialize')->with('[]', MutationCollectionEntity::class, 'json', self::isType('array'));
+        $service = $this->createService(new MutationFakeContainer($em, $serializer), MutationCollectionEntity::class);
+
+        self::assertSame($entity, $service->update($entity, ['members' => [2, 3]]));
+        self::assertSame([$kept, $added], array_values($entity->getMembers()->toArray()));
+    }
+
+    public function testUpdateConvertsDateMapping(): void
+    {
+        $entity = new MutationDateEntity();
+        $em = new MutationFakeEntityManager(new MutationFakeRepository([]));
+        $serializer = $this->createMock(SerializerInterface::class);
+        $serializer->expects(self::once())->method('deserialize')->with('[]', MutationDateEntity::class, 'json', self::isType('array'));
+        $service = $this->createService(new MutationFakeContainer($em, $serializer), MutationDateEntity::class);
+
+        $service->update($entity, ['publishedAt' => '2026-07-25 12:00:00']);
+
+        self::assertInstanceOf(\DateTime::class, $entity->getPublishedAt());
+        self::assertSame('2026-07-25 12:00:00', $entity->getPublishedAt()?->format('Y-m-d H:i:s'));
+    }
+
     // -------------------------------------------------------
     //  remove()
     // -------------------------------------------------------
@@ -150,6 +225,14 @@ final class BaseServiceMutationTraitTest extends TestCase
         $service = $this->createService($container, SimpleEntity::class);
 
         self::assertFalse($service->remove(1));
+    }
+
+    public function testRemoveReturnsFalseWhenObjectCannotBeFound(): void
+    {
+        $em = new MutationFakeEntityManager(new MutationFakeRepository([]));
+        $service = $this->createService(new MutationFakeContainer($em), SimpleEntity::class);
+
+        self::assertFalse($service->remove(999));
     }
 
     public function testUpdateWithoutSerializerThrowsForRichData(): void
@@ -195,6 +278,48 @@ final class EntityWithRequiredCtor
     public function setName(string $name): self { $this->name = $name; return $this; }
 }
 
+final class MutationRelatedEntity
+{
+    public function __construct(private readonly int $id) {}
+    public function getId(): int { return $this->id; }
+}
+
+final class MutationRelationEntity
+{
+    #[ORM\ManyToOne(targetEntity: MutationRelatedEntity::class)]
+    private ?MutationRelatedEntity $owner = null;
+
+    public function getOwner(): ?MutationRelatedEntity { return $this->owner; }
+    public function setOwner(?MutationRelatedEntity $owner): void { $this->owner = $owner; }
+}
+
+final class MutationCollectionEntity
+{
+    /** @var \Doctrine\Common\Collections\Collection<int, MutationRelatedEntity> */
+    #[ORM\OneToMany(targetEntity: MutationRelatedEntity::class, mappedBy: 'collection')]
+    private \Doctrine\Common\Collections\Collection $members;
+
+    /** @param list<MutationRelatedEntity> $members */
+    public function __construct(array $members)
+    {
+        $this->members = new \Doctrine\Common\Collections\ArrayCollection($members);
+    }
+
+    /** @return \Doctrine\Common\Collections\Collection<int, MutationRelatedEntity> */
+    public function getMembers(): \Doctrine\Common\Collections\Collection { return $this->members; }
+    public function addMember(MutationRelatedEntity $member): void { $this->members->add($member); }
+    public function removeMember(MutationRelatedEntity $member): void { $this->members->removeElement($member); }
+}
+
+final class MutationDateEntity
+{
+    #[ORM\Column(type: 'datetime')]
+    private ?\DateTimeInterface $publishedAt = null;
+
+    public function getPublishedAt(): ?\DateTimeInterface { return $this->publishedAt; }
+    public function setPublishedAt(\DateTimeInterface $publishedAt): void { $this->publishedAt = $publishedAt; }
+}
+
 final class MutationFakeRepository
 {
     public function __construct(private array $byId) {}
@@ -226,6 +351,7 @@ final class MutationFakeEntityManager
 {
     private array $persisted = [];
     private array $removed = [];
+    private int $flushCount = 0;
 
     public function __construct(
         private readonly MutationFakeRepository $repository,
@@ -254,8 +380,11 @@ final class MutationFakeEntityManager
 
     public function persist(object $object): void { $this->persisted[] = $object; }
     public function remove(object $object): void { $this->removed[] = $object; }
+    public function persisted(): array { return $this->persisted; }
+    public function flushCount(): int { return $this->flushCount; }
     public function flush(): void
     {
+        $this->flushCount++;
         if ($this->flushThrows) {
             throw new \RuntimeException('Flush failed');
         }
@@ -278,6 +407,7 @@ final class MutationFakeContainer implements ContainerInterface
     public function __construct(
         private readonly MutationFakeEntityManager $em,
         ?SerializerInterface $serializer = null,
+        private readonly ?ValidatorInterface $validator = null,
     ) {
         $this->serializer = $serializer;
     }
@@ -288,6 +418,7 @@ final class MutationFakeContainer implements ContainerInterface
             'doctrine.orm.entity_manager' => $this->em,
             'logger' => new NullLogger(),
             'serializer' => $this->serializer,
+            'validator' => $this->validator,
             'security.token_storage' => new class {
                 public function getToken(): ?object { return null; }
             },
@@ -297,6 +428,9 @@ final class MutationFakeContainer implements ContainerInterface
 
     public function has(string $id): bool
     {
+        if ($id === 'validator') {
+            return $this->validator !== null;
+        }
         return in_array($id, ['doctrine.orm.entity_manager', 'logger', 'serializer', 'security.token_storage'], true);
     }
 

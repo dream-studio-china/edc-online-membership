@@ -139,6 +139,8 @@ docker compose exec app php bin/console doctrine:migrations:migrate --no-interac
 docker compose exec app php bin/console app:identity:user:create admin@example.com admin 'P@ssw0rd' --admin
 ```
 
+Compose 也會自動啟動 Messenger `worker` 與 Trade/Store Outbox `scheduler`。可使用 `docker compose logs -f worker scheduler` 檢視非同步處理日誌。
+
 ### 生產環境
 
 ```bash

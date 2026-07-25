@@ -66,7 +66,8 @@ class TransferController extends RestController
         } catch (\InvalidArgumentException $e) {
             return $this->warning($e->getMessage(), 400, '', 400);
         } catch (\RuntimeException $e) {
-            return $this->warning($e->getMessage() ?: 'Transfer failed', 500, '', 500);
+            $status = str_ends_with($e->getMessage(), 'not found') ? 404 : 500;
+            return $this->warning($e->getMessage() ?: 'Transfer failed', $status, '', $status);
         }
     }
 
@@ -106,7 +107,8 @@ class TransferController extends RestController
         } catch (\InvalidArgumentException $e) {
             return $this->warning($e->getMessage(), 400, '', 400);
         } catch (\RuntimeException $e) {
-            return $this->warning($e->getMessage() ?: 'Deposit failed', 500, '', 500);
+            $status = str_ends_with($e->getMessage(), 'not found') ? 404 : 500;
+            return $this->warning($e->getMessage() ?: 'Deposit failed', $status, '', $status);
         }
     }
 }

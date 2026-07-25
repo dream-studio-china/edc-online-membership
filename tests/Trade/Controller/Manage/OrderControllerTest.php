@@ -6,7 +6,7 @@ namespace App\Tests\Trade\Controller\Manage;
 
 use App\Trade\Controller\Manage\OrderController;
 use App\Trade\Service\OrderServiceInterface;
-use App\Payment\Service\InvoiceServiceInterface;
+use App\Trade\Service\StoreContextResolverInterface;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Request;
@@ -20,16 +20,16 @@ final class OrderControllerTest extends TestCase
 {
     private OrderServiceInterface $service;
     private WorkflowInterface $workflow;
-    private InvoiceServiceInterface $invoiceService;
+    private StoreContextResolverInterface $storeContextResolver;
     private OrderController $controller;
 
     protected function setUp(): void
     {
         $this->service = $this->createMock(OrderServiceInterface::class);
         $this->workflow = $this->createMock(WorkflowInterface::class);
-        $this->invoiceService = $this->createMock(InvoiceServiceInterface::class);
+        $this->storeContextResolver = $this->createMock(StoreContextResolverInterface::class);
 
-        $this->controller = new OrderController($this->service, $this->workflow, $this->invoiceService);
+        $this->controller = new OrderController($this->service, $this->storeContextResolver, $this->workflow);
     }
 
     private function injectDependencies(RequestStack $requestStack): void

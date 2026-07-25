@@ -82,3 +82,10 @@ api_promotion:
         path: ../src/Promotion/Controller/
         namespace: App\Promotion\Controller
     type: attribute
+
+api_store:
+    prefix: /api/v1
+    resource:
+        path: ../src/Store/Controller/
+        namespace: App\Store\Controller
+    type: attribute

@@ -33,4 +33,4 @@ if [ ! -f "${PRIVATE_KEY_PATH}" ] || [ ! -f "${PUBLIC_KEY_PATH}" ]; then
     echo "Development JWT keys are ready. They persist under the mounted var/ directory."
 fi
 
-exec docker-php-entrypoint "php-fpm"
+exec docker-php-entrypoint "$@"

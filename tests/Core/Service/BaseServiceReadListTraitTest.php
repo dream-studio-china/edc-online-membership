@@ -53,6 +53,17 @@ final class BaseServiceReadListTraitTest extends TestCase
         self::assertSame($entity, $result);
     }
 
+    public function testGetByUuidUsesMappedExternalIdentifier(): void
+    {
+        $entity = new ReadListEntity(7, 'test', '550e8400-e29b-41d4-a716-446655440000');
+        $repo = new ReadListFakeRepository([7 => $entity]);
+        $container = new ReadListFakeContainer(new ReadListFakeEntityManager($repo));
+
+        $service = $this->createService($container, ReadListEntity::class);
+
+        self::assertSame($entity, $service->get('550e8400-e29b-41d4-a716-446655440000'));
+    }
+
     public function testGetByObjectWithId(): void
     {
         $entity = new ReadListEntity(5, 'obj');
@@ -438,9 +449,10 @@ final class BaseServiceReadListTraitTest extends TestCase
 
 final class ReadListEntity
 {
-    public function __construct(private ?int $id = null, private string $name = '') {}
+    public function __construct(private ?int $id = null, private string $name = '', private string $uuid = '') {}
     public function getId(): ?int { return $this->id; }
     public function getName(): string { return $this->name; }
+    public function getUuid(): string { return $this->uuid; }
     public function setName(string $name): self { $this->name = $name; return $this; }
 }
 
@@ -473,6 +485,13 @@ final class ReadListFakeEntityManager
     public function setQueryResults(array $results): void { $this->queryResults = $results; }
 
     public function getRepository(string $class): ReadListFakeRepository { return $this->repo; }
+
+    public function getClassMetadata(string $class): object
+    {
+        return new class {
+            public function hasField(string $field): bool { return $field === 'uuid'; }
+        };
+    }
 
     public function createQuery(string $dql): object
     {

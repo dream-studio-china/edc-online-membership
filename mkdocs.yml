@@ -56,6 +56,7 @@ nav:
       - Core Framework: design/bundles/core.md
       - Common (CMS): design/bundles/common.md
       - Trade (E-Commerce): design/bundles/trade.md
+      - Store (Multi-Store Operations): design/bundles/store.md
       - Payment: design/bundles/payment.md
       - Wallet: design/bundles/wallet.md
       - Identity (Auth): design/bundles/identity.md

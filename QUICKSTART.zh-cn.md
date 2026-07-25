@@ -7,7 +7,7 @@
 无需本地安装 PHP、Composer 或数据库，仅需 **Docker**。
 
 ```bash
-# 1) 启动所有服务（app、nginx、MySQL、Redis、Mailpit）
+# 1) 启动所有服务（app、worker、scheduler、nginx、MySQL、Redis、Mailpit）
 docker compose up -d --build
 
 # 2) 执行数据库迁移
@@ -24,6 +24,8 @@ curl -s -X POST http://localhost:8080/api/auth/login \
 ```
 
 > Docker 开发环境会在挂载的 `./var/jwt` 目录下生成一次 JWT 密钥，后续启动会复用。生产环境请先在主机上手动生成 — 详见 [README](README.zh-cn.md#docker-部署)。
+
+> `worker` 自动消费 Messenger 的 `async` 队列，`scheduler` 每五秒发布 Trade/Store Outbox。两者随 Compose 自动启动，可通过 `docker compose logs -f worker scheduler` 查看日志。
 
 Docker 开发环境使用内置安全默认值。只有需要定制端口、数据库密码或可选集成时，才需要创建 Docker env 文件：
 

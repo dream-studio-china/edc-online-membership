@@ -11,6 +11,7 @@ use App\Core\View\DetailApiViewMixin;
 use App\Core\View\ListApiViewMixin;
 use App\Trade\Entity\Order;
 use App\Trade\Service\OrderServiceInterface;
+use App\Trade\Service\StoreContextResolverInterface;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -26,6 +27,7 @@ class OrderController extends RestController
 
     public function __construct(
         protected readonly OrderServiceInterface $service,
+        private readonly StoreContextResolverInterface $storeContextResolver,
         #[Target('state_machine.order')]
         protected readonly WorkflowInterface $workflow,
     ) {
@@ -57,7 +59,8 @@ class OrderController extends RestController
         $user = $this->getCurrentUser();
 
         try {
-            $result = $this->service->calculatePrices($items, $currency, $content['storeCode'] ?? null, $content['meta'] ?? []);
+            $storeContext = $this->storeContextResolver->resolve();
+            $result = $this->service->calculatePrices($items, $currency, $storeContext?->storeCode, $content['meta'] ?? []);
 
             $order = $this->service->createOrder(
                 $result->items,
@@ -66,9 +69,14 @@ class OrderController extends RestController
                 $currency,
                 $notes,
                 $metadata,
+                $storeContext,
             );
 
-            return $this->success($order, 'Order created', 201);
+            return $this->success(
+                $order,
+                $storeContext === null ? 'Order created' : 'Order submitted for store acceptance',
+                $storeContext === null ? 201 : 202,
+            );
         } catch (\Throwable $e) {
             return $this->warning($e->getMessage(), 400, '', 400);
         }
@@ -87,7 +95,8 @@ class OrderController extends RestController
         $currency = $content['currency'] ?? 'CNY';
 
         try {
-            $result = $this->service->calculatePrices($items, $currency, $content['storeCode'] ?? null, $content['meta'] ?? []);
+            $storeContext = $this->storeContextResolver->resolve();
+            $result = $this->service->calculatePrices($items, $currency, $storeContext?->storeCode, $content['meta'] ?? []);
             return $this->success($result, 'Quote calculated');
         } catch (\Throwable $e) {
             return $this->warning($e->getMessage(), 400, '', 400);

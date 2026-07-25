@@ -1,6 +1,6 @@
 # CRUD Skeleton - Full Codebase Context
 
-> Context snapshot. Last updated: 2026-07-13
+> Context snapshot. Last updated: 2026-07-25
 
 ---
 
@@ -10,9 +10,9 @@
 - **PHP 8.4+**, Doctrine ORM 3.6, MySQL 8 (Docker), SQLite (tests)
 - JWT authentication (RS256), OTP/SMS login, WeChat Mini Program / Official Account login
 - Expression-based dynamic query engine (`@filter`, `@sort`, `@dql`)
-- Modular architecture: **Core** (framework), **Common** (CMS), **Promotion** (DSL-driven promotions), **Identity** (auth), **Trade** (e-commerce), **Payment** (invoices), **Wallet** (balances), **Wechat** (login + pay), **Storage** (file upload drivers)
+- Modular architecture: **Core** (framework), **Common** (CMS), **Promotion** (DSL-driven promotions), **Identity** (auth), **Trade** (commercial orders), **Store** (multi-store operations), **Payment** (invoices), **Wallet** (balances), **Wechat** (login + pay), **Storage** (file upload drivers)
 - EasyWeChat 6.x integration (Mini Program, Official Account OAuth, WeChat Pay V3)
-- NelmioApiDoc (Swagger at `/api/doc`), PHPUnit 12.5, Docker Compose (5 services)
+- NelmioApiDoc (Swagger at `/api/doc`), PHPUnit 12.5, Docker Compose (7 services: app, worker, scheduler, nginx, MySQL, Redis, Mailpit)
 - MkDocs Material + GitHub Pages documentation
 - **i18n**: Symfony Translation with en, zh, zh_Hant, ja — all user-facing messages, entity/field names, and status values translated
 
@@ -50,12 +50,21 @@
 │   └── Controller/AuthController.php, App/UserController.php, App/ProfileController.php, Manage/UserController.php, Manage/ProfileController.php
 │
 ├── src/Trade/                    # E-commerce module
-│   ├── Entity/                   # Product, Specification, Order, OrderItem
-│   ├── Service/OrderService.php        # createOrder(... metadata), pay(), refund(), fulfill() + price pipeline
+│   ├── Entity/                   # Product, Specification, Order, OrderItem, TradeOutboxMessage
+│   ├── Service/OrderService.php        # StoreContext-aware creation + price pipeline
+│   ├── Command/PublishOutboxCommand.php # app:trade:outbox:publish
+│   ├── MessageHandler/           # Store acceptance/rejection consumers
 │   ├── Service/Pricing/                # PriceCalculatorInterface (Base, Quantity, Total)
 │   ├── EventListener/OrderWorkflowListener.php
 │   ├── Exception/                      # OrderInvalidTransitionException, SpecificationNotFoundException
 │   └── Controller/App/ + Manage/       # CRUD + workflow + pay/refund/fulfill + items + cancel + spec browse/v2
+│
+├── src/Store/                    # Multi-store operational boundary
+│   ├── Entity/                   # Store, membership, StoreOrder, Outbox, Inbox
+│   ├── Service/                  # Context, membership, StoreOrder, Outbox services
+│   ├── MessageHandler/           # Inbox-idempotent Trade order consumer
+│   ├── Command/PublishOutboxCommand.php # app:store:outbox:publish
+│   └── Controller/App/ + Manage/ + Staff/
 │
 ├── src/Payment/                  # Payment module
 │   ├── Entity/Invoice.php              # Payment invoice (pending→paying→paid→refunded)
@@ -67,6 +76,8 @@
 │   ├── Service/Gateway/MockGateway.php       # Deterministic test gateway (only gateway remaining in Payment)
 │   ├── Service/PaymentGatewayRegistry.php    # #[AutowireIterator('payment.gateway')] registry
 │   └── Controller/App/ + Manage/ + Webhook/
+│       # Current Trade result propagation is synchronous Invoice domain events.
+│       # Planned phase 1: Payment Outbox -> Trade Inbox; Payment Inbox is deferred.
 │
 ├── src/Wallet/                   # Wallet module
 │   ├── Entity/                   # Wallet, WalletTransaction, WalletPaymentDeduction
@@ -112,17 +123,18 @@
 │       ├── nelmio_api_doc.yaml   # OpenAPI 3.1 config: System + Wechat tags
 │       ├── security.yaml         # PUBLIC_ACCESS: docs/auth/webhooks/wechat + GET /api/v1/public/*
 │       ├── translation.yaml      # Translator config: default_locale en, translations/ path
-│       ├── workflow.yaml         # Order state machine (draft→completed)
+│       ├── workflow.yaml         # Order state machine, including Store acceptance
+│       ├── messenger.yaml        # Trade/Store integration messages to async transport
 │       └── ...
-├── migrations/                   # 13 migrations (latest creates common_picture table)
+├── migrations/                   # 19 migrations (latest expands Trade status for Store workflow)
 ├── translations/                 # i18n translation files (messages.en/zh/zh_Hant/ja.yaml)
 ├── docs/
 │   ├── ai/context.md             # This file
 │   ├── design/                   # Design contracts
 │   │   └── bundles/              # Per-module design docs (core, common, trade, wallet, identity, wechat, payment, storage, promotion)
 │   └── openapi/                       # endpoints.yaml + order/payment frontend flow docs
-├── scripts/tests/                # Test scripts
-├── tests/                        # 1635 PHPUnit tests, 5320 assertions, 91%+ coverage
+├── scripts/tests/                # API smoke, Store orchestration smoke, trade workflow scripts
+├── tests/                        # 1665 PHPUnit tests, 5472 assertions, 90.49% latest full line coverage
 ├── README.md                     # English README
 ├── README.zh-cn.md               # Chinese (Simplified) README
 ├── README.zh-hant.md             # Chinese (Traditional) README
@@ -143,7 +155,7 @@
 ## 3. Request Lifecycle
 
 1. `public/index.php` → `App\Kernel` (MicroKernelTrait)
-2. `config/routes.yaml` imports: `/api/v1` (Common/Trade/Wallet/Payment/Promotion/Wechat App+Manage), `/api/auth` (Identity), `/api/wechat` (Wechat login), `/system` (introspection), `/api/payment/notify` (webhook)
+2. `config/routes.yaml` imports: `/api/v1` (Common/Trade/Store/Wallet/Payment/Promotion/Wechat App+Manage), `/api/auth` (Identity), `/api/wechat` (Wechat login), `/system` (introspection), `/api/payment/notify` (webhook)
 3. `JwtAuthenticator` intercepts all `/api` routes (except public paths listed in security.yaml)
 4. Controller action (trait mixin or custom method) → `BaseService` methods → Doctrine EntityManager → DB
 5. `RestController::success()` / `warning()` → JSON `{data, code, message, paginator}`
@@ -243,7 +255,9 @@ Key PHPDoc contracts:
 
 ```
 draft → pending → confirmed → paid → fulfilled → completed → refunded
-                          ↳ cancelled (from draft/pending/confirmed)
+  │
+  └→ awaiting_store_acceptance → store_accepted → confirmed
+                               └→ store_rejected → cancelled
 ```
 
 ### 7.2 OrderService Methods
@@ -251,7 +265,7 @@ draft → pending → confirmed → paid → fulfilled → completed → refunde
 | Method | Description |
 |--------|-------------|
 | `calculatePrices(items, currency, storeCode?, meta?)` | Pipeline: BasePriceCalculator → QuantityCalculator → **TotalAggregator (subtotal, priority 55)** → **PromotionCalculator (priority 60)**. `meta` is an opaque bidirectional channel for calculators. |
-| `createOrder(items, user, total, currency, notes, metadata)` | Create Order + OrderItems in transaction. Optional `metadata` is saved as-is to `trade_order.metadata`. |
+| `createOrder(..., ?StoreContext)` | Creates Order + OrderItems. A resolved StoreContext writes `_store` metadata and `trade.order.created.v1` in the same transaction. |
 | `pay(Order, systemWalletId, paymentMethod)` | User wallet → system wallet via `TransferService`. Sets `paidAt`. |
 | `refund(Order, systemWalletId, reason)` | System wallet → user wallet via `TransferService`. Sets `refundedAt`. |
 | `fulfill(Order, data)` | Set tracking/shipping + `fulfilledAt`. |
@@ -289,7 +303,7 @@ draft → pending → confirmed → paid → fulfilled → completed → refunde
 
 | Method | Path | Description |
 |--------|------|-------------|
-| POST | `/app/orders` | Create order (auto-assigns user). Accepts optional `metadata` JSON payload and persists it directly. |
+| POST | `/app/orders` | Create order. With trusted `X-Store-Code`, returns `202` while Store accepts asynchronously; otherwise uses the standard Trade flow. |
 | **POST** | **`/app/orders/quote`** | **Price preview without creating order** |
 | GET | `/app/orders/{id}/items` | View own order items |
 | GET | `/app/orders/{id}/items` | View own order items |
@@ -364,7 +378,26 @@ Payment defines `PaymentAdjustmentProviderInterface` — a pre-payment hook that
 | POST | `/manage/invoices/{id}/refund` | Refund invoice |
 | POST | `/api/payment/notify/{payment}` | Payment callback (public, G/W signature verified) |
 
-### 8.4 Wallet App Endpoints
+### 8.4 Payment/Trade Integration Status
+
+Current payment-result propagation is synchronous: `InvoiceService` dispatches
+`InvoicePaidEvent`, `InvoiceFailedEvent`, `InvoiceCancelledEvent`, and
+`InvoiceRefundedEvent`; `Trade\EventListener\OrderInvoiceListener` updates the Trade
+order in process.
+
+The approved next migration is intentionally limited to **Payment Outbox -> Trade
+Inbox**. Payment will write versioned lifecycle events in the same transaction as an
+Invoice state mutation, and Trade will consume them idempotently. The first event is
+`payment.invoice.paid.v1`, followed by failed/cancelled/refunded events. Trade keeps
+the current synchronous `InvoiceService` calls for Invoice creation, payment initiation,
+cancellation, and refund during this phase. A Payment Inbox and
+`trade.payment.requested.v1` Saga are explicitly deferred until Payment service
+extraction requires them.
+
+The future payment Outbox publisher will join the automatic scheduler alongside Trade
+and Store publishers; the existing `worker` will consume its Messenger messages.
+
+### 8.5 Wallet App Endpoints
 
 | Method | Path | Description |
 |--------|------|-------------|
@@ -541,6 +574,7 @@ Placed in `src/Core/Controller/System/` (framework layer). NelmioApiDoc path_pat
 | **Post-response enrichment** | Core | `OpenApiEnricherListener` post-processes `/api/doc` and `/api/doc.json` |
 | **commonFilter** | Controllers | Array criteria or QueryBuilder injected into all queries. `[]` = no filter (admin), `['user' => $user]` = user-scoped, `['id' => -1]` = block all, QueryBuilder required for `IS NULL` filters |
 | **Payment via wallet** | Trade | `POST /app/orders/{id}/payment` with `payment: "wallet"` creates Invoice → WalletGateway deducts user wallet |
+| **Payment integration migration** | Payment -> Trade | Next phase replaces synchronous Invoice domain-event consumption with Payment Outbox and Trade Inbox; Payment request Inbox/Saga remains deferred |
 | **Balance audit** | Wallet | `GET /app/wallets/balance` audits only current user's wallets; `GET /manage/wallets/balance` is global; `POST /manage/wallets/reconcile` fixes per-wallet gaps with `TYPE_ADJUSTMENT` |
 | **Idempotent deposit** | Wallet | `POST /transfers/deposit` with `referenceId` — duplicate requests return existing transaction |
 | **Gateway registry** | Payment | `#[AutowireIterator]` + `_instanceof` auto-tags all `PaymentGatewayInterface` implementations |
@@ -599,7 +633,7 @@ Enriches all endpoints (90+):
 
 44+ named schemas across 13 tags (Auth, Products, Orders, Categories, Tags, Contents, Comments, Pages, Media, Settings, Promotions, PromotionTemplates, Wallet, System, Wechat). Each with field-level type, description, enum, and example values. `path_patterns` includes both `^/api` and `^/system`.
 
-## 15. Database Tables (13 Migrations)
+## 15. Database Tables (19 Migrations)
 
 | Version | Tables |
 |---------|--------|
@@ -616,6 +650,7 @@ Enriches all endpoints (90+):
 | 20260703020000 | `identity_profile` (replaces `member` table; level, nickname, avatar, metadata; FK to `users`) |
 | 20260704000000 | `promotion_template`, `promotion` (DSL text, AST cache, per-store config, time range, `IDX_PROMOTION_ACTIVE_STORE` composite index) |
 | 20260713000000 | `common_picture` (nullable `user_id` FK→`users` ON DELETE SET NULL, required `category_id` FK→`common_category` ON DELETE CASCADE, nullable `title`, required `image`, nullable `metadata` json) |
+| 20260725000000-20260725050000 | Identity User UUID; Store, Store membership/order, Store Outbox/Inbox; Trade Outbox; Specification UUID; Trade order status `VARCHAR(40)` |
 
 ## 16. Documentation Assets
 
@@ -648,8 +683,8 @@ Enriches all endpoints (90+):
 
 - **Framework**: PHPUnit 12.5
 - **DB**: SQLite `var/test.db` in test environment
-- **Coverage**: 90% minimum (enforced in CI), currently **91.12% lines** from latest local Xdebug run
-- **Test count**: **1635 tests**, **5320 assertions**
+- **Coverage**: 90% minimum (enforced in CI), currently **90.49% lines** from latest local Xdebug run
+- **Test count**: **1665 tests**, **5472 assertions**
 - **Static analysis**: PHPStan Level 8 with zero errors in its configured scope (`src/`, excluding optional SDK code, exception classes, and documented false-positive suppressions). Generic contract via `@template TEntity` on `BaseServiceInterface`/`BaseService` + `@extends` on 18 concrete service pairs. Rector automates Doctrine Collection/Repository PHPDoc with `composer rector:types`; CI enforces `composer rector:types:check` as a dry-run.
 - **Local PHP note**: default `php` may point to PHP 7.4; use Homebrew PHP 8.5 at `/opt/homebrew/opt/php@8.5/bin/php` for local Symfony/PHPUnit commands.
 - **HTML coverage report**: `XDEBUG_MODE=coverage ./vendor/bin/phpunit --coverage-html var/coverage`
@@ -664,6 +699,9 @@ Enriches all endpoints (90+):
   - `tests/Core/`: 70+ tests (BaseService, RestController, Parser, Serializer, LocaleListener, MutationTrait, Utils, System controllers — all PHPStan Level 8 compliant)
    - `tests/Promotion/Integration/`: 8 real SQLite quote pipeline tests (store isolation, global campaigns, member-targeted item discounts, stacking, best-price conflict, Nth-item, multi-SKU, expiry, mixed rules)
    - `tests/Integration/`: ~20 cross-module tests
+   - `tests/Store/`: Store entities/services plus Trade -> Store -> Trade integration and Store-scoped HTTP flow
+   - `scripts/tests/api-smoke.sh`: real HTTP auth/catalog/wallet/order/payment smoke; strict 401/403/404 checks
+   - `scripts/tests/store-smoke.sh`: real HTTP Store-scoped order, Trade Outbox, Messenger consumer, Store Outbox, and `store_accepted` assertion
 
 ## 18. Environment Variables (Key)
 
@@ -680,6 +718,7 @@ Enriches all endpoints (90+):
 | `WECHAT_OFFICIAL_APP_ID`, `WECHAT_OFFICIAL_SECRET`, `WECHAT_OFFICIAL_TOKEN`, `WECHAT_OFFICIAL_AES_KEY` | Official Account |
 | `WECHAT_PAY_MCH_ID`, `WECHAT_PAY_SECRET_KEY`, `WECHAT_PAY_PRIVATE_KEY`, `WECHAT_PAY_CERTIFICATE`, `WECHAT_PAY_NOTIFY_URL` | WeChat Pay V3 |
 | `MESSENGER_TRANSPORT_DSN` | Async transport |
+| `OUTBOX_PUBLISH_INTERVAL` | Seconds between automatic Trade/Store Outbox relay runs (default `5`) |
 | `DEFAULT_URI` | Base URL for CLI contexts |
 | `MAILER_DSN` | Mailer transport |
 | `MEDIA_STORAGE_DEFAULT` | Default media storage driver (`local` by default) |
@@ -690,7 +729,7 @@ Qiniu configuration is intentionally **not** environment-variable based. Configu
 
 ### 17.1 Architecture
 
-5 services in `compose.yaml`: **nginx** (reverse proxy), **app** (PHP-FPM 8.4, built from `Dockerfile`), **database** (MySQL 8), **redis** (Redis 7 Alpine), **mailer** (Mailpit).
+7 services in `compose.yaml`: **nginx** (reverse proxy), **app** (PHP-FPM 8.4), **worker** (Messenger async consumer), **scheduler** (Trade/Store Outbox relay; Payment joins when its Outbox is implemented), **database** (MySQL 8), **redis** (Redis 7 Alpine), **mailer** (Mailpit).
 
 ### 17.2 Development (zero-config)
 
@@ -718,6 +757,8 @@ Requires `.env.prod.local` copied from `.env.prod.example` with `APP_SECRET`, `R
 |---------|--------|---------|
 | `app:identity:user:create` | Identity | Create user: email, username, password, --phone, --role, --admin, --phone-verified |
 | `app:storage:qiniu:settings:init` | Storage | Initialize missing Qiniu `common_setting` records (`qiniu.access_key`, `qiniu.secret_key`, `qiniu.bucket`, `qiniu.domain`) without overwriting existing values |
+| `app:trade:outbox:publish` | Trade | Relay unpublished Trade integration events to Messenger |
+| `app:store:outbox:publish` | Store | Relay Store acceptance/rejection events to Messenger |
 
 ## 21. Service Container Wiring
 

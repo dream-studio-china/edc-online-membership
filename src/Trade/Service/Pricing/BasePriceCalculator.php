@@ -61,6 +61,7 @@ class BasePriceCalculator implements PriceCalculatorInterface
                 'price' => 0,
                 'specSnapshot' => [
                     'id' => $specification->getId(),
+                    'uuid' => $specification->getUuid(),
                     'name' => $specification->getName(),
                     'productId' => $product->getId(),
                 ],

@@ -44,7 +44,7 @@ final class TradeApiIntegrationTest extends WebTestCase
 
         try {
             $em->getConnection()->executeStatement(
-                "INSERT INTO users (id, email, username, password, roles) VALUES (1, 'trade@test.com', 'tradeuser', '\$2y\$13\$TestHashValue1234567890abcdefg', '[\"ROLE_ADMIN\"]')"
+                "INSERT INTO users (id, uuid, email, username, password, roles) VALUES (1, '11111111-1111-4111-8111-111111111111', 'trade@test.com', 'tradeuser', '\$2y\$13\$TestHashValue1234567890abcdefg', '[\"ROLE_ADMIN\"]')"
             );
         } catch (\Throwable) {
             // User may already exist

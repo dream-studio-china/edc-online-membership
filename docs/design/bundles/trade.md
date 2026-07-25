@@ -16,6 +16,7 @@ Trade provides a complete order management system:
 - **Price Calculation Pipeline**: pluggable calculators with priority ordering
 - **Soft Deletes**: products and specifications use `isDeleted` flag
 - **UUID v4**: external identifiers for orders and items
+- **Store integration**: Store-scoped orders write a local Outbox event and await Store acceptance
 
 ### 1.1 Entities
 
@@ -25,6 +26,20 @@ Trade provides a complete order management system:
 | `Specification` | `trade_specification` | Product variant (name, price in cents, status) |
 | `Order` | `trade_order` | Purchase order with state machine, total, currency |
 | `OrderItem` | `trade_order_item` | Line item with snapshot, quantity, unit price |
+| `TradeOutboxMessage` | `trade_outbox_message` | Transactional integration event relay record |
+
+### 1.2 Store-Scoped Orders
+
+`POST /api/v1/app/orders` remains the sole customer order entry point. A trusted
+`X-Store-Code` is resolved by the Store bundle into the Trade-owned scalar
+`StoreContext`; Trade never imports a Store entity. The order receives an `_store`
+metadata snapshot, enters `awaiting_store_acceptance`, and writes
+`trade.order.created.v1` in the same transaction.
+
+`app:trade:outbox:publish` dispatches the event through Messenger. Store consumes it
+idempotently, writes its StoreOrder and result Outbox event, and Trade consumers apply
+`store.order.accepted.v1` or `store.order.rejected.v1`. The status column is
+`VARCHAR(40)` to support these workflow states.
 
 ---
 
@@ -46,6 +61,10 @@ src/Trade/
 |   |-- OrderItem.php
 |   |-- Product.php
 |   |-- Specification.php
+|   `-- TradeOutboxMessage.php
+|-- Command/PublishOutboxCommand.php
+|-- DTO/StoreContext.php
+|-- Message/ + MessageHandler/             # Store integration contracts/consumers
 |-- EventListener/
 |   |-- OrderWorkflowListener.php          # Post-transition timestamp setters
 |-- Exception/

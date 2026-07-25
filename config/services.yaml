@@ -75,6 +75,7 @@ services:
     App\Core\Service\ServiceLocatorInterface: '@App\Core\Service\DefaultServiceLocator'
 
     App\Identity\Service\OtpStorageInterface: '@App\Identity\Service\LocalCacheOtpStorage'
+    App\Trade\Service\StoreContextResolverInterface: '@App\Store\Service\StoreContextResolver'
 
     App\Identity\Service\LocalCacheOtpStorage:
         arguments:
