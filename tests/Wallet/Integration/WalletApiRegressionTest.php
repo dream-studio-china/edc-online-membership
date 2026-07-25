@@ -493,7 +493,7 @@ final class WalletApiRegressionTest extends IntegrationWebTestCase
         $client->request('POST', '/api/v1/manage/transfers', server: ['CONTENT_TYPE' => 'application/json'], content: json_encode([
             'fromWalletId' => 999999, 'toWalletId' => $bw['data']['id'], 'amount' => 100,
         ], JSON_THROW_ON_ERROR));
-        self::assertSame(500, $client->getResponse()->getStatusCode());
+        self::assertSame(404, $client->getResponse()->getStatusCode());
     }
 
     public function testTransferCurrencyMismatch(): void
