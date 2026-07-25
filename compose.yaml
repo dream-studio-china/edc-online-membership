@@ -53,6 +53,7 @@ services:
       MAILER_DSN: ${MAILER_DSN:-smtp://mailer:1025}
       MESSENGER_TRANSPORT_DSN: ${MESSENGER_TRANSPORT_DSN:-doctrine://default?auto_setup=0}
       DEFAULT_URI: ${DEFAULT_URI:-http://localhost}
+      INVENTORY_ENABLED: ${INVENTORY_ENABLED:-0}
 
     volumes:
       - ./var:/var/www/html/var
@@ -88,6 +89,8 @@ services:
         while :; do
           php bin/console app:trade:outbox:publish --no-interaction
           php bin/console app:store:outbox:publish --no-interaction
+          php bin/console app:inventory:outbox:publish --no-interaction
+          php bin/console app:inventory:reservations:release-expired --no-interaction
           sleep "${OUTBOX_PUBLISH_INTERVAL:-5}"
         done
     depends_on:

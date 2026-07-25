@@ -76,6 +76,7 @@ services:
 
     App\Identity\Service\OtpStorageInterface: '@App\Identity\Service\LocalCacheOtpStorage'
     App\Trade\Service\StoreContextResolverInterface: '@App\Store\Service\StoreContextResolver'
+    App\Inventory\Service\MaterialServiceInterface: '@App\Inventory\Service\MaterialService'
 
     App\Identity\Service\LocalCacheOtpStorage:
         arguments:
