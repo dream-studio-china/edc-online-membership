@@ -169,6 +169,9 @@ trait CreateApiViewMixin
         catch (ValidatorException $exception) {
             return $this->warning($exception->getMessage(), 400, '', 400);
         }
+        catch (\InvalidArgumentException $exception) {
+            return $this->warning($exception->getMessage(), 400, '', 400);
+        }
         catch (NotFoundHttpException $exception) {
             return $this->warning($exception->getMessage(), 404, '', 404);
         }

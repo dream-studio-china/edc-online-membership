@@ -39,7 +39,7 @@ trait DetailApiViewMixin
             new OA\Response(response: 200, description: 'Api detail view'),
         ]
     )]
-    #[Route('/{id}', name: 'detail', requirements: ['id' => '\\d+'], methods: ['GET'])]
+    #[Route('/{id}', name: 'detail', requirements: ['id' => '\\d+|[0-9a-fA-F-]{36}'], methods: ['GET'])]
     public function detailAction(int|string $id): Response
     {
         $service = $this->service;

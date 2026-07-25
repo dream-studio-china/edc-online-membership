@@ -24,7 +24,7 @@ trait DeleteApiViewMixin
             new OA\Response(response: 200, description: 'Api delete view'),
         ]
     )]
-    #[Route('/{id}', name: 'delete', requirements: ['id' => '\\d+'], methods: ['DELETE'])]
+    #[Route('/{id}', name: 'delete', requirements: ['id' => '\\d+|[0-9a-fA-F-]{36}'], methods: ['DELETE'])]
     public function deleteAction(int|string $id): Response
     {
         $service = $this->service;

@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Core\Service\Concern;
 
+use App\Core\Utils\UUID;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
 use Doctrine\ORM\Query\Expr;
@@ -37,6 +38,9 @@ trait BaseServiceReadListTrait
         }
         elseif (is_array($object)) {
             $entity = $this->rep->findOneBy($object);
+        } elseif (is_string($object) && UUID::is_valid($object)) {
+            $metadata = $this->getEntityManager()->getClassMetadata($this->entityClass);
+            $entity = $metadata->hasField('uuid') ? $this->rep->findOneBy(['uuid' => $object]) : null;
         } else {
             $entity = $this->rep->find($object);
         }

@@ -2,6 +2,7 @@
 
 namespace App\Core\View;
 
+use App\Core\Utils\UUID;
 use Doctrine\ORM\QueryBuilder;
 
 trait ApiView
@@ -26,7 +27,7 @@ trait ApiView
      */
     protected function mixIdToCommonFilter(int|string $id, array|QueryBuilder|null $commonFilter = null)
     {
-        return $this->mixToCommonFilter(['id' => $id], $commonFilter);
+        return $this->mixToCommonFilter([UUID::is_valid((string) $id) ? 'uuid' : 'id' => $id], $commonFilter);
     }
 
     /**

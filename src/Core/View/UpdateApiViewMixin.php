@@ -256,12 +256,14 @@ trait UpdateApiViewMixin
             new OA\Response(response: 200, description: 'Api update view'),
         ]
     )]
-    #[Route('/{id}', name: 'update', methods: ['PUT'], requirements: ['id' => '\\d+'])]
+    #[Route('/{id}', name: 'update', methods: ['PUT'], requirements: ['id' => '\\d+|[0-9a-fA-F-]{36}'])]
     public function updateAction(Request $request, int|string $id): Response
     {
         try {
             $response = $this->updateRecords($request, $id);
         } catch (ValidatorException $exception) {
+            return $this->warning($exception->getMessage(), 400, '', 400);
+        } catch (\InvalidArgumentException $exception) {
             return $this->warning($exception->getMessage(), 400, '', 400);
         } catch (NotFoundHttpException $exception) {
             return $this->warning($exception->getMessage(), 404, '', 404);

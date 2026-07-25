@@ -263,6 +263,8 @@ class OpenApiEnricherListener
         // Wechat routes: wechat-*
         if (str_starts_with($opId, 'wechat-')) return 'Wechat';
 
+        if (str_starts_with($opId, 'store-')) return 'Store';
+
         // Extract resource name: {scope}-{resource} or {scope}-{resource}-{action}
         if (preg_match('/(?:manage|app|public)-([a-z][a-z0-9_]*)(?:-|$)/', $opId, $m)) {
             $resource = $m[1];
@@ -282,6 +284,7 @@ class OpenApiEnricherListener
                 'wallet' => 'Wallet', 'wallets' => 'Wallet',
                 'transaction' => 'Wallet', 'transactions' => 'Wallet',
                 'transfer' => 'Wallet', 'transfers' => 'Wallet',
+                'store' => 'Store', 'stores' => 'Store',
             ];
             if (isset($known[$resource])) return $known[$resource];
 
