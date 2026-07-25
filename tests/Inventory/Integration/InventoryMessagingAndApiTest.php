@@ -66,6 +66,8 @@ final class InventoryMessagingAndApiTest extends IntegrationWebTestCase
         $client->request('GET', '/api/v1/manage/inventory/stocks/00000000-0000-4000-8000-000000000001/' . $materialUuid);
         self::assertResponseIsSuccessful();
         self::assertSame('3.000000', json_decode((string) $client->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR)['data']['availableQuantity']);
+        $client->request('GET', '/api/v1/manage/inventory/stocks');
+        self::assertResponseIsSuccessful();
 
         $client->jsonRequest('POST', '/api/v1/manage/inventory/recipes', [
             'specificationUuid' => '00000000-0000-4000-8000-000000000002',
@@ -73,6 +75,9 @@ final class InventoryMessagingAndApiTest extends IntegrationWebTestCase
         ]);
         self::assertResponseStatusCodeSame(201);
         $client->request('GET', '/api/v1/manage/inventory/recipes');
+        self::assertResponseIsSuccessful();
+        $recipeUuid = json_decode((string) $client->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR)['data'][0]['uuid'];
+        $client->jsonRequest('PUT', '/api/v1/manage/inventory/recipes/' . $recipeUuid, ['status' => 'inactive']);
         self::assertResponseIsSuccessful();
 
         $client->jsonRequest('POST', '/api/v1/manage/inventory/recipes', [

@@ -5,7 +5,10 @@ declare(strict_types=1);
 namespace App\Inventory\Controller\Manage;
 
 use App\Core\Controller\RestController;
+use App\Core\View\ApiView;
+use App\Core\View\ListApiViewMixin;
 use App\Inventory\Service\InventoryServiceInterface;
+use App\Inventory\Service\InventoryStockServiceInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -15,8 +18,12 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[IsGranted('ROLE_ADMIN')]
 final class StockController extends RestController
 {
-    public function __construct(private readonly InventoryServiceInterface $inventory)
-    {
+    use ApiView, ListApiViewMixin;
+
+    public function __construct(
+        protected readonly InventoryStockServiceInterface $service,
+        private readonly InventoryServiceInterface $inventory,
+    ) {
     }
 
     #[Route('/{storeUuid}/{materialUuid}', name: 'detail', methods: ['GET'])]

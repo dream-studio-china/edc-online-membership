@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Inventory\Controller\Manage;
 
 use App\Core\Controller\RestController;
-use App\Inventory\Entity\RecipeLine;
-use App\Inventory\Entity\SpecificationRecipe;
-use App\Inventory\Repository\MaterialRepository;
-use App\Inventory\Repository\SpecificationRecipeRepository;
-use Doctrine\ORM\EntityManagerInterface;
+use App\Core\View\ApiView;
+use App\Core\View\DetailApiViewMixin;
+use App\Core\View\ListApiViewMixin;
+use App\Core\View\UpdateApiViewMixin;
+use App\Inventory\Service\SpecificationRecipeServiceInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -19,17 +19,34 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[IsGranted('ROLE_ADMIN')]
 final class RecipeController extends RestController
 {
-    public function __construct(
-        private readonly SpecificationRecipeRepository $recipes,
-        private readonly MaterialRepository $materials,
-        private readonly EntityManagerInterface $entityManager,
-    ) {
+    use ApiView, DetailApiViewMixin, ListApiViewMixin,
+        UpdateApiViewMixin;
+
+    /** @var list<string> */
+    protected array $acceptedUpdateProperties = ['status'];
+
+    public function __construct(protected readonly SpecificationRecipeServiceInterface $service)
+    {
     }
 
-    #[Route('', name: 'list', methods: ['GET'])]
-    public function listAction(): Response
+    /** @return array<string, mixed> */
+    protected function defaultCreateValues(): array
     {
-        return $this->success($this->recipes->findBy([], ['createdAt' => 'DESC']));
+        return [];
+    }
+
+    /**
+     * @param array<string, mixed> $content
+     * @return array<string, mixed>
+     */
+    protected function processCreateContent(array $content, object $entity): array
+    {
+        return $content;
+    }
+
+    protected function afterCreated(object|false $entity): mixed
+    {
+        return $entity;
     }
 
     #[Route('', name: 'create', methods: ['POST'])]
@@ -45,11 +62,9 @@ final class RecipeController extends RestController
             return $this->warning('specificationUuid and non-empty lines are required.', 400, '', 400);
         }
         try {
-            if ($this->recipes->findOneBy(['specificationUuid' => $data['specificationUuid']]) !== null) {
-                throw new \LogicException('A recipe already exists for this specification.');
-            }
-            $recipe = new SpecificationRecipe($data['specificationUuid']);
-            foreach ($data['lines'] as $index => $line) {
+            /** @var list<array{materialUuid: string, quantityPerUnit: string, sort?: int}> $lines */
+            $lines = [];
+            foreach ($data['lines'] as $line) {
                 if (
                     !is_array($line)
                     || !is_string($line['materialUuid'] ?? null)
@@ -57,18 +72,20 @@ final class RecipeController extends RestController
                 ) {
                     throw new \InvalidArgumentException('Each recipe line requires materialUuid and quantityPerUnit.');
                 }
-                $material = $this->materials->findOneByUuid($line['materialUuid']);
-                if ($material === null || !$material->isActive()) {
-                    throw new \InvalidArgumentException('Recipe material was not found or is inactive.');
+                if (isset($line['sort']) && !is_int($line['sort'])) {
+                    throw new \InvalidArgumentException('Recipe line sort must be an integer.');
                 }
-                $recipe->addLine(new RecipeLine(
-                    $material,
-                    $line['quantityPerUnit'],
-                    is_int($line['sort'] ?? null) ? $line['sort'] : $index,
-                ));
+                $recipeLine = [
+                    'materialUuid' => $line['materialUuid'],
+                    'quantityPerUnit' => $line['quantityPerUnit'],
+                ];
+                if (isset($line['sort'])) {
+                    $recipeLine['sort'] = $line['sort'];
+                }
+                $lines[] = $recipeLine;
             }
-            $this->entityManager->persist($recipe);
-            $this->entityManager->flush();
+
+            $recipe = $this->service->createRecipe($data['specificationUuid'], $lines);
 
             return $this->success($recipe, 'Success', 201);
         } catch (\Throwable $exception) {

@@ -19,12 +19,8 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[IsGranted('ROLE_ADMIN')]
 final class MaterialController extends RestController
 {
-    use ApiView;
-    use CreateApiViewMixin;
-    use DeleteApiViewMixin;
-    use DetailApiViewMixin;
-    use ListApiViewMixin;
-    use UpdateApiViewMixin;
+    use ApiView, DetailApiViewMixin, ListApiViewMixin,
+        CreateApiViewMixin, UpdateApiViewMixin, DeleteApiViewMixin;
 
     /** @var list<string> */
     protected array $requiredCreateProperties = ['code', 'name', 'kind', 'unit'];
