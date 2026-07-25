@@ -113,6 +113,17 @@ User Management (Manage)
 | DELETE | `/api/v1/manage/users/{id}` | ROLE_ADMIN | Delete user |
 | POST | `/api/v1/manage/users/{id}/change-password` | ROLE_ADMIN | Admin change user password (no current pw required) |
 
+### Cross-Boundary User Identity
+
+`users.id` remains the local Identity database key. Before Identity is referenced by a
+separately deployable module or service, `User` MUST expose a unique UUID. Other
+modules and integration events use `userUuid`, never the local `users.id`, as a durable
+customer or staff reference.
+
+The migration may temporarily resolve a UUID to the local ID inside Identity, but Store,
+Inventory, Payment integrations, and future services MUST NOT persist a foreign key or
+long-lived reference to `users.id`.
+
 Profile Management (Manage)
 --------------------------
 

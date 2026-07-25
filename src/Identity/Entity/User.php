@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Identity\Entity;
 
+use App\Core\Utils\UUID;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -13,12 +14,16 @@ use Symfony\Component\Security\Core\User\UserInterface;
 #[ORM\UniqueConstraint(name: 'uniq_users_username', columns: ['username'])]
 #[ORM\UniqueConstraint(name: 'uniq_users_email', columns: ['email'])]
 #[ORM\UniqueConstraint(name: 'uniq_users_phone', columns: ['phone'])]
+#[ORM\UniqueConstraint(name: 'uniq_users_uuid', columns: ['uuid'])]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
     private ?int $id = null;
+
+    #[ORM\Column(type: 'string', length: 36, unique: true)]
+    private string $uuid;
 
     #[ORM\Column(type: 'string', length: 180)]
     private string $email = '';
@@ -42,6 +47,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToOne(mappedBy: 'user', targetEntity: Profile::class, cascade: ['persist', 'remove'])]
     private ?Profile $profile = null;
 
+    public function __construct()
+    {
+        $this->uuid = UUID::v4();
+    }
+
     public function __toString(): string
     {
         return $this->username !== '' ? $this->username : $this->email;
@@ -50,6 +60,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    public function getUuid(): string
+    {
+        return $this->uuid;
     }
 
     public function getEmail(): string

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Identity\Entity;
 
+use App\Core\Utils\UUID;
 use App\Identity\Entity\User;
 use PHPUnit\Framework\TestCase;
 
@@ -104,6 +105,16 @@ final class UserTest extends TestCase
         $user = new User();
 
         self::assertNull($user->getId());
+    }
+
+    public function testUserHasUniqueImmutableUuid(): void
+    {
+        $first = new User();
+        $second = new User();
+
+        self::assertTrue(UUID::is_valid($first->getUuid()));
+        self::assertNotSame($first->getUuid(), $second->getUuid());
+        self::assertSame($first->getUuid(), $first->getUuid());
     }
 
     public function testToStringUsesUsernameThenEmail(): void
