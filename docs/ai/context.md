@@ -12,7 +12,7 @@
 - Expression-based dynamic query engine (`@filter`, `@sort`, `@dql`)
 - Modular architecture: **Core** (framework), **Common** (CMS), **Promotion** (DSL-driven promotions), **Identity** (auth), **Trade** (commercial orders), **Store** (multi-store operations), **Payment** (invoices), **Wallet** (balances), **Wechat** (login + pay), **Storage** (file upload drivers)
 - EasyWeChat 6.x integration (Mini Program, Official Account OAuth, WeChat Pay V3)
-- NelmioApiDoc (Swagger at `/api/doc`), PHPUnit 12.5, Docker Compose (5 services)
+- NelmioApiDoc (Swagger at `/api/doc`), PHPUnit 12.5, Docker Compose (7 services: app, worker, scheduler, nginx, MySQL, Redis, Mailpit)
 - MkDocs Material + GitHub Pages documentation
 - **i18n**: Symfony Translation with en, zh, zh_Hant, ja — all user-facing messages, entity/field names, and status values translated
 
@@ -76,6 +76,8 @@
 │   ├── Service/Gateway/MockGateway.php       # Deterministic test gateway (only gateway remaining in Payment)
 │   ├── Service/PaymentGatewayRegistry.php    # #[AutowireIterator('payment.gateway')] registry
 │   └── Controller/App/ + Manage/ + Webhook/
+│       # Current Trade result propagation is synchronous Invoice domain events.
+│       # Planned phase 1: Payment Outbox -> Trade Inbox; Payment Inbox is deferred.
 │
 ├── src/Wallet/                   # Wallet module
 │   ├── Entity/                   # Wallet, WalletTransaction, WalletPaymentDeduction
@@ -376,7 +378,26 @@ Payment defines `PaymentAdjustmentProviderInterface` — a pre-payment hook that
 | POST | `/manage/invoices/{id}/refund` | Refund invoice |
 | POST | `/api/payment/notify/{payment}` | Payment callback (public, G/W signature verified) |
 
-### 8.4 Wallet App Endpoints
+### 8.4 Payment/Trade Integration Status
+
+Current payment-result propagation is synchronous: `InvoiceService` dispatches
+`InvoicePaidEvent`, `InvoiceFailedEvent`, `InvoiceCancelledEvent`, and
+`InvoiceRefundedEvent`; `Trade\EventListener\OrderInvoiceListener` updates the Trade
+order in process.
+
+The approved next migration is intentionally limited to **Payment Outbox -> Trade
+Inbox**. Payment will write versioned lifecycle events in the same transaction as an
+Invoice state mutation, and Trade will consume them idempotently. The first event is
+`payment.invoice.paid.v1`, followed by failed/cancelled/refunded events. Trade keeps
+the current synchronous `InvoiceService` calls for Invoice creation, payment initiation,
+cancellation, and refund during this phase. A Payment Inbox and
+`trade.payment.requested.v1` Saga are explicitly deferred until Payment service
+extraction requires them.
+
+The future payment Outbox publisher will join the automatic scheduler alongside Trade
+and Store publishers; the existing `worker` will consume its Messenger messages.
+
+### 8.5 Wallet App Endpoints
 
 | Method | Path | Description |
 |--------|------|-------------|
@@ -553,6 +574,7 @@ Placed in `src/Core/Controller/System/` (framework layer). NelmioApiDoc path_pat
 | **Post-response enrichment** | Core | `OpenApiEnricherListener` post-processes `/api/doc` and `/api/doc.json` |
 | **commonFilter** | Controllers | Array criteria or QueryBuilder injected into all queries. `[]` = no filter (admin), `['user' => $user]` = user-scoped, `['id' => -1]` = block all, QueryBuilder required for `IS NULL` filters |
 | **Payment via wallet** | Trade | `POST /app/orders/{id}/payment` with `payment: "wallet"` creates Invoice → WalletGateway deducts user wallet |
+| **Payment integration migration** | Payment -> Trade | Next phase replaces synchronous Invoice domain-event consumption with Payment Outbox and Trade Inbox; Payment request Inbox/Saga remains deferred |
 | **Balance audit** | Wallet | `GET /app/wallets/balance` audits only current user's wallets; `GET /manage/wallets/balance` is global; `POST /manage/wallets/reconcile` fixes per-wallet gaps with `TYPE_ADJUSTMENT` |
 | **Idempotent deposit** | Wallet | `POST /transfers/deposit` with `referenceId` — duplicate requests return existing transaction |
 | **Gateway registry** | Payment | `#[AutowireIterator]` + `_instanceof` auto-tags all `PaymentGatewayInterface` implementations |
@@ -707,7 +729,7 @@ Qiniu configuration is intentionally **not** environment-variable based. Configu
 
 ### 17.1 Architecture
 
-7 services in `compose.yaml`: **nginx** (reverse proxy), **app** (PHP-FPM 8.4), **worker** (Messenger async consumer), **scheduler** (Trade/Store Outbox relay), **database** (MySQL 8), **redis** (Redis 7 Alpine), **mailer** (Mailpit).
+7 services in `compose.yaml`: **nginx** (reverse proxy), **app** (PHP-FPM 8.4), **worker** (Messenger async consumer), **scheduler** (Trade/Store Outbox relay; Payment joins when its Outbox is implemented), **database** (MySQL 8), **redis** (Redis 7 Alpine), **mailer** (Mailpit).
 
 ### 17.2 Development (zero-config)
 
