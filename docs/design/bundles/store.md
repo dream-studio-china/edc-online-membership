@@ -145,9 +145,15 @@ and generic; Trade MUST NOT import Store entities, repositories, or services.
 | Identity User identity | Add a unique User UUID before Store persists or publishes user references | Prevent Store from depending on `users.id` |
 | Root routing/DI | Register Store controllers and Store service configuration | Compose the new bundle |
 
-The current workflow is `draft -> pending -> confirmed -> paid -> fulfilled -> completed`.
-It has no order-created event and no store acceptance state. This document defines the
-target workflow; it does not claim those states currently exist.
+The implemented Store-scoped workflow is `draft -> awaiting_store_acceptance ->
+store_accepted -> confirmed -> paid -> fulfilled -> completed`. Store rejection follows
+`awaiting_store_acceptance -> store_rejected -> cancelled`. Non-Store orders retain the
+existing Trade workflow.
+
+The current context transport is `X-Store-Code`, resolved only against an active Store
+by `StoreContextResolver`. A Store-scoped App order returns `202`. The Trade-order
+consumer currently auto-accepts eligible active Stores; Inventory reservation is the
+future decision boundary.
 
 ### 3.1 Store Context At The Trade Entry Point
 

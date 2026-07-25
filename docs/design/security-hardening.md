@@ -4,7 +4,7 @@
 > It describes **desired end-states** — not current vulnerabilities.
 >
 > Sensitive details (file paths, line numbers, attack chains) are intentionally excluded.
-> See the project's [security policy](../../SECURITY.md) for the reporting process.
+> See the project's [security policy](https://github.com/immane/crud-skeleton/blob/dev/SECURITY.md) for the reporting process.
 
 ---
 
@@ -133,4 +133,3 @@
   explicit ownership checks cover `detail`, `update`, `delete`, and any custom action methods.
 - [ ] Add audit logging for sensitive operations (media deletion, payment state changes, wallet
   adjustments) to support forensic analysis.
-

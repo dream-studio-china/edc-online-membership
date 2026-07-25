@@ -238,10 +238,12 @@ The 9 traits in `src/Core/View/` provide the controller composition toolkit:
 |-------|----------|---------|
 | `ApiView` | (none) | Service binding, commonFilter() |
 | `ListApiViewMixin` | `GET /` | Paginated collection |
-| `DetailApiViewMixin` | `GET /{id}` | Single entity by numeric ID |
+| `DetailApiViewMixin` | `GET /{id}` | Single entity by numeric ID or UUID |
 | `CreateApiViewMixin` | `POST /` | Single + batch create |
-| `UpdateApiViewMixin` | `PUT /{id}`, `POST /batch-update` | Single update + batch upsert |
-| `DeleteApiViewMixin` | `DELETE /{id}` | Entity removal |
+| `UpdateApiViewMixin` | `PUT /{id}`, `POST /batch-update` | Single update + batch upsert by numeric ID or UUID |
+| `DeleteApiViewMixin` | `DELETE /{id}` | Entity removal by numeric ID or UUID |
+| `ScopedListApiViewMixin` | `GET /` | Collection scoped by a required parent route parameter |
+| `ScopedDetailApiViewMixin` | `GET /{id}` | Detail scoped by a required parent route parameter |
 | `SingleCreateAndUpdateApiViewMixin` | `PUT /` | Singleton upsert |
 | `SingleDetailApiViewMixin` | `GET /` | Singleton detail |
 | `WorkflowApiViewMixin` | `/todo`, `/transitions`, `/do/{*}`, `/status-reset` | State machine ops |
