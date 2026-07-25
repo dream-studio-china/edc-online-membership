@@ -6,6 +6,7 @@ use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\ExceptionEvent;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 class ExceptionInterceptor
@@ -50,9 +51,9 @@ class ExceptionInterceptor
         }
 
         // In production, return JSON response
-        $statusCode = $exception->getCode() && $exception->getCode() >= 400 && $exception->getCode() < 600 
-            ? $exception->getCode() 
-            : 500;
+        $statusCode = $exception instanceof HttpExceptionInterface
+            ? $exception->getStatusCode()
+            : ($exception->getCode() >= 400 && $exception->getCode() < 600 ? (int) $exception->getCode() : 500);
 
         $responseData = [
             'code' => $statusCode,
