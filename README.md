@@ -32,6 +32,8 @@ A production-oriented Symfony 8.1 API skeleton with reusable service-layer abstr
 
 For a minimal runnable setup (JWT keys, DB migration, admin user, login/auth test), see [QUICKSTART.md](QUICKSTART.md).
 
+Docker Compose also starts the Messenger `worker` and Trade/Store Outbox `scheduler` automatically. See `docker compose logs -f worker scheduler` to inspect asynchronous processing.
+
 If you are on macOS, commands in the quick start prefer Homebrew PHP (`/opt/homebrew/bin/php`) to avoid CLI version mismatch.
 
 ## Why This Project

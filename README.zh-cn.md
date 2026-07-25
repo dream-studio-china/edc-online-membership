@@ -196,7 +196,7 @@ composer install
 
 ### 3) 为本机 PHP 准备环境变量
 
-Docker 开发环境无需创建 env 文件即可启动。本机 PHP/Symfony 运行时，建议在 `.env.local` 中覆盖本地配置：
+Docker 开发环境无需创建 env 文件即可启动，并会自动启动 Messenger `worker` 和 Trade/Store Outbox `scheduler`。可通过 `docker compose logs -f worker scheduler` 查看异步处理。本机 PHP/Symfony 运行时，建议在 `.env.local` 中覆盖本地配置：
 
 ```dotenv
 APP_ENV=dev

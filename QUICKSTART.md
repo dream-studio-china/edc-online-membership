@@ -7,7 +7,7 @@ This Quick Start walks you through a minimal, runnable development setup.
 No PHP, Composer, or database setup required on your host. Prerequisites: **Docker** only.
 
 ```bash
-# 1) Start all services (app, nginx, MySQL, Redis, Mailpit)
+# 1) Start all services (app, worker, scheduler, nginx, MySQL, Redis, Mailpit)
 docker compose up -d --build
 
 # 2) Run database migration
@@ -24,6 +24,8 @@ curl -s -X POST http://localhost:8080/api/auth/login \
 ```
 
 > Docker dev creates JWT keys once under the mounted `./var/jwt` directory and reuses them on later starts. For production, generate keys on the host before starting — see [README](README.md#docker-deployment).
+
+> `worker` consumes Messenger's `async` transport and `scheduler` publishes Trade/Store Outbox rows every five seconds. Both start automatically with Compose. Check them with `docker compose logs -f worker scheduler`.
 
 Docker development uses built-in safe defaults. Create a Docker env file only when you need to customize ports, database credentials, or optional integrations:
 
@@ -109,6 +111,17 @@ or
 
 ```bash
 symfony server:start
+```
+
+For Store/Trade asynchronous events in native PHP, run these in separate terminals:
+
+```bash
+php bin/console messenger:consume async --time-limit=3600 --memory-limit=256M
+while true; do
+  php bin/console app:trade:outbox:publish --no-interaction
+  php bin/console app:store:outbox:publish --no-interaction
+  sleep 5
+done
 ```
 
 7) Log in and test protected endpoints
