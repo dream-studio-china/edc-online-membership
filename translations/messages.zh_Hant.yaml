@@ -32,6 +32,13 @@
 "StoreTradeOrderCancellation": "門店交易訂單取消"
 "StoreOrder": "門店訂單"
 "StoreMembership": "門店成員"
+"Profile": "個人資料"
+"Promotion": "促銷活動"
+"PromotionTemplate": "促銷模板"
+"Store": "門店"
+"StoreConsumedEvent": "門店已消費事件"
+"StoreOutboxMessage": "門店發件箱消息"
+"TradeOutboxMessage": "交易發件箱消息"
 
 # Entity field names
 "Id": "ID"
@@ -189,7 +196,6 @@
 "Source specification uuids": "來源規格UUID列表"
 "Specification uuid": "規格UUID"
 "Stock mutated": "已發生庫存變動"
-"Store": "門店"
 "Store code snapshot": "門店編碼快照"
 "Store name snapshot": "門店名稱快照"
 "Store order uuid": "門店訂單UUID"

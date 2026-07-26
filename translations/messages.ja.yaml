@@ -32,6 +32,13 @@
 "StoreTradeOrderCancellation": "ストア取引注文取消"
 "StoreOrder": "ストア注文"
 "StoreMembership": "ストアメンバー"
+"Profile": "プロフィール"
+"Promotion": "プロモーション"
+"PromotionTemplate": "プロモーションテンプレート"
+"Store": "ストア"
+"StoreConsumedEvent": "ストア消費済みイベント"
+"StoreOutboxMessage": "ストア送信ボックスメッセージ"
+"TradeOutboxMessage": "取引送信ボックスメッセージ"
 
 # Entity field names
 "Id": "ID"
@@ -189,7 +196,6 @@
 "Source specification uuids": "ソース仕様UUIDリスト"
 "Specification uuid": "仕様UUID"
 "Stock mutated": "在庫変動済み"
-"Store": "ストア"
 "Store code snapshot": "ストアコードスナップショット"
 "Store name snapshot": "ストア名スナップショット"
 "Store order uuid": "ストア注文UUID"

@@ -37,6 +37,13 @@
 "StoreTradeOrderCancellation": "Store Trade Order Cancellation"
 "StoreOrder": "Store Order"
 "StoreMembership": "Store Membership"
+"Profile": "Profile"
+"Promotion": "Promotion"
+"PromotionTemplate": "Promotion Template"
+"Store": "Store"
+"StoreConsumedEvent": "Store Consumed Event"
+"StoreOutboxMessage": "Store Outbox Message"
+"TradeOutboxMessage": "Trade Outbox Message"
 
 # ====================================================================
 # Entity field names (camelCase → plain text, used by EntityController)
@@ -197,7 +204,6 @@
 "Source specification uuids": "Source specification uuids"
 "Specification uuid": "Specification uuid"
 "Stock mutated": "Stock mutated"
-"Store": "Store"
 "Store code snapshot": "Store code snapshot"
 "Store name snapshot": "Store name snapshot"
 "Store order uuid": "Store order uuid"
