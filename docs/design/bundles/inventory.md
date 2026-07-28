@@ -1,10 +1,29 @@
 # Inventory Bundle Design
 
-> **Status: approved design, not implemented.** The Inventory bundle (`src/Inventory/`)
-> owns materials, per-store stock, Specification recipes, reservations, and the stock
-> ledger. It is the deferred reservation boundary defined by the Store bundle. Trade
-> remains the catalog and commercial-order authority; Store remains the authority for
-> store acceptance and operational orders.
+> **Status: preview, implemented but not production-ready.** The Inventory bundle
+> (`src/Inventory/`) owns materials, per-store stock, Specification recipes,
+> reservations, and the stock ledger. It is the deferred reservation boundary defined
+> by the Store bundle. Trade remains the catalog and commercial-order authority; Store
+> remains the authority for store acceptance and operational orders.
+>
+> `INVENTORY_ENABLED` MUST remain `false` outside isolated development and testing.
+> Confirmed reservations currently expire without a fulfillment-driven consume flow,
+> and cross-message cancellation races are not fully serialized. The schema and disabled
+> module may be merged, but enabling Inventory for live orders is blocked by the
+> production-readiness work below.
+
+### Production-Readiness TODO
+
+- Implement fulfillment-driven reservation consumption that atomically reduces on-hand
+  and reserved quantities and writes `consume` ledger entries.
+- Define expiry semantics so an accepted or fulfilled order cannot lose its reservation
+  while it still depends on stock.
+- Serialize Store order confirmation and cancellation transitions to prevent stale state
+  from resurrecting cancelled orders.
+- Handle release-before-reserve ordering with a durable Inventory cancellation tombstone
+  and preserve per-reservation outbox causality.
+- Add concurrency and out-of-order integration tests for these transitions before
+  allowing `INVENTORY_ENABLED=true` in production.
 
 ---
 
@@ -105,8 +124,8 @@ parameters:
 
 The global setting takes precedence over all material-level inventory policies. It is a
 deployment concern, not a database setting or a request parameter. Its default MUST be
-documented explicitly in `.env` and deployment configuration; production deployments
-that sell physical stock SHOULD set it to `true`.
+documented explicitly in `.env` and deployment configuration. While this bundle remains
+in preview, production deployments MUST keep it `false`.
 
 ### 2.3 Per-Store, Per-Material Policy
 

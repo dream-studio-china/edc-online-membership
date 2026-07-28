@@ -802,6 +802,12 @@ Requires `.env.prod.local` copied from `.env.prod.example` with `APP_SECRET`, `R
 ### 22.1 Overview
 The Inventory bundle (`src/Inventory/`) owns materials, per-store stock, Specification recipes, reservations, and the stock ledger. It implements the deferred reservation boundary defined in Store.
 
+**Preview safety notice:** Inventory is implemented but is not production-ready.
+`INVENTORY_ENABLED` must remain `0` outside isolated development and testing until
+fulfillment-driven consumption, safe accepted-order expiry semantics, serialized
+confirmation/cancellation, and release-before-reserve handling are implemented and
+covered by concurrency tests. The disabled schema/module may be deployed safely.
+
 ### 22.2 Domain Model
 
 | Entity | Purpose |
