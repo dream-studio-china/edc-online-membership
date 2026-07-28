@@ -145,7 +145,7 @@ final class InventoryMessagingAndApiTest extends IntegrationWebTestCase
                     'quantity' => '2.000000',
                 ]],
                 'requestedAt' => '2026-07-26T00:00:00.123456+00:00',
-                'expiresAt' => '2026-07-27T00:00:00.123456+00:00',
+                'expiresAt' => (new \DateTimeImmutable('+1 day'))->format(DATE_ATOM),
             ],
         ];
         $handler = $container->get(\App\Inventory\MessageHandler\InventoryReservationRequestedHandler::class);
