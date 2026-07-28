@@ -1,6 +1,6 @@
 # CRUD Skeleton - Full Codebase Context
 
-> Context snapshot. Last updated: 2026-07-25
+> Context snapshot. Last updated: 2026-07-26
 
 ---
 
@@ -10,7 +10,7 @@
 - **PHP 8.4+**, Doctrine ORM 3.6, MySQL 8 (Docker), SQLite (tests)
 - JWT authentication (RS256), OTP/SMS login, WeChat Mini Program / Official Account login
 - Expression-based dynamic query engine (`@filter`, `@sort`, `@dql`)
-- Modular architecture: **Core** (framework), **Common** (CMS), **Promotion** (DSL-driven promotions), **Identity** (auth), **Trade** (commercial orders), **Store** (multi-store operations), **Payment** (invoices), **Wallet** (balances), **Wechat** (login + pay), **Storage** (file upload drivers)
+- Modular architecture: **Core** (framework), **Common** (CMS), **Promotion** (DSL-driven promotions), **Identity** (auth), **Trade** (commercial orders), **Store** (multi-store operations), **Payment** (invoices), **Wallet** (balances), **Inventory** (stock & reservation), **Wechat** (login + pay), **Storage** (file upload drivers)
 - EasyWeChat 6.x integration (Mini Program, Official Account OAuth, WeChat Pay V3)
 - NelmioApiDoc (Swagger at `/api/doc`), PHPUnit 12.5, Docker Compose (7 services: app, worker, scheduler, nginx, MySQL, Redis, Mailpit)
 - MkDocs Material + GitHub Pages documentation
@@ -62,7 +62,7 @@
 ├── src/Store/                    # Multi-store operational boundary
 │   ├── Entity/                   # Store, membership, StoreOrder, Outbox, Inbox
 │   ├── Service/                  # Context, membership, StoreOrder, Outbox services
-│   ├── MessageHandler/           # Inbox-idempotent Trade order consumer
+│   ├── MessageHandler/           # Inbox-idempotent Trade order consumer; Inventory outcome consumers
 │   ├── Command/PublishOutboxCommand.php # app:store:outbox:publish
 │   └── Controller/App/ + Manage/ + Staff/
 │
@@ -116,6 +116,14 @@
 │   ├── Controller/Manage/        # Admin CRUD endpoints
 │   └── Exception/
 │
+├── src/Inventory/                # Inventory module (material, stock, recipe, reservation)
+│   ├── Entity/                   # Material, InventoryStock, SpecificationRecipe, RecipeLine, InventoryReservation, ReservationLine, InventoryLedgerEntry, Inbox, Outbox
+│   ├── Repository/
+│   ├── Service/                  # InventoryService (reserve/release/adjust), MaterialService
+│   ├── MessageHandler/           # Reservation request/release consumers with inbox idempotency
+│   ├── Command/                  # PublishOutboxCommand, ReleaseExpiredReservationsCommand
+│   └── Controller/Manage/        # Material, Stock, Recipe, Reservation, Ledger admin APIs
+│
 ├── config/
 │   ├── services.yaml             # Service wiring + imports src/*/Resources/config + exclusions
 │   ├── routes.yaml               # Route imports (wechat, wechat_app, wechat_manage added)
@@ -126,7 +134,7 @@
 │       ├── workflow.yaml         # Order state machine, including Store acceptance
 │       ├── messenger.yaml        # Trade/Store integration messages to async transport
 │       └── ...
-├── migrations/                   # 19 migrations (latest expands Trade status for Store workflow)
+├── migrations/                   # 20 migrations (latest: Inventory tables + store_trade_order_cancellation)
 ├── translations/                 # i18n translation files (messages.en/zh/zh_Hant/ja.yaml)
 ├── docs/
 │   ├── ai/context.md             # This file
@@ -134,7 +142,7 @@
 │   │   └── bundles/              # Per-module design docs (core, common, trade, wallet, identity, wechat, payment, storage, promotion)
 │   └── openapi/                       # endpoints.yaml + order/payment frontend flow docs
 ├── scripts/tests/                # API smoke, Store orchestration smoke, trade workflow scripts
-├── tests/                        # 1665 PHPUnit tests, 5472 assertions, 90.49% latest full line coverage
+├── tests/                        # 1711 PHPUnit tests, 5652 assertions, 90.49% latest full line coverage
 ├── README.md                     # English README
 ├── README.zh-cn.md               # Chinese (Simplified) README
 ├── README.zh-hant.md             # Chinese (Traditional) README
@@ -592,6 +600,10 @@ Placed in `src/Core/Controller/System/` (framework layer). NelmioApiDoc path_pat
 | **Promotion calculator pipeline** | Promotion | `PromotionCalculator` tagged `trade.price_calculator` (priority 60). TotalAggregator runs at priority 55 to establish the subtotal before promotion evaluation. |
 | **Profile auto-creation** | Identity | `Profile` entity created on User registration via Doctrine lifecycle listener; user has `$profile` (OneToOne) instead of `$member` |
 | **Points delegated to Wallet** | Identity | Profile points use Wallet with currency=POINTS |
+| **Inventory reservation** | Inventory | Store requests reservation by specification; Inventory resolves recipes, reserves material stock atomically, produces confirmed/rejected events |
+| **Inventory global bypass** | Store + Inventory | INVENTORY_ENABLED env var allows deployments without inventory management |
+| **Per-stock negative inventory** | Inventory | Each InventoryStock has allowNegativeStock flag; independent per store/material pair |
+| **Outbox claim pattern** | Inventory + Store + Trade | Outbox publishers atomically claim rows via UPDATE WHERE, preventing concurrent delivery |
 
 ## 14. API Documentation System
 
@@ -633,7 +645,7 @@ Enriches all endpoints (90+):
 
 44+ named schemas across 13 tags (Auth, Products, Orders, Categories, Tags, Contents, Comments, Pages, Media, Settings, Promotions, PromotionTemplates, Wallet, System, Wechat). Each with field-level type, description, enum, and example values. `path_patterns` includes both `^/api` and `^/system`.
 
-## 15. Database Tables (19 Migrations)
+## 15. Database Tables (20 Migrations)
 
 | Version | Tables |
 |---------|--------|
@@ -651,6 +663,7 @@ Enriches all endpoints (90+):
 | 20260704000000 | `promotion_template`, `promotion` (DSL text, AST cache, per-store config, time range, `IDX_PROMOTION_ACTIVE_STORE` composite index) |
 | 20260713000000 | `common_picture` (nullable `user_id` FK→`users` ON DELETE SET NULL, required `category_id` FK→`common_category` ON DELETE CASCADE, nullable `title`, required `image`, nullable `metadata` json) |
 | 20260725000000-20260725050000 | Identity User UUID; Store, Store membership/order, Store Outbox/Inbox; Trade Outbox; Specification UUID; Trade order status `VARCHAR(40)` |
+| 20260726000000 | Inventory tables (material, stock, recipe, recipe_line, reservation, reservation_line, ledger_entry, inbox, outbox) + `store_trade_order_cancellation` |
 
 ## 16. Documentation Assets
 
@@ -672,6 +685,7 @@ Enriches all endpoints (90+):
 | `docs/design/bundles/payment.md` | Payment module design (invoice, gateway, adjustment providers, deduction) |
 | `docs/design/bundles/storage.md` | Storage module design (pluggable file upload drivers) |
 | `docs/design/bundles/promotion.md` | Promotion module design (DSL engine, 7 strategy types, tagged calculator) |
+| `docs/design/bundles/inventory.md` | Inventory module design (materials, stock, recipes, reservations, inbox/outbox) |
 | `docs/openapi/order-payment-flow.md` | Frontend order/payment/cancel/refund API integration guide, including WeChat Mini Program pay |
 | `docs/openapi/order-payment-flow.zh.md` | Chinese translation of the frontend order/payment/cancel/refund API guide |
 | `docs/ai/context.md` | This file — AI context snapshot |
@@ -684,7 +698,7 @@ Enriches all endpoints (90+):
 - **Framework**: PHPUnit 12.5
 - **DB**: SQLite `var/test.db` in test environment
 - **Coverage**: 90% minimum (enforced in CI), currently **90.49% lines** from latest local Xdebug run
-- **Test count**: **1665 tests**, **5472 assertions**
+- **Test count**: **1711 tests**, **5652 assertions**
 - **Static analysis**: PHPStan Level 8 with zero errors in its configured scope (`src/`, excluding optional SDK code, exception classes, and documented false-positive suppressions). Generic contract via `@template TEntity` on `BaseServiceInterface`/`BaseService` + `@extends` on 18 concrete service pairs. Rector automates Doctrine Collection/Repository PHPDoc with `composer rector:types`; CI enforces `composer rector:types:check` as a dry-run.
 - **Local PHP note**: default `php` may point to PHP 7.4; use Homebrew PHP 8.5 at `/opt/homebrew/opt/php@8.5/bin/php` for local Symfony/PHPUnit commands.
 - **HTML coverage report**: `XDEBUG_MODE=coverage ./vendor/bin/phpunit --coverage-html var/coverage`
@@ -700,6 +714,8 @@ Enriches all endpoints (90+):
    - `tests/Promotion/Integration/`: 8 real SQLite quote pipeline tests (store isolation, global campaigns, member-targeted item discounts, stacking, best-price conflict, Nth-item, multi-SKU, expiry, mixed rules)
    - `tests/Integration/`: ~20 cross-module tests
    - `tests/Store/`: Store entities/services plus Trade -> Store -> Trade integration and Store-scoped HTTP flow
+   - `tests/Inventory/`: 23 tests (Entity, Service, Integration, Message, API, Handler)
+   - `tests/Store/Integration/`: Store-Inventory integration tests (confirmation, rejection, cancellation before creation, delayed cancellation, duplicate SKU)
    - `scripts/tests/api-smoke.sh`: real HTTP auth/catalog/wallet/order/payment smoke; strict 401/403/404 checks
    - `scripts/tests/store-smoke.sh`: real HTTP Store-scoped order, Trade Outbox, Messenger consumer, Store Outbox, and `store_accepted` assertion
 
@@ -722,6 +738,7 @@ Enriches all endpoints (90+):
 | `DEFAULT_URI` | Base URL for CLI contexts |
 | `MAILER_DSN` | Mailer transport |
 | `MEDIA_STORAGE_DEFAULT` | Default media storage driver (`local` by default) |
+| `INVENTORY_ENABLED` | Toggle global inventory bypass (`0` = disabled, `1` = enabled, default `0`) |
 
 Qiniu configuration is intentionally **not** environment-variable based. Configure these records in `common_setting` when `storage=qiniu` is needed: `qiniu.access_key`, `qiniu.secret_key`, `qiniu.bucket`, `qiniu.domain`.
 
@@ -759,6 +776,8 @@ Requires `.env.prod.local` copied from `.env.prod.example` with `APP_SECRET`, `R
 | `app:storage:qiniu:settings:init` | Storage | Initialize missing Qiniu `common_setting` records (`qiniu.access_key`, `qiniu.secret_key`, `qiniu.bucket`, `qiniu.domain`) without overwriting existing values |
 | `app:trade:outbox:publish` | Trade | Relay unpublished Trade integration events to Messenger |
 | `app:store:outbox:publish` | Store | Relay Store acceptance/rejection events to Messenger |
+| `app:inventory:outbox:publish` | Inventory | Relay published Inventory integration events to Messenger |
+| `app:inventory:reservations:release-expired` | Inventory | Release expired confirmed reservations |
 
 ## 21. Service Container Wiring
 
@@ -777,3 +796,65 @@ Requires `.env.prod.local` copied from `.env.prod.example` with `APP_SECRET`, `R
 - `WechatService` explicitly defined in `services_wechat.yaml` with `%env()` parameter bindings
 - `WechatPayGateway` explicitly defined in `services_wechat.yaml` (excluded from global autowiring scan)
 - `WalletGateway` autowired in Wallet via `PaymentGatewayInterface` tag (no explicit exclusion needed)
+
+## 22. Inventory Module — Stock & Reservation System
+
+### 22.1 Overview
+The Inventory bundle (`src/Inventory/`) owns materials, per-store stock, Specification recipes, reservations, and the stock ledger. It implements the deferred reservation boundary defined in Store.
+
+**Preview safety notice:** Inventory is implemented but is not production-ready.
+`INVENTORY_ENABLED` must remain `0` outside isolated development and testing until
+fulfillment-driven consumption, safe accepted-order expiry semantics, serialized
+confirmation/cancellation, and release-before-reserve handling are implemented and
+covered by concurrency tests. The disabled schema/module may be deployed safely.
+
+### 22.2 Domain Model
+
+| Entity | Purpose |
+|--------|---------|
+| `Material` | Raw material or finished good. code is unique, immutably frozen upon stock mutation |
+| `InventoryStock` | Per-store per-material balance with onHandQuantity, reservedQuantity, allowNegativeStock flag |
+| `SpecificationRecipe` | One active recipe per Trade Specification UUID; stores material BOM lines |
+| `RecipeLine` | Quantity of a material required per unit of the parent Specification |
+| `InventoryReservation` | Idempotent reservation aggregate with status: requested, confirmed, rejected, released, consumed |
+| `ReservationLine` | Immutable snapshot of material demand and reserved quantity per reservation |
+| `InventoryLedgerEntry` | Append-only audit trail for every stock mutation |
+| `InventoryConsumedEvent` | Inbox idempotency record |
+| `InventoryOutboxMessage` | Durable integration event relay |
+
+### 22.3 Integration Flow
+```
+Trade order created
+  → Store validates + creates StoreOrder
+  → Store publishes inventory.reservation.requested.v1 (if INVENTORY_ENABLED)
+  → Inventory resolves recipe or direct finished material
+  → Inventory reserves stock atomically (checks allowNegativeStock per stock)
+  → Inventory publishes confirmed or rejected outcome
+  → Store accepts (confirmed) or rejects (rejected) StoreOrder
+  → Store publishes store.order.accepted.v1 or store.order.rejected.v1
+  → Trade applies workflow transition
+```
+
+### 22.4 Reservation Processing
+Recipes expand a Specification into material demand. Material demand is aggregated (same material from multiple specifications merged), then locked in deterministic Material UUID order. Each stock's allowNegativeStock flag controls whether reservation exceeds on-hand quantity. Reservation lines capture immutable material and quantity snapshots.
+
+### 22.5 Compensation & Expiry
+- Cancellation triggers release via Store -> Inventory release event
+- Expired confirmed reservations are released by `app:inventory:reservations:release-expired` (scheduler)
+- Release is idempotent; repeated release of same reservation is no-op
+
+### 22.6 Management APIs
+| Method | Path | Role | Purpose |
+|---|---|---|---|
+| GET/POST/PUT | `/api/v1/manage/inventory/materials` | ROLE_ADMIN | Material master |
+| GET/POST/PUT | `/api/v1/manage/inventory/recipes` | ROLE_ADMIN | Specification recipe |
+| GET | `/api/v1/manage/inventory/stocks/{storeUuid}/{materialUuid}` | ROLE_ADMIN | Stock view (virtual zero if absent) |
+| POST | `/api/v1/manage/inventory/stocks/{storeUuid}/{materialUuid}/adjust` | ROLE_ADMIN | Stock adjustment |
+| PUT | `/api/v1/manage/inventory/stocks/{storeUuid}/{materialUuid}/policy` | ROLE_ADMIN | Toggle allowNegativeStock |
+
+### 22.7 Store Integration Changes
+- `TradeOrderCreatedHandler`: when INVENTORY_ENABLED, creates reservationId and writes awaiting_inventory state + reservation request outbox
+- New handlers: `InventoryReservationConfirmedHandler`, `InventoryReservationRejectedHandler`, `InventoryReservationReleasedHandler`
+- `TradeOrderCancelledHandler`: requests inventory release for cancelled orders with reservation
+- `StoreTradeOrderCancellation` tombstone entity: handles out-of-order cancellation events
+- Trade events use OrderItem.uuid as stable lineId (not specification UUID)

@@ -20,4 +20,9 @@ class StoreOrderRepository extends ServiceEntityRepository
     {
         return $this->findOneBy(['tradeOrderUuid' => $tradeOrderUuid]);
     }
+
+    public function findOneByUuid(string $uuid): ?StoreOrder
+    {
+        return $this->findOneBy(['uuid' => $uuid]);
+    }
 }

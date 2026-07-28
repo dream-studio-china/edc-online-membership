@@ -751,8 +751,7 @@ final class UserApiIntegrationTest extends IntegrationWebTestCase
         $client->jsonRequest('POST', '/api/v1/manage/transfers/deposit', [
             'toWalletId' => 99999, 'amount' => 1000,
         ]);
-        // Runtime error -> 500
-        self::assertSame(500, $client->getResponse()->getStatusCode());
+        self::assertSame(404, $client->getResponse()->getStatusCode());
     }
 
     public function testTransferMissingFields(): void

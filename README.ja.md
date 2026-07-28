@@ -22,7 +22,7 @@ Symfony 8.1 ベースのプロダクション向け API スケルトン。再利
 - **CRUD サービス抽象化**: `new()`、`get()`、`list()`、`update()`、`remove()`
 - **動的クエリシステム**: リクエストパラメータによるフィルタリング、ソート、グループ化を DQL にコンパイル
 - **Trait ベースのコントローラ構成**: 9 つの mixin trait（List、Detail、Create、Update、Delete、Workflow、Singleton、Transform）を組み合わせて利用
-- **モジュラーアーキテクチャ**: Core フレームワーク + Common（CMS）+ Promotion（DSL駆動プロモーション）+ Trade（EC）+ Payment（決済）+ Wallet（ウォレット）+ Wechat（微信）+ Storage（ストレージ）+ Identity（認証）
+- **モジュラーアーキテクチャ**: Core フレームワーク + Common（CMS）+ Promotion（DSL駆動プロモーション）+ Trade（EC）+ Store（ストア送信ボックス）+ Inventory（マテリアル、在庫、レシピ、予約）+ Payment（決済）+ Wallet（ウォレット）+ Wechat（微信）+ Storage（ストレージ）+ Identity（認証）
 - **JWT 認証**: RS256 アクセストークン、HMAC-SHA256 リフレッシュトークンのローテーション
 - **OTP ログイン**: 電話番号ベースのワンタイムパスワード（SMS）
 - **注文ステートマシン**: Symfony Workflow（下書き → 完了）、完全なワークフロー API
@@ -61,10 +61,12 @@ Symfony 8.1 ベースのプロダクション向け API スケルトン。再利
 │   ├── Wechat/                   # 微信モジュール
 │   ├── Storage/                  # ストレージモジュール
 │   ├── Promotion/                # プロモーションモジュール（DSL エンジン）
+│   ├── Store/                     # ストアモジュール
+│   ├── Inventory/                 # 在庫モジュール（マテリアル、在庫、レシピ、予約）
 │   └── Identity/                 # 認証モジュール
 ├── config/                       # Symfony 設定
 ├── migrations/                   # Doctrine マイグレーション（12 バージョン）
-├── tests/                        # 1593 テスト、5185 アサーション、91%+ カバレッジ
+├── tests/                        # 1711 テスト、5652 アサーション、91%+ カバレッジ
 ├── translations/                 # 多言語翻訳ファイル
 └── compose.yaml                  # Docker Compose
 ```
@@ -76,6 +78,7 @@ Symfony 8.1 ベースのプロダクション向け API スケルトン。再利
 | **Core** | `App\Core` | フレームワーク基盤 | RestController、BaseService、View mixin、式パーサー |
 | **Common** | `App\Common` | CMS | カテゴリ、タグ、コンテンツ、コメント、ページ、メディア、設定 |
 | **Trade** | `App\Trade` | EC | 商品 + 仕様、注文（ステートマシン）、価格計算パイプライン |
+| **Inventory** | `App\Inventory` | 在庫管理 | 店舗別マテリアル在庫 + 仕様レシピ + 予約（アトミック在庫ロック）+ 在庫台帳監査 + マイナス在庫ポリシー |
 | **Wallet** | `App\Wallet` | ウォレット | 残高（セント）、原子転送、システム入金、冪等性、調整 |
 | **Payment** | `App\Payment` | 決済管理 | 請求書（セント+ワークフロー）、ゲートウェイ抽象化 |
 | **Wechat** | `App\Wechat` | 微信連携 | ミニプログラム/公式アカウントログイン、微信 Pay V3 |
@@ -85,7 +88,7 @@ Symfony 8.1 ベースのプロダクション向け API スケルトン。再利
 
 ## テスト
 
-**1593 テスト · 5185 アサーション · 91%+ ラインカバレッジ**
+**1711 テスト · 5652 アサーション · 91%+ ラインカバレッジ**
 
 ```bash
 ./vendor/bin/phpunit

@@ -59,7 +59,7 @@
 - **CRUD 服务抽象**：`new()`、`get()`、`list()`、`update()`、`remove()`。
 - **动态查询系统**：通过请求参数控制筛选/排序/排序/分组/字段选择，表达式编译为 DQL。
 - **Trait 组合式控制器**：9 个 mixin trait（List、Detail、Create、Update、Delete、Workflow、Singleton、Transform）可按需组合。
-- **模块化架构**：Core 框架 + Common（CMS） + Promotion（DSL 驱动促销引擎） + Trade（电商） + Payment（支付） + Wallet（钱包） + Wechat（微信登录+支付） + Storage（文件存储驱动） + Identity（鉴权）。
+- **模块化架构**：Core 框架 + Common（CMS） + Promotion（DSL 驱动促销引擎） + Trade（电商） + Store（门店交易发件箱） + Inventory（物料、库存、配方、预留） + Payment（支付） + Wallet（钱包） + Wechat（微信登录+支付） + Storage（文件存储驱动） + Identity（鉴权）。
 - **JWT 鉴权**：RS256 访问令牌，HMAC-SHA256 Refresh Token 轮换，含重用检测。
 - **OTP 登录**：基于手机验证码的短信登录，带频率限制（阿里云）。
 - **订单状态机**：Symfony Workflow（草稿 → 完成），含完整工作流 API。
@@ -72,7 +72,7 @@
 - **系统自省**：实体元数据和路由导出接口（`/system/*`）。
 - **促销 DSL 引擎**：自定义词法/语法/求值器，支持 7 种促销类型（满减、折扣、赠品、第 N 件折扣、阶梯、免运费、会员折扣）。作为标签定价计算器（优先级 60）运行在 Trade 价格管道汇总小计之后。支持会员定向 SKU 折扣、多门店路由、全平台活动，以及 `best_price` 冲突模式（模拟候选活动并选择最低总价）。
 - **Profile 实体**：用户注册时通过 Doctrine 监听器自动创建。包含等级（青铜→钻石）、昵称、头像、元数据。积分委托给 Wallet（currency=POINTS）。
-- **完善的测试**：1593 个测试，5185 个断言，91%+ 行覆盖率。
+- **完善的测试**：1711 个测试，5652 个断言，91%+ 行覆盖率。
 - **Docker Compose**：MySQL 8 + Mailpit 开发环境。
 
 ## 技术栈
@@ -117,6 +117,12 @@
 │   │   ├── Entity/               #   Product、Specification、Order、OrderItem
 │   │   ├── Service/              #   OrderService、价格计算管道
 │   │   └── Service/Pricing/      #   PriceCalculatorInterface + 3 个实现
+│   ├── Store/                     # 门店模块
+│   │   ├── Controller/Manage/    #   门店 CRUD
+│   │   ├── Entity/               #   Store
+│   │   ├── Repository/
+│   │   ├── Service/              #   StoreService
+│   │   └── MessageHandler/       #   创建/接受/拒绝/取消 出站消费者
 │   ├── Wallet/                    # 钱包模块
 │   │   ├── Controller/Manage/    #   钱包、交易、转账 API
 │   │   ├── DTO/                  #   WalletPaymentDeductionRequest
@@ -158,6 +164,13 @@
 │   │   │   └── Dsl/              #   DSL 词法/语法/求值器
 │   │   ├── Strategy/             #   7 种促销策略
 │   │   └── Exception/
+│   ├── Inventory/                # 库存模块（物料、库存、配方、预留）
+│   │   ├── Controller/Manage/    #   物料、库存、配方管理
+│   │   ├── Entity/               #   Material、InventoryStock、SpecificationRecipe、InventoryReservation 等
+│   │   ├── Repository/
+│   │   ├── Service/              #   InventoryService（预留/释放/调整）
+│   │   ├── MessageHandler/       #   预留请求/释放处理器
+│   │   └── Command/              #   PublishOutboxCommand、ReleaseExpiredReservationsCommand
 │   └── Identity/                 # 鉴权模块
 │       ├── Controller/App/       #   UserController (个人信息、改密码)、ProfileController
 │       ├── Controller/Manage/    #   UserController (管理员 CRUD)、ProfileController
@@ -169,7 +182,7 @@
 ├── config/                       # Symfony 配置
 │   └── packages/                 #   Doctrine、Security、Workflow、Serializer 等
 ├── migrations/                   # Doctrine 迁移（12 个版本）
-├── tests/                        # 1593 个 PHPUnit 测试，5185 个断言，91%+ 覆盖率
+├── tests/                        # 1711 个 PHPUnit 测试，5652 个断言，91%+ 覆盖率
 ├── docs/                         # 项目文档
 │   ├── design/                   #   设计契约（系统、API、数据、模块、控制器）
 │   │   │   └── bundles/              #   各模块设计文档（含 Promotion）
@@ -358,6 +371,7 @@ docker compose exec app php bin/console app:identity:user:create admin@example.c
 | **Core** | `App\Core` | 框架基础 | RestController、BaseService、View mixin、表达式解析器 |
 | **Common** | `App\Common` | CMS | 分类（树）、标签、内容、评论（多态）、页面、媒体、设置（KV） |
 | **Trade** | `App\Trade` | 电商 | 产品 + 规格、订单（状态机）、价格计算管道 |
+| **Inventory** | `App\Inventory` | 库存管理 | 门店物料库存 + 规格配方 + 预留（原子库存锁）+ 库存台账审计 + 负库存策略 |
 | **Wallet** | `App\Wallet` | 钱包与抵扣 | 余额（分）、原子转账、系统注资、幂等、钱包余额抵扣提供方、余额校验与对账 |
 | **Payment** | `App\Payment` | 支付编排 | 发票（分+工作流）、网关抽象（mock/wallet/wechat）、**支付抵扣提供方契约**、Webhook、事件 |
 | **Wechat** | `App\Wechat` | 微信集成 | 小程序/公众号登录、微信支付 V3、WechatUser（OneToOne→User） |
@@ -601,7 +615,7 @@ class ContentController extends RestController
 
 ## 测试
 
-**1593 个测试 · 5185 个断言 · 91%+ 行覆盖率**
+**1711 个测试 · 5652 个断言 · 91%+ 行覆盖率**
 
 运行全部测试：
 

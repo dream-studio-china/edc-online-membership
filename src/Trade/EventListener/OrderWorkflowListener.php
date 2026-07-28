@@ -10,6 +10,7 @@ use App\Trade\Event\OrderCompletedEvent;
 use App\Trade\Event\OrderFulfilledEvent;
 use App\Trade\Event\OrderPaidEvent;
 use App\Trade\Event\OrderRefundedEvent;
+use App\Trade\Service\TradeOutboxService;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -35,6 +36,7 @@ class OrderWorkflowListener implements EventSubscriberInterface
     public function __construct(
         private readonly LoggerInterface $logger,
         private readonly EventDispatcherInterface $dispatcher,
+        private readonly ?TradeOutboxService $outboxService = null,
     ) {
     }
 
@@ -99,6 +101,18 @@ class OrderWorkflowListener implements EventSubscriberInterface
 
         if ($domainEvent !== null) {
             $this->dispatcher->dispatch($domainEvent);
+        }
+
+        if ($transitionName === 'cancel' && $this->outboxService !== null) {
+            $metadata = $order->getMetadata();
+            $store = is_array($metadata) ? ($metadata['_store'] ?? null) : null;
+            if (is_array($store) && is_string($store['uuid'] ?? null)) {
+                $this->outboxService->record('trade.order.cancelled.v1', 'trade_order', $order->getUuid(), [
+                    'orderUuid' => $order->getUuid(),
+                    'storeUuid' => $store['uuid'],
+                    'cancelledAt' => $order->getCancelledAt()?->format(DATE_ATOM),
+                ]);
+            }
         }
     }
 }

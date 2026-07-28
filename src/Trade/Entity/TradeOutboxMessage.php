@@ -62,6 +62,7 @@ class TradeOutboxMessage
         $this->availableAt = $this->occurredAt;
     }
 
+    public function getId(): ?int { return $this->id; }
     public function getEventId(): string { return $this->eventId; }
     public function getTopic(): string { return $this->topic; }
     public function getAggregateId(): string { return $this->aggregateId; }

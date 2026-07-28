@@ -5,6 +5,8 @@ set -euo pipefail
 BASE="${1:-http://127.0.0.1:8000}"
 SUFFIX="$(date +%s)"
 PASSWORD='P@ssw0rd'
+INVENTORY_ENABLED="${INVENTORY_ENABLED:-0}"
+export INVENTORY_ENABLED
 PASS=0
 FAIL=0
 
@@ -53,6 +55,16 @@ api 'create product' POST /api/v1/manage/products "$ADMIN_TOKEN" "{\"name\":\"St
 PRODUCT_ID=$(body | json '["data"]["id"]')
 api 'create specification' POST "/api/v1/manage/products/$PRODUCT_ID/specifications" "$ADMIN_TOKEN" '{"name":"Default","price":1999,"status":"active"}' 201
 SPEC_ID=$(body | json '["data"]["id"]')
+SPEC_UUID=$(body | json '["data"]["uuid"]')
+
+if [[ "$INVENTORY_ENABLED" == '1' ]]; then
+  MATERIAL_CODE="store-smoke-material-$SUFFIX"
+  api 'create inventory material' POST /api/v1/manage/inventory/materials "$ADMIN_TOKEN" "{\"code\":\"$MATERIAL_CODE\",\"name\":\"Store Smoke Material\",\"kind\":\"raw\",\"unit\":\"piece\"}" 201
+  MATERIAL_UUID=$(body | json '["data"]["uuid"]')
+  api 'enable negative inventory' PUT "/api/v1/manage/inventory/stocks/$STORE_UUID/$MATERIAL_UUID/policy" "$ADMIN_TOKEN" '{"allowNegativeStock":true}' 200
+  api 'receive inventory stock' POST "/api/v1/manage/inventory/stocks/$STORE_UUID/$MATERIAL_UUID/adjust" "$ADMIN_TOKEN" '{"quantityDelta":"10.000000","reason":"store smoke receipt","referenceId":"store-smoke-receipt"}' 200
+  api 'create specification recipe' POST /api/v1/manage/inventory/recipes "$ADMIN_TOKEN" "{\"specificationUuid\":\"$SPEC_UUID\",\"lines\":[{\"materialUuid\":\"$MATERIAL_UUID\",\"quantityPerUnit\":\"1.000000\"}]}" 201
+fi
 
 api 'create store-scoped order' POST /api/v1/app/orders "$USER_TOKEN" "{\"currency\":\"CNY\",\"items\":[{\"specificationId\":$SPEC_ID,\"quantity\":1}]}" 202 "$STORE_CODE"
 ORDER_ID=$(body | json '["data"]["id"]')
@@ -64,6 +76,15 @@ api 'staff lists pending order' GET "/api/v1/store/stores/$STORE_UUID/orders" "$
 STORE_ORDER_UUID=$(body | json '["data"][0]["uuid"]')
 api 'staff sees accepted order' GET "/api/v1/store/stores/$STORE_UUID/orders/$STORE_ORDER_UUID" "$ADMIN_TOKEN" '' 200
 STORE_STATUS=$(body | json '["data"]["operationalStatus"]')
+if [[ "$INVENTORY_ENABLED" == '1' ]]; then
+  [[ "$STORE_STATUS" == 'awaiting_inventory' ]] || { printf 'FAIL expected awaiting_inventory, got %s\n' "$STORE_STATUS" >&2; exit 1; }
+  symfony php bin/console app:store:outbox:publish --no-interaction
+  symfony php bin/console messenger:consume async --limit=20 --time-limit=10 --no-interaction
+  symfony php bin/console app:inventory:outbox:publish --no-interaction
+  symfony php bin/console messenger:consume async --limit=20 --time-limit=10 --no-interaction
+  api 'staff sees inventory accepted order' GET "/api/v1/store/stores/$STORE_UUID/orders/$STORE_ORDER_UUID" "$ADMIN_TOKEN" '' 200
+  STORE_STATUS=$(body | json '["data"]["operationalStatus"]')
+fi
 if [[ "$STORE_STATUS" != 'accepted' ]]; then
   printf 'FAIL expected Store status accepted, got %s\n' "$STORE_STATUS" >&2
   exit 1

@@ -89,3 +89,10 @@ api_store:
         path: ../src/Store/Controller/
         namespace: App\Store\Controller
     type: attribute
+
+api_inventory:
+    prefix: /api/v1
+    resource:
+        path: ../src/Inventory/Controller/
+        namespace: App\Inventory\Controller
+    type: attribute

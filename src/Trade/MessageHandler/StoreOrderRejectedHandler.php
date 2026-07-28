@@ -38,9 +38,6 @@ final readonly class StoreOrderRejectedHandler
             if ($this->workflow->can($order, 'store_reject')) {
                 $this->workflow->apply($order, 'store_reject');
             }
-            if ($this->workflow->can($order, 'cancel')) {
-                $this->workflow->apply($order, 'cancel');
-            }
         });
     }
 }
