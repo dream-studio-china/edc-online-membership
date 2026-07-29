@@ -44,6 +44,7 @@ class ExpressionDqlParser
     private const EXPRESSION_SIGNATURE = 'entity';
     private const ROOT_ALIAS = 'filter_entity';
     private const PARAM_PREFIX = 'filter_parameter_';
+    private const CACHE_VERSION = 2;
     private const LOGIC_OPERATORS = ['&&', '||'];
 
     private const OPERATORS = [
@@ -59,7 +60,6 @@ class ExpressionDqlParser
         '-'  => '%1$s - %2$s',
         '*'  => '%1$s * %2$s',
         '/'  => '%1$s / %2$s',
-        'matches' => 'REGEXP(%1$s, %2$s) = TRUE',
     ];
 
     public function __construct(?SimpleCacheInterface $cache = null, ?ExpressionLanguage $language = null)
@@ -119,7 +119,7 @@ class ExpressionDqlParser
 
         $cacheKey = null;
         if ($this->cache) {
-            $cacheKey = 'expr_' . md5($this->dataClass . '|' . $this->expression . '|' . implode(',', $this->names));
+            $cacheKey = 'expr_' . md5(self::CACHE_VERSION . '|' . $this->dataClass . '|' . $this->expression . '|' . implode(',', $this->names));
             try {
                 if ($this->cache->has($cacheKey)) {
                     $cached = $this->cache->get($cacheKey);
@@ -263,6 +263,16 @@ class ExpressionDqlParser
 
         if ($node instanceof BinaryNode) {
             $op = $node->attributes['operator'] ?? null;
+            if ($op === 'matches') {
+                $left = $this->recursiveCompile($node->nodes['left'], $depth + 1);
+                [$right, $isRegex] = $this->compileMatchOperand($node->nodes['right'], $depth + 1);
+                $out .= $isRegex
+                    ? sprintf('REGEXP(%s, %s) = TRUE', $left, $right)
+                    : sprintf("%s LIKE %s ESCAPE '!'", $left, $right);
+                $out .= $isGrouped ? ')' : '';
+
+                return $out;
+            }
             if (!isset(self::OPERATORS[$op])) {
                 throw new ValidatorException('Unsupported operator: ' . ($op ?? 'unknown'));
             }
@@ -345,6 +355,69 @@ class ExpressionDqlParser
 
         $out .= $isGrouped ? ')' : '';
         return $out;
+    }
+
+    /**
+     * @return array{0: string, 1: bool}
+     */
+    private function compileMatchOperand(Node $node, int $depth): array
+    {
+        $operand = $this->recursiveCompile($node, $depth);
+        if (!str_starts_with($operand, ':' . self::PARAM_PREFIX)) {
+            throw new ValidatorException('The matches operator requires a string pattern.');
+        }
+
+        $parameterName = substr($operand, 1);
+        foreach ($this->parameters as $parameter) {
+            if ($parameter->getName() !== $parameterName) {
+                continue;
+            }
+
+            $value = $parameter->getValue();
+            if (!is_string($value)) {
+                throw new ValidatorException('The matches operator requires a string pattern.');
+            }
+
+            $regex = $this->parseRegexLiteral($value);
+            if ($regex !== null) {
+                $parameter->setValue($regex);
+
+                return [$operand, true];
+            }
+
+            $literal = str_replace(['!', '%', '_'], ['!!', '!%', '!_'], $value);
+            $parameter->setValue('%' . $literal . '%');
+
+            return [$operand, false];
+        }
+
+        throw new ValidatorException('The matches pattern parameter was not compiled.');
+    }
+
+    private function parseRegexLiteral(string $value): ?string
+    {
+        if (!str_starts_with($value, '/')) {
+            return null;
+        }
+        if (preg_match('/^\/((?:\\\\.|[^\/])*)\/([a-zA-Z]*)$/s', $value, $matches) !== 1) {
+            return null;
+        }
+
+        $flags = $matches[2];
+        if (preg_match('/[^gimsux]/', $flags) === 1) {
+            throw new ValidatorException('Unsupported matches regex flags: ' . $flags);
+        }
+
+        $inlineFlags = '';
+        foreach (str_split('imsx') as $flag) {
+            if (str_contains($flags, $flag)) {
+                $inlineFlags .= $flag;
+            }
+        }
+
+        $pattern = str_replace('\/', '/', $matches[1]);
+
+        return ($inlineFlags === '' ? '' : '(?' . $inlineFlags . ')') . $pattern;
     }
 
     /**
