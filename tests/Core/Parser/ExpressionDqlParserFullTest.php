@@ -109,11 +109,37 @@ final class ExpressionDqlParserFullTest extends TestCase
         $parser = new ExpressionDqlParser();
         $parser->setDataClass('App\Common\Entity\Content');
         $parser->setValues(['entity' => '']);
-        $parser->setExpression('entity.getTitle() matches "/test/"');
+        $parser->setExpression('entity.getTitle() matches "/test.*/ig"');
         $parser->compile();
 
         $where = $parser->getWhere();
         self::assertStringContainsString('REGEXP', $where);
+        self::assertSame(['filter_parameter_1' => '(?i)test.*'], $parser->getParametersArray());
+    }
+
+    public function testCompileWithMatchesPlainText(): void
+    {
+        $parser = new ExpressionDqlParser();
+        $parser->setDataClass('App\Common\Entity\Content');
+        $parser->setValues(['entity' => '']);
+        $parser->setExpression('entity.getTitle() matches "50%_off!"');
+        $parser->compile();
+
+        self::assertStringContainsString("LIKE :filter_parameter_1 ESCAPE '!'", $parser->getWhere());
+        self::assertStringNotContainsString('REGEXP', $parser->getWhere());
+        self::assertSame(['filter_parameter_1' => '%50!%!_off!!%'], $parser->getParametersArray());
+    }
+
+    public function testCompileWithUnsupportedMatchesRegexFlagThrows(): void
+    {
+        $parser = new ExpressionDqlParser();
+        $parser->setDataClass('App\Common\Entity\Content');
+        $parser->setValues(['entity' => '']);
+        $parser->setExpression('entity.getTitle() matches "/test/y"');
+
+        $this->expectException(ValidatorException::class);
+        $this->expectExceptionMessage('Unsupported matches regex flags: y');
+        $parser->compile();
     }
 
     public function testCompileWithNotOperator(): void

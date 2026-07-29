@@ -211,8 +211,12 @@ ROLE_USER
 | `&&` | Logical AND | `a == 1 && b == 2` |
 | `\|\|` | Logical OR | `a == 1 \|\| b == 2` |
 | `!` | Logical NOT | `!entity.deleted` |
-| `matches` | Regex match | `entity.title matches "pattern"` |
+| `matches` | Literal substring or `/regex/flags` match | `entity.title matches "paper"`, `entity.title matches "/^paper.*/i"` |
 | Chained attributes | Property traversal | `entity.getCategory().getName()` |
+
+Plain `matches` values are escaped before being compiled to a contains-style `LIKE`.
+Regex literals support `i`, `m`, `s`, and `x`; `g` and `u` are accepted but have no
+database-side effect. Unknown regex flags are rejected.
 
 ### 5.4 Expression Functions (Available in Expressions)
 

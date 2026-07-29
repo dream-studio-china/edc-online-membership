@@ -37,7 +37,7 @@ final class CoreServiceIntegrationTest extends IntegrationKernelTestCase
         self::assertNotEmpty($result['parameters']);
     }
 
-    public function testExpressionServiceBuildsRegexpFilter(): void
+    public function testExpressionServiceBuildsPlainMatchFilter(): void
     {
         $service = new ExpressionService();
 
@@ -49,8 +49,29 @@ final class CoreServiceIntegrationTest extends IntegrationKernelTestCase
         );
 
         self::assertArrayHasKey('qb', $result);
-        self::assertStringContainsString('REGEXP', $result['qb']->getDQL());
-        self::assertStringContainsString('REGEXP', $result['qb']->getQuery()->getSQL());
+        self::assertStringContainsString('LIKE', $result['qb']->getDQL());
+        self::assertStringContainsString('LIKE', $result['qb']->getQuery()->getSQL());
+    }
+
+    public function testPlainMatchExecutesAsLiteralSubstringAgainstDatabase(): void
+    {
+        $token = 'matches-' . bin2hex(random_bytes(6));
+        $expected = new Content($token . '-50%_off!');
+        $wildcardDecoy = new Content($token . '-50XXoff!');
+        $this->em->persist($expected);
+        $this->em->persist($wildcardDecoy);
+        $this->em->flush();
+
+        $result = (new ExpressionService())->buildFilter(
+            sprintf('entity.getTitle() matches "%s-50%%_off!"', $token),
+            Content::class,
+            ['entity' => ''],
+            $this->em,
+        );
+
+        /** @var list<Content> $matches */
+        $matches = $result['qb']->getQuery()->getResult();
+        self::assertSame([$expected], $matches);
     }
 
     public function testCustomDqlFunctionsAreRegistered(): void
