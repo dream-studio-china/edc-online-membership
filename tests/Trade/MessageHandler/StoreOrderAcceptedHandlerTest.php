@@ -5,19 +5,17 @@ declare(strict_types=1);
 namespace App\Tests\Trade\MessageHandler;
 
 use App\Trade\Entity\Order;
-use App\Trade\Message\StoreOrderRejectedMessage;
-use App\Trade\MessageHandler\StoreOrderRejectedHandler;
+use App\Trade\Message\StoreOrderAcceptedMessage;
+use App\Trade\MessageHandler\StoreOrderAcceptedHandler;
 use App\Trade\Service\OrderService;
 use App\Trade\Service\OrderServiceInterface;
 use PHPUnit\Framework\TestCase;
-use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use Symfony\Component\Workflow\WorkflowInterface;
 
-#[AllowMockObjectsWithoutExpectations]
-final class StoreOrderRejectedHandlerTest extends TestCase
+final class StoreOrderAcceptedHandlerTest extends TestCase
 {
-    private const STORE_UUID = '00000000-0000-4000-8000-000000000040';
-    private const ORDER_UUID = '00000000-0000-4000-8000-000000000041';
+    private const STORE_UUID = '00000000-0000-4000-8000-000000000099';
+    private const ORDER_UUID = '00000000-0000-4000-8000-000000000098';
 
     public function testRejectsMissingEnvelopePayload(): void
     {
@@ -25,9 +23,9 @@ final class StoreOrderRejectedHandlerTest extends TestCase
         $workflow = $this->createStub(WorkflowInterface::class);
 
         $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('Invalid store.order.rejected.v1 envelope.');
+        $this->expectExceptionMessage('Invalid store.order.accepted.v1 envelope.');
 
-        (new StoreOrderRejectedHandler($orders, $workflow))(new StoreOrderRejectedMessage([]));
+        (new StoreOrderAcceptedHandler($orders, $workflow))(new StoreOrderAcceptedMessage([]));
     }
 
     public function testRejectsNonArrayPayload(): void
@@ -37,7 +35,17 @@ final class StoreOrderRejectedHandlerTest extends TestCase
 
         $this->expectException(\InvalidArgumentException::class);
 
-        (new StoreOrderRejectedHandler($orders, $workflow))(new StoreOrderRejectedMessage(['payload' => 42]));
+        (new StoreOrderAcceptedHandler($orders, $workflow))(new StoreOrderAcceptedMessage(['payload' => 'not-an-array']));
+    }
+
+    public function testRejectsMissingOrderUuid(): void
+    {
+        $orders = $this->createStub(OrderServiceInterface::class);
+        $workflow = $this->createStub(WorkflowInterface::class);
+
+        $this->expectException(\InvalidArgumentException::class);
+
+        (new StoreOrderAcceptedHandler($orders, $workflow))(new StoreOrderAcceptedMessage(['payload' => ['storeUuid' => self::STORE_UUID]]));
     }
 
     public function testIgnoresMessageWhenOrderIsNotFound(): void
@@ -45,9 +53,10 @@ final class StoreOrderRejectedHandlerTest extends TestCase
         $orders = $this->createMock(OrderServiceInterface::class);
         $orders->expects(self::once())->method('get')->with(['uuid' => self::ORDER_UUID])->willReturn(null);
         $workflow = $this->createMock(WorkflowInterface::class);
+        $workflow->expects(self::never())->method('can');
         $workflow->expects(self::never())->method('apply');
 
-        (new StoreOrderRejectedHandler($orders, $workflow))(new StoreOrderRejectedMessage(['payload' => [
+        (new StoreOrderAcceptedHandler($orders, $workflow))(new StoreOrderAcceptedMessage(['payload' => [
             'orderUuid' => self::ORDER_UUID,
             'storeUuid' => self::STORE_UUID,
         ]]));
@@ -61,7 +70,7 @@ final class StoreOrderRejectedHandlerTest extends TestCase
         $workflow = $this->createMock(WorkflowInterface::class);
         $workflow->expects(self::never())->method('apply');
 
-        (new StoreOrderRejectedHandler($orders, $workflow))(new StoreOrderRejectedMessage(['payload' => [
+        (new StoreOrderAcceptedHandler($orders, $workflow))(new StoreOrderAcceptedMessage(['payload' => [
             'orderUuid' => $order->getUuid(),
             'storeUuid' => self::STORE_UUID,
         ]]));
@@ -75,41 +84,42 @@ final class StoreOrderRejectedHandlerTest extends TestCase
         $workflow = $this->createMock(WorkflowInterface::class);
         $workflow->expects(self::never())->method('apply');
 
-        (new StoreOrderRejectedHandler($orders, $workflow))(new StoreOrderRejectedMessage(['payload' => [
+        (new StoreOrderAcceptedHandler($orders, $workflow))(new StoreOrderAcceptedMessage(['payload' => [
             'orderUuid' => $order->getUuid(),
             'storeUuid' => self::STORE_UUID,
         ]]));
     }
 
-    public function testDoesNotApplyWhenWorkflowCannotReject(): void
+    public function testDoesNotApplyWhenWorkflowCannotAccept(): void
     {
         $order = (new Order())->setMetadata(['_store' => ['uuid' => self::STORE_UUID]]);
-        $orders = $this->createStub(OrderService::class);
-        $orders->method('get')->willReturn($order);
-        $orders->method('wrapInTransaction')->willReturnCallback(static fn (callable $callback): mixed => $callback());
+        $orders = $this->createMock(OrderServiceInterface::class);
+        $orders->expects(self::once())->method('get')->willReturn($order);
         $workflow = $this->createMock(WorkflowInterface::class);
-        $workflow->expects(self::once())->method('can')->with($order, 'store_reject')->willReturn(false);
+        $workflow->expects(self::once())->method('can')->with($order, 'store_accept')->willReturn(false);
         $workflow->expects(self::never())->method('apply');
 
-        (new StoreOrderRejectedHandler($orders, $workflow))(new StoreOrderRejectedMessage(['payload' => [
+        (new StoreOrderAcceptedHandler($orders, $workflow))(new StoreOrderAcceptedMessage(['payload' => [
             'orderUuid' => $order->getUuid(),
             'storeUuid' => self::STORE_UUID,
         ]]));
     }
 
-    public function testStoreRejectionDoesNotTransitionTheOrderToCancelled(): void
+    public function testAppliesStoreAcceptTransitionWithinTransaction(): void
     {
-        $order = (new Order())->setStatus('awaiting_store_acceptance')->setMetadata(['_store' => ['uuid' => '00000000-0000-4000-8000-000000000040']]);
+        $order = (new Order())->setMetadata(['_store' => ['uuid' => self::STORE_UUID]]);
         $orders = $this->createMock(OrderService::class);
-        $orders->method('get')->willReturn($order);
-        $orders->method('wrapInTransaction')->willReturnCallback(static fn (callable $callback): mixed => $callback());
+        $orders->expects(self::once())->method('get')->willReturn($order);
+        $orders->expects(self::once())->method('wrapInTransaction')->willReturnCallback(
+            static fn (callable $callback): mixed => $callback()
+        );
         $workflow = $this->createMock(WorkflowInterface::class);
-        $workflow->expects(self::once())->method('can')->with($order, 'store_reject')->willReturn(true);
-        $workflow->expects(self::once())->method('apply')->with($order, 'store_reject');
+        $workflow->expects(self::once())->method('can')->with($order, 'store_accept')->willReturn(true);
+        $workflow->expects(self::once())->method('apply')->with($order, 'store_accept');
 
-        (new StoreOrderRejectedHandler($orders, $workflow))(new StoreOrderRejectedMessage(['payload' => [
+        (new StoreOrderAcceptedHandler($orders, $workflow))(new StoreOrderAcceptedMessage(['payload' => [
             'orderUuid' => $order->getUuid(),
-            'storeUuid' => '00000000-0000-4000-8000-000000000040',
+            'storeUuid' => self::STORE_UUID,
         ]]));
     }
 }

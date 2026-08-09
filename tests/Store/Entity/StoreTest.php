@@ -25,4 +25,58 @@ final class StoreTest extends TestCase
         $store->close();
         self::assertSame(Store::STATUS_CLOSED, $store->getStatus());
     }
+
+    public function testContactAddressAndSettingsSettersTouchUpdatedAt(): void
+    {
+        $store = new Store('xuhui', 'Xuhui', 'Asia/Shanghai');
+
+        $store->setContact(['phone' => '021-12345678']);
+        $store->setAddress(['city' => 'Shanghai']);
+        $store->setSettings(['acceptingOrders' => true]);
+
+        self::assertSame(['phone' => '021-12345678'], $store->getContact());
+        self::assertSame(['city' => 'Shanghai'], $store->getAddress());
+        self::assertSame(['acceptingOrders' => true], $store->getSettings());
+        self::assertInstanceOf(\DateTimeImmutable::class, $store->getUpdatedAt());
+
+        $store->setContact(null)->setAddress(null)->setSettings(null);
+        self::assertNull($store->getContact());
+        self::assertNull($store->getAddress());
+        self::assertNull($store->getSettings());
+    }
+
+    public function testActivateRestoresActiveStatus(): void
+    {
+        $store = new Store('xuhui', 'Xuhui', 'Asia/Shanghai');
+        $store->suspend();
+        self::assertFalse($store->isActive());
+
+        $store->activate();
+
+        self::assertTrue($store->isActive());
+        self::assertSame(Store::STATUS_ACTIVE, $store->getStatus());
+        self::assertInstanceOf(\DateTimeImmutable::class, $store->getUpdatedAt());
+    }
+
+    public function testCodeAndTimezoneAreMutable(): void
+    {
+        $store = new Store('xuhui', 'Xuhui', 'Asia/Shanghai');
+
+        $store->setCode('xuhui-flagship')->setTimezone('Asia/Shanghai');
+
+        self::assertSame('xuhui-flagship', $store->getCode());
+        self::assertSame('Xuhui', $store->getName());
+        self::assertSame('Asia/Shanghai', $store->getTimezone());
+        self::assertNull($store->getId());
+        self::assertInstanceOf(\DateTimeImmutable::class, $store->getCreatedAt());
+    }
+
+    public function testStringRepresentationPrefersNameOverCode(): void
+    {
+        $withName = new Store('xuhui', 'Xuhui Store', 'Asia/Shanghai');
+        self::assertSame('Xuhui Store', (string) $withName);
+
+        $withoutName = new Store('xuhui');
+        self::assertSame('xuhui', (string) $withoutName);
+    }
 }
