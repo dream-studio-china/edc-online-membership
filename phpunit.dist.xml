@@ -23,9 +23,22 @@
 
     <testsuites>
         <testsuite name="Project Test Suite">
-            <directory>tests</directory>
+            <directory>tests/UnitTest</directory>
+            <directory>tests/Integration</directory>
+        </testsuite>
+        <!-- Deprecated or low-value tests: kept for reference, excluded from
+             the default run. Execute explicitly with the "Low Value" testsuite
+             or the low-value group. -->
+        <testsuite name="Low Value">
+            <directory>tests/LowValue</directory>
         </testsuite>
     </testsuites>
+
+    <groups>
+        <exclude>
+            <group>low-value</group>
+        </exclude>
+    </groups>
 
     <source ignoreSuppressionOfDeprecations="true"
             ignoreIndirectDeprecations="true"

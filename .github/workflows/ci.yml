@@ -111,7 +111,7 @@ jobs:
       - name: Run tests with coverage
         run: |
           set -eo pipefail
-          XDEBUG_MODE=coverage php bin/phpunit tests/ \
+          XDEBUG_MODE=coverage php bin/phpunit \
             --coverage-text \
             --display-deprecations \
             | tee /dev/stderr \
