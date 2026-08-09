@@ -67,6 +67,16 @@ nav:
       - Huifu Payment API: research/huifu-payment-api.md
   - Issues:
       - Architecture Review 2026-06-26: issues/architecture-review-2026-06-26.md
+  - Testing:
+      - Production Validation Overview: testing/crud-skeleton-production/README.md
+      - Test Strategy: testing/crud-skeleton-production/TEST_STRATEGY.md
+      - System Walkthrough And Test Seams: testing/crud-skeleton-production/SYSTEM_WALKTHROUGH.md
+      - Test Matrix: testing/crud-skeleton-production/TEST_MATRIX.md
+      - Business Invariants: testing/crud-skeleton-production/BUSINESS_INVARIANTS.md
+      - Architecture Test Mapping: testing/crud-skeleton-production/ARCHITECTURE_TEST_MAPPING.md
+      - Failure Modes: testing/crud-skeleton-production/FAILURE_MODES.md
+      - Release Validation: testing/crud-skeleton-production/PRODUCTION_VALIDATION.md
+      - AI Development Process: testing/crud-skeleton-production/AI_DEVELOPMENT_PROCESS.md
   - AI Context: ai/context.md
   - API Reference: openapi/endpoints.yaml
 

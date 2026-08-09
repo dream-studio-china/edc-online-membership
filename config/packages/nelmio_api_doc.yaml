@@ -554,3 +554,5 @@ nelmio_api_doc:
             path_patterns:
                 - ^/api(?!/doc(?:\.json)?$)
                 - ^/system
+                - ^/health
+                - ^/metrics
