@@ -1,6 +1,6 @@
 # CRUD Skeleton - Full Codebase Context
 
-> Context snapshot. Last updated: 2026-07-26
+> Context snapshot. Last updated: 2026-08-09
 
 ---
 
@@ -138,11 +138,13 @@
 ├── translations/                 # i18n translation files (messages.en/zh/zh_Hant/ja.yaml)
 ├── docs/
 │   ├── ai/context.md             # This file
-│   ├── design/                   # Design contracts
-│   │   └── bundles/              # Per-module design docs (core, common, trade, wallet, identity, wechat, payment, storage, promotion)
+│   ├── design/                   # Design contracts (incl. security-hardening.md)
+│   │   └── bundles/              # Per-module design docs (core, common, trade, wallet, identity, wechat, payment, storage, promotion, store, inventory)
+│   ├── testing/                  # Test-quality contract: TEST_STRATEGY, TEST_MATRIX, BUSINESS_INVARIANTS, FAILURE_MODES, PRODUCTION_VALIDATION, SYSTEM_WALKTHROUGH, AI_DEVELOPMENT_PROCESS (+ reusable framework-template/)
+│   ├── issues/                   # Audit & coverage reports (coverage-2026-08-09/, test-audit-2026-08-09/)
 │   └── openapi/                       # endpoints.yaml + order/payment frontend flow docs
 ├── scripts/tests/                # API smoke, Store orchestration smoke, trade workflow scripts
-├── tests/                        # 1711 PHPUnit tests, 5652 assertions, 90.49% latest full line coverage
+├── tests/                        # 300 PHPUnit test files: 2686 tests, 9264 assertions, 99.46% line coverage
 ├── README.md                     # English README
 ├── README.zh-cn.md               # Chinese (Simplified) README
 ├── README.zh-hant.md             # Chinese (Traditional) README
@@ -156,7 +158,8 @@
 │   ├── app/entrypoint.sh         # Dev key generation + prod key validation
 │   └── nginx/default.conf        # nginx config (reverse proxy to PHP-FPM)
 └── .github/workflows/
-    ├── ci.yml                    # CI: PHP 8.4, PHPStan Level 8, 90% coverage, Rector type-rule dry-run
+    ├── ci.yml                    # CI: PHP 8.4, PHPStan Level 8, 90% coverage, Rector type-rule dry-run; tests job runs on PostgreSQL 16
+    ├── migrations.yml            # CI: MySQL 8.4 migration chain validation
     └── docs.yml                  # GitHub Pages deploy
 ```
 
@@ -688,6 +691,10 @@ Enriches all endpoints (90+):
 | `docs/design/bundles/inventory.md` | Inventory module design (materials, stock, recipes, reservations, inbox/outbox) |
 | `docs/openapi/order-payment-flow.md` | Frontend order/payment/cancel/refund API integration guide, including WeChat Mini Program pay |
 | `docs/openapi/order-payment-flow.zh.md` | Chinese translation of the frontend order/payment/cancel/refund API guide |
+| `docs/testing/crud-skeleton-production/` | Test-quality contract: README, TEST_STRATEGY, TEST_MATRIX, BUSINESS_INVARIANTS, FAILURE_MODES, ARCHITECTURE_TEST_MAPPING, SYSTEM_WALKTHROUGH, PRODUCTION_VALIDATION, AI_DEVELOPMENT_PROCESS |
+| `docs/testing/framework-template/` | Reusable testing-doc templates for future modules |
+| `docs/issues/coverage-2026-08-09/` | 24-agent coverage campaign: 96 new test files → 99.46% lines; documents 74 bugs (2 CRITICAL, 8 HIGH, 30 MEDIUM, 34 LOW) with file:line + proposed fixes |
+| `docs/issues/test-audit-2026-08-09/` | 14-agent test audit: 412 redundant-test candidates (190 HIGH) for later deletion; baseline run + timing analysis |
 | `docs/ai/context.md` | This file — AI context snapshot |
 | `mkdocs.yml` | MkDocs Material site config |
 | `scripts/tests/simulate-trade.php` | Generates 100 orders across all 8 statuses into `var/test.db` |
@@ -695,29 +702,33 @@ Enriches all endpoints (90+):
 
 ## 17. Testing
 
-- **Framework**: PHPUnit 12.5
-- **DB**: SQLite `var/test.db` in test environment
-- **Coverage**: 90% minimum (enforced in CI), currently **90.49% lines** from latest local Xdebug run
-- **Test count**: **1711 tests**, **5652 assertions**
+- **Framework**: PHPUnit 12.5 (brianium/paratest available for parallel runs)
+- **DB**: local tests default to SQLite `var/test.db` (paratest uses per-worker SQLite files); CI tests job runs on **PostgreSQL 16**; `migrations.yml` validates the migration chain on **MySQL 8.4**
+- **Coverage**: 90% minimum (enforced in CI), currently **99.46% lines (8511/8557)** from latest local Xdebug run (2026-08-09)
+- **Test count**: **2686 tests**, **9264 assertions** (300 test files), suite runtime ≈ 52 s serial
+- **Skipped**: 38 tests — each is `markTestSkipped` because it documents a real `src/` bug (see §23 and `docs/issues/coverage-2026-08-09/`); **never delete them** without fixing the underlying bug first
+- **PHPUnit Notices**: 186 pre-existing mock/no-expectation noise (does not fail the run); new tests should avoid adding more
+- **Memory**: `phpunit.dist.xml` sets test-process `memory_limit=512M` (OpenAPI integration builds the full spec in-process)
+- **Test-quality contract**: `docs/testing/crud-skeleton-production/` (TEST_STRATEGY, TEST_MATRIX, BUSINESS_INVARIANTS, FAILURE_MODES, PRODUCTION_VALIDATION) governs what evidence a change requires before merge/release
 - **Static analysis**: PHPStan Level 8 with zero errors in its configured scope (`src/`, excluding optional SDK code, exception classes, and documented false-positive suppressions). Generic contract via `@template TEntity` on `BaseServiceInterface`/`BaseService` + `@extends` on 18 concrete service pairs. Rector automates Doctrine Collection/Repository PHPDoc with `composer rector:types`; CI enforces `composer rector:types:check` as a dry-run.
 - **Local PHP note**: default `php` may point to PHP 7.4; use Homebrew PHP 8.5 at `/opt/homebrew/opt/php@8.5/bin/php` for local Symfony/PHPUnit commands.
 - **HTML coverage report**: `XDEBUG_MODE=coverage ./vendor/bin/phpunit --coverage-html var/coverage`
-- **Key test groups**:
-  - `tests/Trade/`: 216+ tests + Controller/Manage/OrderControllerTest (16 tests for not-found, workflow guards, payment validation)
-  - `tests/Wallet/`: ~105 tests (Entity, Integration, Transfer Service, WalletService, Payment/Gateway, API regression)
-  - `tests/Common/`: 118 tests (Entity, Integration, Batch update, media upload/delete, Picture CRUD)
-  - `tests/Identity/`: 116+ tests (Auth, OTP, Token, Black box, UserService, UserController, UserApiIntegration, Profile entity, ProfileController)
-   - `tests/Promotion/`: 320+ tests (Entity, DSL lexer/parser/evaluator, Strategies, Engine, Calculator, App/Manage controllers, real SQLite pipeline integration with Doctrine + OrderService)
-  - `tests/Payment/`: ~60 tests (Gateway, Registry, Adjustment/Provider, Invoice, Multi-gateway integration)
-  - `tests/Wechat/`: 59 tests (Entity, Service, AuthService, Payment/Gateway, Controller, Repository)
-  - `tests/Core/`: 70+ tests (BaseService, RestController, Parser, Serializer, LocaleListener, MutationTrait, Utils, System controllers — all PHPStan Level 8 compliant)
-   - `tests/Promotion/Integration/`: 8 real SQLite quote pipeline tests (store isolation, global campaigns, member-targeted item discounts, stacking, best-price conflict, Nth-item, multi-SKU, expiry, mixed rules)
-   - `tests/Integration/`: ~20 cross-module tests
-   - `tests/Store/`: Store entities/services plus Trade -> Store -> Trade integration and Store-scoped HTTP flow
-   - `tests/Inventory/`: 23 tests (Entity, Service, Integration, Message, API, Handler)
-   - `tests/Store/Integration/`: Store-Inventory integration tests (confirmation, rejection, cancellation before creation, delayed cancellation, duplicate SKU)
-   - `scripts/tests/api-smoke.sh`: real HTTP auth/catalog/wallet/order/payment smoke; strict 401/403/404 checks
-   - `scripts/tests/store-smoke.sh`: real HTTP Store-scoped order, Trade Outbox, Messenger consumer, Store Outbox, and `store_accepted` assertion
+- **Key test groups** (per-module distribution from 2026-08-09 baseline):
+  - `tests/Trade/`: 391 tests (16.8 s — slowest group; full-flow HTTP tests overlap `OrderWorkflowApiTest`, see test-audit)
+  - `tests/Promotion/`: 360 tests (Entity, DSL lexer/parser/evaluator, Strategies, Engine, Calculator, App/Manage controllers, real SQLite pipeline integration with Doctrine + OrderService)
+  - `tests/Core/`: 638 tests (BaseService traits, RestController, Parser, Serializer, LocaleListener, Utils, System controllers — all PHPStan Level 8 compliant)
+  - `tests/Identity/`: 281 tests (Auth, OTP, Token, Black box, UserService, UserController, UserApiIntegration, Profile entity, ProfileController)
+  - `tests/Integration/`: 158 tests (13.1 s — second-slowest; cross-module kernel-bootstrapping tests)
+  - `tests/Store/`: 153 tests (entities/services, Trade → Store → Trade integration, outbox/inbox, concurrency)
+  - `tests/Wallet/`: 173 tests (Entity, Integration, Transfer Service, WalletService, Payment/Gateway, API regression)
+  - `tests/Common/`: 129 tests (Entity, Integration, Batch update, media upload/delete, Picture CRUD)
+  - `tests/Inventory/`: 109 tests (Entity, Service, Integration, Message, API, Handler)
+  - `tests/Wechat/`: 78 tests (Entity, Service, AuthService, Payment/Gateway, Controller, Repository)
+  - `tests/Payment/`: 76 tests (Gateway, Registry, Adjustment/Provider, Invoice, Multi-gateway integration)
+  - `tests/Storage/`: 20 tests (LocalStorage, QiniuStorage stub-isolated subprocess tests, registry, Qiniu settings command)
+  - `scripts/tests/api-smoke.sh`: real HTTP auth/catalog/wallet/order/payment smoke; strict 401/403/404 checks
+  - `scripts/tests/store-smoke.sh`: real HTTP Store-scoped order, Trade Outbox, Messenger consumer, Store Outbox, and `store_accepted` assertion
+  - `scripts/tests/inventory-smoke.sh`: Inventory-scoped smoke (only when `INVENTORY_ENABLED=1`)
 
 ## 18. Environment Variables (Key)
 
@@ -744,11 +755,11 @@ Qiniu configuration is intentionally **not** environment-variable based. Configu
 
 ## 19. Docker Deployment
 
-### 17.1 Architecture
+### 19.1 Architecture
 
 7 services in `compose.yaml`: **nginx** (reverse proxy), **app** (PHP-FPM 8.4), **worker** (Messenger async consumer), **scheduler** (Trade/Store Outbox relay; Payment joins when its Outbox is implemented), **database** (MySQL 8), **redis** (Redis 7 Alpine), **mailer** (Mailpit).
 
-### 17.2 Development (zero-config)
+### 19.2 Development (zero-config)
 
 ```bash
 docker compose up -d --build
@@ -760,11 +771,11 @@ docker compose exec app php bin/console app:identity:user:create admin@example.c
 - `docker/app/entrypoint.sh` creates development JWT keys once under mounted `./var/jwt` if missing; production fails fast when keys are missing
 - All optional features (WeChat, SMS) default to empty — disabled gracefully
 
-### 17.3 Production
+### 19.3 Production
 
 Requires `.env.prod.local` copied from `.env.prod.example` with `APP_SECRET`, `REFRESH_TOKEN_SECRET`, `MYSQL_PASSWORD`, and `MYSQL_ROOT_PASSWORD`. JWT keys are generated on the host at `./var/jwt/` and mounted into the container. Start production with `docker compose -f compose.yaml -f compose.prod.yaml --env-file .env.prod.local up -d --build`.
 
-### 17.4 Environment Variables in Docker
+### 19.4 Environment Variables in Docker
 
 `compose.yaml` provides defaults for `DATABASE_URL`, `MAILER_DSN`, `OTP_REDIS_DSN`, and JWT key paths. Required vars use `${VAR:?required}` which fails fast if missing. Optional vars use `${VAR:-}` which defaults to empty.
 
@@ -858,3 +869,40 @@ Recipes expand a Specification into material demand. Material demand is aggregat
 - `TradeOrderCancelledHandler`: requests inventory release for cancelled orders with reservation
 - `StoreTradeOrderCancellation` tombstone entity: handles out-of-order cancellation events
 - Trade events use OrderItem.uuid as stable lineId (not specification UUID)
+
+## 23. Production Readiness & Known Defects
+
+> Source of truth: `docs/issues/coverage-2026-08-09/README.md` (74 bugs with file:line + proposed fixes) and `docs/issues/test-audit-2026-08-09/README.md` (412 redundant-test candidates). Do **not** re-discover these; fix or reference them.
+
+### 23.1 Status summary (2026-08-09)
+
+- **Engineering maturity is high** (module boundaries, PHPStan L8, 99.46% line coverage, dual-DB CI). **Production-readiness is medium**: deployment orchestration exists, but observability, rate limiting, and external-provider certification are missing, and a batch of known `src/` bugs are unfixed.
+- **Blocked for production until fixed** (CRITICAL):
+  1. `src/Core/Utils/RsaClient.php:51,99` signs with **MD5** (forgeable, fails FIPS) — should be `OPENSSL_ALGO_SHA256`.
+  2. `src/Core/Utils/Location.php` depends on `php-curl-class`, which is **not installed** — every call fatals `Class "Curl\Curl" not found`.
+- **Blocked for production** (HIGH, top 8):
+  3. `src/Wechat/Service/Payment/WechatPayGateway.php:102-126` — notify never passes the request to EasyWeChat → **every real WeChat Pay callback fails**. Fix: `setRequestFromSymfonyRequest($request)` before `serve()`.
+  4. `src/Core/Utils/Math.php:85,91` — one-arg `rand()`/`mt_rand()` **crash on PHP 8.5**.
+  5. `src/Core/Service/BaseService.php:77` + `ReadListTrait:270` — `$user` is null for all HTTP requests → `@dql/@sort/@hints` 403 even for admins.
+  6. Payment retry deadlock: `OrderService::createPayment()` reuses failed/cancelled invoices → order permanently stuck in `confirmed` (only reuse when status ∈ {pending, paying}).
+  7. `src/Trade/Controller/Manage/OrderController.php:329` `/do/{transition}` forwards raw body to `update()` → admin can tamper order fields, bypassing the whitelist.
+  8. `src/Trade/MessageHandler/StoreOrderRejectedHandler.php:37` — Store rejection does not cancel the Trade order.
+  9. Identity controllers: unguarded `json_decode(JSON_THROW_ON_ERROR)` → HTTP 500 on malformed bodies; numeric usernames cannot log in; `CreateUserCommand` persists empty email/username accounts.
+  10. `src/Core/Controller/RestController.php:198` — `@expands` sets a dynamic `__metadata` property → PHP 8.5 deprecation (breaks `failOnDeprecation`).
+- **Not production-ready by design**: **Inventory** (§22.1) — `INVENTORY_ENABLED` must stay `0` outside isolated dev/test until consumption, expiry, serialized confirmation, and release-before-reserve handling are concurrency-tested.
+
+### 23.2 Operational gaps (productization)
+
+- **No observability**: no Prometheus/Grafana/Sentry/APM/metrics exporters or alerting channels; only local Monolog + access log. No `/health`/`/ready` endpoints.
+- **No rate limiting**: no login/OTP/payment brute-force protection (Symfony RateLimiter not configured).
+- **Framework cache**: no Redis cache adapter configured for the Symfony cache pool (defaults to filesystem); OTP uses Redis only.
+- **External providers unverified**: WeChat Pay, SMS (Aliyun), and Qiniu have deterministic test adapters but no real sandbox certification evidence; `WechatPayGateway::notify()` is broken (see 23.1).
+- **Smoke scripts not in CI**: `scripts/tests/*.sh` require a disposable Docker environment and run only at release time.
+- **Test-suite debt**: 186 PHPUnit Notices; 412 redundant-test candidates (190 HIGH) from the coverage campaign — safe deletions are documented in `docs/issues/test-audit-2026-08-09/` (verify coverage zero-delta before each deletion).
+
+### 23.3 Rules for AI agents
+
+- Skipped tests in the suite are **intentional** bug documentation — do not remove or "un-skip" them; fix the underlying `src/` bug first, then un-skip.
+- Before implementing a known defect, read its report entry; the report contains the exact fix.
+- New changes must follow the evidence rules in `docs/testing/crud-skeleton-production/TEST_STRATEGY.md` (tests at the right layer, invariants protected, coverage gate 90%).
+- When adding tests, do not recreate the redundant `*CoverageTest`/`*AdditionalTest` patterns flagged by the audit.
