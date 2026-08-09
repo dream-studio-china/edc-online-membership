@@ -161,7 +161,7 @@ final class BaseServiceMutationTraitTest extends TestCase
         $entity = new MutationRelationEntity();
         $em = new MutationFakeEntityManager(new MutationFakeRepository([7 => $owner]));
         $serializer = $this->createMock(SerializerInterface::class);
-        $serializer->expects(self::once())->method('deserialize')->with('[]', MutationRelationEntity::class, 'json', self::isType('array'));
+        $serializer->expects(self::once())->method('deserialize')->with('[]', MutationRelationEntity::class, 'json', self::isArray());
         $service = $this->createService(new MutationFakeContainer($em, $serializer), MutationRelationEntity::class);
 
         self::assertSame($entity, $service->update($entity, ['owner' => 7]));
@@ -176,7 +176,7 @@ final class BaseServiceMutationTraitTest extends TestCase
         $entity = new MutationCollectionEntity([$old, $kept]);
         $em = new MutationFakeEntityManager(new MutationFakeRepository([1 => $old, 2 => $kept, 3 => $added]));
         $serializer = $this->createMock(SerializerInterface::class);
-        $serializer->expects(self::once())->method('deserialize')->with('[]', MutationCollectionEntity::class, 'json', self::isType('array'));
+        $serializer->expects(self::once())->method('deserialize')->with('[]', MutationCollectionEntity::class, 'json', self::isArray());
         $service = $this->createService(new MutationFakeContainer($em, $serializer), MutationCollectionEntity::class);
 
         self::assertSame($entity, $service->update($entity, ['members' => [2, 3]]));
@@ -188,7 +188,7 @@ final class BaseServiceMutationTraitTest extends TestCase
         $entity = new MutationDateEntity();
         $em = new MutationFakeEntityManager(new MutationFakeRepository([]));
         $serializer = $this->createMock(SerializerInterface::class);
-        $serializer->expects(self::once())->method('deserialize')->with('[]', MutationDateEntity::class, 'json', self::isType('array'));
+        $serializer->expects(self::once())->method('deserialize')->with('[]', MutationDateEntity::class, 'json', self::isArray());
         $service = $this->createService(new MutationFakeContainer($em, $serializer), MutationDateEntity::class);
 
         $service->update($entity, ['publishedAt' => '2026-07-25 12:00:00']);

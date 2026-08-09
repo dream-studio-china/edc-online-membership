@@ -40,7 +40,7 @@ final class RecipeLineRepositoryTest extends IntegrationKernelTestCase
     private function createRecipe(string $suffix, string $quantity = '1.500000'): array
     {
         $material = new Material('recipe-line-' . $suffix, 'Recipe line ' . $suffix, Material::KIND_RAW, 'kg');
-        $recipe = new SpecificationRecipe('00000000-0000-4000-8000-0000000000' . $suffix);
+        $recipe = new SpecificationRecipe(sprintf('00000000-0000-4000-8000-%012s', $suffix));
         $recipe->addLine(new RecipeLine($material, $quantity, 3));
         $this->em->persist($material);
         $this->em->persist($recipe);

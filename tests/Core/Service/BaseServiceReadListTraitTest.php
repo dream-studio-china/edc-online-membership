@@ -299,7 +299,7 @@ final class BaseServiceReadListTraitTest extends TestCase
         $expressionService = $this->createMock(ExpressionServiceInterface::class);
         $expressionService->expects(self::once())
             ->method('buildFilter')
-            ->with('entity.getId() == 1', ReadListEntity::class, self::isType('array'), $em)
+            ->with('entity.getId() == 1', ReadListEntity::class, self::isArray(), $em)
             ->willReturn(['qb' => $filterQb, 'parameters' => [$parameter]]);
 
         $service = $this->createService($container, ReadListEntity::class, $expressionService);

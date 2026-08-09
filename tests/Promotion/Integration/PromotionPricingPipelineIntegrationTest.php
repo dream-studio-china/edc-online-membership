@@ -27,7 +27,7 @@ final class PromotionPricingPipelineIntegrationTest extends KernelTestCase
         // The test database is shared by integration classes. Promotions are
         // intentionally disabled before each scenario to prevent prior global
         // campaigns from altering a later quotation.
-        $em->getConnection()->executeStatement('UPDATE promotion SET enabled = 0');
+        $em->getConnection()->executeStatement('UPDATE promotion SET enabled = false');
         $em->clear();
     }
 

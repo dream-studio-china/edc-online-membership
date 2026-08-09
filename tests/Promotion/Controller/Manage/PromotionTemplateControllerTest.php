@@ -188,13 +188,11 @@ final class PromotionTemplateControllerTest extends TestCase
         self::assertTrue($ref->hasProperty('acceptedUpdateProperties'));
 
         $req = $ref->getProperty('requiredCreateProperties');
-        $req->setAccessible(true);
         self::assertContains('name', $req->getValue($controller));
         self::assertContains('type', $req->getValue($controller));
         self::assertContains('dsl', $req->getValue($controller));
 
         $acc = $ref->getProperty('acceptedCreateProperties');
-        $acc->setAccessible(true);
         self::assertContains('phase', $acc->getValue($controller));
         self::assertContains('fields', $acc->getValue($controller));
     }
