@@ -3,6 +3,7 @@
 namespace App\Tests\UnitTest\Common\Entity;
 
 use App\Common\Entity\Setting;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
 final class SettingTest extends TestCase
@@ -23,6 +24,7 @@ final class SettingTest extends TestCase
         self::assertSame('site_name', (string) $entity);
     }
 
+    #[Group('low-value')]
     public function testSettersAreFluent(): void
     {
         $entity = new Setting('key');
@@ -49,6 +51,7 @@ final class SettingTest extends TestCase
         self::assertInstanceOf(\DateTimeImmutable::class, $entity->getUpdatedAt());
     }
 
+    #[Group('low-value')]
     public function testNullableFieldsAcceptNull(): void
     {
         $entity = new Setting('key');

@@ -6,6 +6,7 @@ use App\Common\Entity\Category;
 use App\Common\Entity\Picture;
 use App\Identity\Entity\User;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
 final class PictureTest extends TestCase
@@ -34,6 +35,7 @@ final class PictureTest extends TestCase
         self::assertSame('Sunset', (string) $entity);
     }
 
+    #[Group('low-value')]
     public function testSettersAreFluentAndTouchUpdatesTimestamp(): void
     {
         $entity = new Picture('https://cdn.example.com/a.png');
@@ -70,6 +72,7 @@ final class PictureTest extends TestCase
     }
 
     #[DataProvider('metadataProvider')]
+    #[Group('low-value')]
     public function testSetMetadataSupportsNullableValues(?array $metadata): void
     {
         $entity = new Picture('https://cdn.example.com/a.png');

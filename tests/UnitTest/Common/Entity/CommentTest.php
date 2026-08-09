@@ -4,6 +4,7 @@ namespace App\Tests\UnitTest\Common\Entity;
 
 use App\Common\Entity\Comment;
 use App\Identity\Entity\User;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
 final class CommentTest extends TestCase
@@ -25,6 +26,7 @@ final class CommentTest extends TestCase
         self::assertStringStartsWith('Great content!', (string) $entity);
     }
 
+    #[Group('low-value')]
     public function testSettersAreFluent(): void
     {
         $entity = new Comment('body', 'Page', 1);

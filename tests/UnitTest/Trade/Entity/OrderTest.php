@@ -169,6 +169,7 @@ final class OrderTest extends TestCase
         self::assertInstanceOf(\DateTimeImmutable::class, $order->getCreatedAt());
     }
 
+    #[Group('low-value')]
     public function testTouch(): void
     {
         $order = new Order();

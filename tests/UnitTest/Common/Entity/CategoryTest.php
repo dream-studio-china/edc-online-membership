@@ -3,6 +3,7 @@
 namespace App\Tests\UnitTest\Common\Entity;
 
 use App\Common\Entity\Category;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
 final class CategoryTest extends TestCase
@@ -23,6 +24,7 @@ final class CategoryTest extends TestCase
         self::assertSame('Test Category', (string) $entity);
     }
 
+    #[Group('low-value')]
     public function testSettersAreFluent(): void
     {
         $entity = new Category('before', 'before');

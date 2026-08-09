@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\UnitTest\Store\Entity;
 
 use App\Store\Entity\Store;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
 final class StoreTest extends TestCase
@@ -58,6 +59,7 @@ final class StoreTest extends TestCase
         self::assertInstanceOf(\DateTimeImmutable::class, $store->getUpdatedAt());
     }
 
+    #[Group('low-value')]
     public function testCodeAndTimezoneAreMutable(): void
     {
         $store = new Store('xuhui', 'Xuhui', 'Asia/Shanghai');

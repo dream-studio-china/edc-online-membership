@@ -3,6 +3,7 @@
 namespace App\Tests\UnitTest\Common\Entity;
 
 use App\Common\Entity\Page;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
 final class PageTest extends TestCase
@@ -23,6 +24,7 @@ final class PageTest extends TestCase
         self::assertSame('Test Page', (string) $entity);
     }
 
+    #[Group('low-value')]
     public function testSettersAreFluent(): void
     {
         $entity = new Page('before', 'before');
@@ -39,6 +41,7 @@ final class PageTest extends TestCase
         self::assertSame('published', $entity->getStatus());
     }
 
+    #[Group('low-value')]
     public function testPublishedAtSetter(): void
     {
         $entity = new Page('title', 'slug');
@@ -60,6 +63,7 @@ final class PageTest extends TestCase
         self::assertInstanceOf(\DateTimeImmutable::class, $entity->getUpdatedAt());
     }
 
+    #[Group('low-value')]
     public function testNullableFieldsAcceptNull(): void
     {
         $entity = new Page('title', 'slug');

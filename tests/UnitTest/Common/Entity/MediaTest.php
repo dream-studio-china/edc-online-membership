@@ -4,6 +4,7 @@ namespace App\Tests\UnitTest\Common\Entity;
 
 use App\Common\Entity\Media;
 use App\Identity\Entity\User;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
 final class MediaTest extends TestCase
@@ -28,6 +29,7 @@ final class MediaTest extends TestCase
         self::assertSame('photo.jpg', (string) $entity);
     }
 
+    #[Group('low-value')]
     public function testSettersAreFluent(): void
     {
         $entity = new Media('a', 'a', 'image/png', 1, '/a');
@@ -60,6 +62,7 @@ final class MediaTest extends TestCase
         self::assertInstanceOf(\DateTimeImmutable::class, $entity->getUpdatedAt());
     }
 
+    #[Group('low-value')]
     public function testNullableFieldsAcceptNull(): void
     {
         $entity = new Media('a', 'a', 'image/png', 1, '/a');

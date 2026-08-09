@@ -4,6 +4,7 @@ namespace App\Tests\UnitTest\Common\Entity;
 
 use App\Common\Entity\Content;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
 final class ContentTest extends TestCase
@@ -21,6 +22,7 @@ final class ContentTest extends TestCase
         self::assertSame('hello-title', (string) $entity);
     }
 
+    #[Group('low-value')]
     public function testSettersAreFluentAndTouchUpdatesTimestamp(): void
     {
         $entity = new Content('before');
@@ -34,6 +36,7 @@ final class ContentTest extends TestCase
     }
 
     #[DataProvider('bodyProvider')]
+    #[Group('low-value')]
     public function testSetBodySupportsNullableValues(?string $body): void
     {
         $entity = new Content('title', 'initial');

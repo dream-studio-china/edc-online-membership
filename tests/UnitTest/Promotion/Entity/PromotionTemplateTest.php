@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace App\Tests\UnitTest\Promotion\Entity;
 
 use App\Promotion\Entity\PromotionTemplate;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
 final class PromotionTemplateTest extends TestCase
 {
+    #[Group('low-value')]
     public function testConstructorInitializesCoreFields(): void
     {
         $t = new PromotionTemplate();
@@ -30,6 +32,7 @@ final class PromotionTemplateTest extends TestCase
         self::assertNull($t->getUpdatedAt());
     }
 
+    #[Group('low-value')]
     public function testNameAccessors(): void
     {
         $t = new PromotionTemplate();
@@ -39,6 +42,7 @@ final class PromotionTemplateTest extends TestCase
         self::assertInstanceOf(\DateTimeImmutable::class, $t->getUpdatedAt());
     }
 
+    #[Group('low-value')]
     public function testDescriptionAccessors(): void
     {
         $t = new PromotionTemplate();
@@ -49,6 +53,7 @@ final class PromotionTemplateTest extends TestCase
         self::assertNull($t->getDescription());
     }
 
+    #[Group('low-value')]
     public function testTypeAccessors(): void
     {
         $t = new PromotionTemplate();
@@ -57,6 +62,7 @@ final class PromotionTemplateTest extends TestCase
         self::assertSame(PromotionTemplate::TYPE_DISCOUNT, $t->getType());
     }
 
+    #[Group('low-value')]
     public function testPhaseAccessors(): void
     {
         $t = new PromotionTemplate();
@@ -65,6 +71,7 @@ final class PromotionTemplateTest extends TestCase
         self::assertSame(PromotionTemplate::PHASE_OUTER, $t->getPhase());
     }
 
+    #[Group('low-value')]
     public function testEnabledAccessors(): void
     {
         $t = new PromotionTemplate();
@@ -73,6 +80,7 @@ final class PromotionTemplateTest extends TestCase
         self::assertTrue($t->isEnabled());
     }
 
+    #[Group('low-value')]
     public function testDslAccessors(): void
     {
         $t = new PromotionTemplate();
@@ -81,6 +89,7 @@ final class PromotionTemplateTest extends TestCase
         self::assertSame('type: full_reduction', $t->getDsl());
     }
 
+    #[Group('low-value')]
     public function testFieldsAccessors(): void
     {
         $t = new PromotionTemplate();
@@ -92,6 +101,7 @@ final class PromotionTemplateTest extends TestCase
         self::assertNull($t->getFields());
     }
 
+    #[Group('low-value')]
     public function testAstCacheAccessors(): void
     {
         $t = new PromotionTemplate();
@@ -111,6 +121,7 @@ final class PromotionTemplateTest extends TestCase
         self::assertInstanceOf(\DateTimeImmutable::class, $t->getUpdatedAt());
     }
 
+    #[Group('low-value')]
     public function testToString(): void
     {
         $t = new PromotionTemplate();
@@ -119,6 +130,7 @@ final class PromotionTemplateTest extends TestCase
         self::assertSame('Full Reduction', (string) $t);
     }
 
+    #[Group('low-value')]
     public function testPhaseConstants(): void
     {
         self::assertSame(-1, PromotionTemplate::PHASE_ALL);
@@ -126,6 +138,7 @@ final class PromotionTemplateTest extends TestCase
         self::assertSame(1, PromotionTemplate::PHASE_OUTER);
     }
 
+    #[Group('low-value')]
     public function testTypeConstants(): void
     {
         self::assertSame('full_reduction', PromotionTemplate::TYPE_FULL_REDUCTION);
@@ -137,6 +150,7 @@ final class PromotionTemplateTest extends TestCase
         self::assertSame('member_discount', PromotionTemplate::TYPE_MEMBER_DISCOUNT);
     }
 
+    #[Group('low-value')]
     public function testUuidIsUnique(): void
     {
         $t1 = new PromotionTemplate();

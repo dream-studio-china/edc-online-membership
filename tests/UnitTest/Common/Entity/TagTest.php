@@ -3,6 +3,7 @@
 namespace App\Tests\UnitTest\Common\Entity;
 
 use App\Common\Entity\Tag;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
 final class TagTest extends TestCase
@@ -19,6 +20,7 @@ final class TagTest extends TestCase
         self::assertSame('My Tag', (string) $entity);
     }
 
+    #[Group('low-value')]
     public function testSettersAreFluent(): void
     {
         $entity = new Tag('before', 'before');
@@ -39,6 +41,7 @@ final class TagTest extends TestCase
         self::assertInstanceOf(\DateTimeImmutable::class, $entity->getUpdatedAt());
     }
 
+    #[Group('low-value')]
     public function testSetColorSupportsNull(): void
     {
         $entity = new Tag('name', 'slug');

@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace App\Tests\UnitTest\Store\Entity;
 
 use App\Store\Entity\StoreTradeOrderCancellation;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
 final class StoreTradeOrderCancellationTest extends TestCase
 {
+    #[Group('low-value')]
     public function testExposesCancellationFields(): void
     {
         $cancelledAt = new \DateTimeImmutable('2026-08-02 12:00:00');

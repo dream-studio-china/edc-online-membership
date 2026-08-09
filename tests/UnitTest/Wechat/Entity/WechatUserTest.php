@@ -18,6 +18,7 @@ final class WechatUserTest extends TestCase
         $this->user = new User();
     }
 
+    #[Group('low-value')]
     public function testConstructorSetsRequiredFields(): void
     {
         $wu = new WechatUser($this->user, 'oTest1234', WechatUser::APP_TYPE_MINIAPP);

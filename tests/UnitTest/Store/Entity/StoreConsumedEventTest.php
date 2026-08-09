@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace App\Tests\UnitTest\Store\Entity;
 
 use App\Store\Entity\StoreConsumedEvent;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
 final class StoreConsumedEventTest extends TestCase
 {
+    #[Group('low-value')]
     public function testStoresInboundEventAuditFields(): void
     {
         $event = new StoreConsumedEvent(

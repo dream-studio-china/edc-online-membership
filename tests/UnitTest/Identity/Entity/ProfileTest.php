@@ -11,6 +11,7 @@ use PHPUnit\Framework\TestCase;
 
 final class ProfileTest extends TestCase
 {
+    #[Group('low-value')]
     public function testConstructorInitializesCoreFields(): void
     {
         $user = new User();
@@ -28,6 +29,7 @@ final class ProfileTest extends TestCase
         self::assertNull($profile->getUpdatedAt());
     }
 
+    #[Group('low-value')]
     public function testConstructorAcceptsCustomLevel(): void
     {
         $user = new User();
@@ -36,6 +38,7 @@ final class ProfileTest extends TestCase
         self::assertSame(Profile::LEVEL_GOLD, $profile->getLevel());
     }
 
+    #[Group('low-value')]
     public function testLevelConstants(): void
     {
         self::assertSame('bronze', Profile::LEVEL_BRONZE);
@@ -59,6 +62,7 @@ final class ProfileTest extends TestCase
         self::assertInstanceOf(\DateTimeImmutable::class, $profile->getUpdatedAt());
     }
 
+    #[Group('low-value')]
     public function testSetUserNull(): void
     {
         $user = new User();

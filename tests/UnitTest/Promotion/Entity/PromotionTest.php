@@ -6,10 +6,12 @@ namespace App\Tests\UnitTest\Promotion\Entity;
 
 use App\Promotion\Entity\Promotion;
 use App\Promotion\Entity\PromotionTemplate;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
 final class PromotionTest extends TestCase
 {
+    #[Group('low-value')]
     public function testConstructorInitializesCoreFields(): void
     {
         $p = new Promotion();
@@ -32,6 +34,7 @@ final class PromotionTest extends TestCase
         self::assertNull($p->getUpdatedAt());
     }
 
+    #[Group('low-value')]
     public function testNameAccessors(): void
     {
         $p = new Promotion();
@@ -41,6 +44,7 @@ final class PromotionTest extends TestCase
         self::assertInstanceOf(\DateTimeImmutable::class, $p->getUpdatedAt());
     }
 
+    #[Group('low-value')]
     public function testDescriptionAccessors(): void
     {
         $p = new Promotion();
@@ -50,6 +54,7 @@ final class PromotionTest extends TestCase
         self::assertNull($p->getDescription());
     }
 
+    #[Group('low-value')]
     public function testTemplateAccessors(): void
     {
         $p = new Promotion();
@@ -61,6 +66,7 @@ final class PromotionTest extends TestCase
         self::assertNull($p->getTemplate());
     }
 
+    #[Group('low-value')]
     public function testStoreCodeAccessors(): void
     {
         $p = new Promotion();
@@ -69,6 +75,7 @@ final class PromotionTest extends TestCase
         self::assertSame('store-a', $p->getStoreCode());
     }
 
+    #[Group('low-value')]
     public function testEnabledAccessors(): void
     {
         $p = new Promotion();
@@ -77,6 +84,7 @@ final class PromotionTest extends TestCase
         self::assertTrue($p->isEnabled());
     }
 
+    #[Group('low-value')]
     public function testStartTimeAccessors(): void
     {
         $p = new Promotion();
@@ -88,6 +96,7 @@ final class PromotionTest extends TestCase
         self::assertNull($p->getStartTime());
     }
 
+    #[Group('low-value')]
     public function testEndTimeAccessors(): void
     {
         $p = new Promotion();
@@ -99,6 +108,7 @@ final class PromotionTest extends TestCase
         self::assertNull($p->getEndTime());
     }
 
+    #[Group('low-value')]
     public function testConfigAccessors(): void
     {
         $p = new Promotion();
@@ -110,6 +120,7 @@ final class PromotionTest extends TestCase
         self::assertNull($p->getConfig());
     }
 
+    #[Group('low-value')]
     public function testConflictModeAccessors(): void
     {
         $p = new Promotion();
@@ -124,6 +135,7 @@ final class PromotionTest extends TestCase
         self::assertSame(Promotion::CONFLICT_STACKABLE, $p->getConflictMode());
     }
 
+    #[Group('low-value')]
     public function testConflictModeConstants(): void
     {
         self::assertSame('stackable', Promotion::CONFLICT_STACKABLE);
@@ -139,6 +151,7 @@ final class PromotionTest extends TestCase
         self::assertInstanceOf(\DateTimeImmutable::class, $p->getUpdatedAt());
     }
 
+    #[Group('low-value')]
     public function testToString(): void
     {
         $p = new Promotion();
@@ -147,6 +160,7 @@ final class PromotionTest extends TestCase
         self::assertSame('Summer Sale', (string) $p);
     }
 
+    #[Group('low-value')]
     public function testUuidIsUnique(): void
     {
         $p1 = new Promotion();
