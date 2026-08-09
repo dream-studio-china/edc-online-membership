@@ -6,6 +6,7 @@ namespace App\Core\Controller;
 
 use Doctrine\DBAL\Connection;
 use OpenApi\Attributes as OA;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -24,6 +25,7 @@ final class HealthController
     public function __construct(
         private readonly Connection $connection,
         private readonly string $otpRedisDsn,
+        private readonly LoggerInterface $logger,
     ) {}
 
     #[OA\Get(
@@ -58,7 +60,9 @@ final class HealthController
             $this->connection->executeQuery('SELECT 1')->fetchOne();
             $checks['database'] = 'ok';
         } catch (\Throwable $e) {
-            $checks['database'] = 'error: ' . $e->getMessage();
+            // Never leak driver details to anonymous callers; log them instead.
+            $this->logger->error('Health check: database probe failed', ['exception' => $e]);
+            $checks['database'] = 'error';
         }
 
         $checks['redis'] = $this->checkRedis();

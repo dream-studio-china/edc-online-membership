@@ -94,7 +94,7 @@ Symfony 8.1 ベースのプロダクション向け API スケルトン。再利
 
 ## テスト
 
-**デフォルトスイート 2222 tests · 7941 assertions**（低価値テスト 477 はデフォルト実行から除外）。テストは `tests/` 配下でレイヤー別に整理されています：
+**デフォルトスイート 2222 tests · 7942 assertions**（低価値テスト 477 はデフォルト実行から除外）。テストは `tests/` 配下でレイヤー別に整理されています：
 
 - `tests/UnitTest/` — 純ユニットテスト（kernel/DB なし）、名前空間 `App\Tests\UnitTest\...`
 - `tests/Integration/` — kernel + DB + HTTP テストおよび共有ヘルパー（`DatabaseBootstrapTrait`、`IntegrationWebTestCase`）、名前空間 `App\Tests\Integration\...`

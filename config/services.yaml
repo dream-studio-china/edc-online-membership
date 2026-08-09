@@ -78,6 +78,7 @@ services:
         arguments:
             $connection: '@doctrine.dbal.default_connection'
             $otpRedisDsn: '%env(OTP_REDIS_DSN)%'
+            $logger: '@logger'
         tags:
             - { name: routing.controller }
             - { name: controller.service_arguments }
@@ -127,6 +128,7 @@ when@test:
             arguments:
                 $connection: '@doctrine.dbal.default_connection'
                 $otpRedisDsn: ''
+                $logger: '@logger'
             tags:
                 - { name: routing.controller }
                 - { name: controller.service_arguments }

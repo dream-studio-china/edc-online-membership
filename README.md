@@ -641,7 +641,7 @@ Note on controller construction: Controllers extending `RestController` receive 
 
 ## Testing
 
-**2222 tests · 7941 assertions** in the default suite (plus **477 low-value tests** excluded by default). Tests are organized by layer under `tests/`:
+**2222 tests · 7942 assertions** in the default suite (plus **477 low-value tests** excluded by default). Tests are organized by layer under `tests/`:
 
 - `tests/UnitTest/` — pure unit tests (no kernel/DB), namespace `App\Tests\UnitTest\...`
 - `tests/Integration/` — kernel + DB + HTTP tests and shared helpers (`DatabaseBootstrapTrait`, `IntegrationWebTestCase`), namespace `App\Tests\Integration\...`

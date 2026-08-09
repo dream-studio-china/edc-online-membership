@@ -631,7 +631,7 @@ class ContentController extends RestController
 
 ## 测试
 
-**默认套件 2222 个测试 · 7941 个断言**（另有 **477 个低价值测试** 默认排除）。测试按层组织在 `tests/` 下：
+**默认套件 2222 个测试 · 7942 个断言**（另有 **477 个低价值测试** 默认排除）。测试按层组织在 `tests/` 下：
 
 - `tests/UnitTest/` — 纯单元测试（无 kernel/DB），命名空间 `App\Tests\UnitTest\...`
 - `tests/Integration/` — kernel + DB + HTTP 测试及共享 helper（`DatabaseBootstrapTrait`、`IntegrationWebTestCase`），命名空间 `App\Tests\Integration\...`
