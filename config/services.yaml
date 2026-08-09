@@ -57,6 +57,31 @@ services:
         tags:
             - { name: kernel.event_listener, event: kernel.request, priority: 20 }
 
+    App\Core\EventListener\MetricsListener:
+        tags:
+            - { name: kernel.event_listener, event: kernel.request, priority: 10 }
+            - { name: kernel.event_listener, event: kernel.response, priority: -1 }
+
+    App\Core\EventListener\RateLimitListener:
+        arguments:
+            $limiters: !service_locator
+                auth_login: '@limiter.auth_login'
+                auth_register: '@limiter.auth_register'
+                otp_request: '@limiter.otp_request'
+                otp_verify: '@limiter.otp_verify'
+                wechat_login: '@limiter.wechat_login'
+                payment: '@limiter.payment'
+        tags:
+            - { name: kernel.event_listener, event: kernel.controller, priority: 10 }
+
+    App\Core\Controller\HealthController:
+        arguments:
+            $connection: '@doctrine.dbal.default_connection'
+            $otpRedisDsn: '%env(OTP_REDIS_DSN)%'
+        tags:
+            - { name: routing.controller }
+            - { name: controller.service_arguments }
+
     Nyholm\Psr7\Factory\Psr17Factory: ~
 
     Symfony\Bridge\PsrHttpMessage\Factory\PsrHttpFactory:
@@ -97,3 +122,11 @@ when@test:
             arguments:
                 $storage: '@App\Identity\Service\NullOtpStorage'
                 $sms: '@App\Identity\Sms\AliyunSmsProvider'
+        # Deterministic readiness in tests: Redis probe disabled.
+        App\Core\Controller\HealthController:
+            arguments:
+                $connection: '@doctrine.dbal.default_connection'
+                $otpRedisDsn: ''
+            tags:
+                - { name: routing.controller }
+                - { name: controller.service_arguments }

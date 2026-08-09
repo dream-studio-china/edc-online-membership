@@ -893,9 +893,16 @@ Recipes expand a Specification into material demand. Material demand is aggregat
 
 ### 23.2 Operational gaps (productization)
 
-- **No observability**: no Prometheus/Grafana/Sentry/APM/metrics exporters or alerting channels; only local Monolog + access log. No `/health`/`/ready` endpoints.
-- **No rate limiting**: no login/OTP/payment brute-force protection (Symfony RateLimiter not configured).
-- **Framework cache**: no Redis cache adapter configured for the Symfony cache pool (defaults to filesystem); OTP uses Redis only.
+Closed in 2026-08-10 (see §24):
+
+- ✅ **Health checks**: `/health/live` + `/health/ready` (public, outside JWT firewall); nginx container healthcheck in `compose.yaml` uses `/health/ready`.
+- ✅ **Rate limiting**: `symfony/rate-limiter` — per-IP limits on login/register/OTP request/verify/WeChat login/payment initiation; 429 envelope + `Retry-After`; disabled (high limits) in test env.
+- ✅ **Metrics**: `/metrics` Prometheus text format — per-worker request counters/duration histogram/in-flight gauge plus live DB gauges (outbox backlog per topic, failed messenger queue).
+
+Remaining productization gaps:
+
+- **No alerting/APM ingestion**: metrics are exposed but nothing scrapes them (add Prometheus/Grafana or Sentry); no alert channels for outbox backlog or error rates.
+- **No rate-limit global cache**: limiters use the default filesystem cache — per-process only; enable a shared Redis cache adapter for multi-worker deployments.
 - **External providers unverified**: WeChat Pay, SMS (Aliyun), and Qiniu have deterministic test adapters but no real sandbox certification evidence; `WechatPayGateway::notify()` is broken (see 23.1).
 - **Smoke scripts not in CI**: `scripts/tests/*.sh` require a disposable Docker environment and run only at release time.
 - **Test-suite debt**: 186 PHPUnit Notices; 412 redundant-test candidates (190 HIGH) from the coverage campaign — safe deletions are documented in `docs/issues/test-audit-2026-08-09/` (verify coverage zero-delta before each deletion).
@@ -906,3 +913,26 @@ Recipes expand a Specification into material demand. Material demand is aggregat
 - Before implementing a known defect, read its report entry; the report contains the exact fix.
 - New changes must follow the evidence rules in `docs/testing/crud-skeleton-production/TEST_STRATEGY.md` (tests at the right layer, invariants protected, coverage gate 90%).
 - When adding tests, do not recreate the redundant `*CoverageTest`/`*AdditionalTest` patterns flagged by the audit.
+
+## 24. Platform Operations Endpoints
+
+Public infrastructure endpoints (no JWT; live outside the `^/api` firewall):
+
+| Endpoint | Purpose | Response |
+|---|---|---|
+| `GET /health/live` | Process liveness probe | 200 `{"status":"ok"}` |
+| `GET /health/ready` | Readiness probe: DB required, Redis optional (enabled only when `OTP_REDIS_DSN` set) | 200 `{"status":"ok","checks":{...}}` or 503 `degraded` |
+| `GET /metrics` | Prometheus text exposition format (v0.0.4) | 200 `text/plain` |
+
+Implementation notes:
+
+- `src/Core/Controller/HealthController.php` — `Connection` + a dependency-free RESP `PING` over TCP for Redis (no Predis needed in prod; `predis/predis` is dev-only).
+- `src/Core/Controller/MetricsController.php` + `src/Core/Metrics/MetricsRegistry.php` + `src/Core/EventListener/MetricsListener.php`:
+  - In-memory per-worker: `http_requests_total{method,route,status}`, `http_request_duration_seconds` histogram (default buckets), `http_requests_inflight`.
+  - Live DB gauges on scrape: `app_outbox_backlog{topic=trade|store|inventory}` (`published_at IS NULL` counts) and `app_messenger_failed` (`messenger_messages.queue_name='failed'`); these are accurate across workers.
+  - The listener skips `/health`, `/metrics`, `/api/doc`, profiler paths, and sub-requests (404s are dispatched as sub-requests here).
+- `src/Core/EventListener/RateLimitListener.php` (`kernel.controller`, priority 10) — path → limiter map, keyed by `getClientIp()`; on limit: replaces the controller with a 429 `{data:null, code:429, message}` + `Retry-After`. Limiters defined in `config/packages/rate_limiter.yaml`; factories wired via `!service_locator` in `config/services.yaml`.
+- Test wiring: `HealthController` is defined explicitly (scalar `$otpRedisDsn`) with `routing.controller` + `controller.service_arguments` tags (both in main and `when@test` blocks, since explicit definitions drop autoconfig tags); `when@test` disables the Redis probe and sets all limiter limits to 100000.
+- `compose.yaml` nginx healthcheck runs `wget -q -O /dev/null http://localhost/health/ready` (full-path readiness: nginx → FPM → Symfony → DB/Redis).
+- Both endpoints are added to NelmioApiDoc `path_patterns` (tag `System`).
+- Tests: `tests/Core/Controller/HealthControllerTest.php`, `tests/Core/Controller/MetricsControllerTest.php`, `tests/Core/EventListener/RateLimitListenerTest.php` (real `RateLimiterFactory` + `InMemoryStorage`, so global test limits are untouched).
