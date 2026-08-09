@@ -26,9 +26,11 @@
             <directory>tests/UnitTest</directory>
             <directory>tests/Integration</directory>
         </testsuite>
-        <!-- Deprecated or low-value tests: kept for reference, excluded from
-             the default run. Execute explicitly with the "Low Value" testsuite
-             or the low-value group. -->
+        <!-- Deprecated or low-value tests: kept for reference, excluded from the
+             default run by the global group exclusion below. This suite keeps the
+             files discoverable so the low-value group filter can execute them;
+             the suite itself runs empty because the global exclusion applies to
+             every run. -->
         <testsuite name="Low Value">
             <directory>tests/LowValue</directory>
         </testsuite>

@@ -190,7 +190,7 @@ See `composer.json` for the full dependency list.
 ├── config/                       # Symfony configuration
 │   └── packages/                 #   Doctrine, Security, Workflow, Serializer, RateLimiter, etc.
 ├── migrations/                   # Doctrine migrations (20 versions)
-├── tests/                        # 2220 PHPUnit tests in the default suite, organized by layer:
+├── tests/                        # 2221 PHPUnit tests in the default suite, organized by layer:
 │   ├── UnitTest/                 #   Pure unit tests (no kernel/DB)
 │   ├── Integration/              #   Kernel + DB + HTTP tests and shared helpers
 │   └── LowValue/                 #   Deprecated/low-value tests, excluded from default runs
@@ -641,7 +641,7 @@ Note on controller construction: Controllers extending `RestController` receive 
 
 ## Testing
 
-**2220 tests · 7936 assertions** in the default suite (plus **477 low-value tests** excluded by default). Tests are organized by layer under `tests/`:
+**2221 tests · 7936 assertions** in the default suite (plus **477 low-value tests** excluded by default). Tests are organized by layer under `tests/`:
 
 - `tests/UnitTest/` — pure unit tests (no kernel/DB), namespace `App\Tests\UnitTest\...`
 - `tests/Integration/` — kernel + DB + HTTP tests and shared helpers (`DatabaseBootstrapTrait`, `IntegrationWebTestCase`), namespace `App\Tests\Integration\...`

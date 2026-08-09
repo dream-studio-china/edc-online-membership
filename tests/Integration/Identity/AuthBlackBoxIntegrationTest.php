@@ -105,11 +105,32 @@ final class AuthBlackBoxIntegrationTest extends IntegrationWebTestCase
         self::assertResponseStatusCodeSame(200);
         $rotated = $this->extractAuthPayload($client);
         $refresh2 = (string) $rotated['refresh_token'];
+        self::assertNotSame($refresh1, $refresh2, 'Refresh token must rotate on refresh');
 
         $client->jsonRequest('POST', '/api/auth/token/refresh', ['refresh_token' => $refresh1]);
         self::assertResponseStatusCodeSame(401);
 
         $client->jsonRequest('POST', '/api/auth/token/refresh', ['refresh_token' => $refresh2]);
+        self::assertResponseStatusCodeSame(401);
+    }
+
+    public function testLogoutRevokesRefreshToken(): void
+    {
+        $this->createUser('logoutrevoke@example.com', 'logoutrevoke', 'LogoutPass123!', '+8613800004444', true);
+
+        $client = static::createClient();
+        $client->jsonRequest('POST', '/api/auth/login', [
+            'identifier' => 'logoutrevoke@example.com',
+            'password' => 'LogoutPass123!',
+        ]);
+        self::assertResponseStatusCodeSame(200);
+        $login = $this->extractAuthPayload($client);
+        $refreshToken = (string) $login['refresh_token'];
+
+        $client->jsonRequest('POST', '/api/auth/logout', ['refresh_token' => $refreshToken]);
+        self::assertResponseStatusCodeSame(204);
+
+        $client->jsonRequest('POST', '/api/auth/token/refresh', ['refresh_token' => $refreshToken]);
         self::assertResponseStatusCodeSame(401);
     }
 

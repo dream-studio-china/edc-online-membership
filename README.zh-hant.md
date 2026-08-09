@@ -71,8 +71,8 @@
 │   ├── Inventory/                 # 庫存模組（物料、庫存、配方、預留）
 │   └── Identity/                 # 鑑權模組
 ├── config/                       # Symfony 配置
-├── migrations/                   # Doctrine 遷移（12 個版本）
-├── tests/                        # 預設套件 2220 tests，按層組織：
+├── migrations/                   # Doctrine 遷移（20 個版本）
+├── tests/                        # 預設套件 2221 tests，按層組織：
 │   ├── UnitTest/                 #   純單元測試（無 kernel/DB）
 │   ├── Integration/              #   kernel + DB + HTTP 測試及共享 helper
 │   └── LowValue/                 #   棄用/低價值測試，預設運行排除
@@ -97,7 +97,7 @@
 
 ## 測試
 
-**預設套件 2220 tests · 7936 assertions**（另有 477 低價值測試預設排除）。
+**預設套件 2221 tests · 7936 assertions**（另有 477 低價值測試預設排除）。
 
 串行執行所有測試：
 

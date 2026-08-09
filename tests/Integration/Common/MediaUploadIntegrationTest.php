@@ -431,8 +431,18 @@ final class MediaUploadIntegrationTest extends IntegrationWebTestCase
         }
     }
 
+    public function testMediaPrePersistInitializesCreatedAt(): void
+    {
+        $reflection = new \ReflectionClass(Media::class);
+        /** @var Media $uninitialized */
+        $uninitialized = $reflection->newInstanceWithoutConstructor();
+        $uninitialized->prePersist();
+
+        self::assertInstanceOf(\DateTimeImmutable::class, $uninitialized->getCreatedAt());
+    }
+
     #[Group('low-value')]
-    public function testMediaEntityAccessorsAndPrePersistDefaults(): void
+    public function testMediaAccessorsRoundTrip(): void
     {
         $media = new Media('old.png', 'old-original.png', 'image/png', 1, '/uploads/old.png');
 
@@ -451,13 +461,6 @@ final class MediaUploadIntegrationTest extends IntegrationWebTestCase
         self::assertSame('/uploads/new.png', $media->getPath());
         self::assertSame('qiniu', $media->getStorage());
         self::assertNotNull($media->getUpdatedAt());
-
-        $reflection = new \ReflectionClass(Media::class);
-        /** @var Media $uninitialized */
-        $uninitialized = $reflection->newInstanceWithoutConstructor();
-        $uninitialized->prePersist();
-
-        self::assertInstanceOf(\DateTimeImmutable::class, $uninitialized->getCreatedAt());
     }
 
     /** @return array<string, mixed> */
