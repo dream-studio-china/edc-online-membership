@@ -36,7 +36,7 @@ when@test:
                 level: debug
             access:
                 type: stream
-                path: "%kernel.logs_dir%/access.log"
+                path: "%env(resolve:TEST_ACCESS_LOG)%"
                 level: info
                 channels: ["access"]
 

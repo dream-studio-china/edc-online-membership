@@ -37,7 +37,10 @@ doctrine:
 when@test:
     doctrine:
         dbal:
-            url: 'sqlite:///%kernel.project_dir%/var/test.db'
+            # Test DB is chosen by the DATABASE_URL env var (defaulted in
+            # tests/bootstrap.php). Parallel runners (paratest) set a unique
+            # per-process sqlite file so workers never race on one schema.
+            url: '%env(resolve:DATABASE_URL)%'
 
 when@prod:
     doctrine:
