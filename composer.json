@@ -109,12 +109,14 @@
         }
     },
     "require-dev": {
+        "brianium/paratest": "^7.20",
         "phpstan/phpstan": "^2.2",
         "phpstan/phpstan-doctrine": "^2.0",
         "phpstan/phpstan-symfony": "^2.0",
         "phpunit/phpunit": "^12.5.30",
         "predis/predis": "^3.5.1",
         "rector/rector": "^2.5",
+        "revolt/event-loop": "^1.0",
         "symfony/browser-kit": "8.1.*",
         "symfony/css-selector": "8.1.*",
         "symfony/debug-bundle": "8.1.*",

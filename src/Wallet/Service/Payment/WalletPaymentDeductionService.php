@@ -99,7 +99,7 @@ class WalletPaymentDeductionService
             throw new \RuntimeException(sprintf('No %s wallet found for payer.', strtoupper($currency)));
         }
 
-        $referenceId = $options['deductionReferenceId'] ?? ('invoice-adjustment-wallet-balance-' . $invoice->getUuid());
+        $referenceId = $options['deductionReferenceId'] ?? ('deduction-balance-' . $invoice->getUuid());
         $deduction = new WalletPaymentDeduction($invoice, $wallet, $systemWalletId, $amount, $currency, $referenceId);
         $this->em->persist($deduction);
 
@@ -133,7 +133,7 @@ class WalletPaymentDeductionService
             return null;
         }
 
-        return $this->reverse($deduction, 'invoice-adjustment-wallet-balance-release-' . $invoice->getUuid(), $reason, false);
+        return $this->reverse($deduction, 'deduction-release-' . $invoice->getUuid(), $reason, false);
     }
 
     public function refund(Invoice $invoice, string $reason): ?WalletPaymentDeduction
@@ -143,7 +143,7 @@ class WalletPaymentDeductionService
             return null;
         }
 
-        return $this->reverse($deduction, 'invoice-adjustment-wallet-balance-refund-' . $invoice->getUuid(), $reason, true);
+        return $this->reverse($deduction, 'deduction-refund-' . $invoice->getUuid(), $reason, true);
     }
 
     public function sumAppliedAmount(Invoice $invoice): int

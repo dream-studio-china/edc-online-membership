@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace App\Tests\Trade\Controller\Manage;
 
+use App\Payment\DTO\PaymentResult;
+use App\Payment\Entity\Invoice;
+use App\Tests\Trade\Controller\OrderControllerServiceFake;
 use App\Trade\Controller\Manage\OrderController;
 use App\Trade\Service\OrderServiceInterface;
 use App\Trade\Service\StoreContextResolverInterface;
@@ -21,6 +24,7 @@ final class OrderControllerTest extends TestCase
     private OrderServiceInterface $service;
     private WorkflowInterface $workflow;
     private StoreContextResolverInterface $storeContextResolver;
+    private OrderControllerServiceFake $fakeService;
     private OrderController $controller;
 
     protected function setUp(): void
@@ -29,7 +33,8 @@ final class OrderControllerTest extends TestCase
         $this->workflow = $this->createMock(WorkflowInterface::class);
         $this->storeContextResolver = $this->createMock(StoreContextResolverInterface::class);
 
-        $this->controller = new OrderController($this->service, $this->storeContextResolver, $this->workflow);
+        $this->fakeService = new OrderControllerServiceFake($this->service);
+        $this->controller = new OrderController($this->fakeService, $this->storeContextResolver, $this->workflow);
     }
 
     private function injectDependencies(RequestStack $requestStack): void
@@ -44,6 +49,25 @@ final class OrderControllerTest extends TestCase
         $this->controller->setRequestStack($requestStack);
         $this->controller->setSerializer($serializer);
         $this->controller->setTranslator($translator);
+    }
+
+    /**
+     * Makes the fake service run the wrapInTransaction() callback, mirroring
+     * the real BaseService::wrapInTransaction() behavior.
+     */
+    private function enableTransaction(): void
+    {
+        $this->fakeService->invokeTransaction = true;
+    }
+
+    private function jsonRequest(string $method, string $uri, array $payload): Request
+    {
+        return Request::create(
+            $uri,
+            $method,
+            server: ['CONTENT_TYPE' => 'application/json'],
+            content: json_encode($payload, JSON_THROW_ON_ERROR),
+        );
     }
 
     public function testDeleteActionReturns404WhenOrderNotFound(): void
@@ -307,5 +331,259 @@ final class OrderControllerTest extends TestCase
         self::assertSame(400, $response->getStatusCode());
         $body = json_decode((string) $response->getContent(), true);
         self::assertSame('Only draft orders can be updated.', $body['message']);
+    }
+
+    // ===== createAction failure path =====
+
+    public function testCreateActionReturnsErrorWhenPriceCalculationFails(): void
+    {
+        $requestStack = new RequestStack();
+        $requestStack->push($this->jsonRequest('POST', '/api/v1/manage/orders', [
+            'items' => [['specificationId' => 1, 'quantity' => 1]],
+        ]));
+        $this->injectDependencies($requestStack);
+
+        $this->storeContextResolver->method('resolve')->willReturn(null);
+        $this->service->method('calculatePrices')->willThrowException(new \RuntimeException('calc failed'));
+
+        $response = $this->controller->createAction($requestStack->getCurrentRequest());
+
+        self::assertSame(400, $response->getStatusCode());
+        $body = json_decode((string) $response->getContent(), true);
+        self::assertSame('calc failed', $body['message']);
+    }
+
+    // ===== quoteAction =====
+
+    public function testQuoteActionReturnsErrorWhenItemsEmpty(): void
+    {
+        $requestStack = new RequestStack();
+        $requestStack->push($this->jsonRequest('POST', '/api/v1/manage/orders/quote', ['items' => []]));
+        $this->injectDependencies($requestStack);
+
+        $response = $this->controller->quoteAction($requestStack->getCurrentRequest());
+
+        self::assertSame(400, $response->getStatusCode());
+        $body = json_decode((string) $response->getContent(), true);
+        self::assertSame('Items are required.', $body['message']);
+    }
+
+    public function testQuoteActionReturnsSuccessWhenCalculated(): void
+    {
+        $requestStack = new RequestStack();
+        $requestStack->push($this->jsonRequest('POST', '/api/v1/manage/orders/quote', [
+            'items' => [['specificationId' => 1, 'quantity' => 2]],
+            'currency' => 'USD',
+        ]));
+        $this->injectDependencies($requestStack);
+
+        $this->storeContextResolver->method('resolve')->willReturn(null);
+        $this->service->method('calculatePrices')->willReturn(new \App\Trade\Service\Pricing\PriceCalculationResult(
+            3000,
+            'USD',
+            [['specificationId' => 1, 'quantity' => 2]],
+        ));
+
+        $response = $this->controller->quoteAction($requestStack->getCurrentRequest());
+
+        self::assertSame(200, $response->getStatusCode());
+        $body = json_decode((string) $response->getContent(), true);
+        self::assertSame('Quote calculated', $body['message']);
+        self::assertSame(3000, $body['data']['totalAmount']);
+        self::assertSame('USD', $body['data']['currency']);
+    }
+
+    public function testQuoteActionReturnsErrorWhenCalculationFails(): void
+    {
+        $requestStack = new RequestStack();
+        $requestStack->push($this->jsonRequest('POST', '/api/v1/manage/orders/quote', [
+            'items' => [['specificationId' => 1, 'quantity' => 1]],
+        ]));
+        $this->injectDependencies($requestStack);
+
+        $this->storeContextResolver->method('resolve')->willReturn(null);
+        $this->service->method('calculatePrices')->willThrowException(new \RuntimeException('quote failed'));
+
+        $response = $this->controller->quoteAction($requestStack->getCurrentRequest());
+
+        self::assertSame(400, $response->getStatusCode());
+        $body = json_decode((string) $response->getContent(), true);
+        self::assertSame('quote failed', $body['message']);
+    }
+
+    // ===== payAction success path =====
+
+    public function testPayActionReturnsSuccessWhenPaymentSucceeds(): void
+    {
+        $requestStack = new RequestStack();
+        $requestStack->push($this->jsonRequest('POST', '/api/v1/manage/orders/1/pay', [
+            'systemWalletId' => 1,
+            'paymentMethod' => 'wallet',
+        ]));
+        $this->injectDependencies($requestStack);
+        $this->enableTransaction();
+
+        $order = $this->createMock(\App\Trade\Entity\Order::class);
+        $order->method('getStatus')->willReturn('confirmed');
+        $this->service->method('get')->with(['id' => 1])->willReturn($order);
+        $this->workflow->method('can')->with($order, 'pay')->willReturn(true);
+
+        $response = $this->controller->payAction($requestStack->getCurrentRequest(), 1);
+
+        self::assertSame(200, $response->getStatusCode());
+        $body = json_decode((string) $response->getContent(), true);
+        self::assertSame('Payment processed', $body['message']);
+    }
+
+    // ===== paymentAction success + failure paths =====
+
+    public function testPaymentActionReturnsSuccessWhenPaymentStarted(): void
+    {
+        $requestStack = new RequestStack();
+        $requestStack->push($this->jsonRequest('POST', '/api/v1/manage/orders/1/payment', [
+            'payment' => 'mock',
+        ]));
+        $this->injectDependencies($requestStack);
+
+        $order = $this->createMock(\App\Trade\Entity\Order::class);
+        $order->method('getStatus')->willReturn('confirmed');
+        $this->service->method('get')->with(['id' => 1])->willReturn($order);
+        $this->workflow->method('can')->with($order, 'pay')->willReturn(true);
+        $this->service->method('createPayment')->willReturn(new PaymentResult($this->createMock(Invoice::class), 'pending'));
+
+        $response = $this->controller->paymentAction($requestStack->getCurrentRequest(), 1);
+
+        self::assertSame(200, $response->getStatusCode());
+        $body = json_decode((string) $response->getContent(), true);
+        self::assertSame('Payment started', $body['message']);
+    }
+
+    public function testPaymentActionReturnsErrorWhenCreatePaymentFails(): void
+    {
+        $requestStack = new RequestStack();
+        $requestStack->push($this->jsonRequest('POST', '/api/v1/manage/orders/1/payment', []));
+        $this->injectDependencies($requestStack);
+
+        $order = $this->createMock(\App\Trade\Entity\Order::class);
+        $order->method('getStatus')->willReturn('confirmed');
+        $this->service->method('get')->with(['id' => 1])->willReturn($order);
+        $this->workflow->method('can')->with($order, 'pay')->willReturn(true);
+        $this->service->method('createPayment')->willThrowException(new \RuntimeException('gateway down'));
+
+        $response = $this->controller->paymentAction($requestStack->getCurrentRequest(), 1);
+
+        self::assertSame(400, $response->getStatusCode());
+        $body = json_decode((string) $response->getContent(), true);
+        self::assertSame('gateway down', $body['message']);
+    }
+
+    // ===== fulfillAction failure path =====
+
+    public function testFulfillActionReturnsErrorWhenFulfillFails(): void
+    {
+        $requestStack = new RequestStack();
+        $requestStack->push($this->jsonRequest('POST', '/api/v1/manage/orders/1/fulfill', [
+            'trackingNumber' => 'TRACK-1',
+        ]));
+        $this->injectDependencies($requestStack);
+        $this->enableTransaction();
+
+        $order = $this->createMock(\App\Trade\Entity\Order::class);
+        $order->method('getStatus')->willReturn('paid');
+        $this->service->method('get')->with(['id' => 1])->willReturn($order);
+        $this->workflow->method('can')->with($order, 'fulfill')->willReturn(true);
+        $this->service->method('fulfill')->willThrowException(new \RuntimeException('fulfill failed'));
+
+        $response = $this->controller->fulfillAction($requestStack->getCurrentRequest(), 1);
+
+        self::assertSame(400, $response->getStatusCode());
+        $body = json_decode((string) $response->getContent(), true);
+        self::assertSame('fulfill failed', $body['message']);
+    }
+
+    // ===== refundAction wallet paths =====
+
+    public function testRefundActionReturnsErrorWhenSystemWalletIdMissing(): void
+    {
+        $requestStack = new RequestStack();
+        $requestStack->push($this->jsonRequest('POST', '/api/v1/manage/orders/1/refund', [
+            'reason' => 'customer request',
+        ]));
+        $this->injectDependencies($requestStack);
+
+        $order = $this->createMock(\App\Trade\Entity\Order::class);
+        $order->method('getStatus')->willReturn('completed');
+        $this->service->method('get')->with(['id' => 1])->willReturn($order);
+        $this->workflow->method('can')->with($order, 'refund')->willReturn(true);
+
+        $response = $this->controller->refundAction($requestStack->getCurrentRequest(), 1);
+
+        self::assertSame(400, $response->getStatusCode());
+        $body = json_decode((string) $response->getContent(), true);
+        self::assertSame('systemWalletId is required.', $body['message']);
+    }
+
+    public function testRefundActionReturnsSuccessWhenWalletRefundSucceeds(): void
+    {
+        $requestStack = new RequestStack();
+        $requestStack->push($this->jsonRequest('POST', '/api/v1/manage/orders/1/refund', [
+            'reason' => 'customer request',
+            'systemWalletId' => 1,
+        ]));
+        $this->injectDependencies($requestStack);
+        $this->enableTransaction();
+
+        $order = $this->createMock(\App\Trade\Entity\Order::class);
+        $order->method('getStatus')->willReturn('completed');
+        $this->service->method('get')->with(['id' => 1])->willReturn($order);
+        $this->workflow->method('can')->with($order, 'refund')->willReturn(true);
+
+        $response = $this->controller->refundAction($requestStack->getCurrentRequest(), 1);
+
+        self::assertSame(200, $response->getStatusCode());
+        $body = json_decode((string) $response->getContent(), true);
+        self::assertSame('Refund processed', $body['message']);
+    }
+
+    // ===== doTransitionAction (documented bug) =====
+
+    public function testDoTransitionDoesNotForwardArbitraryFieldsToUpdate(): void
+    {
+        // KNOWN BUG: doTransitionAction() (src/Trade/Controller/Manage/OrderController.php:329)
+        // forwards the raw request body to OrderService::update(), and BaseService::update()
+        // applies ANY settable property (e.g. totalAmount, currency, trackingNumber) via the
+        // serializer. Unlike updateAction() — which whitelists notes/metadata — an admin can
+        // therefore mutate order totals etc. through the /do/{transition} endpoint.
+        $this->markTestSkipped(
+            'Known bug (src/Trade/Controller/Manage/OrderController.php:329): doTransitionAction '
+            . 'forwards arbitrary request fields to update(), so totalAmount/status can be mutated '
+            . 'through /do/{transition}. See docs/issues/coverage-2026-08-09/trade-controllers.md.'
+        );
+
+        $requestStack = new RequestStack();
+        $requestStack->push($this->jsonRequest('POST', '/api/v1/manage/orders/1/do/complete', [
+            'reason' => 'note',
+            'totalAmount' => 1,
+        ]));
+        $this->injectDependencies($requestStack);
+        $this->enableTransaction();
+
+        $order = $this->createMock(\App\Trade\Entity\Order::class);
+        $order->method('getStatus')->willReturn('fulfilled');
+        $this->service->method('get')->with(['id' => 1])->willReturn($order);
+        $this->workflow->method('can')->with($order, 'complete')->willReturn(true);
+
+        $captured = null;
+        $this->service->method('update')->willReturnCallback(function ($object, $data) use (&$captured) {
+            $captured = $data;
+
+            return $object;
+        });
+
+        $response = $this->controller->doTransitionAction($requestStack->getCurrentRequest(), 1, 'complete');
+
+        self::assertSame(200, $response->getStatusCode());
+        self::assertIsArray($captured);
+        self::assertArrayNotHasKey('totalAmount', $captured);
     }
 }

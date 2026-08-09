@@ -60,9 +60,74 @@ final class StoreMembershipServiceTest extends TestCase
         $service->requireAuthorization($store, '47d07ad3-7e6e-4bfb-aea3-87bdb0e4de57');
     }
 
-    private function createContainer(StoreMembershipRepository $repository): ContainerInterface
+    public function testGrantRejectsBlankUserUuid(): void
     {
+        $repository = $this->createMock(StoreMembershipRepository::class);
+        $service = new StoreMembershipService($this->createContainer($repository), $repository);
+        $store = new Store('xuhui', 'Xuhui', 'Asia/Shanghai');
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Store membership user UUID is required.');
+        $service->grant($store, '   ', StoreMembership::ROLE_MANAGER);
+    }
+
+    public function testGrantRequiresPersistedStore(): void
+    {
+        $repository = $this->createMock(StoreMembershipRepository::class);
+        $service = new StoreMembershipService($this->createContainer($repository), $repository);
+        $store = new Store('xuhui', 'Xuhui', 'Asia/Shanghai');
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Store must be persisted before granting membership.');
+        $service->grant($store, '47d07ad3-7e6e-4bfb-aea3-87bdb0e4de57', StoreMembership::ROLE_MANAGER);
+    }
+
+    public function testGrantCreatesNewMembershipWhenNoneExists(): void
+    {
+        $store = new Store('xuhui', 'Xuhui', 'Asia/Shanghai');
+        $this->assignStoreId($store, 7);
+        $repository = $this->createMock(StoreMembershipRepository::class);
+        $repository->method('findForStoreAndUser')->willReturn(null);
         $entityManager = $this->createMock(EntityManagerInterface::class);
+        $entityManager->method('getRepository')->with(StoreMembership::class)->willReturn($repository);
+        $entityManager->method('getReference')->with(Store::class, 7)->willReturn($store);
+        $entityManager->expects(self::once())->method('persist')->with(self::isInstanceOf(StoreMembership::class));
+        $service = new StoreMembershipService($this->createContainer($repository, $entityManager), $repository);
+
+        $membership = $service->grant($store, '47d07ad3-7e6e-4bfb-aea3-87bdb0e4de57', StoreMembership::ROLE_MANAGER);
+
+        self::assertSame(StoreMembership::ROLE_MANAGER, $membership->getRole());
+        self::assertSame($store, $membership->getStore());
+    }
+
+    public function testGrantUpdatesExistingMembership(): void
+    {
+        $store = new Store('xuhui', 'Xuhui', 'Asia/Shanghai');
+        $this->assignStoreId($store, 7);
+        $existing = new StoreMembership($store, '47d07ad3-7e6e-4bfb-aea3-87bdb0e4de57', StoreMembership::ROLE_CLERK);
+        $existing->revoke();
+        $repository = $this->createMock(StoreMembershipRepository::class);
+        $repository->method('findForStoreAndUser')->with($store, '47d07ad3-7e6e-4bfb-aea3-87bdb0e4de57')->willReturn($existing);
+        $entityManager = $this->createMock(EntityManagerInterface::class);
+        $entityManager->method('getRepository')->with(StoreMembership::class)->willReturn($repository);
+        $entityManager->method('getReference')->with(Store::class, 7)->willReturn($store);
+        $service = new StoreMembershipService($this->createContainer($repository, $entityManager), $repository);
+
+        $granted = $service->grant($store, '47d07ad3-7e6e-4bfb-aea3-87bdb0e4de57', StoreMembership::ROLE_MANAGER);
+
+        self::assertSame($existing, $granted);
+        self::assertSame(StoreMembership::ROLE_MANAGER, $existing->getRole());
+        self::assertTrue($existing->isActive());
+    }
+
+    private function assignStoreId(Store $store, int $id): void
+    {
+        (new \ReflectionProperty(Store::class, 'id'))->setValue($store, $id);
+    }
+
+    private function createContainer(StoreMembershipRepository $repository, ?EntityManagerInterface $entityManager = null): ContainerInterface
+    {
+        $entityManager ??= $this->createMock(EntityManagerInterface::class);
         $entityManager->method('getRepository')->with(StoreMembership::class)->willReturn($repository);
         $container = $this->createMock(ContainerInterface::class);
         $container->method('has')->willReturn(true);

@@ -29,6 +29,8 @@ final class SingleCreateAndUpdateApiViewMixinTest extends TestCase
         $controller = new class($service, $config) extends RestController {
             use ApiView, SingleCreateAndUpdateApiViewMixin;
 
+            protected $service;
+
             public array $requiredCreateProperties = [];
             public array $acceptedCreateProperties = [];
             public array $requiredUpdateProperties = [];

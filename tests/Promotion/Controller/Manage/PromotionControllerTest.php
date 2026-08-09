@@ -76,7 +76,6 @@ final class PromotionControllerTest extends TestCase
 
         $ref = new \ReflectionClass($controller);
         $prop = $ref->getProperty('requiredCreateProperties');
-        $prop->setAccessible(true);
         $value = $prop->getValue($controller);
 
         self::assertContains('name', $value);
@@ -92,11 +91,9 @@ final class PromotionControllerTest extends TestCase
         $ref = new \ReflectionClass($controller);
 
         $createProp = $ref->getProperty('acceptedCreateProperties');
-        $createProp->setAccessible(true);
         $createValue = $createProp->getValue($controller);
 
         $updateProp = $ref->getProperty('acceptedUpdateProperties');
-        $updateProp->setAccessible(true);
         $updateValue = $updateProp->getValue($controller);
 
         self::assertContains('config', $createValue);
