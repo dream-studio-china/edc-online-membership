@@ -35,6 +35,9 @@
 - **系統自省**：實體元資料和路由匯出介面（`/system/*`）
 - **促銷 DSL 引擎**：自訂詞法/語法/求值器，支援 7 種促銷類型（滿減、折扣、贈品、第 N 件折扣、階梯、免運費、會員折扣）。作為標籤定價計算器（優先級 60）運行在 Trade 價格管道彙總小計之後。支援會員定向 SKU 折扣、多門店路由、全平台活動，以及 `best_price` 衝突模式（模擬候選活動並選擇最低總價）。
 - **Profile 實體**：用戶註冊時透過 Doctrine 監聽器自動建立。包含等級（青銅→鑽石）、暱稱、頭像、元資料。積分委託給 Wallet（currency=POINTS）。
+- **健康檢查**：`/health/live`（存活）與 `/health/ready`（DB + 可選 Redis 就緒）公開探針，供 Docker healthcheck 使用
+- **速率限制**：登入/註冊/OTP/微信登入/支付端點按用戶端 IP 滑動窗口限流（429 + `Retry-After`）
+- **Prometheus 指標**：`/metrics` 文本格式——每 worker HTTP 計數器/耗時直方圖 + 即時 DB 指標（outbox 積壓、失敗訊息佇列）
 - **Docker Compose**：MySQL 8 + Mailpit 開發環境
 
 ## 技術棧
@@ -47,7 +50,7 @@
 | 資料庫 | MySQL 8（Docker/生產）/ SQLite（測試） |
 | 鑑權 | JWT (RS256) + OTP (簡訊) |
 | API 文件 | NelmioApiDocBundle (OpenAPI 3) |
-| 測試 | PHPUnit `^12.5` |
+| 測試 | PHPUnit `^12.5`（支援 paratest 並行） |
 | 前端 | [crud-admin](https://github.com/immane/crud-admin) — 配置驅動的管理後台 |
 | 文件 | MkDocs Material (GitHub Pages) |
 
@@ -68,8 +71,11 @@
 │   ├── Inventory/                 # 庫存模組（物料、庫存、配方、預留）
 │   └── Identity/                 # 鑑權模組
 ├── config/                       # Symfony 配置
-├── migrations/                   # Doctrine 遷移（12 個版本）
-├── tests/                        # 1711 測試、5652 斷言、91%+ 覆蓋率
+├── migrations/                   # Doctrine 遷移（20 個版本）
+├── tests/                        # 預設套件 2221 tests，按層組織：
+│   ├── UnitTest/                 #   純單元測試（無 kernel/DB）
+│   ├── Integration/              #   kernel + DB + HTTP 測試及共享 helper
+│   └── LowValue/                 #   棄用/低價值測試，預設運行排除
 ├── translations/                 # 多語言翻譯檔案
 └── compose.yaml                  # Docker Compose
 ```
@@ -91,13 +97,28 @@
 
 ## 測試
 
-**1711 個測試 · 5652 個斷言 · 91%+ 行覆蓋率**
+**預設套件 2221 tests · 7936 assertions**（另有 477 低價值測試預設排除）。
+
+串行執行所有測試：
 
 ```bash
 ./vendor/bin/phpunit
 ```
 
-含覆蓋率報告：
+並行執行（約 2-3 倍加速）：
+
+```bash
+PARATEST=1 ./vendor/bin/paratest --processes 8 --runner WrapperRunner
+```
+
+顯式執行被排除的低價值測試：
+
+```bash
+./vendor/bin/phpunit --group low-value
+```
+
+含覆蓋率報告（CI 門檻 90%）：
+
 ```bash
 XDEBUG_MODE=coverage ./vendor/bin/phpunit --coverage-text
 ```

@@ -144,7 +144,11 @@
 │   ├── issues/                   # Audit & coverage reports (coverage-2026-08-09/, test-audit-2026-08-09/)
 │   └── openapi/                       # endpoints.yaml + order/payment frontend flow docs
 ├── scripts/tests/                # API smoke, Store orchestration smoke, trade workflow scripts
-├── tests/                        # 300 PHPUnit test files: 2686 tests, 9264 assertions, 99.46% line coverage
+├── tests/                        # 303 PHPUnit test files, organized by layer:
+│   ├── UnitTest/                 #   189 files — pure unit tests (no kernel/DB), App\Tests\UnitTest\...
+│   ├── Integration/              #   71 files — kernel/DB/HTTP tests + helpers (DatabaseBootstrapTrait, IntegrationWebTestCase), App\Tests\Integration\...
+│   └── LowValue/                 #   43 files — deprecated/low-value tests, excluded from default run, App\Tests\LowValue\...
+│                                 主套件 = UnitTest + Integration（2221 tests）；低价值可 --group low-value 显式运行
 ├── README.md                     # English README
 ├── README.zh-cn.md               # Chinese (Simplified) README
 ├── README.zh-hant.md             # Chinese (Traditional) README
@@ -703,29 +707,22 @@ Enriches all endpoints (90+):
 ## 17. Testing
 
 - **Framework**: PHPUnit 12.5 (brianium/paratest available for parallel runs)
+- **Layout**: tests are organized by layer, not by module — `tests/UnitTest/` (pure unit tests, no kernel/DB), `tests/Integration/` (kernel + DB + HTTP tests, plus helpers `DatabaseBootstrapTrait`/`IntegrationWebTestCase`/`IntegrationKernelTestCase`/`StoreTradeFlowTestCase`), `tests/LowValue/` (deprecated/low-value tests excluded from the default run). Namespace `App\Tests\` mirrors the layout: `App\Tests\UnitTest\...`, `App\Tests\Integration\...`, `App\Tests\LowValue\...`. Test-support resources: `tests/bootstrap.php` and JWT test keys under `tests/Identity/Security/` (referenced by `.env.test` and CI).
+- **Low-value exclusion mechanism**: `phpunit.dist.xml` defines the "Project Test Suite" (UnitTest + Integration dirs) and a separate "Low Value" suite; a global `<exclude><group>low-value</group></exclude>` removes every test carrying `#[Group('low-value')]` (class- or method-level) from the default run — covering both whole LowValue files and individual flagged methods inside kept files (from the 2026-08-09 test audit). Run them explicitly with `php bin/phpunit --group low-value` (477 tests).
 - **DB**: local tests default to SQLite `var/test.db` (paratest uses per-worker SQLite files); CI tests job runs on **PostgreSQL 16**; `migrations.yml` validates the migration chain on **MySQL 8.4**
 - **Coverage**: 90% minimum (enforced in CI), currently **99.46% lines (8511/8557)** from latest local Xdebug run (2026-08-09)
-- **Test count**: **2686 tests**, **9264 assertions** (300 test files), suite runtime ≈ 52 s serial
-- **Skipped**: 38 tests — each is `markTestSkipped` because it documents a real `src/` bug (see §23 and `docs/issues/coverage-2026-08-09/`); **never delete them** without fixing the underlying bug first
-- **PHPUnit Notices**: 186 pre-existing mock/no-expectation noise (does not fail the run); new tests should avoid adding more
+- **Test count**: **2221 tests / 7936 assertions** in the default suite (UnitTest + Integration), plus **477 low-value tests** excluded by default; 34 skipped tests document real `src/` bugs (see §23 and `docs/issues/coverage-2026-08-09/`); **never delete or un-skip them** without fixing the underlying bug
+- **Suite runtime**: serial ≈ 59 s (kernel-bootstrapping integration tests dominate). Run parallel with paratest for ~2.3× speedup: `PARATEST=1 php vendor/bin/paratest --processes 8 --runner WrapperRunner` (≈26 s; per-worker SQLite isolation is handled by `tests/bootstrap.php`)
+- **PHPUnit Notices**: 160 pre-existing mock/no-expectation noise (does not fail the run); new tests should avoid adding more
 - **Memory**: `phpunit.dist.xml` sets test-process `memory_limit=512M` (OpenAPI integration builds the full spec in-process)
 - **Test-quality contract**: `docs/testing/crud-skeleton-production/` (TEST_STRATEGY, TEST_MATRIX, BUSINESS_INVARIANTS, FAILURE_MODES, PRODUCTION_VALIDATION) governs what evidence a change requires before merge/release
 - **Static analysis**: PHPStan Level 8 with zero errors in its configured scope (`src/`, excluding optional SDK code, exception classes, and documented false-positive suppressions). Generic contract via `@template TEntity` on `BaseServiceInterface`/`BaseService` + `@extends` on 18 concrete service pairs. Rector automates Doctrine Collection/Repository PHPDoc with `composer rector:types`; CI enforces `composer rector:types:check` as a dry-run.
 - **Local PHP note**: default `php` may point to PHP 7.4; use Homebrew PHP 8.5 at `/opt/homebrew/opt/php@8.5/bin/php` for local Symfony/PHPUnit commands.
 - **HTML coverage report**: `XDEBUG_MODE=coverage ./vendor/bin/phpunit --coverage-html var/coverage`
-- **Key test groups** (per-module distribution from 2026-08-09 baseline):
-  - `tests/Trade/`: 391 tests (16.8 s — slowest group; full-flow HTTP tests overlap `OrderWorkflowApiTest`, see test-audit)
-  - `tests/Promotion/`: 360 tests (Entity, DSL lexer/parser/evaluator, Strategies, Engine, Calculator, App/Manage controllers, real SQLite pipeline integration with Doctrine + OrderService)
-  - `tests/Core/`: 638 tests (BaseService traits, RestController, Parser, Serializer, LocaleListener, Utils, System controllers — all PHPStan Level 8 compliant)
-  - `tests/Identity/`: 281 tests (Auth, OTP, Token, Black box, UserService, UserController, UserApiIntegration, Profile entity, ProfileController)
-  - `tests/Integration/`: 158 tests (13.1 s — second-slowest; cross-module kernel-bootstrapping tests)
-  - `tests/Store/`: 153 tests (entities/services, Trade → Store → Trade integration, outbox/inbox, concurrency)
-  - `tests/Wallet/`: 173 tests (Entity, Integration, Transfer Service, WalletService, Payment/Gateway, API regression)
-  - `tests/Common/`: 129 tests (Entity, Integration, Batch update, media upload/delete, Picture CRUD)
-  - `tests/Inventory/`: 109 tests (Entity, Service, Integration, Message, API, Handler)
-  - `tests/Wechat/`: 78 tests (Entity, Service, AuthService, Payment/Gateway, Controller, Repository)
-  - `tests/Payment/`: 76 tests (Gateway, Registry, Adjustment/Provider, Invoice, Multi-gateway integration)
-  - `tests/Storage/`: 20 tests (LocalStorage, QiniuStorage stub-isolated subprocess tests, registry, Qiniu settings command)
+- **Key test groups** (after the 2026-08-09 layer re-organization; module folders now live under each layer):
+  - `tests/UnitTest/`: 189 files — pure unit tests (entities, utils, DSL, strategies, mock-based services/controllers, workflow state machine, listeners)
+  - `tests/Integration/`: 71 files — kernel+DB+HTTP (module integration flows, API regressions, outbox/inbox, concurrency, cross-module flows, health/metrics/rate-limit endpoints) plus the 4 shared helpers; Trade integration remains the slowest area (see test-audit)
+  - `tests/LowValue/`: 43 files — flagged by the 2026-08-09 audit as duplicates/coverage-chasing; excluded from default runs (`--group low-value` to execute)
   - `scripts/tests/api-smoke.sh`: real HTTP auth/catalog/wallet/order/payment smoke; strict 401/403/404 checks
   - `scripts/tests/store-smoke.sh`: real HTTP Store-scoped order, Trade Outbox, Messenger consumer, Store Outbox, and `store_accepted` assertion
   - `scripts/tests/inventory-smoke.sh`: Inventory-scoped smoke (only when `INVENTORY_ENABLED=1`)

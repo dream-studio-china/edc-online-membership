@@ -77,6 +77,9 @@ Compared with plain generated boilerplate, it provides:
 - **Promotion DSL Engine**: Custom lexer/parser/evaluator for human-readable promotion rules with 7 promotion types (full_reduction, discount, gift, nth_discount, tiered, free_shipping, member_discount). Tagged pricing calculator (priority=60) runs in the Trade price pipeline after the subtotal is aggregated. Supports member-targeted SKU discounts, multi-store routing, global campaigns, and `best_price` conflict mode with simulated candidate comparison.
 - **Profile Entity**: Auto-created on User registration via Doctrine listener. Carries level (bronze→diamond), nickname, avatar, metadata. Points delegated to Wallet (currency=POINTS).
 - **Quality Gates**: PHPUnit coverage, PHPStan Level 8, and Rector type-rule checks in CI.
+- **Health Checks**: `/health/live` (liveness) and `/health/ready` (DB + optional Redis readiness) — public probes used by the Docker healthcheck.
+- **Rate Limiting**: per-client-IP sliding-window limits on login, registration, OTP, WeChat login and payment endpoints (429 + `Retry-After`).
+- **Prometheus Metrics**: `/metrics` in text exposition format — per-worker HTTP counters/duration histogram plus live DB gauges (outbox backlog, failed messenger queue).
 - **Docker Compose**: MySQL 8 + Mailpit for development.
 
 ## Tech Stack
@@ -89,7 +92,7 @@ Compared with plain generated boilerplate, it provides:
 | Database | MySQL 8 (Docker/prod) / SQLite (test) |
 | Auth | JWT (RS256) + OTP (SMS) |
 | API Docs | NelmioApiDocBundle (OpenAPI 3) |
-| Testing | PHPUnit `^12.5` |
+| Testing | PHPUnit `^12.5` (+ paratest for parallel runs) |
 | Static analysis | PHPStan Level 8 + Rector type rules |
 | Frontend | [crud-admin](https://github.com/immane/crud-admin) — configuration-driven admin panel |
 | Docs | MkDocs Material (GitHub Pages) |
@@ -160,11 +163,6 @@ See `composer.json` for the full dependency list.
 │   │   │   ├── LocalStorage.php       # Local filesystem (public/uploads/)
 │   │   │   └── QiniuStorage.php       # Qiniu Kodo CDN
 │   │   └── Resources/config/     #   services_storage.yaml
-│   ├── Storage/                  # Storage module (pluggable file upload drivers)
-│   │   ├── Service/              #   MediaStorageInterface, MediaStorageRegistry
-│   │   │   ├── LocalStorage.php       # Local filesystem (public/uploads/)
-│   │   │   └── QiniuStorage.php       # Qiniu Kodo CDN
-│   │   └── Resources/config/     #   services_storage.yaml
 │   ├── Promotion/                # Promotion module (DSL engine)
 │   │   ├── Controller/App/       #   Read-only promotion endpoints
 │   │   ├── Controller/Manage/    #   Admin promotion CRUD
@@ -190,14 +188,19 @@ See `composer.json` for the full dependency list.
 │       ├── Security/             #   JwtAuthenticator, TokenManager
 │       └── Service/              #   UserService (register, password management), OtpService, SMS providers
 ├── config/                       # Symfony configuration
-│   └── packages/                 #   Doctrine, Security, Workflow, Serializer, etc.
-├── migrations/                   # Doctrine migrations (12 versions)
-├── tests/                        # 1711 PHPUnit tests, 5652 assertions, 91%+ coverage
+│   └── packages/                 #   Doctrine, Security, Workflow, Serializer, RateLimiter, etc.
+├── migrations/                   # Doctrine migrations (20 versions)
+├── tests/                        # 2221 PHPUnit tests in the default suite, organized by layer:
+│   ├── UnitTest/                 #   Pure unit tests (no kernel/DB)
+│   ├── Integration/              #   Kernel + DB + HTTP tests and shared helpers
+│   └── LowValue/                 #   Deprecated/low-value tests, excluded from default runs
 ├── docs/                         # Project documentation
 │   ├── design/                   #   Design contracts (system, API, data, module, controller)
 │   │   └── bundles/              #   Per-module design documents
+│   ├── testing/                  #   Test-quality contract (strategy, matrix, invariants)
+│   ├── issues/                   #   Audit and coverage reports
 │   └── ai/                       #   AI context snapshot
-├── compose.yaml                  # MySQL 8
+├── compose.yaml                  # App, nginx, MySQL 8, Redis, Mailpit (+ worker, scheduler)
 ├── compose.override.yaml         # Port mapping + Mailpit
 └── mkdocs.yml                    # MkDocs Material configuration
 ```
@@ -518,6 +521,14 @@ Resources: `categories`, `contents`, `tags`, `comments`, `pages`, `media`, `sett
 | GET | `/system/entities/{entityName}` | Entity field + association metadata |
 | GET | `/system/router` | List all registered routes |
 
+### Platform Operations (public, no auth)
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/health/live` | Liveness probe |
+| GET | `/health/ready` | Readiness probe (database required, Redis optional) |
+| GET | `/metrics` | Prometheus metrics (text format) |
+
 ### Example request
 
 ```bash
@@ -630,18 +641,34 @@ Note on controller construction: Controllers extending `RestController` receive 
 
 ## Testing
 
-**1711 tests · 5652 assertions · 91%+ line coverage**
+**2221 tests · 7936 assertions** in the default suite (plus **477 low-value tests** excluded by default). Tests are organized by layer under `tests/`:
 
-Run all tests:
+- `tests/UnitTest/` — pure unit tests (no kernel/DB), namespace `App\Tests\UnitTest\...`
+- `tests/Integration/` — kernel + DB + HTTP tests and shared helpers (`DatabaseBootstrapTrait`, `IntegrationWebTestCase`), namespace `App\Tests\Integration\...`
+- `tests/LowValue/` — deprecated/low-value tests flagged by the test audit; excluded from default runs, execute with `--group low-value`
+
+Run all tests (serial):
 
 ```bash
 ./vendor/bin/phpunit
 ```
 
+Run in parallel (≈2–3× faster, per-worker SQLite isolation is built in):
+
+```bash
+PARATEST=1 ./vendor/bin/paratest --processes 8 --runner WrapperRunner
+```
+
 Run a single test file:
 
 ```bash
-./vendor/bin/phpunit tests/Core/Service/BaseServiceUnitTest.php
+./vendor/bin/phpunit tests/UnitTest/Core/Service/BaseServiceInfrastructureTraitTest.php
+```
+
+Run the excluded low-value tests explicitly:
+
+```bash
+./vendor/bin/phpunit --group low-value
 ```
 
 With code coverage report (CI enforces 90% threshold):
@@ -673,19 +700,15 @@ PHPStan runs at Level 8 over its configured `src/` scope. Rector's CI check is
 limited to Doctrine Collection/Repository PHPDoc rules; `composer rector` is a
 broader opt-in refactoring command and should be reviewed before applying it.
 
-### Test groups
+### Test coverage by layer
 
-| Group | Count | What it covers |
-|-------|-------|----------------|
-| Common | 69+ | CMS entities, media upload/delete, batch update |
-| Trade | 171+ | Orders, pricing pipeline, workflow, app order creation with metadata |
-| Wallet | 105+ | Transfers, wallet service, payment gateway, balance audit API |
-| Payment | 60+ | Gateways, registry, adjustments, invoices, multi-gateway integration |
-| Identity | 116+ | Auth, OTP, tokens, UserService, UserController, integration, Profile entity/controller |
-| Promotion | 320+ | Entities, DSL lexer/parser/evaluator, strategies, engine, calculator, controllers, real SQLite pipeline integration |
-| Wechat | 59+ | Auth, service, payment gateway, controller, repository |
-| Core | 70+ | BaseService, RestController, expression parser, serializer, system controllers |
-| Integration | 20+ | Cross-module integration tests |
+| Layer | Approx. count | What it covers |
+|-------|---------------|----------------|
+| UnitTest | 189 files | Entities, utils, DSL engine, promotion strategies, mock-based services/controllers, workflow state machine |
+| Integration | 71 files | Cross-module flows, API regressions, outbox/inbox idempotency, concurrency, health/metrics/rate-limit endpoints |
+| LowValue | 43 files | Audit-flagged duplicates and coverage-chasing tests (excluded by default) |
+
+See [docs/testing/crud-skeleton-production/](docs/testing/crud-skeleton-production/README.md) for the test-quality contract and [docs/issues/test-audit-2026-08-09/](docs/issues/test-audit-2026-08-09/README.md) for the audit that flagged the low-value tests.
 
 ## Docker Deployment
 
