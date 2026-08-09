@@ -67,4 +67,18 @@ final class HealthControllerTest extends IntegrationWebTestCase
         // The internal exception message must not leak to anonymous callers.
         self::assertStringNotContainsString('connection refused', (string) $response->getContent());
     }
+
+    public function testReadyDoesNotExposeRedisConnectionErrors(): void
+    {
+        $client = static::createClient();
+        $connection = $client->getContainer()->get(Connection::class);
+        $controller = new HealthController($connection, 'redis://127.0.0.1:1', new NullLogger());
+
+        $response = $controller->ready();
+
+        self::assertSame(503, $response->getStatusCode());
+        $body = json_decode((string) $response->getContent(), true, 512, JSON_THROW_ON_ERROR);
+        self::assertSame('error', $body['checks']['redis']);
+        self::assertStringNotContainsString('connection failed', (string) $response->getContent());
+    }
 }

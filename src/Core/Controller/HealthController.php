@@ -97,7 +97,13 @@ final class HealthController
         $errstr = '';
         $socket = @fsockopen($host, $port, $errno, $errstr, 0.5);
         if ($socket === false) {
-            return 'error: connection failed (' . $errstr . ')';
+            $this->logger->error('Health check: Redis probe failed', [
+                'host' => $host,
+                'port' => $port,
+                'error' => $errstr,
+            ]);
+
+            return 'error';
         }
 
         try {
@@ -107,7 +113,9 @@ final class HealthController
                 return 'ok';
             }
 
-            return 'error: unexpected reply';
+            $this->logger->error('Health check: Redis probe returned an unexpected reply');
+
+            return 'error';
         } finally {
             fclose($socket);
         }

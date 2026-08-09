@@ -185,7 +185,7 @@
 ├── config/                       # Symfony 配置
 │   └── packages/                 #   Doctrine、Security、Workflow、Serializer 等
 ├── migrations/                   # Doctrine 迁移（20 个版本）
-├── tests/                        # 默认套件 2222 个 PHPUnit 测试，按层组织：
+├── tests/                        # 默认套件 2224 个 PHPUnit 测试，按层组织：
 │   ├── UnitTest/                 #   纯单元测试（无 kernel/DB）
 │   ├── Integration/              #   kernel + DB + HTTP 测试及共享 helper
 │   └── LowValue/                 #   弃用/低价值测试，默认运行排除
@@ -631,7 +631,7 @@ class ContentController extends RestController
 
 ## 测试
 
-**默认套件 2222 个测试 · 7942 个断言**（另有 **477 个低价值测试** 默认排除）。测试按层组织在 `tests/` 下：
+**默认套件 2224 个测试 · 7951 个断言**（另有 **477 个低价值测试** 默认排除）。测试按层组织在 `tests/` 下：
 
 - `tests/UnitTest/` — 纯单元测试（无 kernel/DB），命名空间 `App\Tests\UnitTest\...`
 - `tests/Integration/` — kernel + DB + HTTP 测试及共享 helper（`DatabaseBootstrapTrait`、`IntegrationWebTestCase`），命名空间 `App\Tests\Integration\...`
