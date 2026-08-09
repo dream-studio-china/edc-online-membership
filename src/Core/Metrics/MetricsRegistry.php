@@ -131,11 +131,11 @@ final class MetricsRegistry
             $lines[] = sprintf('# HELP %s %s', $name, $meta['help']);
             $lines[] = sprintf('# TYPE %s histogram', $name);
             foreach ($h['buckets'] as $i => $bound) {
-                $lines[] = sprintf('%s_bucket{le="%s"} %d', $key, $this->format($bound), $h['counts'][$i]);
+                $lines[] = sprintf('%s %d', $this->histogramKey($key, '_bucket', $this->format($bound)), $h['counts'][$i]);
             }
-            $lines[] = sprintf('%s_bucket{le="+Inf"} %d', $key, $h['count']);
-            $lines[] = sprintf('%s_sum %s', $key, $this->format($h['sum']));
-            $lines[] = sprintf('%s_count %d', $key, $h['count']);
+            $lines[] = sprintf('%s %d', $this->histogramKey($key, '_bucket', '+Inf'), $h['count']);
+            $lines[] = sprintf('%s %s', $this->histogramKey($key, '_sum'), $this->format($h['sum']));
+            $lines[] = sprintf('%s %d', $this->histogramKey($key, '_count'), $h['count']);
         }
 
         return implode("\n", $lines) . "\n";
@@ -163,6 +163,23 @@ final class MetricsRegistry
         $brace = strpos($key, '{');
 
         return $brace === false ? $key : substr($key, 0, $brace);
+    }
+
+    private function histogramKey(string $key, string $suffix, ?string $bucket = null): string
+    {
+        $name = $this->nameOf($key);
+        $labels = substr($key, strlen($name));
+        $sample = $name . $suffix;
+
+        if ($bucket === null) {
+            return $sample . $labels;
+        }
+
+        $bucketLabel = 'le="' . $bucket . '"';
+
+        return $labels === ''
+            ? $sample . '{' . $bucketLabel . '}'
+            : $sample . substr($labels, 0, -1) . ',' . $bucketLabel . '}';
     }
 
     private function format(float $value): string
