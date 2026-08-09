@@ -6,6 +6,7 @@ namespace App\Core\Controller;
 
 use Doctrine\DBAL\Connection;
 use OpenApi\Attributes as OA;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -24,6 +25,7 @@ final class HealthController
     public function __construct(
         private readonly Connection $connection,
         private readonly string $otpRedisDsn,
+        private readonly LoggerInterface $logger,
     ) {}
 
     #[OA\Get(
@@ -58,7 +60,9 @@ final class HealthController
             $this->connection->executeQuery('SELECT 1')->fetchOne();
             $checks['database'] = 'ok';
         } catch (\Throwable $e) {
-            $checks['database'] = 'error: ' . $e->getMessage();
+            // Never leak driver details to anonymous callers; log them instead.
+            $this->logger->error('Health check: database probe failed', ['exception' => $e]);
+            $checks['database'] = 'error';
         }
 
         $checks['redis'] = $this->checkRedis();
@@ -93,7 +97,13 @@ final class HealthController
         $errstr = '';
         $socket = @fsockopen($host, $port, $errno, $errstr, 0.5);
         if ($socket === false) {
-            return 'error: connection failed (' . $errstr . ')';
+            $this->logger->error('Health check: Redis probe failed', [
+                'host' => $host,
+                'port' => $port,
+                'error' => $errstr,
+            ]);
+
+            return 'error';
         }
 
         try {
@@ -103,7 +113,9 @@ final class HealthController
                 return 'ok';
             }
 
-            return 'error: unexpected reply';
+            $this->logger->error('Health check: Redis probe returned an unexpected reply');
+
+            return 'error';
         } finally {
             fclose($socket);
         }

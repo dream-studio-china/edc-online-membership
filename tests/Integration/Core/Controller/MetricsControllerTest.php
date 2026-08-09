@@ -58,7 +58,10 @@ final class MetricsControllerTest extends IntegrationWebTestCase
 
         // Histogram family is registered by the MetricsListener.
         self::assertStringContainsString('# TYPE http_request_duration_seconds histogram', $content);
-        self::assertStringContainsString('_bucket{le="', $content);
+        self::assertStringContainsString(
+            'http_request_duration_seconds_bucket{route="system-entity-list",le="',
+            $content,
+        );
     }
 
     public function testMetricsDoesNotRecordItself(): void

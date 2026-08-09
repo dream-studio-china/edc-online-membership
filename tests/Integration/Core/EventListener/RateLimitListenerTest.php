@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\UnitTest\Core\EventListener;
+namespace App\Tests\Integration\Core\EventListener;
 
 use App\Core\EventListener\RateLimitListener;
 use App\Tests\Integration\IntegrationWebTestCase;

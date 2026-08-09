@@ -69,7 +69,7 @@ Symfony 8.1 ベースのプロダクション向け API スケルトン。再利
 │   └── Identity/                 # 認証モジュール
 ├── config/                       # Symfony 設定
 ├── migrations/                   # Doctrine マイグレーション（20 バージョン）
-├── tests/                        # デフォルトスイート 2221 tests、レイヤー別に編成:
+├── tests/                        # デフォルトスイート 2224 tests、レイヤー別に編成:
 │   ├── UnitTest/                 #   純ユニットテスト（kernel/DB なし）
 │   ├── Integration/              #   kernel + DB + HTTP テストおよび共有ヘルパー
 │   └── LowValue/                 #   廃止/低価値テスト（デフォルト実行から除外）
@@ -94,7 +94,7 @@ Symfony 8.1 ベースのプロダクション向け API スケルトン。再利
 
 ## テスト
 
-**デフォルトスイート 2221 tests · 7936 assertions**（低価値テスト 477 はデフォルト実行から除外）。テストは `tests/` 配下でレイヤー別に整理されています：
+**デフォルトスイート 2224 tests · 7951 assertions**（低価値テスト 477 はデフォルト実行から除外）。テストは `tests/` 配下でレイヤー別に整理されています：
 
 - `tests/UnitTest/` — 純ユニットテスト（kernel/DB なし）、名前空間 `App\Tests\UnitTest\...`
 - `tests/Integration/` — kernel + DB + HTTP テストおよび共有ヘルパー（`DatabaseBootstrapTrait`、`IntegrationWebTestCase`）、名前空間 `App\Tests\Integration\...`

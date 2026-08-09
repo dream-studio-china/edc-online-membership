@@ -82,8 +82,8 @@ composer rector:types:check
 # Run all tests (CI enforces 90% minimum coverage)
 XDEBUG_MODE=coverage vendor/bin/phpunit --coverage-text
 
-# Run tests for a specific module
-vendor/bin/phpunit tests/Trade/
+# Run tests for a specific module (layered suites)
+vendor/bin/phpunit tests/UnitTest/Trade/ tests/Integration/Trade/
 
 # Apply the focused Rector type rules when needed
 composer rector:types

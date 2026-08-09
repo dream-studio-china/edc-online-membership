@@ -103,39 +103,60 @@ final class MetricsRegistry
         $lines[] = '# TYPE app_info gauge';
         $lines[] = 'app_info{version="skeleton"} 1';
 
+        $counters = [];
         foreach ($this->counters as $key => $value) {
             $name = $this->nameOf($key);
             if ($name === 'app_info') {
                 continue;
             }
+            $counters[$name][$key] = $value;
+        }
+
+        foreach ($counters as $name => $samples) {
             $meta = self::METADATA[$name] ?? ['help' => $name, 'type' => 'counter'];
             $lines[] = sprintf('# HELP %s %s', $name, $meta['help']);
             $lines[] = sprintf('# TYPE %s counter', $name);
-            $lines[] = sprintf('%s %s', $key, $this->format($value));
+            foreach ($samples as $key => $value) {
+                $lines[] = sprintf('%s %s', $key, $this->format($value));
+            }
         }
 
+        $gauges = [];
         foreach ($this->gauges as $key => $value) {
             $name = $this->nameOf($key);
             if ($name === 'app_info') {
                 continue;
             }
+            $gauges[$name][$key] = $value;
+        }
+
+        foreach ($gauges as $name => $samples) {
             $meta = self::METADATA[$name] ?? ['help' => $name, 'type' => 'gauge'];
             $lines[] = sprintf('# HELP %s %s', $name, $meta['help']);
             $lines[] = sprintf('# TYPE %s gauge', $name);
-            $lines[] = sprintf('%s %s', $key, $this->format($value));
+            foreach ($samples as $key => $value) {
+                $lines[] = sprintf('%s %s', $key, $this->format($value));
+            }
         }
 
+        $histograms = [];
         foreach ($this->histograms as $key => $h) {
             $name = $this->nameOf($key);
+            $histograms[$name][$key] = $h;
+        }
+
+        foreach ($histograms as $name => $samples) {
             $meta = self::METADATA[$name] ?? ['help' => $name, 'type' => 'histogram'];
             $lines[] = sprintf('# HELP %s %s', $name, $meta['help']);
             $lines[] = sprintf('# TYPE %s histogram', $name);
-            foreach ($h['buckets'] as $i => $bound) {
-                $lines[] = sprintf('%s_bucket{le="%s"} %d', $key, $this->format($bound), $h['counts'][$i]);
+            foreach ($samples as $key => $h) {
+                foreach ($h['buckets'] as $i => $bound) {
+                    $lines[] = sprintf('%s %d', $this->histogramKey($key, '_bucket', $this->format($bound)), $h['counts'][$i]);
+                }
+                $lines[] = sprintf('%s %d', $this->histogramKey($key, '_bucket', '+Inf'), $h['count']);
+                $lines[] = sprintf('%s %s', $this->histogramKey($key, '_sum'), $this->format($h['sum']));
+                $lines[] = sprintf('%s %d', $this->histogramKey($key, '_count'), $h['count']);
             }
-            $lines[] = sprintf('%s_bucket{le="+Inf"} %d', $key, $h['count']);
-            $lines[] = sprintf('%s_sum %s', $key, $this->format($h['sum']));
-            $lines[] = sprintf('%s_count %d', $key, $h['count']);
         }
 
         return implode("\n", $lines) . "\n";
@@ -163,6 +184,23 @@ final class MetricsRegistry
         $brace = strpos($key, '{');
 
         return $brace === false ? $key : substr($key, 0, $brace);
+    }
+
+    private function histogramKey(string $key, string $suffix, ?string $bucket = null): string
+    {
+        $name = $this->nameOf($key);
+        $labels = substr($key, strlen($name));
+        $sample = $name . $suffix;
+
+        if ($bucket === null) {
+            return $sample . $labels;
+        }
+
+        $bucketLabel = 'le="' . $bucket . '"';
+
+        return $labels === ''
+            ? $sample . '{' . $bucketLabel . '}'
+            : $sample . substr($labels, 0, -1) . ',' . $bucketLabel . '}';
     }
 
     private function format(float $value): string
