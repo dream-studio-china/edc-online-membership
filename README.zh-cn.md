@@ -72,7 +72,10 @@
 - **系统自省**：实体元数据和路由导出接口（`/system/*`）。
 - **促销 DSL 引擎**：自定义词法/语法/求值器，支持 7 种促销类型（满减、折扣、赠品、第 N 件折扣、阶梯、免运费、会员折扣）。作为标签定价计算器（优先级 60）运行在 Trade 价格管道汇总小计之后。支持会员定向 SKU 折扣、多门店路由、全平台活动，以及 `best_price` 冲突模式（模拟候选活动并选择最低总价）。
 - **Profile 实体**：用户注册时通过 Doctrine 监听器自动创建。包含等级（青铜→钻石）、昵称、头像、元数据。积分委托给 Wallet（currency=POINTS）。
-- **完善的测试**：1711 个测试，5652 个断言，91%+ 行覆盖率。
+- **质量门禁**：CI 中执行 PHPUnit 覆盖率检查、PHPStan Level 8 与 Rector 类型规则检查。
+- **健康检查**：`/health/live`（存活探针）与 `/health/ready`（DB + 可选 Redis 就绪探针）——公开探针，用于 Docker healthcheck。
+- **速率限制**：登录、注册、OTP、微信登录与支付端点按客户端 IP 滑动窗口限流（429 + `Retry-After`）。
+- **Prometheus 指标**：`/metrics` 文本格式——每 worker 的 HTTP 计数器/耗时直方图，以及实时 DB 指标（outbox 积压、失败消息队列）。
 - **Docker Compose**：MySQL 8 + Mailpit 开发环境。
 
 ## 技术栈
@@ -85,7 +88,7 @@
 | 数据库 | MySQL 8（Docker/生产）/ SQLite（测试） |
 | 鉴权 | JWT (RS256) + OTP (短信) |
 | API 文档 | NelmioApiDocBundle (OpenAPI 3) |
-| 测试 | PHPUnit `^12.5` |
+| 测试 | PHPUnit `^12.5`（支持 paratest 并行运行） |
 | 前端 | [crud-admin](https://github.com/immane/crud-admin) — 配置驱动的管理后台 |
 | 文档 | MkDocs Material (GitHub Pages) |
 
@@ -181,11 +184,16 @@
 │       └── Service/              #   OtpService、短信供应商
 ├── config/                       # Symfony 配置
 │   └── packages/                 #   Doctrine、Security、Workflow、Serializer 等
-├── migrations/                   # Doctrine 迁移（12 个版本）
-├── tests/                        # 1711 个 PHPUnit 测试，5652 个断言，91%+ 覆盖率
+├── migrations/                   # Doctrine 迁移（20 个版本）
+├── tests/                        # 默认套件 2220 个 PHPUnit 测试，按层组织：
+│   ├── UnitTest/                 #   纯单元测试（无 kernel/DB）
+│   ├── Integration/              #   kernel + DB + HTTP 测试及共享 helper
+│   └── LowValue/                 #   弃用/低价值测试，默认运行排除
 ├── docs/                         # 项目文档
 │   ├── design/                   #   设计契约（系统、API、数据、模块、控制器）
 │   │   │   └── bundles/              #   各模块设计文档（含 Promotion）
+│   ├── testing/                  #   测试质量契约（策略、矩阵、不变量）
+│   ├── issues/                   #   审计与覆盖率报告
 │   └── ai/                       #   AI 上下文快照
 ├── compose.yaml                  # MySQL 8
 ├── compose.override.yaml         # 端口映射 + Mailpit
@@ -503,6 +511,14 @@ docker compose exec app php bin/console app:identity:user:create admin@example.c
 | GET | `/system/entities/{entityName}` | 实体字段 + 关联元数据 |
 | GET | `/system/router` | 列出所有已注册路由 |
 
+### 平台运维端点（公开，无需认证）
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| GET | `/health/live` | 存活探针 |
+| GET | `/health/ready` | 就绪探针（数据库必需，Redis 可选） |
+| GET | `/metrics` | Prometheus 指标（文本格式） |
+
 ### 请求示例
 
 ```bash
@@ -615,18 +631,34 @@ class ContentController extends RestController
 
 ## 测试
 
-**1711 个测试 · 5652 个断言 · 91%+ 行覆盖率**
+**默认套件 2220 个测试 · 7936 个断言**（另有 **477 个低价值测试** 默认排除）。测试按层组织在 `tests/` 下：
 
-运行全部测试：
+- `tests/UnitTest/` — 纯单元测试（无 kernel/DB），命名空间 `App\Tests\UnitTest\...`
+- `tests/Integration/` — kernel + DB + HTTP 测试及共享 helper（`DatabaseBootstrapTrait`、`IntegrationWebTestCase`），命名空间 `App\Tests\Integration\...`
+- `tests/LowValue/` — 测试审计标记的弃用/低价值测试；默认运行排除，通过 `--group low-value` 执行
+
+串行运行全部测试：
 
 ```bash
 ./vendor/bin/phpunit
 ```
 
-运行单个测试：
+并行运行（约 2-3 倍加速，内置每 worker SQLite 隔离）：
 
 ```bash
-./vendor/bin/phpunit tests/Core/Service/BaseServiceUnitTest.php
+PARATEST=1 ./vendor/bin/paratest --processes 8 --runner WrapperRunner
+```
+
+运行单个测试文件：
+
+```bash
+./vendor/bin/phpunit tests/UnitTest/Core/Service/BaseServiceInfrastructureTraitTest.php
+```
+
+显式运行被排除的低价值测试：
+
+```bash
+./vendor/bin/phpunit --group low-value
 ```
 
 带覆盖率报告：
@@ -654,19 +686,15 @@ composer rector:types:check
 
 PHPStan 以 Level 8 检查其配置的 `src/` 范围。CI 中的 Rector 仅检查 Doctrine Collection/Repository 的 PHPDoc 类型规则；`composer rector` 是更广泛的可选重构命令，应用前应审查其改动。
 
-### 测试分组
+### 按层统计的测试覆盖
 
-| 分组 | 数量 | 覆盖范围 |
-|------|------|----------|
-| Common | 69+ | CMS 实体、媒体上传/删除、批量更新 |
-| Trade | 171+ | 订单、定价管道、工作流 |
-| Wallet | 105+ | 转账、钱包服务、支付网关、余额审计 |
-| Payment | 60+ | 网关、注册表、调整、发票、多网关集成 |
-| Identity | 116+ | 认证、OTP、令牌、UserService、Profile 实体/控制器 |
-| Promotion | 320+ | 实体、DSL 词法/语法/求值器、策略、引擎、计算器、控制器、真实 SQLite 报价管道集成 |
-| Wechat | 59+ | 认证、服务、支付网关、控制器、仓库 |
-| Core | 70+ | BaseService、RestController、表达式解析器、序列化器、系统控制器 |
-| Integration | 20+ | 跨模块集成测试 |
+| 层 | 约计数 | 覆盖范围 |
+|------|-------|----------|
+| UnitTest | 189 个文件 | 实体、工具、DSL 引擎、促销策略、基于 mock 的服务/控制器、工作流状态机 |
+| Integration | 71 个文件 | 跨模块流程、API 回归、outbox/inbox 幂等、并发、健康/指标/限流端点 |
+| LowValue | 43 个文件 | 审计标记的重复测试与追覆盖率测试（默认排除） |
+
+测试质量契约见 [docs/testing/crud-skeleton-production/](docs/testing/crud-skeleton-production/README.md)，标记低价值测试的审计见 [docs/issues/test-audit-2026-08-09/](docs/issues/test-audit-2026-08-09/README.md)。
 
 ## Docker 部署
 

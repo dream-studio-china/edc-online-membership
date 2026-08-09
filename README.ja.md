@@ -32,6 +32,9 @@ Symfony 8.1 ベースのプロダクション向け API スケルトン。再利
 - **OpenAPI ドキュメント**: NelmioApiDocBundle + Swagger UI（`/api/doc`）
 - **プロモーション DSL エンジン**: カスタム lexer/parser/evaluator による人間可読なプロモーションルール。7 種類のプロモーション（full_reduction、discount、gift、nth_discount、tiered、free_shipping、member_discount）。タグ付き価格計算機（優先度 60）として Trade 価格パイプラインの小計集計後に実行。会員向け SKU 割引、マルチストアルーティング、グローバルキャンペーン、`best_price` コンフリクトモード（候補をシミュレーションして最低金額を選択）をサポート。
 - **Profile エンティティ**: ユーザー登録時に Doctrine リスナーにより自動生成。レベル（bronze→diamond）、ニックネーム、アバター、メタデータを保持。ポイントは Wallet（currency=POINTS）に委譲。
+- **Health Checks**: `/health/live`（生存確認）と `/health/ready`（DB + 任意 Redis の準備確認）— 公開プローブ。Docker healthcheck で使用。
+- **Rate Limiting**: ログイン/登録/OTP/WeChat ログイン/決済エンドポイントへのクライアント IP 単位のスライディングウィンドウ制限（429 + `Retry-After`）。
+- **Prometheus Metrics**: `/metrics` テキスト形式 — worker ごとの HTTP カウンター/所要時間ヒストグラム + リアルタイム DB ゲージ（outbox 滞留、失敗メッセージキュー）。
 - **Docker Compose**: MySQL 8 + Redis + Mailpit による開発環境
 
 ## 技術スタック
@@ -44,7 +47,7 @@ Symfony 8.1 ベースのプロダクション向け API スケルトン。再利
 | データベース | MySQL 8（Docker/本番）/ SQLite（テスト） |
 | 認証 | JWT（RS256）+ OTP（SMS） |
 | API ドキュメント | NelmioApiDocBundle（OpenAPI 3） |
-| テスト | PHPUnit `^12.5` |
+| テスト | PHPUnit `^12.5`（paratest による並列実行対応） |
 | フロントエンド | [crud-admin](https://github.com/immane/crud-admin) — 設定駆動の管理画面 |
 | ドキュメント | MkDocs Material（GitHub Pages） |
 
@@ -66,7 +69,10 @@ Symfony 8.1 ベースのプロダクション向け API スケルトン。再利
 │   └── Identity/                 # 認証モジュール
 ├── config/                       # Symfony 設定
 ├── migrations/                   # Doctrine マイグレーション（12 バージョン）
-├── tests/                        # 1711 テスト、5652 アサーション、91%+ カバレッジ
+├── tests/                        # デフォルトスイート 2220 tests、レイヤー別に編成:
+│   ├── UnitTest/                 #   純ユニットテスト（kernel/DB なし）
+│   ├── Integration/              #   kernel + DB + HTTP テストおよび共有ヘルパー
+│   └── LowValue/                 #   廃止/低価値テスト（デフォルト実行から除外）
 ├── translations/                 # 多言語翻訳ファイル
 └── compose.yaml                  # Docker Compose
 ```
@@ -88,21 +94,49 @@ Symfony 8.1 ベースのプロダクション向け API スケルトン。再利
 
 ## テスト
 
-**1711 テスト · 5652 アサーション · 91%+ ラインカバレッジ**
+**デフォルトスイート 2220 tests · 7936 assertions**（低価値テスト 477 はデフォルト実行から除外）。テストは `tests/` 配下でレイヤー別に整理されています：
+
+- `tests/UnitTest/` — 純ユニットテスト（kernel/DB なし）、名前空間 `App\Tests\UnitTest\...`
+- `tests/Integration/` — kernel + DB + HTTP テストおよび共有ヘルパー（`DatabaseBootstrapTrait`、`IntegrationWebTestCase`）、名前空間 `App\Tests\Integration\...`
+- `tests/LowValue/` — テスト監査によりフラグ付けされた廃止/低価値テスト。デフォルト実行から除外され、`--group low-value` で実行
+
+全テストを直列で実行：
 
 ```bash
 ./vendor/bin/phpunit
 ```
 
-カバレッジ表示：
+並列実行（約2-3倍高速、worker ごとの SQLite 分離は組み込み）：
+
+```bash
+PARATEST=1 ./vendor/bin/paratest --processes 8 --runner WrapperRunner
+```
+
+単一のテストファイルを実行：
+
+```bash
+./vendor/bin/phpunit tests/UnitTest/Core/Service/BaseServiceInfrastructureTraitTest.php
+```
+
+除外された低価値テストを明示的に実行：
+
+```bash
+./vendor/bin/phpunit --group low-value
+```
+
+カバレッジレポート付きで実行（CI は 90% 閾値を強制）：
+
 ```bash
 XDEBUG_MODE=coverage ./vendor/bin/phpunit --coverage-text
 ```
 
 HTML カバレッジレポートの生成：
+
 ```bash
 XDEBUG_MODE=coverage ./vendor/bin/phpunit --coverage-html var/coverage
 ```
+
+その後ブラウザで `var/coverage/index.html` を開いてください。
 
 ### 静的解析
 
