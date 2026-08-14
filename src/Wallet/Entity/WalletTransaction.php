@@ -39,6 +39,7 @@ class WalletTransaction
     #[ORM\JoinColumn(name: 'to_wallet_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
     private ?Wallet $toWallet = null;
 
+    /** Amount in minor units (cents). */
     #[ORM\Column(type: 'bigint')]
     private int $amount;
 

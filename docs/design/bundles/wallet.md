@@ -11,7 +11,7 @@
 
 Wallet is a financial module for managing user balances:
 
-- **Wallets** per user per currency with balance in cents, optimistic locking, and freeze capability
+- **Wallets** per user per currency with balance in cents, optimistic locking, freeze capability, and available/held balance separation
 - **WalletTransactions** with UUID, type classification, status tracking, and idempotency via `referenceId`
 - **TransferService** with atomic from-wallet-to-wallet transfers, deadlock prevention, and rollback recovery
 - **Deposit** endpoint for system-injected funding with audit trail
@@ -81,12 +81,15 @@ src/Wallet/
 | `id` | int | Auto-increment PK |
 | `user` | ManyToOne -> User | Wallet owner |
 | `currency` | string(32) | Unit of account code (see below) |
-| `balance` | int (bigint) | Balance in cents |
+| `balance` | int (bigint) | **Total** balance in cents (`balance = available + held`) |
+| `held` | int (bigint) | Frozen amount in cents; available balance = `balance - held` |
 | `version` | int | `#[ORM\Version]` optimistic locking |
 | `status` | string | `active` or `frozen` |
 | `label` | string | Human-readable wallet name |
 
-**⚠️ No `setBalance()`** — Wallet balance can ONLY be altered through `TransferService` (transfer, deposit, reconcile). This prevents direct mutation that would bypass the audit trail.
+**⚠️ No `setBalance()` / no public `held` setter** — Wallet balance and held can ONLY be altered through `TransferService` (transfer, deposit, hold, release, reconcile). This prevents direct mutation that would bypass the audit trail.
+
+**Available vs held**: `balance` is the total; `held` is funds frozen (escrow, pending withdrawal). `available = balance - held`. `TransferService::transfer()` and `hold()` operate against available balance only. Holds do NOT change the total balance and do NOT write a ledger row — a hold moves funds between the available and held buckets internally, so reconciliation (`SUM(balance) == deposits - withdrawals`) is unaffected. The audit record for a hold belongs to the owning lifecycle entity (e.g. `WalletWithdrawal`), not the ledger.
 
 **Unique constraint**: `(user_id, currency)` -- one wallet per user per unit of account.
 

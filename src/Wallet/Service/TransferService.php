@@ -95,8 +95,8 @@ class TransferService implements TransferServiceInterface
                 ));
             }
 
-            if ($fromWallet->getBalance() < $amount) {
-                throw new InsufficientFundsException($fromWalletId, $fromWallet->getBalance(), $amount);
+            if ($fromWallet->getAvailableBalance() < $amount) {
+                throw new InsufficientFundsException($fromWalletId, $fromWallet->getAvailableBalance(), $amount);
             }
 
             // Atomic balance updates
@@ -217,6 +217,82 @@ class TransferService implements TransferServiceInterface
             ]);
 
             return new TransferResult($transaction, 0, $toWallet->getBalance());
+        } catch (\Throwable $e) {
+            if ($this->em->getConnection()->isTransactionActive()) {
+                $this->em->rollback();
+            }
+            if (!$this->em->isOpen()) {
+                $this->registry->resetManager();
+                /** @var EntityManagerInterface $newEm */
+                $newEm = $this->registry->getManager();
+                $this->em = $newEm;
+            }
+            throw $e;
+        }
+    }
+
+    public function hold(int $walletId, int $amount, ?string $description = null): Wallet
+    {
+        if ($amount <= 0) {
+            throw new \InvalidArgumentException('Hold amount must be positive');
+        }
+
+        return $this->mutateHeld($walletId, $amount, $description);
+    }
+
+    public function release(int $walletId, int $amount, ?string $description = null): Wallet
+    {
+        if ($amount <= 0) {
+            throw new \InvalidArgumentException('Release amount must be positive');
+        }
+
+        return $this->mutateHeld($walletId, -$amount, $description);
+    }
+
+    /**
+     * Moves `$amount` (positive = hold, negative = release) between the wallet's
+     * available and held buckets without changing the total balance. Holds are
+     * not written to the ledger; the WalletWithdrawal/hold entity owns audit.
+     */
+    private function mutateHeld(int $walletId, int $amount, ?string $description = null): Wallet
+    {
+        $this->em->beginTransaction();
+
+        try {
+            $wallet = $this->walletRepo->findByIdForUpdate($walletId);
+
+            if ($wallet === null) {
+                throw new \RuntimeException("Wallet #$walletId not found");
+            }
+            if ($wallet->isFrozen()) {
+                throw new WalletFrozenException($walletId);
+            }
+
+            if ($amount > 0) {
+                if ($wallet->getAvailableBalance() < $amount) {
+                    throw new InsufficientFundsException($walletId, $wallet->getAvailableBalance(), $amount);
+                }
+            } elseif ($wallet->getHeld() < -$amount) {
+                throw new InsufficientFundsException($walletId, $wallet->getHeld(), -$amount);
+            }
+
+            $this->em->createQuery(
+                'UPDATE App\Wallet\Entity\Wallet w SET w.held = w.held + :amount, w.version = w.version + 1 WHERE w.id = :id'
+            )
+                ->setParameter('amount', $amount)
+                ->setParameter('id', $walletId)
+                ->execute();
+
+            $this->em->refresh($wallet);
+
+            $this->em->commit();
+
+            $this->logger->info(
+                $amount > 0 ? 'Hold applied' : 'Hold released',
+                ['walletId' => $walletId, 'amount' => $amount, 'description' => $description],
+            );
+
+            return $wallet;
         } catch (\Throwable $e) {
             if ($this->em->getConnection()->isTransactionActive()) {
                 $this->em->rollback();

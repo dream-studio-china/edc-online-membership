@@ -30,8 +30,13 @@ class Wallet
     #[ORM\Column(type: 'string', length: 32, options: ['default' => 'USD'])]
     private string $currency = 'USD';
 
+    /** Total balance in minor units (cents). */
     #[ORM\Column(type: 'bigint', options: ['default' => 0])]
     private int $balance = 0;
+
+    /** Frozen amount in minor units (cents); available balance = balance - held. */
+    #[ORM\Column(type: 'bigint', options: ['default' => 0])]
+    private int $held = 0;
 
     #[ORM\Column(type: 'integer', options: ['default' => 1])]
     private int $version = 1;
@@ -96,6 +101,16 @@ class Wallet
     public function getBalanceAsFloat(): float
     {
         return $this->balance / 100;
+    }
+
+    public function getHeld(): int
+    {
+        return $this->held;
+    }
+
+    public function getAvailableBalance(): int
+    {
+        return $this->balance - $this->held;
     }
 
     public function getVersion(): int

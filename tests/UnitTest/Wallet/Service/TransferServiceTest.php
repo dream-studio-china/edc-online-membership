@@ -89,6 +89,13 @@ final class TransferServiceTest extends TestCase
         $rBal->setValue($wallet, $balance);
     }
 
+    /** @param Wallet $wallet */
+    private function setWalletHeld(Wallet $wallet, int $held): void
+    {
+        $rHeld = new \ReflectionProperty(Wallet::class, 'held');
+        $rHeld->setValue($wallet, $held);
+    }
+
     private function mockQuery(): Query
     {
         $query = $this->createMock(Query::class);
@@ -406,5 +413,150 @@ final class TransferServiceTest extends TestCase
 
         $this->expectException(\RuntimeException::class);
         $this->service->transfer(1, 2, 10000);
+    }
+
+    public function testTransferRejectsHeldFunds(): void
+    {
+        $from = $this->createWallet(1, 100000, 'CNY');
+        $this->setWalletHeld($from, 30000);
+        $to = $this->createWallet(2, 0, 'CNY');
+        $this->walletRepo->method('findByIdForUpdate')->willReturnMap([
+            [1, $from], [2, $to],
+        ]);
+
+        $this->expectException(InsufficientFundsException::class);
+        // Total balance (100000) >= amount, but available (70000) < amount.
+        $this->service->transfer(1, 2, 80000);
+    }
+
+    public function testTransferSucceedsWithinAvailable(): void
+    {
+        $from = $this->createWallet(1, 100000, 'CNY');
+        $this->setWalletHeld($from, 30000);
+        $to = $this->createWallet(2, 0, 'CNY');
+        $this->walletRepo->method('findByIdForUpdate')->willReturnMap([
+            [1, $from], [2, $to],
+        ]);
+        $this->em->method('createQuery')->willReturn($this->mockQuery());
+        $this->em->method('refresh')->willReturnCallback(function (Wallet $w) use ($from, $to) {
+            if ($w === $from) { $this->setWalletBalance($from, 30000); }
+            if ($w === $to)   { $this->setWalletBalance($to, 70000); }
+        });
+        $this->em->method('persist');
+        $this->em->method('flush');
+
+        $result = $this->service->transfer(1, 2, 70000);
+
+        self::assertSame(30000, $result->fromWalletBalanceAfter);
+        self::assertSame(70000, $result->toWalletBalanceAfter);
+    }
+
+    // ──────────────── hold / release ────────────────
+
+    public function testHoldHappyPath(): void
+    {
+        $wallet = $this->createWallet(1, 100000, 'CNY');
+        $this->walletRepo->method('findByIdForUpdate')->with(1)->willReturn($wallet);
+        $this->em->method('createQuery')->willReturn($this->mockQuery());
+        $this->em->method('refresh')->with($wallet)->willReturnCallback(function () use ($wallet) {
+            $this->setWalletHeld($wallet, 30000);
+        });
+
+        $result = $this->service->hold(1, 30000, 'Escrow');
+
+        self::assertSame($wallet, $result);
+        self::assertSame(30000, $result->getHeld());
+        self::assertSame(100000, $result->getBalance());
+        self::assertSame(70000, $result->getAvailableBalance());
+    }
+
+    public function testHoldAmountNotPositive(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Hold amount must be positive');
+        $this->service->hold(1, 0);
+    }
+
+    public function testHoldWalletNotFound(): void
+    {
+        $this->walletRepo->method('findByIdForUpdate')->with(999)->willReturn(null);
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Wallet #999 not found');
+        $this->service->hold(999, 10000);
+    }
+
+    public function testHoldWalletFrozen(): void
+    {
+        $wallet = $this->createWallet(1, 50000, 'CNY', 'frozen');
+        $this->walletRepo->method('findByIdForUpdate')->with(1)->willReturn($wallet);
+
+        $this->expectException(WalletFrozenException::class);
+        $this->service->hold(1, 10000);
+    }
+
+    public function testHoldInsufficientAvailable(): void
+    {
+        $wallet = $this->createWallet(1, 50000, 'CNY');
+        $this->walletRepo->method('findByIdForUpdate')->with(1)->willReturn($wallet);
+
+        $this->expectException(InsufficientFundsException::class);
+        $this->service->hold(1, 80000);
+    }
+
+    public function testHoldRollbackOnError(): void
+    {
+        $wallet = $this->createWallet(1, 100000, 'CNY');
+        $this->walletRepo->method('findByIdForUpdate')->with(1)->willReturn($wallet);
+        $this->em->method('createQuery')->willThrowException(new \RuntimeException('DB failure'));
+
+        $this->connection->expects(self::once())->method('isTransactionActive');
+        $this->em->expects(self::once())->method('rollback');
+
+        $this->expectException(\RuntimeException::class);
+        $this->service->hold(1, 10000);
+    }
+
+    public function testReleaseHappyPath(): void
+    {
+        $wallet = $this->createWallet(1, 100000, 'CNY');
+        $this->setWalletHeld($wallet, 30000);
+        $this->walletRepo->method('findByIdForUpdate')->with(1)->willReturn($wallet);
+        $this->em->method('createQuery')->willReturn($this->mockQuery());
+        $this->em->method('refresh')->with($wallet)->willReturnCallback(function () use ($wallet) {
+            $this->setWalletHeld($wallet, 0);
+        });
+
+        $result = $this->service->release(1, 30000, 'Escrow released');
+
+        self::assertSame($wallet, $result);
+        self::assertSame(0, $result->getHeld());
+        self::assertSame(100000, $result->getAvailableBalance());
+    }
+
+    public function testReleaseAmountNotPositive(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Release amount must be positive');
+        $this->service->release(1, 0);
+    }
+
+    public function testReleaseMoreThanHeld(): void
+    {
+        $wallet = $this->createWallet(1, 100000, 'CNY');
+        $this->setWalletHeld($wallet, 10000);
+        $this->walletRepo->method('findByIdForUpdate')->with(1)->willReturn($wallet);
+
+        $this->expectException(InsufficientFundsException::class);
+        $this->service->release(1, 20000);
+    }
+
+    public function testReleaseWalletNotFound(): void
+    {
+        $this->walletRepo->method('findByIdForUpdate')->with(999)->willReturn(null);
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Wallet #999 not found');
+        $this->service->release(999, 10000);
     }
 }

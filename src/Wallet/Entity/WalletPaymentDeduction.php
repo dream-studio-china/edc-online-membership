@@ -53,6 +53,7 @@ class WalletPaymentDeduction
     #[ORM\Column(type: 'string', length: 30)]
     private string $type = self::TYPE_WALLET_BALANCE;
 
+    /** Deduction amount in minor units (cents). */
     #[ORM\Column(type: 'bigint')]
     private int $amount;
 
