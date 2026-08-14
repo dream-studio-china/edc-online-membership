@@ -25,6 +25,8 @@ class WalletVoucher
     public const FUND_SOURCE_EXTERNAL = 'external';
     public const FUND_SOURCE_INTERNAL = 'internal';
 
+    public const VOUCHER_TYPE_MANUAL = 'manual';
+
     public const STATUS_PENDING = 'pending';
     public const STATUS_APPLIED = 'applied';
     public const STATUS_REVERSED = 'reversed';

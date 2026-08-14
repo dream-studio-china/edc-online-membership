@@ -26,6 +26,8 @@ services:
             tags: ['payment.gateway']
         App\Payment\Service\Adjustment\PaymentAdjustmentProviderInterface:
             tags: ['payment.adjustment_provider']
+        App\Wallet\Service\Deposit\WalletDepositProviderInterface:
+            tags: ['wallet.deposit_provider']
         App\Storage\Service\MediaStorageInterface:
             tags: ['media.storage']
 
