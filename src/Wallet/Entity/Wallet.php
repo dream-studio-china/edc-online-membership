@@ -22,7 +22,12 @@ class Wallet
     #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     private ?User $user = null;
 
-    #[ORM\Column(type: 'string', length: 10, options: ['default' => 'USD'])]
+    /**
+     * Unit of account code. Plain ISO currency (e.g. 'CNY') identifies the
+     * default balance wallet; extended codes (e.g. 'CNY.ESCROW') identify
+     * category accounts such as escrow or commission.
+     */
+    #[ORM\Column(type: 'string', length: 32, options: ['default' => 'USD'])]
     private string $currency = 'USD';
 
     #[ORM\Column(type: 'bigint', options: ['default' => 0])]

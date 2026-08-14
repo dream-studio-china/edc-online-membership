@@ -80,7 +80,7 @@ src/Wallet/
 |-------|------|--------|
 | `id` | int | Auto-increment PK |
 | `user` | ManyToOne -> User | Wallet owner |
-| `currency` | string | Currency code (e.g., CNY, USD) |
+| `currency` | string(32) | Unit of account code (see below) |
 | `balance` | int (bigint) | Balance in cents |
 | `version` | int | `#[ORM\Version]` optimistic locking |
 | `status` | string | `active` or `frozen` |
@@ -88,7 +88,9 @@ src/Wallet/
 
 **⚠️ No `setBalance()`** — Wallet balance can ONLY be altered through `TransferService` (transfer, deposit, reconcile). This prevents direct mutation that would bypass the audit trail.
 
-**Unique constraint**: `(user_id, currency)` -- one wallet per user per currency.
+**Unique constraint**: `(user_id, currency)` -- one wallet per user per unit of account.
+
+**Unit of account codes**: `currency` is the account discriminator, not a strict ISO 4217 code. A plain ISO code (e.g. `CNY`, `USD`) identifies the default balance wallet; extended codes (e.g. `CNY.ESCROW`, `CNY.COMMISSION`, `POINTS`) identify category accounts such as escrow, commission, or points. The default balance wallet MUST use the plain ISO code — invoice payment resolution (`findByUserAndCurrency(payerId, invoice.currency)`) relies on this and must never match a category account. If FX or per-currency reporting is needed later, introduce an explicit base-currency column rather than parsing these codes.
 
 **Methods**: `isActive(): bool`, `isFrozen(): bool`
 
