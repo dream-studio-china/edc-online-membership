@@ -6,7 +6,10 @@ namespace App\Wallet\Entity;
 
 use App\Core\Utils\UUID;
 use App\Wallet\Repository\WalletVoucherRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Attribute\Ignore;
 
 #[ORM\Entity(repositoryClass: WalletVoucherRepository::class)]
 #[ORM\Table(name: 'wallet_voucher')]
@@ -94,6 +97,11 @@ class WalletVoucher
     #[ORM\Column(name: 'reversed_at', type: 'datetime_immutable', nullable: true)]
     private ?\DateTimeImmutable $reversedAt = null;
 
+    /** @var Collection<int, WalletVoucherComment> */
+    #[Ignore]
+    #[ORM\OneToMany(targetEntity: WalletVoucherComment::class, mappedBy: 'voucher', cascade: ['persist'])]
+    private Collection $comments;
+
     public function __construct(
         Wallet $wallet,
         string $direction,
@@ -118,6 +126,7 @@ class WalletVoucher
         $this->createdBy = $createdBy;
         $this->reason = $reason;
         $this->createdAt = new \DateTimeImmutable();
+        $this->comments = new ArrayCollection();
     }
 
     public function getId(): ?int { return $this->id; }
@@ -180,8 +189,28 @@ class WalletVoucher
         $this->status = self::STATUS_REVERSED;
         $this->reversalTransactionId = $reversalTransactionId;
         $this->reversedAt = new \DateTimeImmutable();
-        $this->reason = $reason;
+        // Preserve the creation reason; record the reversal reason separately.
+        $metadata = $this->metadata ?? [];
+        $metadata['reversalReason'] = $reason;
+        $this->metadata = $metadata;
         return $this;
+    }
+
+    /**
+     * Append an immutable annotation. Notes cannot be edited or removed.
+     */
+    public function addComment(string $actor, string $text): self
+    {
+        $this->comments->add(new WalletVoucherComment($this, $actor, $text));
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, WalletVoucherComment>
+     */
+    public function getComments(): Collection
+    {
+        return $this->comments;
     }
 
     public function markFailed(string $reason): self

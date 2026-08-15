@@ -317,7 +317,7 @@ final class WalletDepositServiceTest extends TestCase
 
         self::assertTrue($this->provider->reversed);
         self::assertSame(WalletVoucher::STATUS_REVERSED, $result->getStatus());
-        self::assertSame('Admin correction', $result->getReason());
+        self::assertSame('Admin correction', $result->getMetadata()['reversalReason'] ?? null);
         self::assertNotNull($result->getReversalTransactionId());
         self::assertSame(20000, $wallet->getBalance());
 
