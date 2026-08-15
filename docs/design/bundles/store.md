@@ -136,7 +136,7 @@ Cross-boundary references are UUIDs and scalar snapshots, never Doctrine associa
 Examples:
 
 - `StoreOrder.tradeOrderUuid`, not `ManyToOne Trade\Order`.
-- `StoreMembership.userUuid`, not `ManyToOne Identity\User`.
+- `Membership.userUuid`, not `ManyToOne Identity\User`.
 - Future inventory reservation UUID, not an Inventory entity relation.
 
 This prevents cross-module schema coupling and permits separate databases later.
@@ -230,7 +230,7 @@ src/Store/
 |   |   `-- StoreOrderController.php         # Customer read-only store order view
 |   `-- Manage/
 |       |-- StoreController.php              # Platform admin store CRUD
-|       |-- StoreMembershipController.php    # Membership administration
+|       |-- MembershipController.php    # Membership administration
 |       `-- StoreOrderController.php         # Store operational actions
 |-- DTO/
 |   |-- StoreContext.php
@@ -238,7 +238,7 @@ src/Store/
 |   `-- StoreOrderDecision.php
 |-- Entity/
 |   |-- Store.php
-|   |-- StoreMembership.php
+|   |-- Membership.php
 |   |-- StoreOrder.php
 |   |-- StoreOutboxMessage.php
 |   `-- StoreConsumedEvent.php
@@ -248,14 +248,14 @@ src/Store/
 |   `-- StoreOrderRejectedV1.php
 |-- EventListener/
 |   |-- TradeOrderCreatedConsumer.php
-|   `-- InventoryReservationListener.php    # Future adapter boundary
+|   `-- ReservationListener.php    # Future adapter boundary
 |-- Exception/
 |   |-- StoreContextNotFoundException.php
 |   |-- StoreOrderConflictException.php
 |   `-- StoreOrderNotOperableException.php
 |-- Repository/
 |   |-- StoreRepository.php
-|   |-- StoreMembershipRepository.php
+|   |-- MembershipRepository.php
 |   |-- StoreOrderRepository.php
 |   |-- StoreOutboxMessageRepository.php
 |   `-- StoreConsumedEventRepository.php
@@ -264,8 +264,8 @@ src/Store/
 |   |-- StoreServiceInterface.php
 |   |-- StoreContextResolverInterface.php
 |   |-- StoreContextResolver.php
-|   |-- StoreMembershipService.php
-|   |-- StoreMembershipServiceInterface.php
+|   |-- MembershipService.php
+|   |-- MembershipServiceInterface.php
 |   |-- StoreOrderService.php
 |   |-- StoreOrderServiceInterface.php
 |   |-- StoreOrderDecisionService.php
@@ -310,7 +310,7 @@ Rules:
 - `closed` stores cannot be selected for new orders.
 - Historical orders use snapshots, so Store deletion is forbidden; closure is a status.
 
-### 5.2 StoreMembership
+### 5.2 Membership
 
 **Table:** `store_membership`
 
@@ -760,7 +760,7 @@ StoreOrder's local Store relation, not a request-supplied store identifier.
 ### 10.2 Authorization Rules
 
 1. Platform roles live in Identity and retain their existing meaning.
-2. Store roles live only in `StoreMembership`.
+2. Store roles live only in `Membership`.
 3. A Store controller resolves the authenticated Identity user to a scalar `userUuid` and
    queries Store membership locally.
 4. `ROLE_ADMIN` bypasses membership checks only on explicitly administrative routes.
@@ -971,7 +971,7 @@ serialization. Tests validate:
 
 ### Phase 1: Store Foundation
 
-1. Create Store, StoreMembership, StoreOrder, Outbox, and Inbox entities/repositories.
+1. Create Store, Membership, StoreOrder, Outbox, and Inbox entities/repositories.
 2. Add Store service interfaces and services.
 3. Implement platform Store administration and membership management.
 4. Implement StoreContext resolution for the selected channel.

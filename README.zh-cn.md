@@ -128,11 +128,11 @@
 │   │   └── MessageHandler/       #   创建/接受/拒绝/取消 出站消费者
 │   ├── Wallet/                    # 钱包模块
 │   │   ├── Controller/Manage/    #   钱包、交易、转账 API
-│   │   ├── DTO/                  #   WalletPaymentDeductionRequest
-│   │   ├── Entity/               #   Wallet, WalletTransaction, WalletPaymentDeduction
-│   │   ├── Repository/           #   + WalletPaymentDeductionRepository
+│   │   ├── DTO/                  #   PaymentDeductionRequest
+│   │   ├── Entity/               #   Wallet, Transaction, PaymentDeduction
+│   │   ├── Repository/           #   + PaymentDeductionRepository
 │   │   └── Service/              #   TransferService, WalletService
-│   │       └── Payment/          #   WalletGateway, WalletBalanceAdjustmentProvider, WalletPaymentDeductionService
+│   │       └── Payment/          #   WalletGateway, WalletBalanceAdjustmentProvider, PaymentDeductionService
 │   ├── Payment/                  # 支付模块
 │   │   ├── Controller/App/       #   发票列表/详情/支付
 │   │   ├── Controller/Manage/    #   发票创建/取消/退款/转换
@@ -169,7 +169,7 @@
 │   │   └── Exception/
 │   ├── Inventory/                # 库存模块（物料、库存、配方、预留）
 │   │   ├── Controller/Manage/    #   物料、库存、配方管理
-│   │   ├── Entity/               #   Material、InventoryStock、SpecificationRecipe、InventoryReservation 等
+│   │   ├── Entity/               #   Material、Stock、SpecificationRecipe、Reservation 等
 │   │   ├── Repository/
 │   │   ├── Service/              #   InventoryService（预留/释放/调整）
 │   │   ├── MessageHandler/       #   预留请求/释放处理器

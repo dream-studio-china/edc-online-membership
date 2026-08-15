@@ -75,7 +75,7 @@ Example:
 
 Entity schemas are defined under `documentation.components.schemas`. Each schema provides field-level type, description, enum, and example values visible in Swagger UI.
 
-Current schemas: Order, OrderItem, Product, Specification, Category, Tag, Content, Comment, Page, Media, Setting, Wallet, WalletTransaction, TransferRequest, LoginResponse, UserRef.
+Current schemas: Order, OrderItem, Product, Specification, Category, Tag, Content, Comment, Page, Media, Setting, Wallet, Transaction, TransferRequest, LoginResponse, UserRef.
 
 ### 3.1 Adding a New Schema
 

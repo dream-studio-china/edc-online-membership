@@ -12,7 +12,7 @@
 Wallet is a financial module for managing user balances:
 
 - **Wallets** per user per currency with balance in cents, optimistic locking, freeze capability, and available/held balance separation
-- **WalletTransactions** with UUID, type classification, status tracking, and idempotency via `referenceId`
+- **Transactions** with UUID, type classification, status tracking, and idempotency via `referenceId`
 - **TransferService** with atomic from-wallet-to-wallet transfers, deadlock prevention, and rollback recovery
 - **Deposit** endpoint for system-injected funding with audit trail
 - **Balance verification** — `GET /api/v1/manage/wallets/balance` checks invariant: `SUM(wallets) == SUM(deposits + adjustments)`
@@ -34,8 +34,8 @@ transfer (TYPE_TRANSFER)   → zero-sum between wallets (debit + credit)
 | Entity | Table | Purpose |
 |--------|-------|---------|
 | `Wallet` | `wallet` | User balance per currency (cents), freeze support, optimistic locking |
-| `WalletTransaction` | `wallet_transaction` | Record of deposit/withdrawal/transfer/fee/refund/**adjustment** |
-| `WalletPaymentDeduction` | `wallet_payment_deduction` | Wallet-owned audit record for invoice wallet balance deductions |
+| `Transaction` | `wallet_transaction` | Record of deposit/withdrawal/transfer/fee/refund/**adjustment** |
+| `PaymentDeduction` | `wallet_payment_deduction` | Wallet-owned audit record for invoice wallet balance deductions |
 
 ---
 
@@ -49,16 +49,16 @@ src/Wallet/
 |   |-- WalletController.php             # CRUD + Balance + Reconcile
 |-- Entity/
 |   |-- Wallet.php
-|   |-- WalletTransaction.php
-|   |-- WalletPaymentDeduction.php       # Payment adjustment audit record
+|   |-- Transaction.php
+|   |-- PaymentDeduction.php       # Payment adjustment audit record
 |-- Exception/
 |   |-- InsufficientFundsException.php
 |   |-- SameWalletTransferException.php
 |   |-- WalletFrozenException.php
 |-- Repository/
 |   |-- WalletRepository.php             # + getTotalBalance()
-|   |-- WalletTransactionRepository.php  # + getTotalDeposited(), getExpectedBalance()
-|   |-- WalletPaymentDeductionRepository.php
+|   |-- TransactionRepository.php  # + getTotalDeposited(), getExpectedBalance()
+|   |-- PaymentDeductionRepository.php
 |-- Service/
     |-- Payment/
     |   |-- WalletBalanceAdjustmentProvider.php # Implements Payment adjustment provider
@@ -97,7 +97,7 @@ src/Wallet/
 
 **Methods**: `isActive(): bool`, `isFrozen(): bool`
 
-### 3.2 WalletTransaction
+### 3.2 Transaction
 
 | Field | Type | Detail |
 |-------|------|--------|
@@ -135,7 +135,7 @@ A deposit MUST write `fromWallet = null`; a reversal/withdrawal MUST write `toWa
 
 Both a `wallet_transaction` AND a `wallet_voucher` are written for a boundary event. The transaction feeds the unified per-wallet movement journal (internal transfers have no voucher, so the journal cannot be built from vouchers alone); the voucher feeds provenance and the boundary invariant. Removing either breaks the corresponding audit surface.
 
-### 3.3 WalletPaymentDeduction
+### 3.3 PaymentDeduction
 
 Wallet balance deduction for Payment invoices is owned by Wallet because the operation is implemented through wallet balance transfers and reversals.
 
@@ -222,7 +222,7 @@ deposit(toWalletId, amount, referenceId, description)
 4. Execute (within DB transaction)
    -> beginTransaction()
    -> DQL UPDATE: toWallet.balance += amount
-   -> Create WalletTransaction (type=deposit, fromWallet=null)
+   -> Create Transaction (type=deposit, fromWallet=null)
    -> commit()
    |
    -> On failure: rollback(), EM recovery
@@ -274,7 +274,7 @@ transfer(fromWalletId, toWalletId, amount, referenceId, description)
 ```php
 class TransferResult
 {
-    public WalletTransaction $transaction;
+    public Transaction $transaction;
     public int $fromWalletBalanceAfter;  // 0 for deposits
     public int $toWalletBalanceAfter;    // Post-operation
 }
@@ -377,7 +377,7 @@ Provider responsibilities:
 | Responsibility | Detail |
 |----------------|--------|
 | `supports()` | Return true when `walletAmount > 0` or structured `deduction.type = wallet_balance` is present |
-| `apply()` | Transfer payer wallet balance to system wallet and persist `WalletPaymentDeduction` |
+| `apply()` | Transfer payer wallet balance to system wallet and persist `PaymentDeduction` |
 | `applied()` | Return applied deduction as `PaymentAdjustmentResult` for Payment amount validation |
 | `release()` | Reverse applied deduction when invoice payment fails or is cancelled before paid |
 | `refund()` | Reverse applied deduction when paid invoice is refunded |
@@ -396,7 +396,7 @@ new PaymentAdjustmentResult(
 );
 ```
 
-Wallet transaction ids may be stored in `WalletPaymentDeduction`, but Payment must not rely on them.
+Wallet transaction ids may be stored in `PaymentDeduction`, but Payment must not rely on them.
 
 ### 7.4 Deduction Flow
 
@@ -406,7 +406,7 @@ InvoiceService::pay(invoice, payment, options)
   -> WalletBalanceAdjustmentProvider::apply(context)
      -> find payer wallet by payer id and invoice currency
      -> transfer payer wallet -> system wallet
-     -> persist WalletPaymentDeduction as applied
+     -> persist PaymentDeduction as applied
      -> return PaymentAdjustmentResult(amount=walletAmount)
   -> Payment computes gatewayAmount = invoice.amount - adjustmentTotal
   -> Payment calls selected gateway with explicit gatewayAmount
@@ -429,7 +429,7 @@ Release before invoice is paid:
 gateway pay creation fails or invoice is cancelled
   -> Payment calls WalletBalanceAdjustmentProvider::release(result, reason)
   -> Wallet transfers system wallet -> payer wallet
-  -> WalletPaymentDeduction status becomes released
+  -> PaymentDeduction status becomes released
 ```
 
 Refund after invoice is paid:
@@ -439,7 +439,7 @@ InvoiceService::refund(full invoice amount)
   -> Payment refunds external gateway amount first, if any
   -> Payment calls WalletBalanceAdjustmentProvider::refund(result, reason)
   -> Wallet transfers system wallet -> payer wallet
-  -> WalletPaymentDeduction status becomes refunded
+  -> PaymentDeduction status becomes refunded
 ```
 
 First-phase wallet deductions only support full invoice refunds. Partial refund allocation between external gateway amount and wallet deduction is out of scope.
@@ -454,7 +454,7 @@ invoice-adjustment-wallet-balance-release-{invoice.uuid}
 invoice-adjustment-wallet-balance-refund-{invoice.uuid}
 ```
 
-These references are passed to `TransferServiceInterface::transfer()` and stored on `WalletPaymentDeduction`.
+These references are passed to `TransferServiceInterface::transfer()` and stored on `PaymentDeduction`.
 
 ---
 
@@ -512,7 +512,7 @@ Creates `wallet` and `wallet_transaction` tables. Payment adjustment support add
 
 | Suite | Tests |
 |-------|-------|
-| `tests/Wallet/Entity/` | Wallet, WalletTransaction unit tests |
+| `tests/Wallet/Entity/` | Wallet, Transaction unit tests |
 | `tests/Wallet/Service/WalletServiceTest.php` | **11 unit tests**: verifyBalance (match/mismatch/zero), reconcile (empty/balanced/excess/negative/idempotent/multi/skip-non-wallet/skip-no-id) |
 | `tests/Wallet/Service/TransferServiceTest.php` | **20 unit tests**: deposit (happy/wallet-not-found/frozen/idempotent/rollback/em-closed), transfer (happy/same-wallet/source-not-found/target-not-found/frozen/currency/insufficient/idempotent/deadlock/rollback/em-closed) |
 | `tests/Wallet/Service/Payment/WalletBalanceAdjustmentProviderTest.php` | Wallet deduction apply/applied/release/refund validation and idempotency |

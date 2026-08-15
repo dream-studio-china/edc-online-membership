@@ -133,11 +133,11 @@ See `composer.json` for the full dependency list.
 │   │   └── MessageHandler/       #   Create/accept/reject/cancel outcome consumers
 │   ├── Wallet/                    # Wallet module
 │   │   ├── Controller/Manage/    #   Wallet, Transaction, Transfer (deposit) endpoints
-│   │   ├── DTO/                  #   WalletPaymentDeductionRequest
-│   │   ├── Entity/               #   Wallet, WalletTransaction, WalletPaymentDeduction
-│   │   ├── Repository/           #   + WalletPaymentDeductionRepository
+│   │   ├── DTO/                  #   PaymentDeductionRequest
+│   │   ├── Entity/               #   Wallet, Transaction, PaymentDeduction
+│   │   ├── Repository/           #   + PaymentDeductionRepository
 │   │   └── Service/              #   TransferService, WalletService
-│   │       └── Payment/          #   WalletGateway, WalletBalanceAdjustmentProvider, WalletPaymentDeductionService
+│   │       └── Payment/          #   WalletGateway, WalletBalanceAdjustmentProvider, PaymentDeductionService
 │   ├── Payment/                  # Payment module
 │   │   ├── Controller/App/       #   Invoice list/detail/pay
 │   │   ├── Controller/Manage/    #   Invoice create/cancel/refund/transitions
@@ -174,7 +174,7 @@ See `composer.json` for the full dependency list.
 │   │   └── Exception/
 │   ├── Inventory/                # Inventory module (material, stock, recipes, reservations)
 │   │   ├── Controller/Manage/    #   Material, Stock, Recipe management
-│   │   ├── Entity/               #   Material, InventoryStock, SpecificationRecipe, InventoryReservation, etc.
+│   │   ├── Entity/               #   Material, Stock, SpecificationRecipe, Reservation, etc.
 │   │   ├── Repository/
 │   │   ├── Service/              #   InventoryService (reserve/release/adjust)
 │   │   ├── MessageHandler/       #   Reservation request/release handlers

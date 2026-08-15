@@ -465,7 +465,7 @@ nelmio_api_doc:
                         label: { type: string, nullable: true }
                         user: { $ref: '#/components/schemas/UserRef' }
 
-                WalletTransaction:
+                Transaction:
                     type: object
                     properties:
                         id: { type: integer }
