@@ -61,6 +61,7 @@ nav:
       - Inventory: design/bundles/inventory.md
       - Payment: design/bundles/payment.md
       - Wallet: design/bundles/wallet.md
+      - Exchange (Pool-backed Economy): design/bundles/exchange.md
       - Identity (Auth): design/bundles/identity.md
       - Wechat (Login + Pay): design/bundles/wechat.md
   - Research:
