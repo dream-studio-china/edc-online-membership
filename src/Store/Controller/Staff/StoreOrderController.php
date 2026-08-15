@@ -10,9 +10,9 @@ use App\Core\View\ScopedDetailApiViewMixin;
 use App\Core\View\ScopedListApiViewMixin;
 use App\Identity\Entity\User;
 use App\Store\Entity\Store;
-use App\Store\Entity\StoreMembership;
+use App\Store\Entity\Membership;
 use App\Store\Entity\StoreOrder;
-use App\Store\Service\StoreMembershipServiceInterface;
+use App\Store\Service\MembershipServiceInterface;
 use App\Store\Service\StoreOrderServiceInterface;
 use App\Store\Service\StoreServiceInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -28,7 +28,7 @@ final class StoreOrderController extends RestController
 
     public function __construct(
         private readonly StoreServiceInterface $storeService,
-        private readonly StoreMembershipServiceInterface $membershipService,
+        private readonly MembershipServiceInterface $membershipService,
         protected readonly StoreOrderServiceInterface $service,
     ) {
     }
@@ -52,7 +52,7 @@ final class StoreOrderController extends RestController
     #[Route('/{orderUuid}/accept', name: 'accept', methods: ['POST'], requirements: ['orderUuid' => '[0-9a-fA-F-]{36}'])]
     public function acceptAction(Request $request, string $scopeId, string $orderUuid): Response
     {
-        $order = $this->authorizedOrder($scopeId, $orderUuid, [StoreMembership::ROLE_OWNER, StoreMembership::ROLE_MANAGER, StoreMembership::ROLE_CLERK]);
+        $order = $this->authorizedOrder($scopeId, $orderUuid, [Membership::ROLE_OWNER, Membership::ROLE_MANAGER, Membership::ROLE_CLERK]);
         if ($order === null) {
             return $this->warning('Store order not found or access denied.', 404, '', 404);
         }
@@ -73,7 +73,7 @@ final class StoreOrderController extends RestController
     #[Route('/{orderUuid}/reject', name: 'reject', methods: ['POST'], requirements: ['orderUuid' => '[0-9a-fA-F-]{36}'])]
     public function rejectAction(Request $request, string $scopeId, string $orderUuid): Response
     {
-        $order = $this->authorizedOrder($scopeId, $orderUuid, [StoreMembership::ROLE_OWNER, StoreMembership::ROLE_MANAGER, StoreMembership::ROLE_CLERK]);
+        $order = $this->authorizedOrder($scopeId, $orderUuid, [Membership::ROLE_OWNER, Membership::ROLE_MANAGER, Membership::ROLE_CLERK]);
         if ($order === null) {
             return $this->warning('Store order not found or access denied.', 404, '', 404);
         }
@@ -93,7 +93,7 @@ final class StoreOrderController extends RestController
     #[Route('/{orderUuid}/fulfill', name: 'fulfill', methods: ['POST'], requirements: ['orderUuid' => '[0-9a-fA-F-]{36}'])]
     public function fulfillAction(Request $request, string $scopeId, string $orderUuid): Response
     {
-        $order = $this->authorizedOrder($scopeId, $orderUuid, [StoreMembership::ROLE_OWNER, StoreMembership::ROLE_MANAGER, StoreMembership::ROLE_FULFILLMENT]);
+        $order = $this->authorizedOrder($scopeId, $orderUuid, [Membership::ROLE_OWNER, Membership::ROLE_MANAGER, Membership::ROLE_FULFILLMENT]);
         if ($order === null) {
             return $this->warning('Store order not found or access denied.', 404, '', 404);
         }

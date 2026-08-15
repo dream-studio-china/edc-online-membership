@@ -5,18 +5,18 @@ declare(strict_types=1);
 namespace App\Tests\Integration;
 
 use App\Inventory\Command\PublishOutboxCommand as InventoryPublishOutboxCommand;
-use App\Inventory\Message\InventoryReservationConfirmedMessage;
-use App\Inventory\Message\InventoryReservationRejectedMessage;
-use App\Inventory\Message\InventoryReservationReleaseRequestedMessage;
-use App\Inventory\Message\InventoryReservationReleasedMessage;
-use App\Inventory\Message\InventoryReservationRequestedMessage;
-use App\Inventory\MessageHandler\InventoryReservationReleaseRequestedHandler;
-use App\Inventory\MessageHandler\InventoryReservationRequestedHandler;
+use App\Inventory\Message\ReservationConfirmedMessage;
+use App\Inventory\Message\ReservationRejectedMessage;
+use App\Inventory\Message\ReservationReleaseRequestedMessage;
+use App\Inventory\Message\ReservationReleasedMessage;
+use App\Inventory\Message\ReservationRequestedMessage;
+use App\Inventory\MessageHandler\ReservationReleaseRequestedHandler;
+use App\Inventory\MessageHandler\ReservationRequestedHandler;
 use App\Inventory\Repository\InventoryOutboxMessageRepository;
 use App\Store\Entity\Store;
-use App\Store\MessageHandler\InventoryReservationConfirmedHandler;
-use App\Store\MessageHandler\InventoryReservationRejectedHandler;
-use App\Store\MessageHandler\InventoryReservationReleasedHandler;
+use App\Store\MessageHandler\ReservationConfirmedHandler;
+use App\Store\MessageHandler\ReservationRejectedHandler;
+use App\Store\MessageHandler\ReservationReleasedHandler;
 use App\Store\MessageHandler\TradeOrderCancelledHandler;
 use App\Store\MessageHandler\TradeOrderCreatedHandler;
 use App\Store\Repository\StoreOutboxMessageRepository;
@@ -64,7 +64,7 @@ abstract class StoreTradeFlowTestCase extends IntegrationWebTestCase
             'App\\Store\\Entity\\StoreOutboxMessage',
             'App\\Store\\Entity\\StoreConsumedEvent',
             'App\\Store\\Entity\\StoreTradeOrderCancellation',
-            'App\\Store\\Entity\\StoreMembership',
+            'App\\Store\\Entity\\Membership',
             'App\\Store\\Entity\\StoreOrder',
             'App\\Store\\Entity\\Store',
             'App\\Trade\\Entity\\TradeOutboxMessage',
@@ -72,12 +72,12 @@ abstract class StoreTradeFlowTestCase extends IntegrationWebTestCase
             'App\\Trade\\Entity\\Order',
             'App\\Inventory\\Entity\\InventoryOutboxMessage',
             'App\\Inventory\\Entity\\InventoryConsumedEvent',
-            'App\\Inventory\\Entity\\InventoryLedgerEntry',
+            'App\\Inventory\\Entity\\LedgerEntry',
             'App\\Inventory\\Entity\\ReservationLine',
-            'App\\Inventory\\Entity\\InventoryReservation',
+            'App\\Inventory\\Entity\\Reservation',
             'App\\Inventory\\Entity\\RecipeLine',
             'App\\Inventory\\Entity\\SpecificationRecipe',
-            'App\\Inventory\\Entity\\InventoryStock',
+            'App\\Inventory\\Entity\\Stock',
             'App\\Inventory\\Entity\\Material',
         ] as $entity) {
             $em->createQuery('DELETE FROM ' . $entity . ' entity')->execute();
@@ -98,11 +98,11 @@ abstract class StoreTradeFlowTestCase extends IntegrationWebTestCase
                 TradeOrderCancelledMessage::class => [static fn (TradeOrderCancelledMessage $message) => $container->get(TradeOrderCancelledHandler::class)($message)],
                 StoreOrderAcceptedMessage::class => [static fn (StoreOrderAcceptedMessage $message) => $container->get(StoreOrderAcceptedHandler::class)($message)],
                 StoreOrderRejectedMessage::class => [static fn (StoreOrderRejectedMessage $message) => $container->get(StoreOrderRejectedHandler::class)($message)],
-                InventoryReservationRequestedMessage::class => [static fn (InventoryReservationRequestedMessage $message) => $container->get(InventoryReservationRequestedHandler::class)($message)],
-                InventoryReservationReleaseRequestedMessage::class => [static fn (InventoryReservationReleaseRequestedMessage $message) => $container->get(InventoryReservationReleaseRequestedHandler::class)($message)],
-                InventoryReservationConfirmedMessage::class => [static fn (InventoryReservationConfirmedMessage $message) => $container->get(InventoryReservationConfirmedHandler::class)($message)],
-                InventoryReservationRejectedMessage::class => [static fn (InventoryReservationRejectedMessage $message) => $container->get(InventoryReservationRejectedHandler::class)($message)],
-                InventoryReservationReleasedMessage::class => [static fn (InventoryReservationReleasedMessage $message) => $container->get(InventoryReservationReleasedHandler::class)($message)],
+                ReservationRequestedMessage::class => [static fn (ReservationRequestedMessage $message) => $container->get(ReservationRequestedHandler::class)($message)],
+                ReservationReleaseRequestedMessage::class => [static fn (ReservationReleaseRequestedMessage $message) => $container->get(ReservationReleaseRequestedHandler::class)($message)],
+                ReservationConfirmedMessage::class => [static fn (ReservationConfirmedMessage $message) => $container->get(ReservationConfirmedHandler::class)($message)],
+                ReservationRejectedMessage::class => [static fn (ReservationRejectedMessage $message) => $container->get(ReservationRejectedHandler::class)($message)],
+                ReservationReleasedMessage::class => [static fn (ReservationReleasedMessage $message) => $container->get(ReservationReleasedHandler::class)($message)],
             ])),
         ]);
     }

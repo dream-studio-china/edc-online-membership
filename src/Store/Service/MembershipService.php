@@ -6,19 +6,19 @@ namespace App\Store\Service;
 
 use App\Core\Service\BaseService;
 use App\Store\Entity\Store;
-use App\Store\Entity\StoreMembership;
-use App\Store\Repository\StoreMembershipRepository;
+use App\Store\Entity\Membership;
+use App\Store\Repository\MembershipRepository;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
-/** @extends BaseService<StoreMembership> */
-class StoreMembershipService extends BaseService implements StoreMembershipServiceInterface
+/** @extends BaseService<Membership> */
+class MembershipService extends BaseService implements MembershipServiceInterface
 {
-    public function __construct(ContainerInterface $container, private readonly StoreMembershipRepository $membershipRepository)
+    public function __construct(ContainerInterface $container, private readonly MembershipRepository $membershipRepository)
     {
-        parent::__construct($container, StoreMembership::class);
+        parent::__construct($container, Membership::class);
     }
 
-    public function grant(Store $store, string $userUuid, string $role): StoreMembership
+    public function grant(Store $store, string $userUuid, string $role): Membership
     {
         if (trim($userUuid) === '') {
             throw new \InvalidArgumentException('Store membership user UUID is required.');
@@ -29,12 +29,12 @@ class StoreMembershipService extends BaseService implements StoreMembershipServi
             throw new \InvalidArgumentException('Store must be persisted before granting membership.');
         }
 
-        return $this->wrapInTransaction(function () use ($storeId, $userUuid, $role): StoreMembership {
+        return $this->wrapInTransaction(function () use ($storeId, $userUuid, $role): Membership {
             $managedStore = $this->getEntityManager()->getReference(Store::class, $storeId);
             \assert($managedStore instanceof Store);
             $membership = $this->membershipRepository->findForStoreAndUser($managedStore, $userUuid);
             if ($membership === null) {
-                $membership = new StoreMembership($managedStore, $userUuid, $role);
+                $membership = new Membership($managedStore, $userUuid, $role);
                 $this->getEntityManager()->persist($membership);
                 return $membership;
             }
@@ -52,7 +52,7 @@ class StoreMembershipService extends BaseService implements StoreMembershipServi
             && ($allowedRoles === [] || in_array($membership->getRole(), $allowedRoles, true));
     }
 
-    public function requireAuthorization(Store $store, string $userUuid, array $allowedRoles = []): StoreMembership
+    public function requireAuthorization(Store $store, string $userUuid, array $allowedRoles = []): Membership
     {
         $membership = $this->membershipRepository->findForStoreAndUser($store, $userUuid);
         if ($membership === null || !$membership->isActive() || ($allowedRoles !== [] && !in_array($membership->getRole(), $allowedRoles, true))) {

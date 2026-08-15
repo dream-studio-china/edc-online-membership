@@ -12,7 +12,7 @@ use App\Store\Repository\StoreConsumedEventRepository;
 use App\Store\Repository\StoreOrderRepository;
 use App\Store\Repository\StoreOutboxMessageRepository;
 use App\Store\Repository\StoreTradeOrderCancellationRepository;
-use App\Store\Service\StoreMembershipServiceInterface;
+use App\Store\Service\MembershipServiceInterface;
 use App\Trade\Entity\Order;
 use App\Trade\Message\TradeOrderCancelledMessage;
 use App\Trade\Message\TradeOrderCreatedMessage;
@@ -108,7 +108,7 @@ final class StoreTradeFlowTest extends StoreTradeFlowTestCase
         );
         $em->persist($storeOrder);
         $em->flush();
-        $container->get(StoreMembershipServiceInterface::class)->grant($store, (string) $user->getUuid(), 'manager');
+        $container->get(MembershipServiceInterface::class)->grant($store, (string) $user->getUuid(), 'manager');
 
         $client->request('POST', '/api/v1/store/stores/' . $store->getUuid() . '/orders/' . $storeOrder->getUuid() . '/reject', [], [], [], json_encode([
             'code' => 'OUT_OF_STOCK',

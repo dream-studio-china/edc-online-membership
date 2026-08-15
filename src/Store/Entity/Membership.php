@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace App\Store\Entity;
 
-use App\Store\Repository\StoreMembershipRepository;
+use App\Store\Repository\MembershipRepository;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity(repositoryClass: StoreMembershipRepository::class)]
+#[ORM\Entity(repositoryClass: MembershipRepository::class)]
 #[ORM\Table(name: 'store_membership')]
 #[ORM\UniqueConstraint(name: 'uniq_store_membership_store_user', columns: ['store_id', 'user_uuid'])]
 #[ORM\Index(name: 'idx_store_membership_user_status', columns: ['user_uuid', 'status'])]
 #[ORM\Index(name: 'IDX_A8168968B092A811', columns: ['store_id'])]
-class StoreMembership
+class Membership
 {
     public const ROLE_OWNER = 'owner';
     public const ROLE_MANAGER = 'manager';
