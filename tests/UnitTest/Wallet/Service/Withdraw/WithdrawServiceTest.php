@@ -16,17 +16,21 @@ use App\Wallet\Service\Withdraw\WithdrawProviderInterface;
 use App\Wallet\Service\Withdraw\WithdrawProviderRegistry;
 use App\Wallet\Service\Withdraw\WithdrawService;
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Driver\Exception as DriverException;
+use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Query;
 use Doctrine\Persistence\ManagerRegistry;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
 final class RecordingWithdrawProvider implements WithdrawProviderInterface
 {
     public bool $authorized = false;
     public bool $reversed = false;
+    public ?\Throwable $permitException = null;
 
     public function __construct(private readonly string $supportedType)
     {
@@ -40,6 +44,13 @@ final class RecordingWithdrawProvider implements WithdrawProviderInterface
     public function supports(string $voucherType): bool
     {
         return $voucherType === $this->supportedType;
+    }
+
+    public function assertPermitted(array $options = []): void
+    {
+        if ($this->permitException !== null) {
+            throw $this->permitException;
+        }
     }
 
     public function authorize(Voucher $voucher, array $options): void
@@ -242,6 +253,52 @@ final class WithdrawServiceTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Unsupported voucher type "transfer".');
         $this->service->withdraw('transfer', 'x', 1, 100, 'CNY', 'ref-t', 'admin');
+    }
+
+    public function testWithdrawDeniedByProviderPermission(): void
+    {
+        $this->voucherRepo->method('findByReferenceId')->willReturn(null);
+        $this->voucherRepo->method('findByVoucherSource')->willReturn(null);
+        $this->provider->permitException = new AccessDeniedException('Manual voucher type is admin-only.');
+
+        $this->expectException(AccessDeniedException::class);
+        $this->expectExceptionMessage('Manual voucher type is admin-only.');
+        $this->service->withdraw(Voucher::VOUCHER_TYPE_MANUAL, 'm1', 1, 100, 'CNY', 'ref', 'admin');
+    }
+
+    public function testWithdrawConcurrentDuplicateIsIdempotent(): void
+    {
+        $wallet = $this->createWallet(1, 50000, 'CNY');
+        $existing = $this->createAppliedDebitVoucher($wallet, 30000, 'race');
+
+        $calls = 0;
+        $this->voucherRepo->method('findByReferenceId')->willReturnCallback(
+            static function () use ($existing, &$calls) {
+                return ++$calls === 1 ? null : $existing;
+            }
+        );
+        $this->voucherRepo->method('findByVoucherSource')->willReturn(null);
+        $this->walletRepo->method('findByIdForUpdate')->with(1)->willReturn($wallet);
+        $this->em->method('createQuery')->willReturn($this->mockQuery());
+        $this->em->method('refresh');
+        $this->em->method('persist');
+
+        $driver = $this->createMock(DriverException::class);
+        $this->em->method('flush')->willThrowException(
+            new UniqueConstraintViolationException($driver, null)
+        );
+
+        $result = $this->service->withdraw(
+            Voucher::VOUCHER_TYPE_MANUAL,
+            'manual-race',
+            1,
+            30000,
+            'CNY',
+            'ref-race',
+            'admin',
+        );
+
+        self::assertSame($existing, $result);
     }
 
     public function testWithdrawWalletNotFound(): void

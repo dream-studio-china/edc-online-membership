@@ -244,4 +244,42 @@ final class VoucherControllerTest extends TestCase
         $body = json_decode((string) $response->getContent(), true);
         self::assertStringContainsString('required', $body['message']);
     }
+
+    public function testDepositWithCustomVoucherType(): void
+    {
+        $requestStack = new RequestStack();
+        $requestStack->push($this->jsonRequest('/api/v1/manage/vouchers/deposit', [
+            'walletId' => 9, 'amount' => 50000, 'currency' => 'CNY',
+            'referenceId' => 'DEP-2', 'voucherType' => 'bonus',
+        ]));
+        $this->injectDependencies($requestStack);
+
+        $voucher = $this->makeAppliedVoucher(50000);
+        $this->depositService->method('deposit')
+            ->with('bonus', 'DEP-2', 9, 50000, 'CNY', 'DEP-2', 'system', null)
+            ->willReturn($voucher);
+
+        $response = $this->controller->depositAction($requestStack->getCurrentRequest());
+
+        self::assertSame(201, $response->getStatusCode());
+    }
+
+    public function testWithdrawWithCustomVoucherType(): void
+    {
+        $requestStack = new RequestStack();
+        $requestStack->push($this->jsonRequest('/api/v1/manage/vouchers/withdraw', [
+            'walletId' => 9, 'amount' => 30000, 'currency' => 'CNY',
+            'referenceId' => 'WD-2', 'voucherType' => 'payout',
+        ]));
+        $this->injectDependencies($requestStack);
+
+        $voucher = $this->makeAppliedDebitVoucher(30000);
+        $this->withdrawService->method('withdraw')
+            ->with('payout', 'WD-2', 9, 30000, 'CNY', 'WD-2', 'system', null)
+            ->willReturn($voucher);
+
+        $response = $this->controller->withdrawAction($requestStack->getCurrentRequest());
+
+        self::assertSame(201, $response->getStatusCode());
+    }
 }

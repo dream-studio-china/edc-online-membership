@@ -87,9 +87,18 @@ class Wallet
         return $this->currency;
     }
 
+    /**
+     * The unit of account is immutable after persistence: changing it would
+     * break transactions, vouchers, and balance verification. Only a new
+     * (unpersisted) wallet may be assigned a currency.
+     */
     public function setCurrency(string $currency): self
     {
-        $this->currency = strtoupper($currency);
+        $currency = strtoupper($currency);
+        if ($this->id !== null && $this->currency !== $currency) {
+            throw new \LogicException('Wallet currency is immutable after creation.');
+        }
+        $this->currency = $currency;
         return $this;
     }
 

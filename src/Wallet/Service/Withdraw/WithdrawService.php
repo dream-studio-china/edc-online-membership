@@ -12,6 +12,7 @@ use App\Wallet\Exception\WalletFrozenException;
 use App\Wallet\Repository\VoucherRepository;
 use App\Wallet\Repository\WalletRepository;
 use App\Wallet\Service\Concern\WrapInTransactionTrait;
+use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
 use Psr\Log\LoggerInterface;
@@ -84,10 +85,13 @@ final class WithdrawService implements WithdrawServiceInterface
             throw new \InvalidArgumentException(sprintf('Unsupported voucher type "%s".', $voucherType));
         }
 
-        return $this->wrapInTransaction(function () use (
-            $voucherType, $voucherId, $walletId, $amount, $currency,
-            $referenceId, $createdBy, $reason, $fundSource, $options, $provider,
-        ) {
+        $provider->assertPermitted($options);
+
+        try {
+            return $this->wrapInTransaction(function () use (
+                $voucherType, $voucherId, $walletId, $amount, $currency,
+                $referenceId, $createdBy, $reason, $fundSource, $options, $provider,
+            ) {
             $wallet = $this->walletRepository->findByIdForUpdate($walletId);
             if ($wallet === null) {
                 throw new \RuntimeException("Source wallet #$walletId not found");
@@ -149,7 +153,24 @@ final class WithdrawService implements WithdrawServiceInterface
             ]);
 
             return $voucher;
-        });
+            });
+        } catch (UniqueConstraintViolationException $e) {
+            $existing = $this->voucherRepository->findByReferenceId($referenceId);
+            if ($existing instanceof Voucher) {
+                return $existing;
+            }
+            $existing = $this->voucherRepository->findByVoucherSource($voucherType, $voucherId);
+            if ($existing instanceof Voucher) {
+                throw new \RuntimeException(sprintf(
+                    'Voucher source %s/%s already processed (status %s).',
+                    $voucherType,
+                    $voucherId,
+                    $existing->getStatus(),
+                ));
+            }
+
+            throw $e;
+        }
     }
 
     /**

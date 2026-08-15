@@ -12,6 +12,7 @@ use App\Wallet\Exception\WalletFrozenException;
 use App\Wallet\Repository\WalletRepository;
 use App\Wallet\Repository\TransactionRepository;
 use App\Wallet\Service\Concern\WrapInTransactionTrait;
+use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
 use Psr\Log\LoggerInterface;
@@ -63,7 +64,8 @@ final class TransferService implements TransferServiceInterface
 
         $uuid = self::generateUuid();
 
-        return $this->wrapInTransaction(function () use ($fromWalletId, $toWalletId, $amount, $referenceId, $description, $uuid) {
+        try {
+            return $this->wrapInTransaction(function () use ($fromWalletId, $toWalletId, $amount, $referenceId, $description, $uuid) {
             // Lock wallets in consistent order (by ID) to prevent deadlocks
             [$firstId, $secondId] = $fromWalletId < $toWalletId
                 ? [$fromWalletId, $toWalletId]
@@ -135,7 +137,22 @@ final class TransferService implements TransferServiceInterface
             ]);
 
             return new TransferResult($transaction, $fromWallet->getBalance(), $toWallet->getBalance());
-        });
+            });
+        } catch (UniqueConstraintViolationException $e) {
+            if ($referenceId === null) {
+                throw $e;
+            }
+            $existing = $this->transactionRepo->findByReferenceId($referenceId);
+            if ($existing !== null) {
+                return new TransferResult(
+                    $existing,
+                    $existing->getFromWallet()?->getBalance() ?? 0,
+                    $existing->getToWallet()?->getBalance() ?? 0,
+                );
+            }
+
+            throw $e;
+        }
     }
 
     public function hold(int $walletId, int $amount, ?string $description = null): Wallet

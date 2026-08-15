@@ -15,6 +15,8 @@ use App\Wallet\Repository\TransactionRepository;
 use App\Wallet\Service\Transfer\TransferResult;
 use App\Wallet\Service\Transfer\TransferService;
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\Driver\Exception as DriverException;
+use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Query;
 use Doctrine\Persistence\ManagerRegistry;
@@ -236,6 +238,40 @@ final class TransferServiceTest extends TestCase
         $this->txRepo->method('findByReferenceId')->with('ref-t')->willReturn($existingTx);
 
         $result = $this->service->transfer(1, 2, 99999, 'ref-t');
+
+        self::assertSame($existingTx, $result->transaction);
+        self::assertSame(90000, $result->fromWalletBalanceAfter);
+        self::assertSame(10000, $result->toWalletBalanceAfter);
+    }
+
+    public function testTransferConcurrentDuplicateIsIdempotent(): void
+    {
+        $from = $this->createWallet(1, 90000);
+        $to = $this->createWallet(2, 10000);
+        $existingTx = new Transaction('uuid-t', 10000, Transaction::TYPE_TRANSFER);
+        $existingTx->setFromWallet($from);
+        $existingTx->setToWallet($to);
+        $existingTx->markCompleted();
+
+        $calls = 0;
+        $this->txRepo->method('findByReferenceId')->willReturnCallback(
+            static function () use ($existingTx, &$calls) {
+                return ++$calls === 1 ? null : $existingTx;
+            }
+        );
+        $this->walletRepo->method('findByIdForUpdate')->willReturnMap([
+            [1, $from],
+            [2, $to],
+        ]);
+        $this->em->method('createQuery')->willReturn($this->mockQuery());
+        $this->em->method('refresh');
+
+        $driver = $this->createMock(DriverException::class);
+        $this->em->method('flush')->willThrowException(
+            new UniqueConstraintViolationException($driver, null)
+        );
+
+        $result = $this->service->transfer(1, 2, 10000, 'ref-t');
 
         self::assertSame($existingTx, $result->transaction);
         self::assertSame(90000, $result->fromWalletBalanceAfter);

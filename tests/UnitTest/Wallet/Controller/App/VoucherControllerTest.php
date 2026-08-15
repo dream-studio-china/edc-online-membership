@@ -20,6 +20,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
+use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
@@ -147,14 +148,14 @@ final class VoucherControllerTest extends TestCase
         $requestStack = new RequestStack();
         $requestStack->push($this->jsonRequest('/api/v1/app/vouchers/deposit', [
             'walletId' => 5, 'amount' => 50000, 'currency' => 'CNY',
-            'referenceId' => 'APP-DEP-1', 'reason' => 'self top-up',
+            'referenceId' => 'APP-DEP-1', 'reason' => 'self top-up', 'voucherType' => 'recharge',
         ]));
         $this->injectDependencies($requestStack);
 
         $this->walletRepository->method('find')->with(5)->willReturn($this->makeWallet(5, $this->user));
         $voucher = $this->makeAppliedVoucher(5, 50000, $this->user);
         $this->depositService->method('deposit')
-            ->with(Voucher::VOUCHER_TYPE_MANUAL, 'APP-DEP-1', 5, 50000, 'CNY', 'APP-DEP-1', 'v', 'self top-up')
+            ->with('recharge', 'APP-DEP-1', 5, 50000, 'CNY', 'APP-DEP-1', 'v', 'self top-up')
             ->willReturn($voucher);
 
         $response = $this->controller->depositAction($requestStack->getCurrentRequest());
@@ -164,11 +165,31 @@ final class VoucherControllerTest extends TestCase
         self::assertSame('Deposit completed', $body['message']);
     }
 
+    public function testDepositRejectsManualVoucherType(): void
+    {
+        $requestStack = new RequestStack();
+        $requestStack->push($this->jsonRequest('/api/v1/app/vouchers/deposit', [
+            'walletId' => 5, 'amount' => 100, 'currency' => 'CNY',
+            'referenceId' => 'r1', 'voucherType' => Voucher::VOUCHER_TYPE_MANUAL,
+        ]));
+        $this->injectDependencies($requestStack);
+
+        $this->walletRepository->method('find')->with(5)->willReturn($this->makeWallet(5, $this->user));
+        $this->depositService->method('deposit')
+            ->willThrowException(new AccessDeniedException('Manual voucher type is admin-only.'));
+
+        $response = $this->controller->depositAction($requestStack->getCurrentRequest());
+
+        self::assertSame(403, $response->getStatusCode());
+        $body = json_decode((string) $response->getContent(), true);
+        self::assertStringContainsString('admin-only', $body['message']);
+    }
+
     public function testDepositIntoForeignWalletIsForbidden(): void
     {
         $requestStack = new RequestStack();
         $requestStack->push($this->jsonRequest('/api/v1/app/vouchers/deposit', [
-            'walletId' => 5, 'amount' => 100, 'currency' => 'CNY', 'referenceId' => 'r1',
+            'walletId' => 5, 'amount' => 100, 'currency' => 'CNY', 'referenceId' => 'r1', 'voucherType' => 'recharge',
         ]));
         $this->injectDependencies($requestStack);
 
@@ -244,14 +265,14 @@ final class VoucherControllerTest extends TestCase
         $requestStack = new RequestStack();
         $requestStack->push($this->jsonRequest('/api/v1/app/vouchers/withdraw', [
             'walletId' => 5, 'amount' => 30000, 'currency' => 'CNY',
-            'referenceId' => 'APP-WD-1', 'reason' => 'self payout',
+            'referenceId' => 'APP-WD-1', 'reason' => 'self payout', 'voucherType' => 'payout',
         ]));
         $this->injectDependencies($requestStack);
 
         $this->walletRepository->method('find')->with(5)->willReturn($this->makeWallet(5, $this->user));
         $voucher = $this->makeAppliedDebitVoucher(5, 30000, $this->user);
         $this->withdrawService->method('withdraw')
-            ->with(Voucher::VOUCHER_TYPE_MANUAL, 'APP-WD-1', 5, 30000, 'CNY', 'APP-WD-1', 'v', 'self payout')
+            ->with('payout', 'APP-WD-1', 5, 30000, 'CNY', 'APP-WD-1', 'v', 'self payout')
             ->willReturn($voucher);
 
         $response = $this->controller->withdrawAction($requestStack->getCurrentRequest());
@@ -261,11 +282,31 @@ final class VoucherControllerTest extends TestCase
         self::assertSame('Withdrawal completed', $body['message']);
     }
 
+    public function testWithdrawRejectsManualVoucherType(): void
+    {
+        $requestStack = new RequestStack();
+        $requestStack->push($this->jsonRequest('/api/v1/app/vouchers/withdraw', [
+            'walletId' => 5, 'amount' => 100, 'currency' => 'CNY',
+            'referenceId' => 'r1', 'voucherType' => Voucher::VOUCHER_TYPE_MANUAL,
+        ]));
+        $this->injectDependencies($requestStack);
+
+        $this->walletRepository->method('find')->with(5)->willReturn($this->makeWallet(5, $this->user));
+        $this->withdrawService->method('withdraw')
+            ->willThrowException(new AccessDeniedException('Manual voucher type is admin-only.'));
+
+        $response = $this->controller->withdrawAction($requestStack->getCurrentRequest());
+
+        self::assertSame(403, $response->getStatusCode());
+        $body = json_decode((string) $response->getContent(), true);
+        self::assertStringContainsString('admin-only', $body['message']);
+    }
+
     public function testWithdrawFromForeignWalletIsForbidden(): void
     {
         $requestStack = new RequestStack();
         $requestStack->push($this->jsonRequest('/api/v1/app/vouchers/withdraw', [
-            'walletId' => 5, 'amount' => 100, 'currency' => 'CNY', 'referenceId' => 'r1',
+            'walletId' => 5, 'amount' => 100, 'currency' => 'CNY', 'referenceId' => 'r1', 'voucherType' => 'payout',
         ]));
         $this->injectDependencies($requestStack);
 

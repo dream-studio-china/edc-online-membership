@@ -326,6 +326,8 @@ reverse(voucherUuid, reason)
 
 Both operations are atomic (rollback + EM recovery on failure) and idempotent by `referenceId`. The provider tag is `wallet.withdraw_provider`; `ManualWithdrawProvider` is the built-in no-op authorization.
 
+**Permission control is provider-owned.** Each provider implements `assertPermitted(array $options)` and may deny with `AccessDeniedException` (mapped to HTTP 403). The Manual providers require `ROLE_ADMIN`; with no active security context (CLI/queue/system invocation) the call is treated as a trusted internal caller and allowed. External providers implement their own rules.
+
 ---
 
 ## 5. WalletService — Balance Verification + Reconciliation
@@ -519,8 +521,16 @@ These references are passed to `TransferServiceInterface::transfer()` and stored
 | **POST** | **`/api/v1/manage/wallets/reconcile`** | **Per-wallet reconciliation** |
 | GET | `/api/v1/manage/transactions` | List transactions |
 | POST | `/api/v1/manage/transactions` | Execute wallet-to-wallet transfer |
-| **POST** | **`/api/v1/manage/vouchers/deposit`** | **Voucher-backed deposit with audit trail** |
-| **POST** | **`/api/v1/manage/vouchers/withdraw`** | **Voucher-backed withdrawal with audit trail** |
+| **POST** | **`/api/v1/manage/vouchers/deposit`** | **Voucher-backed deposit. `voucherType` optional (default `manual`; admin-only zone)** |
+| **POST** | **`/api/v1/manage/vouchers/withdraw`** | **Voucher-backed withdrawal. `voucherType` optional (default `manual`; admin-only zone)** |
+
+### 8.2 App (User, ROLE_USER)
+
+| Method | Path | Description |
+|--------|------|-------------|
+| **POST** | **`/api/v1/app/vouchers/deposit`** | **Self-service deposit into own wallet. `voucherType` REQUIRED — permission enforced by the provider's `assertPermitted()` (e.g. `manual` requires `ROLE_ADMIN`, denied for users)** |
+| **POST** | **`/api/v1/app/vouchers/withdraw`** | **Self-service withdrawal out of own wallet. `voucherType` REQUIRED — permission enforced by the provider's `assertPermitted()`** |
+| **POST** | **`/api/v1/app/vouchers/{uuid}/reverse`** | **Reverse own voucher (deposit or withdrawal by direction)** |
 
 ---
 

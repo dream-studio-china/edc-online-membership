@@ -22,6 +22,7 @@ use Doctrine\ORM\QueryBuilder;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 /**
@@ -64,11 +65,12 @@ class VoucherController extends RestController
         $amount = (int) ($content['amount'] ?? 0);
         $currency = (string) ($content['currency'] ?? '');
         $referenceId = (string) ($content['referenceId'] ?? '');
+        $voucherType = (string) ($content['voucherType'] ?? '');
         $voucherId = (string) ($content['voucherId'] ?? $referenceId);
         $reason = isset($content['reason']) ? (string) $content['reason'] : null;
 
-        if ($walletId <= 0 || $amount <= 0 || $currency === '' || $referenceId === '') {
-            return $this->warning('walletId, amount, currency, and referenceId are required', 400, '', 400);
+        if ($walletId <= 0 || $amount <= 0 || $currency === '' || $referenceId === '' || $voucherType === '') {
+            return $this->warning('walletId, amount, currency, referenceId, and voucherType are required', 400, '', 400);
         }
 
         $user = $this->getUser();
@@ -80,7 +82,7 @@ class VoucherController extends RestController
 
         try {
             $voucher = $this->depositService->deposit(
-                Voucher::VOUCHER_TYPE_MANUAL,
+                $voucherType,
                 $voucherId,
                 $walletId,
                 $amount,
@@ -91,6 +93,8 @@ class VoucherController extends RestController
             );
 
             return $this->success($voucher, 'Deposit completed', 201);
+        } catch (AccessDeniedException $e) {
+            return $this->warning($e->getMessage(), 403, '', 403);
         } catch (WalletFrozenException $e) {
             return $this->warning($e->getMessage(), 403, '', 403);
         } catch (InsufficientFundsException $e) {
@@ -112,11 +116,12 @@ class VoucherController extends RestController
         $amount = (int) ($content['amount'] ?? 0);
         $currency = (string) ($content['currency'] ?? '');
         $referenceId = (string) ($content['referenceId'] ?? '');
+        $voucherType = (string) ($content['voucherType'] ?? '');
         $voucherId = (string) ($content['voucherId'] ?? $referenceId);
         $reason = isset($content['reason']) ? (string) $content['reason'] : null;
 
-        if ($walletId <= 0 || $amount <= 0 || $currency === '' || $referenceId === '') {
-            return $this->warning('walletId, amount, currency, and referenceId are required', 400, '', 400);
+        if ($walletId <= 0 || $amount <= 0 || $currency === '' || $referenceId === '' || $voucherType === '') {
+            return $this->warning('walletId, amount, currency, referenceId, and voucherType are required', 400, '', 400);
         }
 
         $user = $this->getUser();
@@ -128,7 +133,7 @@ class VoucherController extends RestController
 
         try {
             $voucher = $this->withdrawService->withdraw(
-                Voucher::VOUCHER_TYPE_MANUAL,
+                $voucherType,
                 $voucherId,
                 $walletId,
                 $amount,
@@ -139,6 +144,8 @@ class VoucherController extends RestController
             );
 
             return $this->success($voucher, 'Withdrawal completed', 201);
+        } catch (AccessDeniedException $e) {
+            return $this->warning($e->getMessage(), 403, '', 403);
         } catch (WalletFrozenException $e) {
             return $this->warning($e->getMessage(), 403, '', 403);
         } catch (InsufficientFundsException $e) {
