@@ -1,6 +1,6 @@
 # CRUD Skeleton - Full Codebase Context
 
-> Context snapshot. Last updated: 2026-08-09
+> Context snapshot. Last updated: 2026-08-15
 
 ---
 
@@ -15,6 +15,7 @@
 - NelmioApiDoc (Swagger at `/api/doc`), PHPUnit 12.5, Docker Compose (7 services: app, worker, scheduler, nginx, MySQL, Redis, Mailpit)
 - MkDocs Material + GitHub Pages documentation
 - **i18n**: Symfony Translation with en, zh, zh_Hant, ja — all user-facing messages, entity/field names, and status values translated
+- **Wallet ledger**: voucher-backed single-sided deposits/withdrawals (`wallet_voucher` boundary ledger) with provider-owned voucher-type permissions; **Exchange** bundle design (pool-backed points economy) at `docs/design/bundles/exchange.md`
 
 ## 2. Directory Structure
 
@@ -80,15 +81,18 @@
 │       # Planned phase 1: Payment Outbox -> Trade Inbox; Payment Inbox is deferred.
 │
 ├── src/Wallet/                   # Wallet module
-│   ├── Entity/                   # Wallet, Transaction, PaymentDeduction
-│   ├── Repository/               # + PaymentDeductionRepository
-│   ├── Service/Transfer/TransferService.php     # Atomic transfers
+│   ├── Entity/                   # Wallet, Transaction, Voucher, VoucherComment, PaymentDeduction
+│   ├── Repository/               # Wallet, Transaction, Voucher, VoucherComment, PaymentDeduction
+│   ├── Service/Transfer/TransferService.php     # Atomic transfers (+ hold/release via `held`)
+│   ├── Service/Deposit/                 # DepositService + provider registry (voucher-backed credit)
+│   ├── Service/Withdraw/                # WithdrawService + provider registry (voucher-backed debit)
 │   ├── Service/WalletService.php       # verifyBalance() + reconcile()
+│   ├── Service/VoucherService.php, VoucherCommentService.php   # list/detail + append-only annotations
 │   ├── Service/Payment/WalletGateway.php              # Implements PaymentGatewayInterface
 │   ├── Service/Payment/WalletBalanceAdjustmentProvider.php  # Wallet deduction as Payment adjustment provider
 │   ├── Service/Payment/PaymentDeductionService.php    # Wallet-owned deduction lifecycle
 │   ├── DTO/PaymentDeductionRequest.php
-│   └── Controller/App/ + Manage/       # App list/detail/balance, Manage CRUD/audit/reconcile
+│   └── Controller/App/ + Manage/       # App list/detail/balance + self deposit/withdraw; Manage CRUD/audit/reconcile/deposit/withdraw/reverse
 │
 ├── src/Wechat/                   # WeChat module
 │   ├── Entity/WechatUser.php           # OneToOne→User
@@ -134,21 +138,21 @@
 │       ├── workflow.yaml         # Order state machine, including Store acceptance
 │       ├── messenger.yaml        # Trade/Store integration messages to async transport
 │       └── ...
-├── migrations/                   # 20 migrations (latest: Inventory tables + store_trade_order_cancellation)
+├── migrations/                   # 24 migrations (latest: wallet_voucher_comment, 2026-08-15)
 ├── translations/                 # i18n translation files (messages.en/zh/zh_Hant/ja.yaml)
 ├── docs/
 │   ├── ai/context.md             # This file
 │   ├── design/                   # Design contracts (incl. security-hardening.md)
-│   │   └── bundles/              # Per-module design docs (core, common, trade, wallet, identity, wechat, payment, storage, promotion, store, inventory)
+│   │   └── bundles/              # Per-module design docs (core, common, trade, wallet, identity, wechat, payment, storage, promotion, store, inventory, exchange)
 │   ├── testing/                  # Test-quality contract: TEST_STRATEGY, TEST_MATRIX, BUSINESS_INVARIANTS, FAILURE_MODES, PRODUCTION_VALIDATION, SYSTEM_WALKTHROUGH, AI_DEVELOPMENT_PROCESS (+ reusable framework-template/)
 │   ├── issues/                   # Audit & coverage reports (coverage-2026-08-09/, test-audit-2026-08-09/)
 │   └── openapi/                       # endpoints.yaml + order/payment frontend flow docs
 ├── scripts/tests/                # API smoke, Store orchestration smoke, trade workflow scripts
-├── tests/                        # 303 PHPUnit test files, organized by layer:
-│   ├── UnitTest/                 #   189 files — pure unit tests (no kernel/DB), App\Tests\UnitTest\...
-│   ├── Integration/              #   71 files — kernel/DB/HTTP tests + helpers (DatabaseBootstrapTrait, IntegrationWebTestCase), App\Tests\Integration\...
+├── tests/                        # 312 PHPUnit test files, organized by layer:
+│   ├── UnitTest/                 #   197 files — pure unit tests (no kernel/DB), App\Tests\UnitTest\...
+│   ├── Integration/              #   72 files — kernel/DB/HTTP tests + helpers (DatabaseBootstrapTrait, IntegrationWebTestCase), App\Tests\Integration\...
 │   └── LowValue/                 #   43 files — deprecated/low-value tests, excluded from default run, App\Tests\LowValue\...
-│                                 主套件 = UnitTest + Integration（2224 tests）；低价值可 --group low-value 显式运行
+│                                 主套件 = UnitTest + Integration（2311 tests）；低价值可 --group low-value 显式运行
 ├── README.md                     # English README
 ├── README.zh-cn.md               # Chinese (Simplified) README
 ├── README.zh-hant.md             # Chinese (Traditional) README
@@ -426,8 +430,11 @@ and Store publishers; the existing `worker` will consume its Messenger messages.
 | GET | `/app/wallets/balance` | Current user's wallet balance audit: `totalBalance`, `totalDeposited`, `discrepancy`, `matches`, `walletCount` |
 | GET | `/app/transactions` | Current user's wallet transactions only |
 | GET | `/app/transactions/{id}` | Current user's transaction detail only |
+| POST | `/app/vouchers/deposit` | Self-service deposit into own wallet (`voucherType` required, provider-permissioned) |
+| POST | `/app/vouchers/withdraw` | Self-service withdrawal out of own wallet (`voucherType` required) |
+| POST | `/app/vouchers/{uuid}/reverse` | Reverse own voucher (deposit or withdrawal by direction) |
 
-Manage keeps global audit endpoints: `GET /manage/wallets/balance` and `POST /manage/wallets/reconcile`.
+Manage keeps global audit endpoints: `GET /manage/wallets/balance`, `POST /manage/wallets/reconcile`, `POST /manage/vouchers/deposit|withdraw` (voucher-backed funding/payout, `voucherType` defaults to `manual`) and `POST /manage/vouchers/{uuid}/reverse`.
 
 ## 9. Wechat Module
 
@@ -599,13 +606,17 @@ Placed in `src/Core/Controller/System/` (framework layer). NelmioApiDoc path_pat
 | **Idempotency** | Wallet | `referenceId` unique constraint on Transaction |
 | **Pipeline** | Trade | `PriceCalculatorInterface` with priority ordering |
 | **Meta channel** | Trade | `PriceCalculationContext.meta` / `PriceCalculationResult.meta` — bidirectional opaque channel. Calculators read/write module-specific keys (`meta['promotion']`, `meta['coupon']`). Trade never inspects content. |
-| **Optimistic locking** | Wallet | `#[ORM\Version]` on Wallet |
+| **Optimistic locking** | Wallet | `SELECT … FOR UPDATE` pessimistic locking + manual `version` counter (`SET version = version + 1`); no `#[ORM\Version]` attribute |
 | **Post-response enrichment** | Core | `OpenApiEnricherListener` post-processes `/api/doc` and `/api/doc.json` |
 | **commonFilter** | Controllers | Array criteria or QueryBuilder injected into all queries. `[]` = no filter (admin), `['user' => $user]` = user-scoped, `['id' => -1]` = block all, QueryBuilder required for `IS NULL` filters |
 | **Payment via wallet** | Trade | `POST /app/orders/{id}/payment` with `payment: "wallet"` creates Invoice → WalletGateway deducts user wallet |
 | **Payment integration migration** | Payment -> Trade | Next phase replaces synchronous Invoice domain-event consumption with Payment Outbox and Trade Inbox; Payment request Inbox/Saga remains deferred |
 | **Balance audit** | Wallet | `GET /app/wallets/balance` audits only current user's wallets; `GET /manage/wallets/balance` is global; `POST /manage/wallets/reconcile` fixes per-wallet gaps with `TYPE_ADJUSTMENT` |
 | **Idempotent deposit** | Wallet | `POST /api/v1/manage/vouchers/deposit` with `referenceId` — duplicate requests return existing transaction |
+| **Voucher-backed deposit/withdrawal** | Wallet | Single-sided credit/debit entries backed by `wallet_voucher`: deposit = `fromWallet = null` (TYPE_DEPOSIT), withdrawal = `toWallet = null` (TYPE_WITHDRAWAL); reversal returns funds to the source wallet (`credit_reversal` / `debit_reversal`) |
+| **Provider-owned voucher permission** | Wallet | `assertPermitted()` on deposit/withdraw providers decides who may use a voucher type (`manual` requires ROLE_ADMIN; CLI/queue calls are trusted); controllers map `AccessDeniedException` → 403 |
+| **Immutable wallet currency** | Wallet | `Wallet::setCurrency()` throws after persistence — the unit of account cannot change once created |
+| **Concurrent idempotency** | Wallet | Unique-violation on `referenceId` is caught and re-queried, returning the existing deposit/withdraw/transfer instead of a 500 |
 | **Gateway registry** | Payment | `#[AutowireIterator]` + `_instanceof` auto-tags all `PaymentGatewayInterface` implementations |
 | **Adjustment provider registry** | Payment | `#[AutowireIterator]` + `_instanceof` for `PaymentAdjustmentProviderInterface` — wallet deduction is a Wallet-owned provider |
 | **Deduction owned by Wallet** | Wallet | Wallet balance deduction lives in Wallet (`PaymentDeduction` entity, `PaymentDeductionService`, `WalletBalanceAdjustmentProvider`). Payment owns only the generic adjustment contract |
@@ -666,7 +677,7 @@ Enriches all endpoints (90+):
 
 44+ named schemas across 13 tags (Auth, Products, Orders, Categories, Tags, Contents, Comments, Pages, Media, Settings, Promotions, PromotionTemplates, Wallet, System, Wechat). Each with field-level type, description, enum, and example values. `path_patterns` includes both `^/api` and `^/system`.
 
-## 15. Database Tables (20 Migrations)
+## 15. Database Tables (24 Migrations)
 
 | Version | Tables |
 |---------|--------|
@@ -685,6 +696,10 @@ Enriches all endpoints (90+):
 | 20260713000000 | `common_picture` (nullable `user_id` FK→`users` ON DELETE SET NULL, required `category_id` FK→`common_category` ON DELETE CASCADE, nullable `title`, required `image`, nullable `metadata` json) |
 | 20260725000000-20260725050000 | Identity User UUID; Store, Store membership/order, Store Outbox/Inbox; Trade Outbox; Specification UUID; Trade order status `VARCHAR(40)` |
 | 20260726000000 | Inventory tables (material, stock, recipe, recipe_line, reservation, reservation_line, ledger_entry, inbox, outbox) + `store_trade_order_cancellation` |
+| 20260815000000 | `wallet.currency` widened to VARCHAR(32) (unit-of-account codes like `CNY.ESCROW`) |
+| 20260815010000 | `wallet.held` column (frozen/available balance separation) |
+| 20260815020000 | `wallet_voucher` (boundary ledger: credit/debit vouchers, unique `reference_id` + `(voucher_type, voucher_id)`, FK to `wallet`) |
+| 20260815030000 | `wallet_voucher_comment` (append-only annotations on vouchers, FK cascade) |
 
 ## 16. Documentation Assets
 
@@ -707,6 +722,7 @@ Enriches all endpoints (90+):
 | `docs/design/bundles/storage.md` | Storage module design (pluggable file upload drivers) |
 | `docs/design/bundles/promotion.md` | Promotion module design (DSL engine, 7 strategy types, tagged calculator) |
 | `docs/design/bundles/inventory.md` | Inventory module design (materials, stock, recipes, reservations, inbox/outbox) |
+| `docs/design/bundles/exchange.md` | Exchange bundle design (pool-backed points economy: effective-dated rates, bcmath conversion, pledge/mint/exchange/redemption) |
 | `docs/openapi/order-payment-flow.md` | Frontend order/payment/cancel/refund API integration guide, including WeChat Mini Program pay |
 | `docs/openapi/order-payment-flow.zh.md` | Chinese translation of the frontend order/payment/cancel/refund API guide |
 | `docs/testing/crud-skeleton-production/` | Test-quality contract: README, TEST_STRATEGY, TEST_MATRIX, BUSINESS_INVARIANTS, FAILURE_MODES, ARCHITECTURE_TEST_MAPPING, SYSTEM_WALKTHROUGH, PRODUCTION_VALIDATION, AI_DEVELOPMENT_PROCESS |
@@ -722,20 +738,20 @@ Enriches all endpoints (90+):
 
 - **Framework**: PHPUnit 12.5 (brianium/paratest available for parallel runs)
 - **Layout**: tests are organized by layer, not by module — `tests/UnitTest/` (pure unit tests, no kernel/DB), `tests/Integration/` (kernel + DB + HTTP tests, plus helpers `DatabaseBootstrapTrait`/`IntegrationWebTestCase`/`IntegrationKernelTestCase`/`StoreTradeFlowTestCase`), `tests/LowValue/` (deprecated/low-value tests excluded from the default run). Namespace `App\Tests\` mirrors the layout: `App\Tests\UnitTest\...`, `App\Tests\Integration\...`, `App\Tests\LowValue\...`. Test-support resources: `tests/bootstrap.php` and JWT test keys under `tests/Identity/Security/` (referenced by `.env.test` and CI).
-- **Low-value exclusion mechanism**: `phpunit.dist.xml` defines the "Project Test Suite" (UnitTest + Integration dirs) and a separate "Low Value" suite; a global `<exclude><group>low-value</group></exclude>` removes every test carrying `#[Group('low-value')]` (class- or method-level) from the default run — covering both whole LowValue files and individual flagged methods inside kept files (from the 2026-08-09 test audit). Run them explicitly with `php bin/phpunit --group low-value` (477 tests).
+- **Low-value exclusion mechanism**: `phpunit.dist.xml` defines the "Project Test Suite" (UnitTest + Integration dirs) and a separate "Low Value" suite; a global `<exclude><group>low-value</group></exclude>` removes every test carrying `#[Group('low-value')]` (class- or method-level) from the default run — covering both whole LowValue files and individual flagged methods inside kept files (from the 2026-08-09 test audit). Run them explicitly with `php bin/phpunit --group low-value` (~480 tests).
 - **DB**: local tests default to SQLite `var/test.db` (paratest uses per-worker SQLite files); CI tests job runs on **PostgreSQL 16**; `migrations.yml` validates the migration chain on **MySQL 8.4**
 - **Coverage**: 90% minimum (enforced in CI), currently **99.46% lines (8511/8557)** from latest local Xdebug run (2026-08-09)
-- **Test count**: **2224 tests / 7951 assertions** in the default suite (UnitTest + Integration), plus **477 low-value tests** excluded by default; 34 skipped tests document real `src/` bugs (see §23 and `docs/issues/coverage-2026-08-09/`); **never delete or un-skip them** without fixing the underlying bug
+- **Test count**: **2311 tests / 8374 assertions** in the default suite (UnitTest + Integration), plus ~480 low-value tests excluded by default; 31 skipped tests document real `src/` bugs (see §23 and `docs/issues/coverage-2026-08-09/`); **never delete or un-skip them** without fixing the underlying bug
 - **Suite runtime**: serial ≈ 59 s (kernel-bootstrapping integration tests dominate). Run parallel with paratest for ~2.3× speedup: `PARATEST=1 php vendor/bin/paratest --processes 8 --runner WrapperRunner` (≈26 s; per-worker SQLite isolation is handled by `tests/bootstrap.php`)
-- **PHPUnit Notices**: 160 pre-existing mock/no-expectation noise (does not fail the run); new tests should avoid adding more
+- **PHPUnit Notices**: 159 pre-existing mock/no-expectation noise (does not fail the run); new tests should avoid adding more
 - **Memory**: `phpunit.dist.xml` sets test-process `memory_limit=512M` (OpenAPI integration builds the full spec in-process)
 - **Test-quality contract**: `docs/testing/crud-skeleton-production/` (TEST_STRATEGY, TEST_MATRIX, BUSINESS_INVARIANTS, FAILURE_MODES, PRODUCTION_VALIDATION) governs what evidence a change requires before merge/release
 - **Static analysis**: PHPStan Level 8 with zero errors in its configured scope (`src/`, excluding optional SDK code, exception classes, and documented false-positive suppressions). Generic contract via `@template TEntity` on `BaseServiceInterface`/`BaseService` + `@extends` on 18 concrete service pairs. Rector automates Doctrine Collection/Repository PHPDoc with `composer rector:types`; CI enforces `composer rector:types:check` as a dry-run.
 - **Local PHP note**: default `php` may point to PHP 7.4; use Homebrew PHP 8.5 at `/opt/homebrew/opt/php@8.5/bin/php` for local Symfony/PHPUnit commands.
 - **HTML coverage report**: `XDEBUG_MODE=coverage ./vendor/bin/phpunit --coverage-html var/coverage`
 - **Key test groups** (after the 2026-08-09 layer re-organization; module folders now live under each layer):
-  - `tests/UnitTest/`: 189 files — pure unit tests (entities, utils, DSL, strategies, mock-based services/controllers, workflow state machine, listeners)
-  - `tests/Integration/`: 71 files — kernel+DB+HTTP (module integration flows, API regressions, outbox/inbox, concurrency, cross-module flows, health/metrics/rate-limit endpoints) plus the 4 shared helpers; Trade integration remains the slowest area (see test-audit)
+  - `tests/UnitTest/`: 197 files — pure unit tests (entities, utils, DSL, strategies, mock-based services/controllers, workflow state machine, listeners)
+  - `tests/Integration/`: 72 files — kernel+DB+HTTP (module integration flows, API regressions, outbox/inbox, concurrency, cross-module flows, health/metrics/rate-limit endpoints) plus the 4 shared helpers; Trade integration remains the slowest area (see test-audit)
   - `tests/LowValue/`: 43 files — flagged by the 2026-08-09 audit as duplicates/coverage-chasing; excluded from default runs (`--group low-value` to execute)
   - `scripts/tests/api-smoke.sh`: real HTTP auth/catalog/wallet/order/payment smoke; strict 401/403/404 checks
   - `scripts/tests/store-smoke.sh`: real HTTP Store-scoped order, Trade Outbox, Messenger consumer, Store Outbox, and `store_accepted` assertion
@@ -811,6 +827,7 @@ Requires `.env.prod.local` copied from `.env.prod.example` with `APP_SECRET`, `R
 - `RestController` subclasses get `RequestStack`, `SerializerInterface`, `TranslatorInterface` via `#[Required]` setter injection
 - `PaymentGatewayInterface` implementations auto-tagged `payment.gateway`, collected via `#[AutowireIterator]`
 - `PaymentAdjustmentProviderInterface` implementations auto-tagged `payment.adjustment_provider`, collected via `#[AutowireIterator]`
+- `DepositProviderInterface` / `WithdrawProviderInterface` implementations auto-tagged `wallet.deposit_provider` / `wallet.withdraw_provider`, collected via `#[AutowireIterator]` in the respective registries (voucher-type whitelist; `assertPermitted()` enforces per-provider permission)
 - `MediaStorageInterface` implementations tagged `media.storage`, collected via `#[AutowireIterator]`; `LocalStorage`/`QiniuStorage` are explicitly wired in `src/Storage/Resources/config/services_storage.yaml` because they need scalar/config/repository constructor arguments
 - `PriceCalculatorInterface` implementations auto-tagged `trade.price_calculator`, sorted by `getPriority()` — pipeline: BasePriceCalculator(-100) → QuantityCalculator(50) → **TotalAggregator(55)** (establishes subtotal) → **PromotionCalculator(60)** (applies order-level adjustments on the real subtotal)
 - `PromotionCalculator` (`App\Promotion\Service\PromotionCalculator`) implements `PriceCalculatorInterface`, tagged `trade.price_calculator` at priority 60, applies promotions after the subtotal is aggregated
