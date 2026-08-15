@@ -17,6 +17,7 @@ class WalletTransaction
     public const TYPE_FEE = 'fee';
     public const TYPE_REFUND = 'refund';
     public const TYPE_ADJUSTMENT = 'adjustment';
+    public const TYPE_CREDIT_REVERSAL = 'credit_reversal';
 
     public const STATUS_PENDING = 'pending';
     public const STATUS_COMPLETED = 'completed';
@@ -126,7 +127,15 @@ class WalletTransaction
 
     private function setType(string $type): void
     {
-        $allowed = [self::TYPE_DEPOSIT, self::TYPE_WITHDRAWAL, self::TYPE_TRANSFER, self::TYPE_FEE, self::TYPE_REFUND, self::TYPE_ADJUSTMENT];
+        $allowed = [
+            self::TYPE_DEPOSIT,
+            self::TYPE_WITHDRAWAL,
+            self::TYPE_TRANSFER,
+            self::TYPE_FEE,
+            self::TYPE_REFUND,
+            self::TYPE_ADJUSTMENT,
+            self::TYPE_CREDIT_REVERSAL,
+        ];
         if (!in_array($type, $allowed, true)) {
             throw new \InvalidArgumentException("Invalid transaction type: $type");
         }
