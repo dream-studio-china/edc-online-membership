@@ -52,6 +52,7 @@ nav:
       - Controller Design: design/controller-design.md
       - API Documentation: design/api-documentation.md
       - System Contracts: design/system-contracts.md
+      - Naming Convention: design/naming-convention.md
   - Bundles:
       - Core Framework: design/bundles/core.md
       - Common (CMS): design/bundles/common.md
