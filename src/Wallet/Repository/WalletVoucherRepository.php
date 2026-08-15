@@ -48,4 +48,52 @@ class WalletVoucherRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * Boundary invariant per unit of account:
+     * SUM(applied credit vouchers) - SUM(applied debit vouchers).
+     *
+     * @return array<string, int> keyed by currency
+     */
+    public function getBoundaryTotalByUnit(?int $userId = null): array
+    {
+        $credits = $this->sumAppliedByUnit(WalletVoucher::DIRECTION_CREDIT, $userId);
+        $debits = $this->sumAppliedByUnit(WalletVoucher::DIRECTION_DEBIT, $userId);
+
+        $currencies = array_unique(array_merge(array_keys($credits), array_keys($debits)));
+        sort($currencies);
+
+        $result = [];
+        foreach ($currencies as $currency) {
+            $result[$currency] = ($credits[$currency] ?? 0) - ($debits[$currency] ?? 0);
+        }
+
+        return $result;
+    }
+
+    /**
+     * @return array<string, int> applied voucher amount per currency for a direction
+     */
+    private function sumAppliedByUnit(string $direction, ?int $userId = null): array
+    {
+        $qb = $this->createQueryBuilder('v')
+            ->select('v.currency AS currency, COALESCE(SUM(v.amount), 0) AS total')
+            ->where('v.direction = :direction')
+            ->andWhere('v.status = :status')
+            ->groupBy('v.currency')
+            ->setParameter('direction', $direction)
+            ->setParameter('status', WalletVoucher::STATUS_APPLIED);
+        if ($userId !== null) {
+            $qb->join('v.wallet', 'w')
+                ->andWhere('w.user = :userId')
+                ->setParameter('userId', $userId);
+        }
+
+        $result = [];
+        foreach ($qb->getQuery()->getResult() as $row) {
+            $result[$row['currency']] = (int) $row['total'];
+        }
+
+        return $result;
+    }
 }

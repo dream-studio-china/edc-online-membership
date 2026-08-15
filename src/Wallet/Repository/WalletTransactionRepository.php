@@ -61,38 +61,6 @@ class WalletTransactionRepository extends ServiceEntityRepository
             ->getResult();
     }
 
-    public function getTotalDeposited(): int
-    {
-        // Count all one-sided credits: deposits + adjustment deposits
-        $result = $this->createQueryBuilder('t')
-            ->select('COALESCE(SUM(t.amount), 0)')
-            ->where('t.type IN (:types)')
-            ->andWhere('t.status = :status')
-            ->setParameter('types', [WalletTransaction::TYPE_DEPOSIT, WalletTransaction::TYPE_ADJUSTMENT])
-            ->setParameter('status', WalletTransaction::STATUS_COMPLETED)
-            ->getQuery()
-            ->getSingleScalarResult();
-
-        return (int) $result;
-    }
-
-    public function getTotalDepositedForUser(int $userId): int
-    {
-        $result = $this->createQueryBuilder('t')
-            ->select('COALESCE(SUM(t.amount), 0)')
-            ->innerJoin('t.toWallet', 'w')
-            ->where('t.type IN (:types)')
-            ->andWhere('t.status = :status')
-            ->andWhere('w.user = :userId')
-            ->setParameter('types', [WalletTransaction::TYPE_DEPOSIT, WalletTransaction::TYPE_ADJUSTMENT])
-            ->setParameter('status', WalletTransaction::STATUS_COMPLETED)
-            ->setParameter('userId', $userId)
-            ->getQuery()
-            ->getSingleScalarResult();
-
-        return (int) $result;
-    }
-
     public function getExpectedBalance(int $walletId): int
     {
         $credits = $this->createQueryBuilder('t')
@@ -114,5 +82,35 @@ class WalletTransactionRepository extends ServiceEntityRepository
             ->getSingleScalarResult();
 
         return (int) $credits - (int) $debits;
+    }
+
+    /**
+     * Completed TYPE_DEPOSIT transactions not linked to any wallet_voucher —
+     * legacy deposits created before the voucher boundary. Reported separately
+     * so the boundary invariant can explain legacy balance without vouchers.
+     *
+     * @return array<string, int> keyed by currency
+     */
+    public function getUnbackedDepositsByUnit(?int $userId = null): array
+    {
+        $qb = $this->createQueryBuilder('t')
+            ->select('w.currency AS currency, COALESCE(SUM(t.amount), 0) AS total')
+            ->join('t.toWallet', 'w')
+            ->where('t.type = :type')
+            ->andWhere('t.status = :status')
+            ->andWhere('NOT EXISTS (SELECT v.id FROM App\Wallet\Entity\WalletVoucher v WHERE v.walletTransactionId = t.uuid)')
+            ->groupBy('w.currency')
+            ->setParameter('type', WalletTransaction::TYPE_DEPOSIT)
+            ->setParameter('status', WalletTransaction::STATUS_COMPLETED);
+        if ($userId !== null) {
+            $qb->andWhere('w.user = :userId')->setParameter('userId', $userId);
+        }
+
+        $result = [];
+        foreach ($qb->getQuery()->getResult() as $row) {
+            $result[$row['currency']] = (int) $row['total'];
+        }
+
+        return $result;
     }
 }

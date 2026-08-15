@@ -57,25 +57,22 @@ class WalletRepository extends ServiceEntityRepository
         return $this->findOneBy(['user' => $userId, 'currency' => strtoupper($currency)]);
     }
 
-    public function getTotalBalance(): int
+    /**
+     * @return list<array{currency: string, total: int}> total balance grouped by unit of account
+     */
+    public function getTotalBalanceByUnit(?int $userId = null): array
     {
-        $result = $this->createQueryBuilder('w')
-            ->select('COALESCE(SUM(w.balance), 0)')
-            ->getQuery()
-            ->getSingleScalarResult();
+        $qb = $this->createQueryBuilder('w')
+            ->select('w.currency AS currency, COALESCE(SUM(w.balance), 0) AS total')
+            ->groupBy('w.currency')
+            ->orderBy('w.currency', 'ASC');
+        if ($userId !== null) {
+            $qb->andWhere('w.user = :userId')->setParameter('userId', $userId);
+        }
 
-        return (int) $result;
-    }
-
-    public function getTotalBalanceForUser(int $userId): int
-    {
-        $result = $this->createQueryBuilder('w')
-            ->select('COALESCE(SUM(w.balance), 0)')
-            ->where('w.user = :userId')
-            ->setParameter('userId', $userId)
-            ->getQuery()
-            ->getSingleScalarResult();
-
-        return (int) $result;
+        return array_map(
+            static fn (array $row): array => ['currency' => $row['currency'], 'total' => (int) $row['total']],
+            $qb->getQuery()->getResult(),
+        );
     }
 }

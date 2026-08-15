@@ -9,6 +9,7 @@ use App\Identity\Entity\User;
 use App\Wallet\Entity\Wallet;
 use App\Wallet\Entity\WalletTransaction;
 use App\Wallet\Repository\WalletTransactionRepository;
+use App\Wallet\Repository\WalletVoucherRepository;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /** @extends BaseService<\App\Wallet\Entity\Wallet> */
@@ -17,42 +18,86 @@ class WalletService extends BaseService
     public function __construct(
         ContainerInterface $container,
         private readonly WalletTransactionRepository $transactionRepo,
+        private readonly WalletVoucherRepository $voucherRepo,
     ) {
         parent::__construct($container, Wallet::class);
     }
 
     /**
-     * @return array<string, bool|int>
+     * Verify the boundary invariant per unit of account:
+     * SUM(balance) == SUM(applied credit vouchers) - SUM(applied debit vouchers).
+     * Legacy deposits (TYPE_DEPOSIT transactions without a voucher) are reported
+     * separately and treated as part of the expected balance.
+     *
+     * @return array<string, mixed>
      */
     public function verifyBalance(): array
     {
-        $totalBalance = $this->getWalletRepository()->getTotalBalance();
-        $totalDeposited = $this->transactionRepo->getTotalDeposited();
-        $walletCount = $this->getWalletRepository()->count([]);
-
-        return [
-            'totalBalance' => $totalBalance,
-            'totalDeposited' => $totalDeposited,
-            'discrepancy' => $totalDeposited - $totalBalance,
-            'matches' => $totalBalance === $totalDeposited,
-            'walletCount' => $walletCount,
-        ];
+        return $this->verifyByUnit(
+            $this->getWalletRepository()->getTotalBalanceByUnit(),
+            $this->voucherRepo->getBoundaryTotalByUnit(),
+            $this->transactionRepo->getUnbackedDepositsByUnit(),
+            $this->getWalletRepository()->count([]),
+        );
     }
 
     /**
-     * @return array<string, bool|int>
+     * @return array<string, mixed>
      */
     public function verifyBalanceForUser(User $user): array
     {
-        $totalBalance = $this->getWalletRepository()->getTotalBalanceForUser((int) $user->getId());
-        $totalDeposited = $this->transactionRepo->getTotalDepositedForUser((int) $user->getId());
-        $walletCount = $this->getWalletRepository()->count(['user' => $user]);
+        $userId = (int) $user->getId();
+
+        return $this->verifyByUnit(
+            $this->getWalletRepository()->getTotalBalanceByUnit($userId),
+            $this->voucherRepo->getBoundaryTotalByUnit($userId),
+            $this->transactionRepo->getUnbackedDepositsByUnit($userId),
+            $this->getWalletRepository()->count(['user' => $user]),
+        );
+    }
+
+    /**
+     * @param list<array{currency: string, total: int}> $balanceByUnit
+     * @param array<string, int> $boundaryByUnit
+     * @param array<string, int> $legacyByUnit
+     * @return array<string, mixed>
+     */
+    private function verifyByUnit(array $balanceByUnit, array $boundaryByUnit, array $legacyByUnit, int $walletCount): array
+    {
+        $balance = [];
+        foreach ($balanceByUnit as $row) {
+            $balance[$row['currency']] = $row['total'];
+        }
+
+        $currencies = array_unique(array_merge(
+            array_keys($balance),
+            array_keys($boundaryByUnit),
+            array_keys($legacyByUnit),
+        ));
+        sort($currencies);
+
+        $units = [];
+        $allMatches = true;
+        foreach ($currencies as $currency) {
+            $total = $balance[$currency] ?? 0;
+            $boundary = $boundaryByUnit[$currency] ?? 0;
+            $legacy = $legacyByUnit[$currency] ?? 0;
+            $expected = $boundary + $legacy;
+            $matches = $total === $expected;
+            $allMatches = $allMatches && $matches;
+            $units[] = [
+                'currency' => $currency,
+                'totalBalance' => $total,
+                'voucherBoundary' => $boundary,
+                'unmatchedDeposits' => $legacy,
+                'expected' => $expected,
+                'matches' => $matches,
+            ];
+        }
 
         return [
-            'totalBalance' => $totalBalance,
-            'totalDeposited' => $totalDeposited,
-            'discrepancy' => $totalDeposited - $totalBalance,
-            'matches' => $totalBalance === $totalDeposited,
+            'units' => $units,
+            'matches' => $allMatches,
             'walletCount' => $walletCount,
         ];
     }
