@@ -4,25 +4,29 @@ declare(strict_types=1);
 
 namespace App\Wallet\Service\Payment;
 
+use App\Core\Service\BaseService;
 use App\Payment\Entity\Invoice;
 use App\Wallet\DTO\WalletPaymentDeductionRequest;
 use App\Wallet\Entity\WalletPaymentDeduction;
 use App\Wallet\Repository\WalletPaymentDeductionRepository;
 use App\Wallet\Repository\WalletRepository;
-use App\Wallet\Service\TransferServiceInterface;
-use Doctrine\ORM\EntityManagerInterface;
+use App\Wallet\Service\Transfer\TransferServiceInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
-class WalletPaymentDeductionService
+/** @extends BaseService<\App\Wallet\Entity\WalletPaymentDeduction> */
+class WalletPaymentDeductionService extends BaseService
 {
     public function __construct(
-        private readonly EntityManagerInterface $em,
+        ContainerInterface $container,
         private readonly WalletPaymentDeductionRepository $deductionRepository,
         private readonly WalletRepository $walletRepository,
         private readonly TransferServiceInterface $transferService,
         #[Autowire('%payment.system_wallet_id%')]
         private readonly ?int $systemWalletId = null,
-    ) {}
+    ) {
+        parent::__construct($container, WalletPaymentDeduction::class);
+    }
 
     /**
      * @param array<string, mixed> $options
