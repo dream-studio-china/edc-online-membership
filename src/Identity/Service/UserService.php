@@ -11,7 +11,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 /** @extends BaseService<\App\Identity\Entity\User> */
-class UserService extends BaseService
+class UserService extends BaseService implements UserServiceInterface
 {
     public function __construct(
         ContainerInterface $container,

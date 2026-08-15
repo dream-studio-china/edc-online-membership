@@ -13,7 +13,7 @@ use App\Wallet\Entity\Transaction;
 use App\Wallet\Exception\InsufficientFundsException;
 use App\Wallet\Exception\SameWalletTransferException;
 use App\Wallet\Exception\WalletFrozenException;
-use App\Wallet\Service\TransactionService;
+use App\Wallet\Service\TransactionServiceInterface;
 use App\Wallet\Service\Transfer\TransferResult;
 use App\Wallet\Service\Transfer\TransferServiceInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -39,7 +39,7 @@ class TransactionController extends RestController
     private ?TransferResult $lastTransfer = null;
 
     public function __construct(
-        protected readonly TransactionService $service,
+        protected readonly TransactionServiceInterface $service,
         private readonly TransferServiceInterface $transferService,
     ) {}
 

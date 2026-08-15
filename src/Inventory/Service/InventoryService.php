@@ -25,7 +25,7 @@ final class InventoryService implements InventoryServiceInterface
         private readonly SpecificationRecipeRepository $recipeRepository,
         private readonly ReservationRepository $reservationRepository,
         private readonly LedgerEntryRepository $ledgerRepository,
-        private readonly InventoryOutboxService $outbox,
+        private readonly InventoryOutboxServiceInterface $outbox,
     ) {
     }
 

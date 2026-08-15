@@ -12,8 +12,8 @@ use App\Identity\Entity\User;
 use App\Wallet\Entity\Voucher;
 use App\Wallet\Exception\InsufficientFundsException;
 use App\Wallet\Exception\WalletFrozenException;
-use App\Wallet\Service\Deposit\DepositService;
-use App\Wallet\Service\VoucherService;
+use App\Wallet\Service\Deposit\DepositServiceInterface;
+use App\Wallet\Service\VoucherServiceInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -31,8 +31,8 @@ class VoucherController extends RestController
     use ApiView, DetailApiViewMixin, ListApiViewMixin;
 
     public function __construct(
-        protected readonly VoucherService $service,
-        private readonly DepositService $depositService,
+        protected readonly VoucherServiceInterface $service,
+        private readonly DepositServiceInterface $depositService,
     ) {}
 
     #[Route('/deposit', name: 'deposit', methods: ['POST'])]

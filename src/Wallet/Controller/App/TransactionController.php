@@ -17,7 +17,7 @@ use App\Wallet\Exception\SameWalletTransferException;
 use App\Wallet\Exception\WalletFrozenException;
 use App\Wallet\Repository\WalletRepository;
 use App\Wallet\Repository\TransactionRepository;
-use App\Wallet\Service\TransactionService;
+use App\Wallet\Service\TransactionServiceInterface;
 use App\Wallet\Service\Transfer\TransferResult;
 use App\Wallet\Service\Transfer\TransferServiceInterface;
 use Doctrine\ORM\QueryBuilder;
@@ -45,7 +45,7 @@ class TransactionController extends RestController
     private ?TransferResult $lastTransfer = null;
 
     public function __construct(
-        protected readonly TransactionService $service,
+        protected readonly TransactionServiceInterface $service,
         private readonly TransactionRepository $transactionRepository,
         private readonly TransferServiceInterface $transferService,
         private readonly WalletRepository $walletRepository,

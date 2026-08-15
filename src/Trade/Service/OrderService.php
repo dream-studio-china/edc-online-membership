@@ -38,7 +38,7 @@ class OrderService extends BaseService implements OrderServiceInterface
         private readonly ?WalletRepository $walletRepository = null,
         private readonly ?TransferServiceInterface $transferService = null,
         private readonly ?InvoiceServiceInterface $invoiceService = null,
-        private readonly ?TradeOutboxService $outboxService = null,
+        private readonly ?TradeOutboxServiceInterface $outboxService = null,
         #[Target('state_machine.order')]
         private readonly ?WorkflowInterface $workflow = null,
     ) {

@@ -9,7 +9,7 @@ use App\Wallet\Entity\Voucher;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /** @extends BaseService<\App\Wallet\Entity\Voucher> */
-class VoucherService extends BaseService
+class VoucherService extends BaseService implements VoucherServiceInterface
 {
     public function __construct(ContainerInterface $container)
     {

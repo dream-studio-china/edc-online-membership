@@ -15,7 +15,7 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /** @extends BaseService<\App\Wallet\Entity\PaymentDeduction> */
-class PaymentDeductionService extends BaseService
+class PaymentDeductionService extends BaseService implements PaymentDeductionServiceInterface
 {
     public function __construct(
         ContainerInterface $container,

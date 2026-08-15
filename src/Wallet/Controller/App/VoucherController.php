@@ -15,8 +15,8 @@ use App\Wallet\Exception\InsufficientFundsException;
 use App\Wallet\Exception\WalletFrozenException;
 use App\Wallet\Repository\VoucherRepository;
 use App\Wallet\Repository\WalletRepository;
-use App\Wallet\Service\Deposit\DepositService;
-use App\Wallet\Service\VoucherService;
+use App\Wallet\Service\Deposit\DepositServiceInterface;
+use App\Wallet\Service\VoucherServiceInterface;
 use Doctrine\ORM\QueryBuilder;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -36,9 +36,9 @@ class VoucherController extends RestController
     use ApiView, DetailApiViewMixin, ListApiViewMixin;
 
     public function __construct(
-        protected readonly VoucherService $service,
+        protected readonly VoucherServiceInterface $service,
         private readonly VoucherRepository $voucherRepository,
-        private readonly DepositService $depositService,
+        private readonly DepositServiceInterface $depositService,
         private readonly WalletRepository $walletRepository,
     ) {}
 

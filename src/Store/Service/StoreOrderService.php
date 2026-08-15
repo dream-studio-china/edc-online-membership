@@ -17,7 +17,7 @@ class StoreOrderService extends BaseService implements StoreOrderServiceInterfac
     public function __construct(
         ContainerInterface $container,
         private readonly StoreOrderRepository $storeOrderRepository,
-        private readonly ?StoreOutboxService $outboxService = null,
+        private readonly ?StoreOutboxServiceInterface $outboxService = null,
     )
     {
         parent::__construct($container, StoreOrder::class);

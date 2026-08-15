@@ -10,7 +10,7 @@ use App\Store\Entity\StoreTradeOrderCancellation;
 use App\Store\Repository\StoreConsumedEventRepository;
 use App\Store\Repository\StoreOrderRepository;
 use App\Store\Repository\StoreTradeOrderCancellationRepository;
-use App\Store\Service\StoreOutboxService;
+use App\Store\Service\StoreOutboxServiceInterface;
 use App\Trade\Message\TradeOrderCancelledMessage;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
@@ -22,7 +22,7 @@ final readonly class TradeOrderCancelledHandler
         private StoreConsumedEventRepository $consumedEventRepository,
         private StoreOrderRepository $storeOrderRepository,
         private StoreTradeOrderCancellationRepository $cancellationRepository,
-        private StoreOutboxService $outboxService,
+        private StoreOutboxServiceInterface $outboxService,
         private EntityManagerInterface $entityManager,
     ) {
     }

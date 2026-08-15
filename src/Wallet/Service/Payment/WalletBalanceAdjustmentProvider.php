@@ -14,7 +14,7 @@ use App\Wallet\Repository\PaymentDeductionRepository;
 final class WalletBalanceAdjustmentProvider implements PaymentAdjustmentProviderInterface
 {
     public function __construct(
-        private readonly PaymentDeductionService $deductionService,
+        private readonly PaymentDeductionServiceInterface $deductionService,
         private readonly PaymentDeductionRepository $deductionRepository,
     ) {}
 

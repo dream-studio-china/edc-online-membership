@@ -15,7 +15,7 @@ use App\Wallet\Repository\VoucherRepository;
  * against external lines by (referenceId, amount, direction), flagging
  * unmatched vouchers as needing reconciliation.
  */
-final class ReconciliationService
+final class ReconciliationService implements ReconciliationServiceInterface
 {
     public function __construct(
         private readonly VoucherRepository $voucherRepository,

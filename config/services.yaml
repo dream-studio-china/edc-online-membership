@@ -107,6 +107,8 @@ services:
     App\Inventory\Service\MaterialServiceInterface: '@App\Inventory\Service\MaterialService'
     App\Inventory\Service\StockServiceInterface: '@App\Inventory\Service\StockService'
     App\Inventory\Service\SpecificationRecipeServiceInterface: '@App\Inventory\Service\SpecificationRecipeService'
+    App\Wechat\Service\WechatServiceInterface: '@App\Wechat\Service\WechatService'
+    App\Wechat\Service\WechatAuthServiceInterface: '@App\Wechat\Service\WechatAuthService'
 
     App\Identity\Service\LocalCacheOtpStorage:
         arguments:

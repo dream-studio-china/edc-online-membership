@@ -10,7 +10,7 @@ use App\Trade\Event\OrderCompletedEvent;
 use App\Trade\Event\OrderFulfilledEvent;
 use App\Trade\Event\OrderPaidEvent;
 use App\Trade\Event\OrderRefundedEvent;
-use App\Trade\Service\TradeOutboxService;
+use App\Trade\Service\TradeOutboxServiceInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -36,7 +36,7 @@ class OrderWorkflowListener implements EventSubscriberInterface
     public function __construct(
         private readonly LoggerInterface $logger,
         private readonly EventDispatcherInterface $dispatcher,
-        private readonly ?TradeOutboxService $outboxService = null,
+        private readonly ?TradeOutboxServiceInterface $outboxService = null,
     ) {
     }
 

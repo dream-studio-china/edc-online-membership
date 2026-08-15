@@ -6,7 +6,7 @@ namespace App\Identity\Controller;
 
 use App\Identity\Repository\UserRepository;
 use App\Identity\Security\TokenManager;
-use App\Identity\Service\OtpService;
+use App\Identity\Service\OtpServiceInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -20,7 +20,7 @@ class OtpController
     public function __construct(
         private readonly TokenManager $tokenManager,
         private readonly UserRepository $userRepository,
-        private readonly OtpService $otpService,
+        private readonly OtpServiceInterface $otpService,
         private readonly EntityManagerInterface $em,
         private readonly string $otpLoginTemplate,
         private readonly string $otpVerifyPhoneTemplate,

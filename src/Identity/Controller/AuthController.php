@@ -7,8 +7,8 @@ namespace App\Identity\Controller;
 use App\Identity\Entity\User;
 use App\Identity\Repository\UserRepository;
 use App\Identity\Security\TokenManager;
-use App\Identity\Service\OtpService;
-use App\Identity\Service\UserService;
+use App\Identity\Service\OtpServiceInterface;
+use App\Identity\Service\UserServiceInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use OpenApi\Attributes as OA;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -25,8 +25,8 @@ class AuthController
         private readonly TokenManager $tokenManager,
         private readonly UserRepository $userRepository,
         private readonly UserPasswordHasherInterface $hasher,
-        private readonly OtpService $otpService,
-        private readonly UserService $userService,
+        private readonly OtpServiceInterface $otpService,
+        private readonly UserServiceInterface $userService,
         private readonly EntityManagerInterface $em,
         private readonly string $otpLoginTemplate,
         private readonly string $otpVerifyPhoneTemplate,
