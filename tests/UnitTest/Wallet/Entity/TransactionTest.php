@@ -2,23 +2,23 @@
 
 namespace App\Tests\UnitTest\Wallet\Entity;
 
-use App\Wallet\Entity\WalletTransaction;
+use App\Wallet\Entity\Transaction;
 use App\Wallet\Entity\Wallet;
 use App\Identity\Entity\User;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
-final class WalletTransactionTest extends TestCase
+final class TransactionTest extends TestCase
 {
     public function testConstructorInitializesDefaults(): void
     {
-        $tx = new WalletTransaction('uuid-123', 5000, WalletTransaction::TYPE_TRANSFER);
+        $tx = new Transaction('uuid-123', 5000, Transaction::TYPE_TRANSFER);
 
         self::assertSame('uuid-123', $tx->getUuid());
         self::assertSame(5000, $tx->getAmount());
         self::assertSame(50.00, $tx->getAmountAsFloat());
-        self::assertSame(WalletTransaction::TYPE_TRANSFER, $tx->getType());
-        self::assertSame(WalletTransaction::STATUS_PENDING, $tx->getStatus());
+        self::assertSame(Transaction::TYPE_TRANSFER, $tx->getType());
+        self::assertSame(Transaction::STATUS_PENDING, $tx->getStatus());
         self::assertNull($tx->getFromWallet());
         self::assertNull($tx->getToWallet());
         self::assertNull($tx->getReferenceId());
@@ -31,13 +31,13 @@ final class WalletTransactionTest extends TestCase
     public function testConstructorInvalidTypeThrowsException(): void
     {
         $this->expectException(\InvalidArgumentException::class);
-        new WalletTransaction('uid', 100, 'invalid_type');
+        new Transaction('uid', 100, 'invalid_type');
     }
 
     public function testAllValidTypes(): void
     {
         foreach (['deposit', 'withdrawal', 'transfer', 'fee', 'refund'] as $type) {
-            $tx = new WalletTransaction('uid-' . $type, 100, $type);
+            $tx = new Transaction('uid-' . $type, 100, $type);
             self::assertSame($type, $tx->getType());
         }
     }
@@ -49,7 +49,7 @@ final class WalletTransactionTest extends TestCase
         $from = new Wallet($user);
         $to = new Wallet($user, 'EUR');
 
-        $tx = new WalletTransaction('uid', 100, 'transfer');
+        $tx = new Transaction('uid', 100, 'transfer');
         $tx->setFromWallet($from);
         $tx->setToWallet($to);
 
@@ -60,7 +60,7 @@ final class WalletTransactionTest extends TestCase
     #[Group('low-value')]
     public function testSetReferenceId(): void
     {
-        $tx = new WalletTransaction('uid', 100, 'transfer');
+        $tx = new Transaction('uid', 100, 'transfer');
         $tx->setReferenceId('ref-001');
         self::assertSame('ref-001', $tx->getReferenceId());
 
@@ -71,7 +71,7 @@ final class WalletTransactionTest extends TestCase
     #[Group('low-value')]
     public function testSetDescription(): void
     {
-        $tx = new WalletTransaction('uid', 100, 'transfer');
+        $tx = new Transaction('uid', 100, 'transfer');
         $tx->setDescription('Transfer to friend');
         self::assertSame('Transfer to friend', $tx->getDescription());
     }
@@ -79,14 +79,14 @@ final class WalletTransactionTest extends TestCase
     #[Group('low-value')]
     public function testSetMetadata(): void
     {
-        $tx = new WalletTransaction('uid', 100, 'transfer');
+        $tx = new Transaction('uid', 100, 'transfer');
         $tx->setMetadata('{"ip":"1.2.3.4"}');
         self::assertSame('{"ip":"1.2.3.4"}', $tx->getMetadata());
     }
 
     public function testSetInvalidStatus(): void
     {
-        $tx = new WalletTransaction('uid', 100, 'transfer');
+        $tx = new Transaction('uid', 100, 'transfer');
 
         $this->expectException(\InvalidArgumentException::class);
         $tx->setStatus('unknown_status');
@@ -94,7 +94,7 @@ final class WalletTransactionTest extends TestCase
 
     public function testAllValidStatuses(): void
     {
-        $tx = new WalletTransaction('uid', 100, 'transfer');
+        $tx = new Transaction('uid', 100, 'transfer');
 
         foreach (['pending', 'completed', 'failed', 'reversed'] as $status) {
             $tx->setStatus($status);
@@ -104,27 +104,27 @@ final class WalletTransactionTest extends TestCase
 
     public function testMarkCompleted(): void
     {
-        $tx = new WalletTransaction('uid', 100, 'transfer');
+        $tx = new Transaction('uid', 100, 'transfer');
         $tx->markCompleted();
 
-        self::assertSame(WalletTransaction::STATUS_COMPLETED, $tx->getStatus());
+        self::assertSame(Transaction::STATUS_COMPLETED, $tx->getStatus());
         self::assertTrue($tx->isCompleted());
         self::assertInstanceOf(\DateTimeImmutable::class, $tx->getCompletedAt());
     }
 
     public function testMarkFailed(): void
     {
-        $tx = new WalletTransaction('uid', 100, 'transfer');
+        $tx = new Transaction('uid', 100, 'transfer');
         $tx->markFailed();
 
-        self::assertSame(WalletTransaction::STATUS_FAILED, $tx->getStatus());
+        self::assertSame(Transaction::STATUS_FAILED, $tx->getStatus());
         self::assertFalse($tx->isCompleted());
     }
 
     #[Group('low-value')]
     public function testPrePersist(): void
     {
-        $reflection = new \ReflectionClass(WalletTransaction::class);
+        $reflection = new \ReflectionClass(Transaction::class);
         $tx = $reflection->newInstanceWithoutConstructor();
 
         $tx->prePersist();
@@ -134,7 +134,7 @@ final class WalletTransactionTest extends TestCase
     #[Group('low-value')]
     public function testPrePersistKeepsExisting(): void
     {
-        $tx = new WalletTransaction('uid', 100, 'transfer');
+        $tx = new Transaction('uid', 100, 'transfer');
         $createdAt = $tx->getCreatedAt();
 
         $tx->prePersist();
@@ -143,7 +143,7 @@ final class WalletTransactionTest extends TestCase
 
     public function testAmountBoundaryOneCent(): void
     {
-        $tx = new WalletTransaction('uid', 1, 'transfer');
+        $tx = new Transaction('uid', 1, 'transfer');
         self::assertSame(1, $tx->getAmount());
         self::assertSame(0.01, $tx->getAmountAsFloat());
     }
@@ -151,7 +151,7 @@ final class WalletTransactionTest extends TestCase
     #[Group('low-value')]
     public function testAmountBoundaryLarge(): void
     {
-        $tx = new WalletTransaction('uid', 999999999999, 'transfer');
+        $tx = new Transaction('uid', 999999999999, 'transfer');
         self::assertSame(999999999999, $tx->getAmount());
         self::assertSame(9999999999.99, $tx->getAmountAsFloat());
     }
@@ -159,7 +159,7 @@ final class WalletTransactionTest extends TestCase
     #[Group('low-value')]
     public function testUuidPersistenceAcrossOperations(): void
     {
-        $tx = new WalletTransaction('original-uuid', 100, 'transfer');
+        $tx = new Transaction('original-uuid', 100, 'transfer');
         $tx->markCompleted();
 
         self::assertSame('original-uuid', $tx->getUuid(), 'UUID should not change after markCompleted');
@@ -167,7 +167,7 @@ final class WalletTransactionTest extends TestCase
 
     public function testToString(): void
     {
-        $tx = new WalletTransaction('test-uuid', 10000, 'transfer');
+        $tx = new Transaction('test-uuid', 10000, 'transfer');
         $str = (string) $tx;
 
         self::assertStringContainsString('transfer', $str);

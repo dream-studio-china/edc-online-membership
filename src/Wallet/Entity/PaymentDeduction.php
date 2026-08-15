@@ -6,17 +6,17 @@ namespace App\Wallet\Entity;
 
 use App\Core\Utils\UUID;
 use App\Payment\Entity\Invoice;
-use App\Wallet\Repository\WalletPaymentDeductionRepository;
+use App\Wallet\Repository\PaymentDeductionRepository;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity(repositoryClass: WalletPaymentDeductionRepository::class)]
+#[ORM\Entity(repositoryClass: PaymentDeductionRepository::class)]
 #[ORM\Table(name: 'wallet_payment_deduction')]
 #[ORM\UniqueConstraint(name: 'uniq_wallet_payment_deduction_uuid', columns: ['uuid'])]
 #[ORM\UniqueConstraint(name: 'uniq_wallet_payment_deduction_reference', columns: ['reference_id'])]
 #[ORM\UniqueConstraint(name: 'uniq_wallet_payment_deduction_invoice_type', columns: ['invoice_id', 'type'])]
 #[ORM\Index(name: 'idx_wallet_payment_deduction_invoice_status', columns: ['invoice_id', 'status'])]
 #[ORM\HasLifecycleCallbacks]
-class WalletPaymentDeduction
+class PaymentDeduction
 {
     public const TYPE_WALLET_BALANCE = 'wallet_balance';
 
@@ -118,7 +118,7 @@ class WalletPaymentDeduction
     public function getAmount(): int { return $this->amount; }
     public function getCurrency(): string { return $this->currency; }
     public function getStatus(): string { return $this->status; }
-    public function getWalletTransactionId(): ?string { return $this->walletTransactionId; }
+    public function getTransactionId(): ?string { return $this->walletTransactionId; }
     public function getReversalTransactionId(): ?string { return $this->reversalTransactionId; }
     public function getReferenceId(): string { return $this->referenceId; }
     /** @return array<string, mixed>|null */

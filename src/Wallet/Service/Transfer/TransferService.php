@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace App\Wallet\Service\Transfer;
 
 use App\Wallet\Entity\Wallet;
-use App\Wallet\Entity\WalletTransaction;
+use App\Wallet\Entity\Transaction;
 use App\Wallet\Exception\InsufficientFundsException;
 use App\Wallet\Exception\SameWalletTransferException;
 use App\Wallet\Exception\WalletFrozenException;
 use App\Wallet\Repository\WalletRepository;
-use App\Wallet\Repository\WalletTransactionRepository;
+use App\Wallet\Repository\TransactionRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
 use Psr\Log\LoggerInterface;
@@ -22,7 +22,7 @@ class TransferService implements TransferServiceInterface
     public function __construct(
         private readonly ManagerRegistry $registry,
         private readonly WalletRepository $walletRepo,
-        private readonly WalletTransactionRepository $transactionRepo,
+        private readonly TransactionRepository $transactionRepo,
         private readonly LoggerInterface $logger,
     ) {
         /** @var EntityManagerInterface $em */
@@ -117,7 +117,7 @@ class TransferService implements TransferServiceInterface
             $this->em->refresh($fromWallet);
             $this->em->refresh($toWallet);
 
-            $transaction = new WalletTransaction($uuid, $amount, WalletTransaction::TYPE_TRANSFER);
+            $transaction = new Transaction($uuid, $amount, Transaction::TYPE_TRANSFER);
             $transaction->setFromWallet($fromWallet);
             $transaction->setToWallet($toWallet);
             $transaction->setReferenceId($referenceId);

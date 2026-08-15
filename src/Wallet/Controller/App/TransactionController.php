@@ -11,12 +11,12 @@ use App\Core\View\DetailApiViewMixin;
 use App\Core\View\ListApiViewMixin;
 use App\Identity\Entity\User;
 use App\Wallet\Entity\Wallet;
-use App\Wallet\Entity\WalletTransaction;
+use App\Wallet\Entity\Transaction;
 use App\Wallet\Exception\InsufficientFundsException;
 use App\Wallet\Exception\SameWalletTransferException;
 use App\Wallet\Exception\WalletFrozenException;
 use App\Wallet\Repository\WalletRepository;
-use App\Wallet\Repository\WalletTransactionRepository;
+use App\Wallet\Repository\TransactionRepository;
 use App\Wallet\Service\TransactionService;
 use App\Wallet\Service\Transfer\TransferResult;
 use App\Wallet\Service\Transfer\TransferServiceInterface;
@@ -46,7 +46,7 @@ class TransactionController extends RestController
 
     public function __construct(
         protected readonly TransactionService $service,
-        private readonly WalletTransactionRepository $transactionRepository,
+        private readonly TransactionRepository $transactionRepository,
         private readonly TransferServiceInterface $transferService,
         private readonly WalletRepository $walletRepository,
     ) {}
@@ -102,7 +102,7 @@ class TransactionController extends RestController
      */
     protected function afterCreated(object|false $entity): mixed
     {
-        if (!$entity instanceof WalletTransaction || !$this->lastTransfer instanceof TransferResult) {
+        if (!$entity instanceof Transaction || !$this->lastTransfer instanceof TransferResult) {
             return $entity;
         }
 

@@ -7,9 +7,9 @@ namespace App\Wallet\Service;
 use App\Core\Service\BaseService;
 use App\Identity\Entity\User;
 use App\Wallet\Entity\Wallet;
-use App\Wallet\Entity\WalletTransaction;
-use App\Wallet\Repository\WalletTransactionRepository;
-use App\Wallet\Repository\WalletVoucherRepository;
+use App\Wallet\Entity\Transaction;
+use App\Wallet\Repository\TransactionRepository;
+use App\Wallet\Repository\VoucherRepository;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /** @extends BaseService<\App\Wallet\Entity\Wallet> */
@@ -17,8 +17,8 @@ class WalletService extends BaseService
 {
     public function __construct(
         ContainerInterface $container,
-        private readonly WalletTransactionRepository $transactionRepo,
-        private readonly WalletVoucherRepository $voucherRepo,
+        private readonly TransactionRepository $transactionRepo,
+        private readonly VoucherRepository $voucherRepo,
     ) {
         parent::__construct($container, Wallet::class);
     }
@@ -156,7 +156,7 @@ class WalletService extends BaseService
 
             // actual > expected: legacy balance, create deposit to bridge the gap.
             // The wallet balance stays as-is; the deposit transaction acknowledges it.
-            $tx = new WalletTransaction($uuidFn(), $diff, WalletTransaction::TYPE_ADJUSTMENT);
+            $tx = new Transaction($uuidFn(), $diff, Transaction::TYPE_ADJUSTMENT);
             $tx->setToWallet($wallet);
             $tx->setDescription(sprintf(
                 'Reconciliation — actual %d, expected %d, gap +%d acknowledged as deposit',

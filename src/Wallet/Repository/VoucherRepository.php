@@ -4,37 +4,37 @@ declare(strict_types=1);
 
 namespace App\Wallet\Repository;
 
-use App\Wallet\Entity\WalletVoucher;
+use App\Wallet\Entity\Voucher;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @extends \Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository<\App\Wallet\Entity\WalletVoucher>
+ * @extends \Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository<\App\Wallet\Entity\Voucher>
  */
-class WalletVoucherRepository extends ServiceEntityRepository
+class VoucherRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, WalletVoucher::class);
+        parent::__construct($registry, Voucher::class);
     }
 
-    public function findByUuid(string $uuid): ?WalletVoucher
+    public function findByUuid(string $uuid): ?Voucher
     {
         return $this->findOneBy(['uuid' => $uuid]);
     }
 
-    public function findByReferenceId(string $referenceId): ?WalletVoucher
+    public function findByReferenceId(string $referenceId): ?Voucher
     {
         return $this->findOneBy(['referenceId' => $referenceId]);
     }
 
-    public function findByVoucherSource(string $voucherType, string $voucherId): ?WalletVoucher
+    public function findByVoucherSource(string $voucherType, string $voucherId): ?Voucher
     {
         return $this->findOneBy(['voucherType' => $voucherType, 'voucherId' => $voucherId]);
     }
 
     /**
-     * @return WalletVoucher[]
+     * @return Voucher[]
      */
     public function findAppliedByWallet(int $walletId, int $limit = 50): array
     {
@@ -42,7 +42,7 @@ class WalletVoucherRepository extends ServiceEntityRepository
             ->where('v.wallet = :walletId')
             ->andWhere('v.status = :status')
             ->setParameter('walletId', $walletId)
-            ->setParameter('status', WalletVoucher::STATUS_APPLIED)
+            ->setParameter('status', Voucher::STATUS_APPLIED)
             ->orderBy('v.createdAt', 'DESC')
             ->setMaxResults($limit)
             ->getQuery()
@@ -50,7 +50,7 @@ class WalletVoucherRepository extends ServiceEntityRepository
     }
 
     /**
-     * @return WalletVoucher[]
+     * @return Voucher[]
      */
     public function findForReconciliation(
         string $currency,
@@ -63,7 +63,7 @@ class WalletVoucherRepository extends ServiceEntityRepository
             ->andWhere('v.status = :status')
             ->orderBy('v.createdAt', 'ASC')
             ->setParameter('currency', strtoupper($currency))
-            ->setParameter('status', WalletVoucher::STATUS_APPLIED);
+            ->setParameter('status', Voucher::STATUS_APPLIED);
         if ($fundSource !== null) {
             $qb->andWhere('v.fundSource = :fundSource')->setParameter('fundSource', $fundSource);
         }
@@ -85,8 +85,8 @@ class WalletVoucherRepository extends ServiceEntityRepository
      */
     public function getBoundaryTotalByUnit(?int $userId = null): array
     {
-        $credits = $this->sumAppliedByUnit(WalletVoucher::DIRECTION_CREDIT, $userId);
-        $debits = $this->sumAppliedByUnit(WalletVoucher::DIRECTION_DEBIT, $userId);
+        $credits = $this->sumAppliedByUnit(Voucher::DIRECTION_CREDIT, $userId);
+        $debits = $this->sumAppliedByUnit(Voucher::DIRECTION_DEBIT, $userId);
 
         $currencies = array_unique(array_merge(array_keys($credits), array_keys($debits)));
         sort($currencies);
@@ -110,7 +110,7 @@ class WalletVoucherRepository extends ServiceEntityRepository
             ->andWhere('v.status = :status')
             ->groupBy('v.currency')
             ->setParameter('direction', $direction)
-            ->setParameter('status', WalletVoucher::STATUS_APPLIED);
+            ->setParameter('status', Voucher::STATUS_APPLIED);
         if ($userId !== null) {
             $qb->join('v.wallet', 'w')
                 ->andWhere('w.user = :userId')

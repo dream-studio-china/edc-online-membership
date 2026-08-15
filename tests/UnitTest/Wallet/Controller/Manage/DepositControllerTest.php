@@ -7,10 +7,10 @@ namespace App\Tests\UnitTest\Wallet\Controller\Manage;
 use App\Identity\Entity\User;
 use App\Wallet\Controller\Manage\DepositController;
 use App\Wallet\Entity\Wallet;
-use App\Wallet\Entity\WalletVoucher;
+use App\Wallet\Entity\Voucher;
 use App\Wallet\Exception\InsufficientFundsException;
 use App\Wallet\Exception\WalletFrozenException;
-use App\Wallet\Service\Deposit\WalletDepositService;
+use App\Wallet\Service\Deposit\DepositService;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
@@ -22,12 +22,12 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 #[AllowMockObjectsWithoutExpectations]
 final class DepositControllerTest extends TestCase
 {
-    private WalletDepositService $service;
+    private DepositService $service;
     private DepositController $controller;
 
     protected function setUp(): void
     {
-        $this->service = $this->createMock(WalletDepositService::class);
+        $this->service = $this->createMock(DepositService::class);
         $this->controller = new DepositController($this->service);
     }
 
@@ -67,7 +67,7 @@ final class DepositControllerTest extends TestCase
         );
     }
 
-    private function createAppliedVoucher(int $amount, string $suffix): WalletVoucher
+    private function createAppliedVoucher(int $amount, string $suffix): Voucher
     {
         $user = new User();
         $user->setEmail('depctl@t.com')->setUsername('depctl');
@@ -75,11 +75,11 @@ final class DepositControllerTest extends TestCase
         $rId = new \ReflectionProperty(Wallet::class, 'id');
         $rId->setValue($wallet, 9);
 
-        $voucher = new WalletVoucher(
+        $voucher = new Voucher(
             $wallet,
-            WalletVoucher::DIRECTION_CREDIT,
-            WalletVoucher::FUND_SOURCE_EXTERNAL,
-            WalletVoucher::VOUCHER_TYPE_MANUAL,
+            Voucher::DIRECTION_CREDIT,
+            Voucher::FUND_SOURCE_EXTERNAL,
+            Voucher::VOUCHER_TYPE_MANUAL,
             'manual-' . $suffix,
             $amount,
             'CNY',
@@ -134,7 +134,7 @@ final class DepositControllerTest extends TestCase
 
         $voucher = $this->createAppliedVoucher(50000, 'ctl1');
         $this->service->method('deposit')
-            ->with(WalletVoucher::VOUCHER_TYPE_MANUAL, 'DEP-1', 9, 50000, 'CNY', 'DEP-1', 'system', 'Manual funding')
+            ->with(Voucher::VOUCHER_TYPE_MANUAL, 'DEP-1', 9, 50000, 'CNY', 'DEP-1', 'system', 'Manual funding')
             ->willReturn($voucher);
 
         $response = $this->controller->createAction($requestStack->getCurrentRequest());

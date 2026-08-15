@@ -6,10 +6,10 @@ namespace App\Wallet\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity(repositoryClass: \App\Wallet\Repository\WalletTransactionRepository::class)]
+#[ORM\Entity(repositoryClass: \App\Wallet\Repository\TransactionRepository::class)]
 #[ORM\Table(name: 'wallet_transaction')]
 #[ORM\HasLifecycleCallbacks]
-class WalletTransaction
+class Transaction
 {
     public const TYPE_DEPOSIT = 'deposit';
     public const TYPE_WITHDRAWAL = 'withdrawal';

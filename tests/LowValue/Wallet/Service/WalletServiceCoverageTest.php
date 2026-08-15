@@ -7,7 +7,7 @@ namespace App\Tests\LowValue\Wallet\Service;
 
 use PHPUnit\Framework\Attributes\Group;
 use App\Wallet\Entity\Wallet;
-use App\Wallet\Repository\WalletTransactionRepository;
+use App\Wallet\Repository\TransactionRepository;
 use App\Wallet\Service\WalletService;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
@@ -24,7 +24,7 @@ final class WalletServiceCoverageTest extends TestCase
 {
     private function buildService(EntityManagerInterface $em): WalletService
     {
-        $txRepo = $this->createMock(WalletTransactionRepository::class);
+        $txRepo = $this->createMock(TransactionRepository::class);
 
         $serializer = $this->createMock(SerializerInterface::class);
         $serializer->method('deserialize')->willReturnCallback(

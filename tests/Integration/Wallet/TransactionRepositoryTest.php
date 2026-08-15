@@ -4,18 +4,18 @@ namespace App\Tests\Integration\Wallet;
 
 use App\Identity\Entity\User;
 use App\Wallet\Entity\Wallet;
-use App\Wallet\Entity\WalletTransaction;
-use App\Wallet\Repository\WalletTransactionRepository;
+use App\Wallet\Entity\Transaction;
+use App\Wallet\Repository\TransactionRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Tests\Integration\IntegrationKernelTestCase;
 use App\Tests\Integration\DatabaseBootstrapTrait;
 
-final class WalletTransactionRepositoryTest extends IntegrationKernelTestCase
+final class TransactionRepositoryTest extends IntegrationKernelTestCase
 {
     use DatabaseBootstrapTrait;
 
     private EntityManagerInterface $em;
-    private WalletTransactionRepository $repo;
+    private TransactionRepository $repo;
 
     protected function setUp(): void
     {
@@ -23,11 +23,11 @@ final class WalletTransactionRepositoryTest extends IntegrationKernelTestCase
         self::bootKernel();
 
         $this->em = static::getContainer()->get(EntityManagerInterface::class);
-        $this->em->createQuery('DELETE FROM App\\Wallet\\Entity\\WalletTransaction')->execute();
+        $this->em->createQuery('DELETE FROM App\\Wallet\\Entity\\Transaction')->execute();
         $this->em->createQuery('DELETE FROM App\\Wallet\\Entity\\Wallet')->execute();
         $this->em->createQuery('DELETE FROM App\\Identity\\Entity\\User')->execute();
 
-        $this->repo = $this->em->getRepository(WalletTransaction::class);
+        $this->repo = $this->em->getRepository(Transaction::class);
     }
 
     private function createUser(string $username = 'test'): User
@@ -54,10 +54,10 @@ final class WalletTransactionRepositoryTest extends IntegrationKernelTestCase
         return $wallet;
     }
 
-    private function createTransaction(Wallet $from, ?Wallet $to, int $amount, string $type, string $status = 'completed', ?string $referenceId = null): WalletTransaction
+    private function createTransaction(Wallet $from, ?Wallet $to, int $amount, string $type, string $status = 'completed', ?string $referenceId = null): Transaction
     {
         $uuid = bin2hex(random_bytes(16));
-        $tx = new WalletTransaction($uuid, $amount, $type);
+        $tx = new Transaction($uuid, $amount, $type);
         $tx->setFromWallet($from);
         $tx->setToWallet($to);
         $tx->setReferenceId($referenceId);

@@ -789,10 +789,10 @@ final class UserApiIntegrationTest extends IntegrationWebTestCase
 
         $wallet = $em->getRepository(\App\Wallet\Entity\Wallet::class)->find($walletId);
         self::assertNotNull($wallet);
-        $tx = new \App\Wallet\Entity\WalletTransaction(
+        $tx = new \App\Wallet\Entity\Transaction(
             'identity-seed-' . bin2hex(random_bytes(6)),
             $amount,
-            \App\Wallet\Entity\WalletTransaction::TYPE_DEPOSIT,
+            \App\Wallet\Entity\Transaction::TYPE_DEPOSIT,
         );
         $tx->setToWallet($wallet)->markCompleted();
         $em->persist($tx);

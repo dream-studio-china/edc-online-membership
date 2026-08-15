@@ -9,8 +9,8 @@ use App\Core\View\ApiView;
 use App\Core\View\DetailApiViewMixin;
 use App\Core\View\ListApiViewMixin;
 use App\Identity\Entity\User;
-use App\Wallet\Repository\WalletVoucherCommentRepository;
-use App\Wallet\Service\WalletVoucherCommentService;
+use App\Wallet\Repository\VoucherCommentRepository;
+use App\Wallet\Service\VoucherCommentService;
 use Doctrine\ORM\QueryBuilder;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
@@ -22,8 +22,8 @@ class VoucherCommentController extends RestController
     use ApiView, DetailApiViewMixin, ListApiViewMixin;
 
     public function __construct(
-        protected readonly WalletVoucherCommentService $service,
-        private readonly WalletVoucherCommentRepository $commentRepository,
+        protected readonly VoucherCommentService $service,
+        private readonly VoucherCommentRepository $commentRepository,
     ) {}
 
     protected function commonFilter(): QueryBuilder

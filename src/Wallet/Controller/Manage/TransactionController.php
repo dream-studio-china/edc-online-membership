@@ -9,7 +9,7 @@ use App\Core\View\ApiView;
 use App\Core\View\CreateApiViewMixin;
 use App\Core\View\DetailApiViewMixin;
 use App\Core\View\ListApiViewMixin;
-use App\Wallet\Entity\WalletTransaction;
+use App\Wallet\Entity\Transaction;
 use App\Wallet\Exception\InsufficientFundsException;
 use App\Wallet\Exception\SameWalletTransferException;
 use App\Wallet\Exception\WalletFrozenException;
@@ -21,7 +21,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 /**
- * Transaction resource: create a WalletTransaction through a transfer using the
+ * Transaction resource: create a Transaction through a transfer using the
  * standard create lifecycle, plus list/detail of the ledger. Update/Delete
  * mixins are intentionally omitted: the ledger is append-only.
  */
@@ -73,7 +73,7 @@ class TransactionController extends RestController
      */
     protected function afterCreated(object|false $entity): mixed
     {
-        if (!$entity instanceof WalletTransaction || !$this->lastTransfer instanceof TransferResult) {
+        if (!$entity instanceof Transaction || !$this->lastTransfer instanceof TransferResult) {
             return $entity;
         }
 

@@ -11,19 +11,19 @@ use App\Payment\Service\InvoiceServiceInterface;
 use App\Tests\Integration\DatabaseBootstrapTrait;
 use App\Tests\Integration\IntegrationKernelTestCase;
 use App\Wallet\Entity\Wallet;
-use App\Wallet\Entity\WalletPaymentDeduction;
-use App\Wallet\Repository\WalletPaymentDeductionRepository;
-use App\Wallet\Service\Payment\WalletPaymentDeductionService;
+use App\Wallet\Entity\PaymentDeduction;
+use App\Wallet\Repository\PaymentDeductionRepository;
+use App\Wallet\Service\Payment\PaymentDeductionService;
 use Doctrine\ORM\EntityManagerInterface;
 
-final class WalletPaymentDeductionServiceIntegrationTest extends IntegrationKernelTestCase
+final class PaymentDeductionServiceIntegrationTest extends IntegrationKernelTestCase
 {
     use DatabaseBootstrapTrait;
 
     private EntityManagerInterface $em;
     private InvoiceServiceInterface $invoiceService;
-    private WalletPaymentDeductionService $deductionService;
-    private WalletPaymentDeductionRepository $deductionRepository;
+    private PaymentDeductionService $deductionService;
+    private PaymentDeductionRepository $deductionRepository;
 
     protected function setUp(): void
     {
@@ -32,8 +32,8 @@ final class WalletPaymentDeductionServiceIntegrationTest extends IntegrationKern
         self::bootKernel();
         $this->em = static::getContainer()->get(EntityManagerInterface::class);
         $this->invoiceService = static::getContainer()->get(InvoiceServiceInterface::class);
-        $this->deductionService = static::getContainer()->get(WalletPaymentDeductionService::class);
-        $this->deductionRepository = static::getContainer()->get(WalletPaymentDeductionRepository::class);
+        $this->deductionService = static::getContainer()->get(PaymentDeductionService::class);
+        $this->deductionRepository = static::getContainer()->get(PaymentDeductionRepository::class);
     }
 
     public function testApplyReleaseAndRefundAreIdempotent(): void
@@ -43,7 +43,7 @@ final class WalletPaymentDeductionServiceIntegrationTest extends IntegrationKern
         $invoice = $this->createInvoice($payer, 600);
 
         $deduction = $this->deductionService->apply($invoice, 250, 'CNY', ['systemWalletId' => $systemWallet->getId()]);
-        self::assertSame(WalletPaymentDeduction::STATUS_APPLIED, $deduction->getStatus());
+        self::assertSame(PaymentDeduction::STATUS_APPLIED, $deduction->getStatus());
         self::assertSame(250, $this->deductionService->sumAppliedAmount($invoice));
         self::assertSame($deduction, $this->deductionService->findApplied($invoice));
         self::assertSame($deduction, $this->deductionRepository->findWalletBalanceByInvoice($invoice));
@@ -86,7 +86,7 @@ final class WalletPaymentDeductionServiceIntegrationTest extends IntegrationKern
 
         $request = $this->deductionService->createRequestFromOptions($invoice, [
             'deduction' => [
-                'type' => WalletPaymentDeduction::TYPE_WALLET_BALANCE,
+                'type' => PaymentDeduction::TYPE_WALLET_BALANCE,
                 'amount' => 200,
                 'currency' => 'CNY',
                 'options' => ['systemWalletId' => 123],
@@ -94,7 +94,7 @@ final class WalletPaymentDeductionServiceIntegrationTest extends IntegrationKern
         ]);
 
         self::assertNotNull($request);
-        self::assertSame(WalletPaymentDeduction::TYPE_WALLET_BALANCE, $request->type);
+        self::assertSame(PaymentDeduction::TYPE_WALLET_BALANCE, $request->type);
         self::assertSame(200, $request->amount);
         self::assertSame('CNY', $request->currency);
         self::assertSame(123, $request->options['systemWalletId']);
@@ -213,7 +213,7 @@ final class WalletPaymentDeductionServiceIntegrationTest extends IntegrationKern
 
         $deduction = $this->deductionRepository->findWalletBalanceByInvoice($invoice);
         self::assertNotNull($deduction);
-        self::assertSame(WalletPaymentDeduction::STATUS_FAILED, $deduction->getStatus());
+        self::assertSame(PaymentDeduction::STATUS_FAILED, $deduction->getStatus());
         self::assertNotEmpty($deduction->getMetadata()['failedReason']);
     }
 

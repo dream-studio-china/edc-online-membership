@@ -9,7 +9,7 @@ use App\Core\View\ApiView;
 use App\Core\View\DetailApiViewMixin;
 use App\Core\View\ListApiViewMixin;
 use App\Identity\Entity\User;
-use App\Wallet\Repository\WalletVoucherRepository;
+use App\Wallet\Repository\VoucherRepository;
 use App\Wallet\Service\VoucherService;
 use Doctrine\ORM\QueryBuilder;
 use Symfony\Component\Routing\Attribute\Route;
@@ -23,7 +23,7 @@ class VoucherController extends RestController
 
     public function __construct(
         protected readonly VoucherService $service,
-        private readonly WalletVoucherRepository $voucherRepository,
+        private readonly VoucherRepository $voucherRepository,
     ) {}
 
     protected function commonFilter(): QueryBuilder

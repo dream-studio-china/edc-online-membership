@@ -6,15 +6,15 @@ namespace App\Tests\UnitTest\Wallet\Service\Deposit;
 
 use App\Identity\Entity\User;
 use App\Wallet\Entity\Wallet;
-use App\Wallet\Entity\WalletTransaction;
-use App\Wallet\Entity\WalletVoucher;
+use App\Wallet\Entity\Transaction;
+use App\Wallet\Entity\Voucher;
 use App\Wallet\Exception\InsufficientFundsException;
 use App\Wallet\Exception\WalletFrozenException;
 use App\Wallet\Repository\WalletRepository;
-use App\Wallet\Repository\WalletVoucherRepository;
-use App\Wallet\Service\Deposit\WalletDepositProviderInterface;
-use App\Wallet\Service\Deposit\WalletDepositProviderRegistry;
-use App\Wallet\Service\Deposit\WalletDepositService;
+use App\Wallet\Repository\VoucherRepository;
+use App\Wallet\Service\Deposit\DepositProviderInterface;
+use App\Wallet\Service\Deposit\DepositProviderRegistry;
+use App\Wallet\Service\Deposit\DepositService;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Query;
@@ -23,7 +23,7 @@ use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 
-final class RecordingDepositProvider implements WalletDepositProviderInterface
+final class RecordingDepositProvider implements DepositProviderInterface
 {
     public bool $authorized = false;
     public bool $reversed = false;
@@ -42,28 +42,28 @@ final class RecordingDepositProvider implements WalletDepositProviderInterface
         return $voucherType === $this->supportedType;
     }
 
-    public function authorize(WalletVoucher $voucher, array $options): void
+    public function authorize(Voucher $voucher, array $options): void
     {
         $this->authorized = true;
     }
 
-    public function reverse(WalletVoucher $voucher, string $reason, array $options = []): void
+    public function reverse(Voucher $voucher, string $reason, array $options = []): void
     {
         $this->reversed = true;
     }
 }
 
 #[AllowMockObjectsWithoutExpectations]
-final class WalletDepositServiceTest extends TestCase
+final class DepositServiceTest extends TestCase
 {
     private ManagerRegistry $registry;
     private EntityManagerInterface $em;
     private Connection $connection;
-    private WalletVoucherRepository $voucherRepo;
-    private WalletDepositProviderRegistry $providerRegistry;
+    private VoucherRepository $voucherRepo;
+    private DepositProviderRegistry $providerRegistry;
     private WalletRepository $walletRepo;
     private RecordingDepositProvider $provider;
-    private WalletDepositService $service;
+    private DepositService $service;
 
     private bool $transactionActive = false;
     private bool $emOpen = true;
@@ -89,12 +89,12 @@ final class WalletDepositServiceTest extends TestCase
         $this->registry = $this->createMock(ManagerRegistry::class);
         $this->registry->method('getManager')->willReturn($this->em);
 
-        $this->voucherRepo = $this->createMock(WalletVoucherRepository::class);
+        $this->voucherRepo = $this->createMock(VoucherRepository::class);
         $this->walletRepo = $this->createMock(WalletRepository::class);
-        $this->provider = new RecordingDepositProvider(WalletVoucher::VOUCHER_TYPE_MANUAL);
-        $this->providerRegistry = new WalletDepositProviderRegistry([$this->provider]);
+        $this->provider = new RecordingDepositProvider(Voucher::VOUCHER_TYPE_MANUAL);
+        $this->providerRegistry = new DepositProviderRegistry([$this->provider]);
 
-        $this->service = new WalletDepositService(
+        $this->service = new DepositService(
             $this->registry,
             $this->voucherRepo,
             $this->providerRegistry,
@@ -124,13 +124,13 @@ final class WalletDepositServiceTest extends TestCase
         $rBal->setValue($wallet, $balance);
     }
 
-    private function createAppliedCreditVoucher(Wallet $wallet, int $amount, string $uuid = 'voucher-uuid'): WalletVoucher
+    private function createAppliedCreditVoucher(Wallet $wallet, int $amount, string $uuid = 'voucher-uuid'): Voucher
     {
-        $voucher = new WalletVoucher(
+        $voucher = new Voucher(
             $wallet,
-            WalletVoucher::DIRECTION_CREDIT,
-            WalletVoucher::FUND_SOURCE_EXTERNAL,
-            WalletVoucher::VOUCHER_TYPE_MANUAL,
+            Voucher::DIRECTION_CREDIT,
+            Voucher::FUND_SOURCE_EXTERNAL,
+            Voucher::VOUCHER_TYPE_MANUAL,
             'manual-' . $uuid,
             $amount,
             $wallet->getCurrency(),
@@ -161,14 +161,14 @@ final class WalletDepositServiceTest extends TestCase
         });
         $captured = null;
         $this->em->method('persist')->willReturnCallback(function (mixed $entity) use (&$captured): void {
-            if ($entity instanceof WalletTransaction) {
+            if ($entity instanceof Transaction) {
                 $captured = $entity;
             }
         });
         $this->em->method('flush');
 
         $voucher = $this->service->deposit(
-            WalletVoucher::VOUCHER_TYPE_MANUAL,
+            Voucher::VOUCHER_TYPE_MANUAL,
             'manual-1',
             1,
             50000,
@@ -179,17 +179,17 @@ final class WalletDepositServiceTest extends TestCase
         );
 
         self::assertTrue($this->provider->authorized);
-        self::assertSame(WalletVoucher::STATUS_APPLIED, $voucher->getStatus());
-        self::assertSame(WalletVoucher::DIRECTION_CREDIT, $voucher->getDirection());
-        self::assertSame(WalletVoucher::FUND_SOURCE_EXTERNAL, $voucher->getFundSource());
+        self::assertSame(Voucher::STATUS_APPLIED, $voucher->getStatus());
+        self::assertSame(Voucher::DIRECTION_CREDIT, $voucher->getDirection());
+        self::assertSame(Voucher::FUND_SOURCE_EXTERNAL, $voucher->getFundSource());
         self::assertSame($wallet, $voucher->getWallet());
         self::assertSame(50000, $voucher->getAmount());
         self::assertSame('admin', $voucher->getCreatedBy());
-        self::assertNotNull($voucher->getWalletTransactionId());
+        self::assertNotNull($voucher->getTransactionId());
         self::assertSame(50000, $wallet->getBalance());
 
-        self::assertInstanceOf(WalletTransaction::class, $captured);
-        self::assertSame(WalletTransaction::TYPE_DEPOSIT, $captured->getType());
+        self::assertInstanceOf(Transaction::class, $captured);
+        self::assertSame(Transaction::TYPE_DEPOSIT, $captured->getType());
         self::assertSame(50000, $captured->getAmount());
         self::assertSame($wallet, $captured->getToWallet());
         self::assertNull($captured->getFromWallet());
@@ -307,7 +307,7 @@ final class WalletDepositServiceTest extends TestCase
         });
         $captured = null;
         $this->em->method('persist')->willReturnCallback(function (mixed $entity) use (&$captured): void {
-            if ($entity instanceof WalletTransaction) {
+            if ($entity instanceof Transaction) {
                 $captured = $entity;
             }
         });
@@ -316,13 +316,13 @@ final class WalletDepositServiceTest extends TestCase
         $result = $this->service->reverse('voucher-uuid-rev', 'Admin correction');
 
         self::assertTrue($this->provider->reversed);
-        self::assertSame(WalletVoucher::STATUS_REVERSED, $result->getStatus());
+        self::assertSame(Voucher::STATUS_REVERSED, $result->getStatus());
         self::assertSame('Admin correction', $result->getMetadata()['reversalReason'] ?? null);
         self::assertNotNull($result->getReversalTransactionId());
         self::assertSame(20000, $wallet->getBalance());
 
-        self::assertInstanceOf(WalletTransaction::class, $captured);
-        self::assertSame(WalletTransaction::TYPE_CREDIT_REVERSAL, $captured->getType());
+        self::assertInstanceOf(Transaction::class, $captured);
+        self::assertSame(Transaction::TYPE_CREDIT_REVERSAL, $captured->getType());
         self::assertSame(30000, $captured->getAmount());
         self::assertSame($wallet, $captured->getFromWallet());
         self::assertNull($captured->getToWallet());
@@ -342,11 +342,11 @@ final class WalletDepositServiceTest extends TestCase
     public function testReverseRequiresAppliedStatus(): void
     {
         $wallet = $this->createWallet(1, 10000, 'CNY');
-        $voucher = new WalletVoucher(
+        $voucher = new Voucher(
             $wallet,
-            WalletVoucher::DIRECTION_CREDIT,
-            WalletVoucher::FUND_SOURCE_EXTERNAL,
-            WalletVoucher::VOUCHER_TYPE_MANUAL,
+            Voucher::DIRECTION_CREDIT,
+            Voucher::FUND_SOURCE_EXTERNAL,
+            Voucher::VOUCHER_TYPE_MANUAL,
             'manual-pending',
             10000,
             'CNY',
@@ -363,11 +363,11 @@ final class WalletDepositServiceTest extends TestCase
     public function testReverseRejectsDebitVoucher(): void
     {
         $wallet = $this->createWallet(1, 10000, 'CNY');
-        $voucher = new WalletVoucher(
+        $voucher = new Voucher(
             $wallet,
-            WalletVoucher::DIRECTION_DEBIT,
-            WalletVoucher::FUND_SOURCE_EXTERNAL,
-            WalletVoucher::VOUCHER_TYPE_MANUAL,
+            Voucher::DIRECTION_DEBIT,
+            Voucher::FUND_SOURCE_EXTERNAL,
+            Voucher::VOUCHER_TYPE_MANUAL,
             'manual-debit',
             10000,
             'CNY',

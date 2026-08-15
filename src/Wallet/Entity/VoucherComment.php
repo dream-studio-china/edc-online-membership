@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Wallet\Entity;
 
-use App\Wallet\Repository\WalletVoucherCommentRepository;
+use App\Wallet\Repository\VoucherCommentRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -12,20 +12,20 @@ use Doctrine\ORM\Mapping as ORM;
  * explanatory notes; entries are immutable (no update/delete path) so the
  * audit trail cannot be rewritten.
  */
-#[ORM\Entity(repositoryClass: WalletVoucherCommentRepository::class)]
+#[ORM\Entity(repositoryClass: VoucherCommentRepository::class)]
 #[ORM\Table(name: 'wallet_voucher_comment')]
 #[ORM\Index(name: 'idx_wallet_voucher_comment_voucher', columns: ['voucher_id'])]
 #[ORM\HasLifecycleCallbacks]
-class WalletVoucherComment
+class VoucherComment
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(targetEntity: WalletVoucher::class, inversedBy: 'comments')]
+    #[ORM\ManyToOne(targetEntity: Voucher::class, inversedBy: 'comments')]
     #[ORM\JoinColumn(name: 'voucher_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
-    private WalletVoucher $voucher;
+    private Voucher $voucher;
 
     #[ORM\Column(type: 'string', length: 64)]
     private string $actor;
@@ -36,7 +36,7 @@ class WalletVoucherComment
     #[ORM\Column(name: 'created_at', type: 'datetime_immutable')]
     private \DateTimeImmutable $createdAt;
 
-    public function __construct(WalletVoucher $voucher, string $actor, string $text)
+    public function __construct(Voucher $voucher, string $actor, string $text)
     {
         $this->voucher = $voucher;
         $this->actor = $actor;
@@ -71,12 +71,12 @@ class WalletVoucherComment
         return $this;
     }
 
-    public function getVoucher(): WalletVoucher
+    public function getVoucher(): Voucher
     {
         return $this->voucher;
     }
 
-    public function setVoucher(WalletVoucher $voucher): self
+    public function setVoucher(Voucher $voucher): self
     {
         $this->voucher = $voucher;
         return $this;

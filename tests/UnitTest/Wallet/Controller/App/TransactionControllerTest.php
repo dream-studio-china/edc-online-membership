@@ -7,10 +7,10 @@ namespace App\Tests\UnitTest\Wallet\Controller\App;
 use App\Identity\Entity\User;
 use App\Wallet\Controller\App\TransactionController;
 use App\Wallet\Entity\Wallet;
-use App\Wallet\Entity\WalletTransaction;
+use App\Wallet\Entity\Transaction;
 use App\Wallet\Exception\InsufficientFundsException;
 use App\Wallet\Repository\WalletRepository;
-use App\Wallet\Repository\WalletTransactionRepository;
+use App\Wallet\Repository\TransactionRepository;
 use App\Wallet\Service\TransactionService;
 use App\Wallet\Service\Transfer\TransferResult;
 use App\Wallet\Service\Transfer\TransferServiceInterface;
@@ -28,7 +28,7 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 final class TransactionControllerTest extends TestCase
 {
     private TransactionService $transactionService;
-    private WalletTransactionRepository $transactionRepository;
+    private TransactionRepository $transactionRepository;
     private TransferServiceInterface $transferService;
     private WalletRepository $walletRepository;
     private TransactionController $controller;
@@ -37,7 +37,7 @@ final class TransactionControllerTest extends TestCase
     protected function setUp(): void
     {
         $this->transactionService = $this->createMock(TransactionService::class);
-        $this->transactionRepository = $this->createMock(WalletTransactionRepository::class);
+        $this->transactionRepository = $this->createMock(TransactionRepository::class);
         $this->transferService = $this->createMock(TransferServiceInterface::class);
         $this->walletRepository = $this->createMock(WalletRepository::class);
 
@@ -113,13 +113,13 @@ final class TransactionControllerTest extends TestCase
         return $wallet;
     }
 
-    private function makeTransferTransaction(int $id, int $amount, int $fromWalletId, int $toWalletId): WalletTransaction
+    private function makeTransferTransaction(int $id, int $amount, int $fromWalletId, int $toWalletId): Transaction
     {
-        $tx = new WalletTransaction('uuid-' . $id, $amount, WalletTransaction::TYPE_TRANSFER);
+        $tx = new Transaction('uuid-' . $id, $amount, Transaction::TYPE_TRANSFER);
         $tx->setFromWallet($this->makeWallet($fromWalletId));
         $tx->setToWallet($this->makeWallet($toWalletId));
         $tx->markCompleted();
-        $r = new \ReflectionProperty(WalletTransaction::class, 'id');
+        $r = new \ReflectionProperty(Transaction::class, 'id');
         $r->setValue($tx, $id);
 
         return $tx;

@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace App\Wallet\Entity;
 
 use App\Core\Utils\UUID;
-use App\Wallet\Repository\WalletVoucherRepository;
+use App\Wallet\Repository\VoucherRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Ignore;
 
-#[ORM\Entity(repositoryClass: WalletVoucherRepository::class)]
+#[ORM\Entity(repositoryClass: VoucherRepository::class)]
 #[ORM\Table(name: 'wallet_voucher')]
 #[ORM\UniqueConstraint(name: 'uniq_wallet_voucher_uuid', columns: ['uuid'])]
 #[ORM\UniqueConstraint(name: 'uniq_wallet_voucher_reference', columns: ['reference_id'])]
@@ -20,7 +20,7 @@ use Symfony\Component\Serializer\Attribute\Ignore;
 #[ORM\Index(name: 'idx_wallet_voucher_currency_status', columns: ['currency', 'status'])]
 #[ORM\Index(name: 'idx_wallet_voucher_wallet', columns: ['wallet_id'])]
 #[ORM\HasLifecycleCallbacks]
-class WalletVoucher
+class Voucher
 {
     public const DIRECTION_CREDIT = 'credit';
     public const DIRECTION_DEBIT = 'debit';
@@ -97,9 +97,9 @@ class WalletVoucher
     #[ORM\Column(name: 'reversed_at', type: 'datetime_immutable', nullable: true)]
     private ?\DateTimeImmutable $reversedAt = null;
 
-    /** @var Collection<int, WalletVoucherComment> */
+    /** @var Collection<int, VoucherComment> */
     #[Ignore]
-    #[ORM\OneToMany(targetEntity: WalletVoucherComment::class, mappedBy: 'voucher', cascade: ['persist'])]
+    #[ORM\OneToMany(targetEntity: VoucherComment::class, mappedBy: 'voucher', cascade: ['persist'])]
     private Collection $comments;
 
     public function __construct(
@@ -139,7 +139,7 @@ class WalletVoucher
     public function getAmount(): int { return $this->amount; }
     public function getCurrency(): string { return $this->currency; }
     public function getStatus(): string { return $this->status; }
-    public function getWalletTransactionId(): ?string { return $this->walletTransactionId; }
+    public function getTransactionId(): ?string { return $this->walletTransactionId; }
     public function getReversalTransactionId(): ?string { return $this->reversalTransactionId; }
     public function getReferenceId(): string { return $this->referenceId; }
     public function getCreatedBy(): string { return $this->createdBy; }
@@ -201,12 +201,12 @@ class WalletVoucher
      */
     public function addComment(string $actor, string $text): self
     {
-        $this->comments->add(new WalletVoucherComment($this, $actor, $text));
+        $this->comments->add(new VoucherComment($this, $actor, $text));
         return $this;
     }
 
     /**
-     * @return Collection<int, WalletVoucherComment>
+     * @return Collection<int, VoucherComment>
      */
     public function getComments(): Collection
     {

@@ -6,22 +6,22 @@ namespace App\Tests\UnitTest\Wallet\Entity;
 
 use App\Identity\Entity\User;
 use App\Wallet\Entity\Wallet;
-use App\Wallet\Entity\WalletVoucher;
+use App\Wallet\Entity\Voucher;
 use PHPUnit\Framework\TestCase;
 
-final class WalletVoucherTest extends TestCase
+final class VoucherTest extends TestCase
 {
-    private function createVoucher(?string $reason = null): WalletVoucher
+    private function createVoucher(?string $reason = null): Voucher
     {
         $user = new User();
         $user->setEmail('v@t.com')->setUsername('v');
         $wallet = new Wallet($user, 'CNY');
 
-        return new WalletVoucher(
+        return new Voucher(
             $wallet,
-            WalletVoucher::DIRECTION_CREDIT,
-            WalletVoucher::FUND_SOURCE_EXTERNAL,
-            WalletVoucher::VOUCHER_TYPE_MANUAL,
+            Voucher::DIRECTION_CREDIT,
+            Voucher::FUND_SOURCE_EXTERNAL,
+            Voucher::VOUCHER_TYPE_MANUAL,
             'manual-1',
             10000,
             'CNY',
@@ -38,7 +38,7 @@ final class WalletVoucherTest extends TestCase
 
         $voucher->markReversed('rev-tx-1', 'Admin correction');
 
-        self::assertSame(WalletVoucher::STATUS_REVERSED, $voucher->getStatus());
+        self::assertSame(Voucher::STATUS_REVERSED, $voucher->getStatus());
         self::assertSame('Original creation note', $voucher->getReason());
         self::assertSame('Admin correction', $voucher->getMetadata()['reversalReason'] ?? null);
     }

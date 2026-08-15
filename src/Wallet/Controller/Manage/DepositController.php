@@ -7,10 +7,10 @@ namespace App\Wallet\Controller\Manage;
 use App\Core\Controller\RestController;
 use App\Core\View\ApiView;
 use App\Identity\Entity\User;
-use App\Wallet\Entity\WalletVoucher;
+use App\Wallet\Entity\Voucher;
 use App\Wallet\Exception\InsufficientFundsException;
 use App\Wallet\Exception\WalletFrozenException;
-use App\Wallet\Service\Deposit\WalletDepositService;
+use App\Wallet\Service\Deposit\DepositService;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -23,7 +23,7 @@ class DepositController extends RestController
     use ApiView;
 
     public function __construct(
-        protected readonly WalletDepositService $depositService,
+        protected readonly DepositService $depositService,
     ) {}
 
     #[Route('', name: 'create', methods: ['POST'])]
@@ -44,7 +44,7 @@ class DepositController extends RestController
 
         try {
             $voucher = $this->depositService->deposit(
-                WalletVoucher::VOUCHER_TYPE_MANUAL,
+                Voucher::VOUCHER_TYPE_MANUAL,
                 $voucherId,
                 $walletId,
                 $amount,
@@ -105,7 +105,7 @@ class DepositController extends RestController
     /**
      * @return array<string, mixed>
      */
-    private function serializeVoucher(WalletVoucher $voucher): array
+    private function serializeVoucher(Voucher $voucher): array
     {
         return [
             'uuid' => $voucher->getUuid(),
@@ -120,7 +120,7 @@ class DepositController extends RestController
             'status' => $voucher->getStatus(),
             'referenceId' => $voucher->getReferenceId(),
             'createdBy' => $voucher->getCreatedBy(),
-            'walletTransactionId' => $voucher->getWalletTransactionId(),
+            'walletTransactionId' => $voucher->getTransactionId(),
             'reversalTransactionId' => $voucher->getReversalTransactionId(),
             'createdAt' => $voucher->getCreatedAt(),
         ];

@@ -5,37 +5,37 @@ declare(strict_types=1);
 namespace App\Wallet\Repository;
 
 use App\Wallet\Entity\Wallet;
-use App\Wallet\Entity\WalletTransaction;
+use App\Wallet\Entity\Transaction;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @extends \Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository<\App\Wallet\Entity\WalletTransaction>
+ * @extends \Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository<\App\Wallet\Entity\Transaction>
  */
-class WalletTransactionRepository extends ServiceEntityRepository
+class TransactionRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, WalletTransaction::class);
+        parent::__construct($registry, Transaction::class);
     }
 
-    public function findById(int $id): ?WalletTransaction
+    public function findById(int $id): ?Transaction
     {
         return $this->find($id);
     }
 
-    public function findByUuid(string $uuid): ?WalletTransaction
+    public function findByUuid(string $uuid): ?Transaction
     {
         return $this->findOneBy(['uuid' => $uuid]);
     }
 
-    public function findByReferenceId(string $referenceId): ?WalletTransaction
+    public function findByReferenceId(string $referenceId): ?Transaction
     {
         return $this->findOneBy(['referenceId' => $referenceId]);
     }
 
     /**
-     * @return WalletTransaction[]
+     * @return Transaction[]
      */
     public function findByWallet(int $walletId, int $limit = 50): array
     {
@@ -49,13 +49,13 @@ class WalletTransactionRepository extends ServiceEntityRepository
     }
 
     /**
-     * @return WalletTransaction[]
+     * @return Transaction[]
      */
     public function findPending(): array
     {
         return $this->createQueryBuilder('t')
             ->where('t.status = :status')
-            ->setParameter('status', WalletTransaction::STATUS_PENDING)
+            ->setParameter('status', Transaction::STATUS_PENDING)
             ->orderBy('t.createdAt', 'ASC')
             ->getQuery()
             ->getResult();
@@ -68,7 +68,7 @@ class WalletTransactionRepository extends ServiceEntityRepository
             ->where('t.toWallet = :walletId')
             ->andWhere('t.status = :status')
             ->setParameter('walletId', $walletId)
-            ->setParameter('status', WalletTransaction::STATUS_COMPLETED)
+            ->setParameter('status', Transaction::STATUS_COMPLETED)
             ->getQuery()
             ->getSingleScalarResult();
 
@@ -77,7 +77,7 @@ class WalletTransactionRepository extends ServiceEntityRepository
             ->where('t.fromWallet = :walletId')
             ->andWhere('t.status = :status')
             ->setParameter('walletId', $walletId)
-            ->setParameter('status', WalletTransaction::STATUS_COMPLETED)
+            ->setParameter('status', Transaction::STATUS_COMPLETED)
             ->getQuery()
             ->getSingleScalarResult();
 
@@ -98,10 +98,10 @@ class WalletTransactionRepository extends ServiceEntityRepository
             ->join('t.toWallet', 'w')
             ->where('t.type = :type')
             ->andWhere('t.status = :status')
-            ->andWhere('NOT EXISTS (SELECT v.id FROM App\Wallet\Entity\WalletVoucher v WHERE v.walletTransactionId = t.uuid)')
+            ->andWhere('NOT EXISTS (SELECT v.id FROM App\Wallet\Entity\Voucher v WHERE v.walletTransactionId = t.uuid)')
             ->groupBy('w.currency')
-            ->setParameter('type', WalletTransaction::TYPE_DEPOSIT)
-            ->setParameter('status', WalletTransaction::STATUS_COMPLETED);
+            ->setParameter('type', Transaction::TYPE_DEPOSIT)
+            ->setParameter('status', Transaction::STATUS_COMPLETED);
         if ($userId !== null) {
             $qb->andWhere('w.user = :userId')->setParameter('userId', $userId);
         }

@@ -6,12 +6,12 @@ namespace App\Wallet\Service\Deposit;
 
 use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 
-final class WalletDepositProviderRegistry
+final class DepositProviderRegistry
 {
-    /** @var array<string, WalletDepositProviderInterface> */
+    /** @var array<string, DepositProviderInterface> */
     private array $providers = [];
 
-    /** @param iterable<WalletDepositProviderInterface> $providers */
+    /** @param iterable<DepositProviderInterface> $providers */
     public function __construct(#[AutowireIterator('wallet.deposit_provider')] iterable $providers)
     {
         foreach ($providers as $provider) {
@@ -24,7 +24,7 @@ final class WalletDepositProviderRegistry
         return isset($this->providers[$name]);
     }
 
-    public function get(string $name): WalletDepositProviderInterface
+    public function get(string $name): DepositProviderInterface
     {
         return $this->providers[$name]
             ?? throw new \RuntimeException(sprintf('Deposit provider "%s" not found.', $name));
@@ -34,7 +34,7 @@ final class WalletDepositProviderRegistry
      * Route a voucher type to the first provider that supports it.
      * Returns null when no provider supports the type (whitelist rejection).
      */
-    public function forVoucherType(string $voucherType): ?WalletDepositProviderInterface
+    public function forVoucherType(string $voucherType): ?DepositProviderInterface
     {
         foreach ($this->providers as $provider) {
             if ($provider->supports($voucherType)) {

@@ -6,12 +6,12 @@ namespace App\Tests\UnitTest\Wallet\Service\Transfer;
 
 use App\Identity\Entity\User;
 use App\Wallet\Entity\Wallet;
-use App\Wallet\Entity\WalletTransaction;
+use App\Wallet\Entity\Transaction;
 use App\Wallet\Exception\InsufficientFundsException;
 use App\Wallet\Exception\SameWalletTransferException;
 use App\Wallet\Exception\WalletFrozenException;
 use App\Wallet\Repository\WalletRepository;
-use App\Wallet\Repository\WalletTransactionRepository;
+use App\Wallet\Repository\TransactionRepository;
 use App\Wallet\Service\Transfer\TransferResult;
 use App\Wallet\Service\Transfer\TransferService;
 use Doctrine\DBAL\Connection;
@@ -30,7 +30,7 @@ final class TransferServiceTest extends TestCase
     private EntityManagerInterface $em;
     private Connection $connection;
     private WalletRepository $walletRepo;
-    private WalletTransactionRepository $txRepo;
+    private TransactionRepository $txRepo;
     private TransferService $service;
 
     private bool $transactionActive = false;
@@ -57,7 +57,7 @@ final class TransferServiceTest extends TestCase
         $this->registry = $this->createMock(ManagerRegistry::class);
         $this->registry->method('getManager')->willReturn($this->em);
         $this->walletRepo = $this->createMock(WalletRepository::class);
-        $this->txRepo = $this->createMock(WalletTransactionRepository::class);
+        $this->txRepo = $this->createMock(TransactionRepository::class);
 
         $this->service = new TransferService(
             $this->registry,
@@ -228,7 +228,7 @@ final class TransferServiceTest extends TestCase
     {
         $from = $this->createWallet(1, 90000);
         $to = $this->createWallet(2, 10000);
-        $existingTx = new WalletTransaction('uuid-t', 10000, WalletTransaction::TYPE_TRANSFER);
+        $existingTx = new Transaction('uuid-t', 10000, Transaction::TYPE_TRANSFER);
         $existingTx->setFromWallet($from);
         $existingTx->setToWallet($to);
         $existingTx->markCompleted();

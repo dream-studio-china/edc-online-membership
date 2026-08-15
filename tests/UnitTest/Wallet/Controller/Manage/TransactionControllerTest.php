@@ -7,7 +7,7 @@ namespace App\Tests\UnitTest\Wallet\Controller\Manage;
 use App\Identity\Entity\User;
 use App\Wallet\Controller\Manage\TransactionController;
 use App\Wallet\Entity\Wallet;
-use App\Wallet\Entity\WalletTransaction;
+use App\Wallet\Entity\Transaction;
 use App\Wallet\Exception\InsufficientFundsException;
 use App\Wallet\Exception\SameWalletTransferException;
 use App\Wallet\Exception\WalletFrozenException;
@@ -83,13 +83,13 @@ final class TransactionControllerTest extends TestCase
         return $wallet;
     }
 
-    private function makeTransferTransaction(int $id, int $amount, int $fromWalletId, int $toWalletId): WalletTransaction
+    private function makeTransferTransaction(int $id, int $amount, int $fromWalletId, int $toWalletId): Transaction
     {
-        $tx = new WalletTransaction('uuid-' . $id, $amount, WalletTransaction::TYPE_TRANSFER);
+        $tx = new Transaction('uuid-' . $id, $amount, Transaction::TYPE_TRANSFER);
         $tx->setFromWallet($this->makeWallet($fromWalletId));
         $tx->setToWallet($this->makeWallet($toWalletId));
         $tx->markCompleted();
-        $ref = new \ReflectionProperty(WalletTransaction::class, 'id');
+        $ref = new \ReflectionProperty(Transaction::class, 'id');
         $ref->setValue($tx, $id);
 
         return $tx;

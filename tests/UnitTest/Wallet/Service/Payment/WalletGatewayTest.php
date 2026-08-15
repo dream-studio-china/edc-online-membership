@@ -163,7 +163,7 @@ final class WalletGatewayTest extends TestCase
         $walletRepo = $this->createMock(WalletRepository::class);
         $walletRepo->method('findByUserAndCurrency')->willReturn($wallet);
 
-        $transaction = new \App\Wallet\Entity\WalletTransaction('uuid-1', 50, 'transfer');
+        $transaction = new \App\Wallet\Entity\Transaction('uuid-1', 50, 'transfer');
         $transferResult = new TransferResult($transaction, 50, 50);
         $transferService = $this->createMock(TransferServiceInterface::class);
         $transferService->method('transfer')->willReturn($transferResult);
@@ -192,7 +192,7 @@ final class WalletGatewayTest extends TestCase
         $walletRepo = $this->createMock(WalletRepository::class);
         $walletRepo->method('findByUserAndCurrency')->willReturn($wallet);
 
-        $transaction = new \App\Wallet\Entity\WalletTransaction('uuid-2', 200, 'transfer');
+        $transaction = new \App\Wallet\Entity\Transaction('uuid-2', 200, 'transfer');
         $transferResult = new TransferResult($transaction, 200, 200);
         $transferService = $this->createMock(TransferServiceInterface::class);
         $transferService->method('transfer')->willReturn($transferResult);

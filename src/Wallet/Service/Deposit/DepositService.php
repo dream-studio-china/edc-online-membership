@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace App\Wallet\Service\Deposit;
 
 use App\Core\Utils\UUID;
-use App\Wallet\Entity\WalletTransaction;
-use App\Wallet\Entity\WalletVoucher;
+use App\Wallet\Entity\Transaction;
+use App\Wallet\Entity\Voucher;
 use App\Wallet\Exception\InsufficientFundsException;
 use App\Wallet\Exception\WalletFrozenException;
 use App\Wallet\Repository\WalletRepository;
-use App\Wallet\Repository\WalletVoucherRepository;
+use App\Wallet\Repository\VoucherRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
 use Psr\Log\LoggerInterface;
@@ -23,14 +23,14 @@ use Psr\Log\LoggerInterface;
  * the source, so the boundary invariant SUM(balance) == SUM(credit vouchers) -
  * SUM(debit vouchers) stays exact.
  */
-class WalletDepositService
+class DepositService
 {
     private EntityManagerInterface $em;
 
     public function __construct(
         private readonly ManagerRegistry $registry,
-        private readonly WalletVoucherRepository $voucherRepository,
-        private readonly WalletDepositProviderRegistry $depositRegistry,
+        private readonly VoucherRepository $voucherRepository,
+        private readonly DepositProviderRegistry $depositRegistry,
         private readonly WalletRepository $walletRepository,
         private readonly LoggerInterface $logger,
     ) {
@@ -51,9 +51,9 @@ class WalletDepositService
         string $referenceId,
         string $createdBy,
         ?string $reason = null,
-        string $fundSource = WalletVoucher::FUND_SOURCE_EXTERNAL,
+        string $fundSource = Voucher::FUND_SOURCE_EXTERNAL,
         array $options = []
-    ): WalletVoucher {
+    ): Voucher {
         if ($amount <= 0) {
             throw new \InvalidArgumentException('Deposit amount must be positive');
         }
@@ -62,12 +62,12 @@ class WalletDepositService
         }
 
         $existing = $this->voucherRepository->findByReferenceId($referenceId);
-        if ($existing instanceof WalletVoucher) {
+        if ($existing instanceof Voucher) {
             return $existing;
         }
 
         $existing = $this->voucherRepository->findByVoucherSource($voucherType, $voucherId);
-        if ($existing instanceof WalletVoucher) {
+        if ($existing instanceof Voucher) {
             throw new \RuntimeException(sprintf(
                 'Voucher source %s/%s already processed (status %s).',
                 $voucherType,
@@ -99,9 +99,9 @@ class WalletDepositService
                 ));
             }
 
-            $voucher = new WalletVoucher(
+            $voucher = new Voucher(
                 $wallet,
-                WalletVoucher::DIRECTION_CREDIT,
+                Voucher::DIRECTION_CREDIT,
                 $fundSource,
                 $voucherType,
                 $voucherId,
@@ -122,7 +122,7 @@ class WalletDepositService
                 ->execute();
             $this->em->refresh($wallet);
 
-            $tx = new WalletTransaction(UUID::v4(), $amount, WalletTransaction::TYPE_DEPOSIT);
+            $tx = new Transaction(UUID::v4(), $amount, Transaction::TYPE_DEPOSIT);
             $tx->setToWallet($wallet);
             $tx->setReferenceId('deposit-' . $voucher->getUuid());
             $tx->setDescription($reason);
@@ -166,16 +166,16 @@ class WalletDepositService
      *
      * @param array<string, mixed> $options
      */
-    public function reverse(string $voucherUuid, string $reason, array $options = []): WalletVoucher
+    public function reverse(string $voucherUuid, string $reason, array $options = []): Voucher
     {
         $voucher = $this->voucherRepository->findByUuid($voucherUuid);
         if ($voucher === null) {
             throw new \RuntimeException(sprintf('Voucher "%s" not found.', $voucherUuid));
         }
-        if ($voucher->getStatus() !== WalletVoucher::STATUS_APPLIED) {
+        if ($voucher->getStatus() !== Voucher::STATUS_APPLIED) {
             throw new \LogicException(sprintf('Voucher cannot be reversed from status "%s".', $voucher->getStatus()));
         }
-        if ($voucher->getDirection() !== WalletVoucher::DIRECTION_CREDIT) {
+        if ($voucher->getDirection() !== Voucher::DIRECTION_CREDIT) {
             throw new \InvalidArgumentException('Only credit (deposit) vouchers can be reversed.');
         }
 
@@ -202,7 +202,7 @@ class WalletDepositService
                 ->execute();
             $this->em->refresh($wallet);
 
-            $tx = new WalletTransaction(UUID::v4(), $amount, WalletTransaction::TYPE_CREDIT_REVERSAL);
+            $tx = new Transaction(UUID::v4(), $amount, Transaction::TYPE_CREDIT_REVERSAL);
             $tx->setFromWallet($wallet);
             $tx->setReferenceId('deposit-reverse-' . $voucher->getUuid());
             $tx->setDescription($reason);

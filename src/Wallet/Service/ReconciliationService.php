@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Wallet\Service;
 
-use App\Wallet\Entity\WalletVoucher;
-use App\Wallet\Repository\WalletVoucherRepository;
+use App\Wallet\Entity\Voucher;
+use App\Wallet\Repository\VoucherRepository;
 
 /**
  * Reconciliation surface for the boundary ledger. The voucher record is the
@@ -15,10 +15,10 @@ use App\Wallet\Repository\WalletVoucherRepository;
  * against external lines by (referenceId, amount, direction), flagging
  * unmatched vouchers as needing reconciliation.
  */
-final class WalletReconciliationService
+final class ReconciliationService
 {
     public function __construct(
-        private readonly WalletVoucherRepository $voucherRepository,
+        private readonly VoucherRepository $voucherRepository,
     ) {}
 
     /**
@@ -51,7 +51,7 @@ final class WalletReconciliationService
      */
     public function reconcileAgainstExternal(string $currency, array $externalLines): array
     {
-        $vouchers = $this->listBoundaryVouchers($currency, WalletVoucher::FUND_SOURCE_EXTERNAL);
+        $vouchers = $this->listBoundaryVouchers($currency, Voucher::FUND_SOURCE_EXTERNAL);
 
         $matched = [];
         $unmatched = [];
@@ -98,7 +98,7 @@ final class WalletReconciliationService
     /**
      * @return array<string, mixed>
      */
-    private static function serializeVoucher(WalletVoucher $voucher): array
+    private static function serializeVoucher(Voucher $voucher): array
     {
         return [
             'uuid' => $voucher->getUuid(),
@@ -112,7 +112,7 @@ final class WalletReconciliationService
             'status' => $voucher->getStatus(),
             'referenceId' => $voucher->getReferenceId(),
             'createdBy' => $voucher->getCreatedBy(),
-            'walletTransactionId' => $voucher->getWalletTransactionId(),
+            'walletTransactionId' => $voucher->getTransactionId(),
             'reversalTransactionId' => $voucher->getReversalTransactionId(),
             'createdAt' => $voucher->getCreatedAt()->format(DATE_ATOM),
             'appliedAt' => $voucher->getAppliedAt()?->format(DATE_ATOM),

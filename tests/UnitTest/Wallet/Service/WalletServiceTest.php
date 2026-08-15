@@ -6,10 +6,10 @@ namespace App\Tests\UnitTest\Wallet\Service;
 
 use App\Identity\Entity\User;
 use App\Wallet\Entity\Wallet;
-use App\Wallet\Entity\WalletTransaction;
+use App\Wallet\Entity\Transaction;
 use App\Wallet\Repository\WalletRepository;
-use App\Wallet\Repository\WalletTransactionRepository;
-use App\Wallet\Repository\WalletVoucherRepository;
+use App\Wallet\Repository\TransactionRepository;
+use App\Wallet\Repository\VoucherRepository;
 use App\Wallet\Service\WalletService;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
@@ -26,16 +26,16 @@ final class WalletServiceTest extends TestCase
 {
     private EntityManagerInterface $em;
     private WalletRepository $walletRepo;
-    private WalletTransactionRepository $txRepo;
-    private WalletVoucherRepository $voucherRepo;
+    private TransactionRepository $txRepo;
+    private VoucherRepository $voucherRepo;
     private WalletService $service;
 
     protected function setUp(): void
     {
         $this->em = $this->createMock(EntityManagerInterface::class);
         $this->walletRepo = $this->createMock(WalletRepository::class);
-        $this->txRepo = $this->createMock(WalletTransactionRepository::class);
-        $this->voucherRepo = $this->createMock(WalletVoucherRepository::class);
+        $this->txRepo = $this->createMock(TransactionRepository::class);
+        $this->voucherRepo = $this->createMock(VoucherRepository::class);
 
         $this->em->method('getRepository')->with(Wallet::class)->willReturn($this->walletRepo);
 
@@ -178,7 +178,7 @@ final class WalletServiceTest extends TestCase
         $this->walletRepo->method('findAll')->willReturn([$wallet]);
         $this->txRepo->method('getExpectedBalance')->with(1)->willReturn(0);
 
-        $this->em->expects(self::once())->method('persist')->with(self::isInstanceOf(WalletTransaction::class));
+        $this->em->expects(self::once())->method('persist')->with(self::isInstanceOf(Transaction::class));
         $this->em->expects(self::once())->method('flush');
 
         $result = $this->service->reconcile();

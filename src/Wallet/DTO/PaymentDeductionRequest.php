@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Wallet\DTO;
 
-final readonly class WalletPaymentDeductionRequest
+final readonly class PaymentDeductionRequest
 {
     /**
      * @param array<string, mixed> $options

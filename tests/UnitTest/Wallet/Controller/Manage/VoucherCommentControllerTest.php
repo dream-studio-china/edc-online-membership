@@ -7,9 +7,9 @@ namespace App\Tests\UnitTest\Wallet\Controller\Manage;
 use App\Identity\Entity\User;
 use App\Wallet\Controller\Manage\VoucherCommentController;
 use App\Wallet\Entity\Wallet;
-use App\Wallet\Entity\WalletVoucher;
-use App\Wallet\Entity\WalletVoucherComment;
-use App\Wallet\Service\WalletVoucherCommentService;
+use App\Wallet\Entity\Voucher;
+use App\Wallet\Entity\VoucherComment;
+use App\Wallet\Service\VoucherCommentService;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Request;
@@ -20,12 +20,12 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 #[AllowMockObjectsWithoutExpectations]
 final class VoucherCommentControllerTest extends TestCase
 {
-    private WalletVoucherCommentService $service;
+    private VoucherCommentService $service;
     private VoucherCommentController $controller;
 
     protected function setUp(): void
     {
-        $this->service = $this->createMock(WalletVoucherCommentService::class);
+        $this->service = $this->createMock(VoucherCommentService::class);
         $this->controller = new VoucherCommentController($this->service);
     }
 
@@ -65,25 +65,25 @@ final class VoucherCommentControllerTest extends TestCase
         );
     }
 
-    private function createComment(): WalletVoucherComment
+    private function createComment(): VoucherComment
     {
         $user = new User();
         $user->setEmail('vc@t.com')->setUsername('vc');
-        $voucher = new WalletVoucher(
+        $voucher = new Voucher(
             new Wallet($user, 'CNY'),
-            WalletVoucher::DIRECTION_CREDIT,
-            WalletVoucher::FUND_SOURCE_EXTERNAL,
-            WalletVoucher::VOUCHER_TYPE_MANUAL,
+            Voucher::DIRECTION_CREDIT,
+            Voucher::FUND_SOURCE_EXTERNAL,
+            Voucher::VOUCHER_TYPE_MANUAL,
             'manual-1',
             10000,
             'CNY',
             'ref-1',
             'admin',
         );
-        $rId = new \ReflectionProperty(WalletVoucher::class, 'id');
+        $rId = new \ReflectionProperty(Voucher::class, 'id');
         $rId->setValue($voucher, 1);
 
-        return new WalletVoucherComment($voucher, 'system', 'Ticket #123');
+        return new VoucherComment($voucher, 'system', 'Ticket #123');
     }
 
     public function testCreateCommentSuccess(): void

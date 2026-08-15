@@ -4,27 +4,27 @@ declare(strict_types=1);
 
 namespace App\Wallet\Service\Deposit;
 
-use App\Wallet\Entity\WalletVoucher;
+use App\Wallet\Entity\Voucher;
 
-final class ManualDepositProvider implements WalletDepositProviderInterface
+final class ManualDepositProvider implements DepositProviderInterface
 {
     public static function getName(): string
     {
-        return WalletVoucher::VOUCHER_TYPE_MANUAL;
+        return Voucher::VOUCHER_TYPE_MANUAL;
     }
 
     public function supports(string $voucherType): bool
     {
-        return $voucherType === WalletVoucher::VOUCHER_TYPE_MANUAL;
+        return $voucherType === Voucher::VOUCHER_TYPE_MANUAL;
     }
 
-    public function authorize(WalletVoucher $voucher, array $options): void
+    public function authorize(Voucher $voucher, array $options): void
     {
         // Manual deposits are authorized by the admin action that created them.
     }
 
-    public function reverse(WalletVoucher $voucher, string $reason, array $options = []): void
+    public function reverse(Voucher $voucher, string $reason, array $options = []): void
     {
-        // Manual deposit reversal is fully handled by WalletDepositService.
+        // Manual deposit reversal is fully handled by DepositService.
     }
 }

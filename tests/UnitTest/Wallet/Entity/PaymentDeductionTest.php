@@ -7,15 +7,15 @@ namespace App\Tests\UnitTest\Wallet\Entity;
 use App\Identity\Entity\User;
 use App\Payment\Entity\Invoice;
 use App\Wallet\Entity\Wallet;
-use App\Wallet\Entity\WalletPaymentDeduction;
+use App\Wallet\Entity\PaymentDeduction;
 use PHPUnit\Framework\TestCase;
 
-final class WalletPaymentDeductionTest extends TestCase
+final class PaymentDeductionTest extends TestCase
 {
     public function testDefaultsAndStateMarkers(): void
     {
         [$invoice, $wallet] = self::invoiceAndWallet();
-        $deduction = new WalletPaymentDeduction($invoice, $wallet, 2, 300, 'cny', 'ref-1');
+        $deduction = new PaymentDeduction($invoice, $wallet, 2, 300, 'cny', 'ref-1');
 
         self::assertNull($deduction->getId());
         self::assertNotSame('', $deduction->getUuid());
@@ -24,33 +24,33 @@ final class WalletPaymentDeductionTest extends TestCase
         self::assertSame(1, $deduction->getPayerId());
         self::assertSame($wallet, $deduction->getWallet());
         self::assertSame(2, $deduction->getSystemWalletId());
-        self::assertSame(WalletPaymentDeduction::TYPE_WALLET_BALANCE, $deduction->getType());
+        self::assertSame(PaymentDeduction::TYPE_WALLET_BALANCE, $deduction->getType());
         self::assertSame(300, $deduction->getAmount());
         self::assertSame('CNY', $deduction->getCurrency());
-        self::assertSame(WalletPaymentDeduction::STATUS_PENDING, $deduction->getStatus());
+        self::assertSame(PaymentDeduction::STATUS_PENDING, $deduction->getStatus());
         self::assertSame('ref-1', $deduction->getReferenceId());
         self::assertInstanceOf(\DateTimeImmutable::class, $deduction->getCreatedAt());
 
         $deduction->markApplied('tx-1', ['fromWalletId' => 1, 'toWalletId' => 2]);
-        self::assertSame(WalletPaymentDeduction::STATUS_APPLIED, $deduction->getStatus());
-        self::assertSame('tx-1', $deduction->getWalletTransactionId());
+        self::assertSame(PaymentDeduction::STATUS_APPLIED, $deduction->getStatus());
+        self::assertSame('tx-1', $deduction->getTransactionId());
         self::assertSame(2, $deduction->getMetadata()['toWalletId']);
         self::assertInstanceOf(\DateTimeImmutable::class, $deduction->getAppliedAt());
 
         $deduction->markReleased('tx-2', 'cancelled');
-        self::assertSame(WalletPaymentDeduction::STATUS_RELEASED, $deduction->getStatus());
+        self::assertSame(PaymentDeduction::STATUS_RELEASED, $deduction->getStatus());
         self::assertSame('tx-2', $deduction->getReversalTransactionId());
         self::assertSame('cancelled', $deduction->getMetadata()['releaseReason']);
         self::assertInstanceOf(\DateTimeImmutable::class, $deduction->getReleasedAt());
 
         $deduction->markRefunded('tx-3', 'refund');
-        self::assertSame(WalletPaymentDeduction::STATUS_REFUNDED, $deduction->getStatus());
+        self::assertSame(PaymentDeduction::STATUS_REFUNDED, $deduction->getStatus());
         self::assertSame('tx-3', $deduction->getReversalTransactionId());
         self::assertSame('refund', $deduction->getMetadata()['refundReason']);
         self::assertInstanceOf(\DateTimeImmutable::class, $deduction->getRefundedAt());
 
         $deduction->markFailed('failed');
-        self::assertSame(WalletPaymentDeduction::STATUS_FAILED, $deduction->getStatus());
+        self::assertSame(PaymentDeduction::STATUS_FAILED, $deduction->getStatus());
         self::assertSame('failed', $deduction->getMetadata()['failedReason']);
 
         $deduction->prePersist();
@@ -58,7 +58,7 @@ final class WalletPaymentDeductionTest extends TestCase
 
         \Closure::bind(function (): void {
             unset($this->createdAt);
-        }, $deduction, WalletPaymentDeduction::class)();
+        }, $deduction, PaymentDeduction::class)();
         $deduction->prePersist();
         self::assertInstanceOf(\DateTimeImmutable::class, $deduction->getCreatedAt());
     }
@@ -68,7 +68,7 @@ final class WalletPaymentDeductionTest extends TestCase
         [, $wallet] = self::invoiceAndWallet();
 
         $this->expectException(\InvalidArgumentException::class);
-        new WalletPaymentDeduction(new Invoice(), $wallet, 2, 300, 'CNY', 'ref-1');
+        new PaymentDeduction(new Invoice(), $wallet, 2, 300, 'CNY', 'ref-1');
     }
 
     /** @return array{Invoice, Wallet} */

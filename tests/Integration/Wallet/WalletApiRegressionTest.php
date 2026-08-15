@@ -7,9 +7,9 @@ use App\Identity\Security\TokenManager;
 use App\Tests\Integration\IntegrationWebTestCase;
 use App\Tests\Integration\DatabaseBootstrapTrait;
 use App\Wallet\Entity\Wallet;
-use App\Wallet\Entity\WalletTransaction;
-use App\Wallet\Entity\WalletVoucher;
-use App\Wallet\Service\Deposit\WalletDepositService;
+use App\Wallet\Entity\Transaction;
+use App\Wallet\Entity\Voucher;
+use App\Wallet\Service\Deposit\DepositService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
@@ -27,8 +27,8 @@ final class WalletApiRegressionTest extends IntegrationWebTestCase
         $em = $client->getContainer()->get(EntityManagerInterface::class);
 
         $tables = [
-            'App\\Wallet\\Entity\\WalletVoucher',
-            'App\\Wallet\\Entity\\WalletTransaction',
+            'App\\Wallet\\Entity\\Voucher',
+            'App\\Wallet\\Entity\\Transaction',
             'App\\Wallet\\Entity\\Wallet',
         ];
         foreach ($tables as $table) {
@@ -101,9 +101,9 @@ final class WalletApiRegressionTest extends IntegrationWebTestCase
         $em->persist($bobWallet);
         $em->flush();
 
-        $ownTx = new WalletTransaction('app-wallet-own-' . bin2hex(random_bytes(6)), 1200, WalletTransaction::TYPE_DEPOSIT);
+        $ownTx = new Transaction('app-wallet-own-' . bin2hex(random_bytes(6)), 1200, Transaction::TYPE_DEPOSIT);
         $ownTx->setToWallet($aliceWallet)->markCompleted();
-        $otherTx = new WalletTransaction('app-wallet-other-' . bin2hex(random_bytes(6)), 3400, WalletTransaction::TYPE_DEPOSIT);
+        $otherTx = new Transaction('app-wallet-other-' . bin2hex(random_bytes(6)), 3400, Transaction::TYPE_DEPOSIT);
         $otherTx->setToWallet($bobWallet)->markCompleted();
         $em->persist($ownTx);
         $em->persist($otherTx);
@@ -189,7 +189,7 @@ final class WalletApiRegressionTest extends IntegrationWebTestCase
         self::assertNotEmpty($vouchers);
 
         // Append an immutable annotation (voucher-comment resource) and read it back
-        $voucherEntity = $em->getRepository(WalletVoucher::class)->findOneBy(['uuid' => $uuid]);
+        $voucherEntity = $em->getRepository(Voucher::class)->findOneBy(['uuid' => $uuid]);
         self::assertNotNull($voucherEntity);
 
         $client->request('POST', '/api/v1/manage/voucher-comments', server: ['CONTENT_TYPE' => 'application/json'], content: json_encode([
@@ -238,9 +238,9 @@ final class WalletApiRegressionTest extends IntegrationWebTestCase
         $em->persist($bobWallet);
         $em->flush();
 
-        $depositService = $client->getContainer()->get(WalletDepositService::class);
+        $depositService = $client->getContainer()->get(DepositService::class);
         $depositService->deposit(
-            WalletVoucher::VOUCHER_TYPE_MANUAL,
+            Voucher::VOUCHER_TYPE_MANUAL,
             'vouch-a',
             (int) $aliceWallet->getId(),
             50000,
@@ -249,7 +249,7 @@ final class WalletApiRegressionTest extends IntegrationWebTestCase
             'system',
         );
         $bobVoucher = $depositService->deposit(
-            WalletVoucher::VOUCHER_TYPE_MANUAL,
+            Voucher::VOUCHER_TYPE_MANUAL,
             'vouch-b',
             (int) $bobWallet->getId(),
             30000,

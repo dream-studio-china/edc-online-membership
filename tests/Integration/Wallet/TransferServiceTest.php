@@ -4,12 +4,12 @@ namespace App\Tests\Integration\Wallet;
 
 use App\Identity\Entity\User;
 use App\Wallet\Entity\Wallet;
-use App\Wallet\Entity\WalletTransaction;
+use App\Wallet\Entity\Transaction;
 use App\Wallet\Exception\InsufficientFundsException;
 use App\Wallet\Exception\SameWalletTransferException;
 use App\Wallet\Exception\WalletFrozenException;
 use App\Wallet\Repository\WalletRepository;
-use App\Wallet\Repository\WalletTransactionRepository;
+use App\Wallet\Repository\TransactionRepository;
 use App\Wallet\Service\Transfer\TransferService;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Tests\Integration\IntegrationKernelTestCase;
@@ -21,7 +21,7 @@ final class TransferServiceTest extends IntegrationKernelTestCase
 
     private EntityManagerInterface $em;
     private WalletRepository $walletRepo;
-    private WalletTransactionRepository $txRepo;
+    private TransactionRepository $txRepo;
     private TransferService $transferService;
 
     protected function setUp(): void
@@ -31,13 +31,13 @@ final class TransferServiceTest extends IntegrationKernelTestCase
 
         $this->em = static::getContainer()->get(EntityManagerInterface::class);
 
-        $tables = ['App\\Wallet\\Entity\\WalletTransaction', 'App\\Wallet\\Entity\\Wallet'];
+        $tables = ['App\\Wallet\\Entity\\Transaction', 'App\\Wallet\\Entity\\Wallet'];
         foreach ($tables as $table) {
             $this->em->createQuery("DELETE FROM $table")->execute();
         }
 
         $this->walletRepo = $this->em->getRepository(Wallet::class);
-        $this->txRepo = $this->em->getRepository(WalletTransaction::class);
+        $this->txRepo = $this->em->getRepository(Transaction::class);
         $this->transferService = static::getContainer()->get(TransferService::class);
     }
 
@@ -85,7 +85,7 @@ final class TransferServiceTest extends IntegrationKernelTestCase
 
         $result = $this->transferService->transfer($from->getId(), $to->getId(), 25000); // $250.00
 
-        self::assertSame(WalletTransaction::STATUS_COMPLETED, $result->transaction->getStatus());
+        self::assertSame(Transaction::STATUS_COMPLETED, $result->transaction->getStatus());
         self::assertSame(25000, $result->transaction->getAmount());
         self::assertSame($from->getId(), $result->transaction->getFromWallet()->getId());
         self::assertSame($to->getId(), $result->transaction->getToWallet()->getId());
@@ -102,7 +102,7 @@ final class TransferServiceTest extends IntegrationKernelTestCase
 
         self::assertSame(0, $result->fromWalletBalanceAfter);
         self::assertSame(10000, $result->toWalletBalanceAfter);
-        self::assertSame(WalletTransaction::STATUS_COMPLETED, $result->transaction->getStatus());
+        self::assertSame(Transaction::STATUS_COMPLETED, $result->transaction->getStatus());
     }
 
     public function testTransferOneCent(): void

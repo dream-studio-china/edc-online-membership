@@ -6,39 +6,39 @@ namespace App\Tests\UnitTest\Wallet\Service;
 
 use App\Identity\Entity\User;
 use App\Wallet\Entity\Wallet;
-use App\Wallet\Entity\WalletVoucher;
-use App\Wallet\Repository\WalletVoucherRepository;
-use App\Wallet\Service\WalletReconciliationService;
+use App\Wallet\Entity\Voucher;
+use App\Wallet\Repository\VoucherRepository;
+use App\Wallet\Service\ReconciliationService;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 
 #[AllowMockObjectsWithoutExpectations]
-final class WalletReconciliationServiceTest extends TestCase
+final class ReconciliationServiceTest extends TestCase
 {
-    private WalletVoucherRepository $repo;
-    private WalletReconciliationService $service;
+    private VoucherRepository $repo;
+    private ReconciliationService $service;
 
     protected function setUp(): void
     {
-        $this->repo = $this->createMock(WalletVoucherRepository::class);
-        $this->service = new WalletReconciliationService($this->repo);
+        $this->repo = $this->createMock(VoucherRepository::class);
+        $this->service = new ReconciliationService($this->repo);
     }
 
     private function createVoucher(
         int $amount,
         string $suffix,
-        string $fundSource = WalletVoucher::FUND_SOURCE_EXTERNAL,
-        string $direction = WalletVoucher::DIRECTION_CREDIT
-    ): WalletVoucher {
+        string $fundSource = Voucher::FUND_SOURCE_EXTERNAL,
+        string $direction = Voucher::DIRECTION_CREDIT
+    ): Voucher {
         $user = new User();
         $user->setEmail('rec@t.com')->setUsername('rec');
         $wallet = new Wallet($user, 'CNY');
 
-        $voucher = new WalletVoucher(
+        $voucher = new Voucher(
             $wallet,
             $direction,
             $fundSource,
-            WalletVoucher::VOUCHER_TYPE_MANUAL,
+            Voucher::VOUCHER_TYPE_MANUAL,
             'manual-' . $suffix,
             $amount,
             'CNY',
@@ -56,10 +56,10 @@ final class WalletReconciliationServiceTest extends TestCase
     {
         $voucher = $this->createVoucher(50000, 'v1');
         $this->repo->method('findForReconciliation')
-            ->with('CNY', WalletVoucher::FUND_SOURCE_EXTERNAL, null, null)
+            ->with('CNY', Voucher::FUND_SOURCE_EXTERNAL, null, null)
             ->willReturn([$voucher]);
 
-        $rows = $this->service->listBoundaryVouchers('CNY', WalletVoucher::FUND_SOURCE_EXTERNAL);
+        $rows = $this->service->listBoundaryVouchers('CNY', Voucher::FUND_SOURCE_EXTERNAL);
 
         self::assertCount(1, $rows);
         $row = $rows[0];
@@ -88,7 +88,7 @@ final class WalletReconciliationServiceTest extends TestCase
     public function testListBoundaryVouchersMultipleMixedSources(): void
     {
         $external = $this->createVoucher(10000, 'ext');
-        $internal = $this->createVoucher(20000, 'int', WalletVoucher::FUND_SOURCE_INTERNAL);
+        $internal = $this->createVoucher(20000, 'int', Voucher::FUND_SOURCE_INTERNAL);
         $this->repo->method('findForReconciliation')->willReturn([$external, $internal]);
 
         $rows = $this->service->listBoundaryVouchers('CNY');
@@ -110,7 +110,7 @@ final class WalletReconciliationServiceTest extends TestCase
 
     public function testListBoundaryVouchersSerializesDebitVoucher(): void
     {
-        $debit = $this->createVoucher(30000, 'wd', WalletVoucher::FUND_SOURCE_EXTERNAL, WalletVoucher::DIRECTION_DEBIT);
+        $debit = $this->createVoucher(30000, 'wd', Voucher::FUND_SOURCE_EXTERNAL, Voucher::DIRECTION_DEBIT);
         $debit->markReversed('rev-tx-wd', 'cancelled');
         $this->repo->method('findForReconciliation')->willReturn([$debit]);
 

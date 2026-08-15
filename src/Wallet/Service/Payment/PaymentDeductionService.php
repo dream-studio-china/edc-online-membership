@@ -6,32 +6,32 @@ namespace App\Wallet\Service\Payment;
 
 use App\Core\Service\BaseService;
 use App\Payment\Entity\Invoice;
-use App\Wallet\DTO\WalletPaymentDeductionRequest;
-use App\Wallet\Entity\WalletPaymentDeduction;
-use App\Wallet\Repository\WalletPaymentDeductionRepository;
+use App\Wallet\DTO\PaymentDeductionRequest;
+use App\Wallet\Entity\PaymentDeduction;
+use App\Wallet\Repository\PaymentDeductionRepository;
 use App\Wallet\Repository\WalletRepository;
 use App\Wallet\Service\Transfer\TransferServiceInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
-/** @extends BaseService<\App\Wallet\Entity\WalletPaymentDeduction> */
-class WalletPaymentDeductionService extends BaseService
+/** @extends BaseService<\App\Wallet\Entity\PaymentDeduction> */
+class PaymentDeductionService extends BaseService
 {
     public function __construct(
         ContainerInterface $container,
-        private readonly WalletPaymentDeductionRepository $deductionRepository,
+        private readonly PaymentDeductionRepository $deductionRepository,
         private readonly WalletRepository $walletRepository,
         private readonly TransferServiceInterface $transferService,
         #[Autowire('%payment.system_wallet_id%')]
         private readonly ?int $systemWalletId = null,
     ) {
-        parent::__construct($container, WalletPaymentDeduction::class);
+        parent::__construct($container, PaymentDeduction::class);
     }
 
     /**
      * @param array<string, mixed> $options
      */
-    public function createRequestFromOptions(Invoice $invoice, array $options): ?WalletPaymentDeductionRequest
+    public function createRequestFromOptions(Invoice $invoice, array $options): ?PaymentDeductionRequest
     {
         if (isset($options['walletAmount'])) {
             $amount = (int) $options['walletAmount'];
@@ -39,8 +39,8 @@ class WalletPaymentDeductionService extends BaseService
                 return null;
             }
 
-            return new WalletPaymentDeductionRequest(
-                WalletPaymentDeduction::TYPE_WALLET_BALANCE,
+            return new PaymentDeductionRequest(
+                PaymentDeduction::TYPE_WALLET_BALANCE,
                 $amount,
                 (string) ($options['currency'] ?? $invoice->getCurrency()),
                 $options,
@@ -52,8 +52,8 @@ class WalletPaymentDeductionService extends BaseService
             return null;
         }
 
-        return new WalletPaymentDeductionRequest(
-            (string) ($deduction['type'] ?? WalletPaymentDeduction::TYPE_WALLET_BALANCE),
+        return new PaymentDeductionRequest(
+            (string) ($deduction['type'] ?? PaymentDeduction::TYPE_WALLET_BALANCE),
             (int) ($deduction['amount'] ?? 0),
             (string) ($deduction['currency'] ?? $invoice->getCurrency()),
             array_merge($options, $deduction['options'] ?? []),
@@ -63,7 +63,7 @@ class WalletPaymentDeductionService extends BaseService
     /**
      * @param array<string, mixed> $options
      */
-    public function applyFromOptions(Invoice $invoice, array $options): ?WalletPaymentDeduction
+    public function applyFromOptions(Invoice $invoice, array $options): ?PaymentDeduction
     {
         $request = $this->createRequestFromOptions($invoice, $options);
         if ($request === null) {
@@ -76,13 +76,13 @@ class WalletPaymentDeductionService extends BaseService
     /**
      * @param array<string, mixed> $options
      */
-    public function apply(Invoice $invoice, int $amount, string $currency, array $options = [], string $type = WalletPaymentDeduction::TYPE_WALLET_BALANCE): WalletPaymentDeduction
+    public function apply(Invoice $invoice, int $amount, string $currency, array $options = [], string $type = PaymentDeduction::TYPE_WALLET_BALANCE): PaymentDeduction
     {
         $this->validate($invoice, $amount, $currency, $type);
 
         $existing = $this->deductionRepository->findWalletBalanceByInvoice($invoice);
-        if ($existing instanceof WalletPaymentDeduction) {
-            if ($existing->getStatus() === WalletPaymentDeduction::STATUS_APPLIED) {
+        if ($existing instanceof PaymentDeduction) {
+            if ($existing->getStatus() === PaymentDeduction::STATUS_APPLIED) {
                 return $existing;
             }
             throw new \RuntimeException(sprintf('Invoice wallet deduction already exists with status "%s".', $existing->getStatus()));
@@ -104,7 +104,7 @@ class WalletPaymentDeductionService extends BaseService
         }
 
         $referenceId = $options['deductionReferenceId'] ?? ('deduction-balance-' . $invoice->getUuid());
-        $deduction = new WalletPaymentDeduction($invoice, $wallet, $systemWalletId, $amount, $currency, $referenceId);
+        $deduction = new PaymentDeduction($invoice, $wallet, $systemWalletId, $amount, $currency, $referenceId);
         $this->em->persist($deduction);
 
         try {
@@ -130,20 +130,20 @@ class WalletPaymentDeductionService extends BaseService
         }
     }
 
-    public function release(Invoice $invoice, string $reason): ?WalletPaymentDeduction
+    public function release(Invoice $invoice, string $reason): ?PaymentDeduction
     {
         $deduction = $this->deductionRepository->findAppliedByInvoice($invoice);
-        if (!$deduction instanceof WalletPaymentDeduction) {
+        if (!$deduction instanceof PaymentDeduction) {
             return null;
         }
 
         return $this->reverse($deduction, 'deduction-release-' . $invoice->getUuid(), $reason, false);
     }
 
-    public function refund(Invoice $invoice, string $reason): ?WalletPaymentDeduction
+    public function refund(Invoice $invoice, string $reason): ?PaymentDeduction
     {
         $deduction = $this->deductionRepository->findAppliedByInvoice($invoice);
-        if (!$deduction instanceof WalletPaymentDeduction) {
+        if (!$deduction instanceof PaymentDeduction) {
             return null;
         }
 
@@ -160,19 +160,19 @@ class WalletPaymentDeductionService extends BaseService
         return $sum;
     }
 
-    public function findApplied(Invoice $invoice): ?WalletPaymentDeduction
+    public function findApplied(Invoice $invoice): ?PaymentDeduction
     {
         return $this->deductionRepository->findAppliedByInvoice($invoice);
     }
 
     public function hasApplied(Invoice $invoice): bool
     {
-        return $this->findApplied($invoice) instanceof WalletPaymentDeduction;
+        return $this->findApplied($invoice) instanceof PaymentDeduction;
     }
 
     private function validate(Invoice $invoice, int $amount, string $currency, string $type): void
     {
-        if ($type !== WalletPaymentDeduction::TYPE_WALLET_BALANCE) {
+        if ($type !== PaymentDeduction::TYPE_WALLET_BALANCE) {
             throw new \InvalidArgumentException(sprintf('Unsupported deduction type: %s', $type));
         }
         if ($amount <= 0) {
@@ -186,7 +186,7 @@ class WalletPaymentDeductionService extends BaseService
         }
     }
 
-    private function reverse(WalletPaymentDeduction $deduction, string $referenceId, string $reason, bool $refund): WalletPaymentDeduction
+    private function reverse(PaymentDeduction $deduction, string $referenceId, string $reason, bool $refund): PaymentDeduction
     {
         $walletId = $deduction->getWallet()->getId();
         \assert($walletId !== null);

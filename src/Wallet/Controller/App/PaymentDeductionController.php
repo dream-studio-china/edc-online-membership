@@ -9,21 +9,21 @@ use App\Core\View\ApiView;
 use App\Core\View\DetailApiViewMixin;
 use App\Core\View\ListApiViewMixin;
 use App\Identity\Entity\User;
-use App\Wallet\Repository\WalletPaymentDeductionRepository;
-use App\Wallet\Service\Payment\WalletPaymentDeductionService;
+use App\Wallet\Repository\PaymentDeductionRepository;
+use App\Wallet\Service\Payment\PaymentDeductionService;
 use Doctrine\ORM\QueryBuilder;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/app/wallet-payment-deductions', name: 'app-wallet-payment-deductions-')]
 #[IsGranted('ROLE_USER')]
-class WalletPaymentDeductionController extends RestController
+class PaymentDeductionController extends RestController
 {
     use ApiView, DetailApiViewMixin, ListApiViewMixin;
 
     public function __construct(
-        protected readonly WalletPaymentDeductionService $service,
-        private readonly WalletPaymentDeductionRepository $deductionRepository,
+        protected readonly PaymentDeductionService $service,
+        private readonly PaymentDeductionRepository $deductionRepository,
     ) {}
 
     protected function commonFilter(): QueryBuilder
