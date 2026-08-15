@@ -135,11 +135,15 @@ final class WalletApiRegressionTest extends IntegrationWebTestCase
         $client->request('GET', '/api/v1/app/wallets/balance');
         self::assertSame(200, $client->getResponse()->getStatusCode(), (string) $client->getResponse()->getContent());
         $balance = json_decode((string) $client->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR);
-        self::assertSame(1200, $balance['data']['totalBalance']);
-        self::assertSame(1200, $balance['data']['totalDeposited']);
-        self::assertSame(0, $balance['data']['discrepancy']);
         self::assertTrue($balance['data']['matches']);
         self::assertSame(1, $balance['data']['walletCount']);
+        self::assertCount(1, $balance['data']['units']);
+        $unit = $balance['data']['units'][0];
+        self::assertSame('USD', $unit['currency']);
+        self::assertSame(1200, $unit['totalBalance']);
+        self::assertSame(0, $unit['voucherBoundary']);
+        self::assertSame(1200, $unit['unmatchedDeposits']);
+        self::assertTrue($unit['matches']);
     }
 
     public function testWalletCreateDuplicateCurrencyFails(): void

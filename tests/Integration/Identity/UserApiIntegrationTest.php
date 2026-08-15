@@ -464,72 +464,6 @@ final class UserApiIntegrationTest extends IntegrationWebTestCase
     // ───────────────────── Wallet Deposit + Transfer ─────────────────────
 
     #[Group('low-value')]
-    public function testDepositFundsToWallet(): void
-    {
-        $client = static::createClient();
-        $adminToken = $this->createAdminAndGetToken($client);
-
-        // Create a test user and wallet within this client session
-        $container = $client->getContainer();
-        $em = $container->get(EntityManagerInterface::class);
-        $hasher = $container->get(\Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface::class);
-        $user = new User();
-        $user->setEmail('depouser@test.com');
-        $user->setUsername('depouser');
-        $user->setPassword($hasher->hashPassword($user, 'P@ssw0rd'));
-        $em->persist($user);
-        $em->flush();
-
-        $userId = $user->getId();
-        self::assertNotNull($userId);
-
-        // Create wallet
-        $client->setServerParameter('HTTP_AUTHORIZATION', 'Bearer ' . $adminToken);
-        $client->jsonRequest('POST', '/api/v1/manage/wallets', [
-            'user' => $userId,
-            'currency' => 'CNY',
-            'status' => 'active',
-            'label' => 'Deposit test',
-        ]);
-        $walletData = $this->decodeJson($client);
-        $walletId = $walletData['data']['id'] ?? null;
-        self::assertNotNull($walletId);
-        self::assertSame(0, $walletData['data']['balance'] ?? -1, 'New wallet must start with 0 balance');
-
-        // Deposit 100000 cents (1000.00 CNY)
-        $client->jsonRequest('POST', '/api/v1/manage/transfers/deposit', [
-            'toWalletId' => $walletId,
-            'amount' => 100000,
-            'description' => 'System deposit for testing',
-        ]);
-        self::assertResponseStatusCodeSame(201);
-        $depositData = $this->decodeJson($client);
-        self::assertSame('deposit', $depositData['data']['type'] ?? '');
-        self::assertSame(100000, $depositData['data']['toWalletBalanceAfter'] ?? 0);
-        self::assertSame(1000.0, $depositData['data']['amountFloat'] ?? 0.0);
-
-        // Verify wallet balance via GET
-        $client->request('GET', '/api/v1/manage/wallets/' . $walletId);
-        $updated = $this->decodeJson($client);
-        self::assertSame(100000, $updated['data']['balance'] ?? 0, 'Balance should be 100000 after deposit');
-    }
-
-    #[Group('low-value')]
-    public function testDepositNegativeAmountRejected(): void
-    {
-        $client = static::createClient();
-        $adminToken = $this->createAdminAndGetToken($client);
-
-        $client->setServerParameter('HTTP_AUTHORIZATION', 'Bearer ' . $adminToken);
-        $client->jsonRequest('POST', '/api/v1/manage/transfers/deposit', [
-            'toWalletId' => 1,
-            'amount' => -100,
-        ]);
-
-        self::assertResponseStatusCodeSame(400);
-    }
-
-    #[Group('low-value')]
     public function testBalanceVerification(): void
     {
         $client = static::createClient();
@@ -542,17 +476,19 @@ final class UserApiIntegrationTest extends IntegrationWebTestCase
         $data = $this->decodeJson($client);
         $result = $data['data'] ?? [];
 
-        // Core invariant: total balance must equal total deposited
+        // Core invariant: balance must equal voucher boundary + unmatched legacy deposits per unit
         self::assertTrue(
             $result['matches'] ?? false,
-            'Total wallet balance must equal total deposits'
+            'Wallet balance must equal the voucher boundary plus unmatched legacy deposits'
         );
-        self::assertSame(
-            $result['totalBalance'],
-            $result['totalDeposited'],
-            'Balance and deposited amounts must be identical'
-        );
-        self::assertSame(0, $result['discrepancy'] ?? -1);
+        foreach ($result['units'] ?? [] as $unit) {
+            self::assertTrue($unit['matches'], 'Unit ' . $unit['currency'] . ' must balance');
+            self::assertSame(
+                $unit['voucherBoundary'] + $unit['unmatchedDeposits'],
+                $unit['totalBalance'],
+                'Unit ' . $unit['currency'] . ' balance must equal expected'
+            );
+        }
         self::assertGreaterThanOrEqual(0, $result['walletCount'] ?? -1);
     }
 
@@ -578,10 +514,7 @@ final class UserApiIntegrationTest extends IntegrationWebTestCase
         ]);
         $wid = $this->decodeJson($client)['data']['id'];
 
-        $client->jsonRequest('POST', '/api/v1/manage/transfers/deposit', [
-            'toWalletId' => $wid, 'amount' => 10000, 'description' => 'dep',
-        ]);
-        self::assertResponseStatusCodeSame(201);
+        $this->seedWalletBalance($em, $wid, 10000);
 
         // Reconcile should produce 0 — books are balanced
         $client->jsonRequest('POST', '/api/v1/manage/wallets/reconcile');
@@ -690,11 +623,8 @@ final class UserApiIntegrationTest extends IntegrationWebTestCase
         ]);
         $wb = $this->decodeJson($client)['data']['id'];
 
-        // Deposit to wallet A
-        $client->jsonRequest('POST', '/api/v1/manage/transfers/deposit', [
-            'toWalletId' => $wa, 'amount' => 50000, 'description' => 'funds',
-        ]);
-        self::assertResponseStatusCodeSame(201);
+        // Seed wallet A with funds (deposit is now voucher-backed)
+        $this->seedWalletBalance($em, $wa, 50000);
 
         // Transfer from A to B
         $client->jsonRequest('POST', '/api/v1/manage/transfers', [
@@ -733,10 +663,7 @@ final class UserApiIntegrationTest extends IntegrationWebTestCase
         ]);
         $wid = $this->decodeJson($client)['data']['id'];
 
-        $client->jsonRequest('POST', '/api/v1/manage/transfers/deposit', [
-            'toWalletId' => $wid, 'amount' => 50000,
-        ]);
-        self::assertResponseStatusCodeSame(201);
+        $this->seedWalletBalance($em, $wid, 50000);
 
         // Same wallet transfer — should be rejected
         $client->jsonRequest('POST', '/api/v1/manage/transfers', [
@@ -759,19 +686,6 @@ final class UserApiIntegrationTest extends IntegrationWebTestCase
     }
 
     #[Group('low-value')]
-    public function testDepositToNonexistentWallet(): void
-    {
-        $client = static::createClient();
-        $adminToken = $this->createAdminAndGetToken($client);
-
-        $client->setServerParameter('HTTP_AUTHORIZATION', 'Bearer ' . $adminToken);
-        $client->jsonRequest('POST', '/api/v1/manage/transfers/deposit', [
-            'toWalletId' => 99999, 'amount' => 1000,
-        ]);
-        self::assertSame(404, $client->getResponse()->getStatusCode());
-    }
-
-    #[Group('low-value')]
     public function testTransferMissingFields(): void
     {
         $client = static::createClient();
@@ -780,19 +694,6 @@ final class UserApiIntegrationTest extends IntegrationWebTestCase
         $client->setServerParameter('HTTP_AUTHORIZATION', 'Bearer ' . $adminToken);
         $client->jsonRequest('POST', '/api/v1/manage/transfers', [
             'fromWalletId' => 1,
-        ]);
-        self::assertResponseStatusCodeSame(400);
-    }
-
-    #[Group('low-value')]
-    public function testDepositMissingFields(): void
-    {
-        $client = static::createClient();
-        $adminToken = $this->createAdminAndGetToken($client);
-
-        $client->setServerParameter('HTTP_AUTHORIZATION', 'Bearer ' . $adminToken);
-        $client->jsonRequest('POST', '/api/v1/manage/transfers/deposit', [
-            'amount' => 1000,
         ]);
         self::assertResponseStatusCodeSame(400);
     }
@@ -877,6 +778,25 @@ final class UserApiIntegrationTest extends IntegrationWebTestCase
             self::ensureKernelShutdown();
         }
         return $this->loginAndGetToken('testadmin@example.com', 'AdminPass!', $owned ? null : $client);
+    }
+
+    private function seedWalletBalance(EntityManagerInterface $em, int $walletId, int $amount): void
+    {
+        $em->createQuery('UPDATE App\Wallet\Entity\Wallet w SET w.balance = :balance WHERE w.id = :id')
+            ->setParameter('balance', $amount)
+            ->setParameter('id', $walletId)
+            ->execute();
+
+        $wallet = $em->getRepository(\App\Wallet\Entity\Wallet::class)->find($walletId);
+        self::assertNotNull($wallet);
+        $tx = new \App\Wallet\Entity\WalletTransaction(
+            'identity-seed-' . bin2hex(random_bytes(6)),
+            $amount,
+            \App\Wallet\Entity\WalletTransaction::TYPE_DEPOSIT,
+        );
+        $tx->setToWallet($wallet)->markCompleted();
+        $em->persist($tx);
+        $em->flush();
     }
 
     private function createAnyToken(?KernelBrowser $client = null): string
