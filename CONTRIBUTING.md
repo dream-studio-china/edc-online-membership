@@ -106,7 +106,7 @@ as a formatting step without reviewing its proposed changes.
 
 ## Project Structure
 
-```
+```text
 src/
 ├── Core/         # Framework core (RestController, BaseService, View mixins, Expression parser)
 ├── Common/       # CMS module (Category, Tag, Content, Comment, Page, Media, Setting)

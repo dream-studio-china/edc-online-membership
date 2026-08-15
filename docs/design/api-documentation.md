@@ -6,20 +6,12 @@
 
 ## 1. Architecture
 
-```
-Controller #[OA\*] attributes
-        │
-        ▼
-  swagger-php (zircote) ─── generates raw OpenAPI paths + generic tags
-        │
-        ▼
-  NelmioApiDocBundle ─── merges config/packages/nelmio_api_doc.yaml
-        │                    (schemas, security, info)
-        ▼
-  OpenApiEnricherListener ─── kernel.response event
-        │                    overrides tags, summaries, descriptions
-        ▼
-  /api/doc  (Swagger UI)    /api/doc.json  (raw JSON)
+```mermaid
+flowchart TD
+    A["Controller #[OA\*] attributes"] --> B["swagger-php (zircote)"]
+    B -->|"generates raw OpenAPI paths + generic tags"| C["NelmioApiDocBundle"]
+    C -->|"merges config/packages/nelmio_api_doc.yaml<br/>(schemas, security, info)"| D["OpenApiEnricherListener"]
+    D -->|"kernel.response event<br/>overrides tags, summaries, descriptions"| E["/api/doc (Swagger UI)<br/>/api/doc.json (raw JSON)"]
 ```
 
 ## 2. Single-File Enricher

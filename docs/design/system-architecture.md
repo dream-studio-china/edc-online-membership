@@ -7,28 +7,13 @@
 
 ## 1. Layer Architecture
 
-```
-Request/Response
-      |
-+-----v------------------------------------+
-|  HTTP Layer  (Controllers / View Mixins) |  <-- Only layer touching Request/Response
-+-----+------------------------------------+
-      |  (Service Interface only)
-+-----v------------------------------------+
-|  Service Layer                           |  <-- All business logic, transactions, validation
-+-----+------------------------------------+
-      |  (Repository only)
-+-----v------------------------------------+
-|  Repository Layer                        |  <-- Data access queries (Doctrine repositories)
-+-----+------------------------------------+
-      |  (Entities only)
-+-----v------------------------------------+
-|  Entity Layer (Domain Model)             |  <-- Pure data objects, no business logic
-+-----+------------------------------------+
-      |  (Doctrine ORM)
-+-----v------------------------------------+
-|  Infrastructure (ORM, Cache, Serializer) |  <-- Framework-provided
-+------------------------------------------+
+```mermaid
+flowchart TD
+    A["Request/Response"] --> B["HTTP Layer<br/>(Controllers / View Mixins)<br/>Only layer touching Request/Response"]
+    B -->|"(Service Interface only)"| C["Service Layer<br/>All business logic, transactions, validation"]
+    C -->|"(Repository only)"| D["Repository Layer<br/>Data access queries (Doctrine repositories)"]
+    D -->|"(Entities only)"| E["Entity Layer (Domain Model)<br/>Pure data objects, no business logic"]
+    E -->|"(Doctrine ORM)"| F["Infrastructure (ORM, Cache, Serializer)<br/>Framework-provided"]
 ```
 
 ### 1.1 Layer Dependency Rules

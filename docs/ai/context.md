@@ -18,7 +18,7 @@
 
 ## 2. Directory Structure
 
-```
+```text
 ├── public/index.php              # Front controller
 ├── public/.htaccess              # Apache rewrite rules + Authorization header forwarding
 ├── src/Kernel.php                # Symfony Kernel (MicroKernelTrait)
@@ -249,11 +249,12 @@ Profile is auto-created on User registration via a Doctrine lifecycle listener. 
 
 `BaseServiceInterface` and `BaseService` use `@template TEntity of object` to propagate entity types through the service layer. Concrete services declare `@extends BaseService<Entity>` and interfaces declare `@extends BaseServiceInterface<Entity>`. This enables PHPStan to infer return types from `get()`, `new()`, and `update()` at call sites.
 
-```
-BaseService<Order> (abstract, @template TEntity, @implements BaseServiceInterface<TEntity>)
-├── BaseServiceInfrastructureTrait    # EM, Logger, Serializer, Validator, Transactions
-├── BaseServiceReadListTrait<TEntity>          # get(mixed): TEntity|null, list(): mixed
-└── BaseServiceMutationTrait<TEntity>          # new(): object, update(mixed): object|false, remove(): bool
+```mermaid
+flowchart TD
+    base["BaseService<Order> (abstract, @template TEntity, @implements BaseServiceInterface<TEntity>)"]
+    base --> infra["BaseServiceInfrastructureTrait # EM, Logger, Serializer, Validator, Transactions"]
+    base --> readList["BaseServiceReadListTrait<TEntity> # get(mixed): TEntity|null, list(): mixed"]
+    base --> mutation["BaseServiceMutationTrait<TEntity> # new(): object, update(mixed): object|false, remove(): bool"]
 ```
 
 Key PHPDoc contracts:
@@ -268,11 +269,14 @@ Key PHPDoc contracts:
 
 ### 7.1 State Machine (workflow.yaml)
 
-```
-draft → pending → confirmed → paid → fulfilled → completed → refunded
-  │
-  └→ awaiting_store_acceptance → store_accepted → confirmed
-                               └→ store_rejected → cancelled
+```mermaid
+flowchart TD
+    draft["draft"] --> pending["pending"] --> confirmed["confirmed"] --> paid["paid"] --> fulfilled["fulfilled"] --> completed["completed"] --> refunded["refunded"]
+    draft --> awaiting["awaiting_store_acceptance"]
+    awaiting --> accepted["store_accepted"]
+    accepted --> confirmed
+    awaiting --> rejected["store_rejected"]
+    rejected --> cancelled["cancelled"]
 ```
 
 ### 7.2 OrderService Methods
@@ -337,12 +341,13 @@ draft → pending → confirmed → paid → fulfilled → completed → refunde
 
 ### 8.1 Invoice System
 
-```
-Invoice (pending→paying→paid→refunded)
-  ├── payment: 'wallet'|'wechat'|'mock'
-  ├── scene: 'order'|'deposit'|'wallet_topup'
-  ├── amount/currency (cents)
-  └── payer (User, nullable)
+```mermaid
+flowchart TD
+    invoice["Invoice (pending→paying→paid→refunded)"]
+    invoice --> payment["payment: 'wallet'|'wechat'|'mock'"]
+    invoice --> scene["scene: 'order'|'deposit'|'wallet_topup'"]
+    invoice --> amount["amount/currency (cents)"]
+    invoice --> payer["payer (User, nullable)"]
 ```
 
 ### 8.2 PaymentGatewayInterface — Gateway Registry Pattern
@@ -428,30 +433,39 @@ Manage keeps global audit endpoints: `GET /manage/wallets/balance` and `POST /ma
 
 ### 9.1 WechatUser Entity (OneToOne → User)
 
-```
-WechatUser (wechat_user) ──OnetoOne──> User (users)
-  openid (unique), unionid, sessionKey
-  nickname, avatar, sex, province, city, country
-  appType ('miniapp' | 'official')
-  rawData (json)
+```mermaid
+flowchart LR
+    wechatUser["WechatUser (wechat_user)<br/>openid (unique), unionid, sessionKey<br/>nickname, avatar, sex, province, city, country<br/>appType ('miniapp' | 'official')<br/>rawData (json)"]
+    user["User (users)"]
+    wechatUser -- "OneToOne" --> user
 ```
 
 **User.php is NOT modified** — WechatUser extends identity via OneToOne with CASCADE delete.
 
 ### 9.2 Login Flow
 
-```
-Mini Program: wx.login() → js_code → POST /api/wechat/miniapp/login
-  → WechatService.code2Session() → {openid, unionid, session_key}
-  → WechatAuthService.authenticateFromMiniApp()
-    ├─ findByOpenid(openid) → hit → update sessionKey → return User
-    └─ miss → new User() + new WechatUser() → flush → return User
-  → TokenManager.createTokens() → {access_token, refresh_token, expires_in}
-
-Official Account: redirect → oauth code → POST /api/wechat/oauth/callback
-  → WechatService.getOAuthUser(code) → {openid, nickname, avatar, ...}
-  → WechatAuthService.authenticateFromOfficialAccount()
-  → TokenManager.createTokens() → JWT
+```mermaid
+flowchart TD
+    subgraph Mini[Mini Program]
+        direction LR
+        M1["wx.login() → js_code → POST /api/wechat/miniapp/login"]
+        M2["WechatService.code2Session() → {openid, unionid, session_key}"]
+        M3["WechatAuthService.authenticateFromMiniApp()"]
+        M3 -->|"hit"| M4["findByOpenid(openid) → update sessionKey → return User"]
+        M3 -->|"miss"| M5["new User() + new WechatUser() → flush → return User"]
+        M6["TokenManager.createTokens() → {access_token, refresh_token, expires_in}"]
+        M1 --> M2 --> M3
+        M4 --> M6
+        M5 --> M6
+    end
+    subgraph OA[Official Account]
+        direction LR
+        O1["redirect → oauth code → POST /api/wechat/oauth/callback"]
+        O2["WechatService.getOAuthUser(code) → {openid, nickname, avatar, ...}"]
+        O3["WechatAuthService.authenticateFromOfficialAccount()"]
+        O4["TokenManager.createTokens() → JWT"]
+        O1 --> O2 --> O3 --> O4
+    end
 ```
 
 New users get random password (cannot password-login), synthetic email/username from openid.
