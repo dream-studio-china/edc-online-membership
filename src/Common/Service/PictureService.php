@@ -7,7 +7,7 @@ use App\Core\Service\BaseService;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /** @extends BaseService<\App\Common\Entity\Picture> */
-class PictureService extends BaseService implements PictureServiceInterface
+final class PictureService extends BaseService implements PictureServiceInterface
 {
     public function __construct(ContainerInterface $container)
     {

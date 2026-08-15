@@ -62,6 +62,17 @@ final class WalletTest extends TestCase
         self::assertSame('BTC', $wallet->getCurrency());
     }
 
+    public function testSetCurrencyThrowsAfterPersistence(): void
+    {
+        $wallet = new Wallet(new User(), 'CNY');
+        $rId = new \ReflectionProperty(Wallet::class, 'id');
+        $rId->setValue($wallet, 7);
+
+        $this->expectException(\LogicException::class);
+        $this->expectExceptionMessage('Wallet currency is immutable after creation.');
+        $wallet->setCurrency('USD');
+    }
+
     public function testSetStatus(): void
     {
         $wallet = new Wallet(new User());

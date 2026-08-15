@@ -26,6 +26,10 @@ services:
             tags: ['payment.gateway']
         App\Payment\Service\Adjustment\PaymentAdjustmentProviderInterface:
             tags: ['payment.adjustment_provider']
+        App\Wallet\Service\Deposit\DepositProviderInterface:
+            tags: ['wallet.deposit_provider']
+        App\Wallet\Service\Withdraw\WithdrawProviderInterface:
+            tags: ['wallet.withdraw_provider']
         App\Storage\Service\MediaStorageInterface:
             tags: ['media.storage']
 
@@ -103,8 +107,10 @@ services:
     App\Identity\Service\OtpStorageInterface: '@App\Identity\Service\LocalCacheOtpStorage'
     App\Trade\Service\StoreContextResolverInterface: '@App\Store\Service\StoreContextResolver'
     App\Inventory\Service\MaterialServiceInterface: '@App\Inventory\Service\MaterialService'
-    App\Inventory\Service\InventoryStockServiceInterface: '@App\Inventory\Service\InventoryStockService'
+    App\Inventory\Service\StockServiceInterface: '@App\Inventory\Service\StockService'
     App\Inventory\Service\SpecificationRecipeServiceInterface: '@App\Inventory\Service\SpecificationRecipeService'
+    App\Wechat\Service\WechatServiceInterface: '@App\Wechat\Service\WechatService'
+    App\Wechat\Service\WechatAuthServiceInterface: '@App\Wechat\Service\WechatAuthService'
 
     App\Identity\Service\LocalCacheOtpStorage:
         arguments:

@@ -8,7 +8,7 @@ use App\Identity\Entity\User;
 use App\Store\Controller\Staff\StoreOrderController;
 use App\Store\Entity\Store;
 use App\Store\Entity\StoreOrder;
-use App\Store\Service\StoreMembershipServiceInterface;
+use App\Store\Service\MembershipServiceInterface;
 use App\Store\Service\StoreOrderServiceInterface;
 use App\Store\Service\StoreServiceInterface;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
@@ -25,7 +25,7 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 final class StoreOrderControllerTest extends TestCase
 {
     private StoreServiceInterface $storeService;
-    private StoreMembershipServiceInterface $membershipService;
+    private MembershipServiceInterface $membershipService;
     private StoreOrderServiceInterface $orderService;
     private StoreOrderController $controller;
     private Store $store;
@@ -34,7 +34,7 @@ final class StoreOrderControllerTest extends TestCase
     protected function setUp(): void
     {
         $this->storeService = $this->createMock(StoreServiceInterface::class);
-        $this->membershipService = $this->createMock(StoreMembershipServiceInterface::class);
+        $this->membershipService = $this->createMock(MembershipServiceInterface::class);
         $this->orderService = $this->createMock(StoreOrderServiceInterface::class);
         $this->controller = new StoreOrderController($this->storeService, $this->membershipService, $this->orderService);
         $this->store = new Store('xuhui', 'Xuhui', 'Asia/Shanghai');

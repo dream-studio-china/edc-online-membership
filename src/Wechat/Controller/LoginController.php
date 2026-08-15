@@ -6,8 +6,8 @@ namespace App\Wechat\Controller;
 
 use App\Identity\Entity\User;
 use App\Identity\Security\TokenManager;
-use App\Wechat\Service\WechatAuthService;
-use App\Wechat\Service\WechatService;
+use App\Wechat\Service\WechatAuthServiceInterface;
+use App\Wechat\Service\WechatServiceInterface;
 use OpenApi\Attributes as OA;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -21,9 +21,9 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 class LoginController extends AbstractController
 {
     public function __construct(
-        private readonly WechatAuthService $wechatAuthService,
+        private readonly WechatAuthServiceInterface $wechatAuthService,
         private readonly TokenManager $tokenManager,
-        private readonly WechatService $wechatService,
+        private readonly WechatServiceInterface $wechatService,
         private readonly TranslatorInterface $translator,
     ) {}
 

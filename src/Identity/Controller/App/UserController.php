@@ -7,7 +7,7 @@ namespace App\Identity\Controller\App;
 use App\Core\Controller\RestController;
 use App\Core\View\ApiView;
 use App\Identity\Entity\User;
-use App\Identity\Service\UserService;
+use App\Identity\Service\UserServiceInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -19,7 +19,7 @@ class UserController extends RestController
     use ApiView;
 
     public function __construct(
-        protected readonly UserService $service,
+        protected readonly UserServiceInterface $service,
     ) {}
 
     #[Route('/change-password', name: 'change-password', methods: ['POST'])]

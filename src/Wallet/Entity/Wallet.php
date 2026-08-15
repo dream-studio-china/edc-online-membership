@@ -22,11 +22,21 @@ class Wallet
     #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     private ?User $user = null;
 
-    #[ORM\Column(type: 'string', length: 10, options: ['default' => 'USD'])]
+    /**
+     * Unit of account code. Plain ISO currency (e.g. 'CNY') identifies the
+     * default balance wallet; extended codes (e.g. 'CNY.ESCROW') identify
+     * category accounts such as escrow or commission.
+     */
+    #[ORM\Column(type: 'string', length: 32, options: ['default' => 'USD'])]
     private string $currency = 'USD';
 
+    /** Total balance in minor units (cents). */
     #[ORM\Column(type: 'bigint', options: ['default' => 0])]
     private int $balance = 0;
+
+    /** Frozen amount in minor units (cents); available balance = balance - held. */
+    #[ORM\Column(type: 'bigint', options: ['default' => 0])]
+    private int $held = 0;
 
     #[ORM\Column(type: 'integer', options: ['default' => 1])]
     private int $version = 1;
@@ -77,9 +87,18 @@ class Wallet
         return $this->currency;
     }
 
+    /**
+     * The unit of account is immutable after persistence: changing it would
+     * break transactions, vouchers, and balance verification. Only a new
+     * (unpersisted) wallet may be assigned a currency.
+     */
     public function setCurrency(string $currency): self
     {
-        $this->currency = strtoupper($currency);
+        $currency = strtoupper($currency);
+        if ($this->id !== null && $this->currency !== $currency) {
+            throw new \LogicException('Wallet currency is immutable after creation.');
+        }
+        $this->currency = $currency;
         return $this;
     }
 
@@ -91,6 +110,16 @@ class Wallet
     public function getBalanceAsFloat(): float
     {
         return $this->balance / 100;
+    }
+
+    public function getHeld(): int
+    {
+        return $this->held;
+    }
+
+    public function getAvailableBalance(): int
+    {
+        return $this->balance - $this->held;
     }
 
     public function getVersion(): int

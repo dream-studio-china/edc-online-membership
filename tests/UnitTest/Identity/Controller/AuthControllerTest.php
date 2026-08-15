@@ -8,7 +8,8 @@ use App\Identity\Controller\AuthController;
 use App\Identity\Entity\User;
 use App\Identity\Repository\UserRepository;
 use App\Identity\Security\TokenManager;
-use App\Identity\Service\OtpService;
+use App\Identity\Service\OtpServiceInterface;
+use App\Identity\Service\UserServiceInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
@@ -22,7 +23,7 @@ final class AuthControllerTest extends TestCase
     private TokenManager $tokenManager;
     private UserRepository $userRepository;
     private UserPasswordHasherInterface $hasher;
-    private OtpService $otpService;
+    private OtpServiceInterface $otpService;
     private EntityManagerInterface $em;
     private AuthController $controller;
 
@@ -31,9 +32,9 @@ final class AuthControllerTest extends TestCase
         $this->tokenManager = $this->createMock(TokenManager::class);
         $this->userRepository = $this->createMock(UserRepository::class);
         $this->hasher = $this->createMock(UserPasswordHasherInterface::class);
-        $this->otpService = $this->createMock(OtpService::class);
+        $this->otpService = $this->createMock(OtpServiceInterface::class);
         $this->em = $this->createMock(EntityManagerInterface::class);
-        $userService = $this->createMock(\App\Identity\Service\UserService::class);
+        $userService = $this->createMock(UserServiceInterface::class);
         $translator = $this->createMock(TranslatorInterface::class);
         $translator->method('trans')->willReturnCallback(fn(string $msg) => $msg);
 
@@ -316,7 +317,7 @@ final class AuthControllerTest extends TestCase
             ->setEmail('new@example.com')
             ->setUsername('newuser');
 
-        $userService = $this->createMock(\App\Identity\Service\UserService::class);
+        $userService = $this->createMock(UserServiceInterface::class);
         $userService->method('register')
             ->with('new@example.com', 'newuser', 'P@ssw0rd', null)
             ->willReturn($user);
@@ -348,7 +349,7 @@ final class AuthControllerTest extends TestCase
 
     public function testRegisterWithInvalidArgumentsReturnsBadRequest(): void
     {
-        $userService = $this->createMock(\App\Identity\Service\UserService::class);
+        $userService = $this->createMock(UserServiceInterface::class);
         $userService->method('register')
             ->willThrowException(new \InvalidArgumentException('Email, username, and password are required.'));
 

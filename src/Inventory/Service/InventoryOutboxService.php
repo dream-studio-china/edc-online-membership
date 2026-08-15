@@ -7,7 +7,7 @@ namespace App\Inventory\Service;
 use App\Inventory\Entity\InventoryOutboxMessage;
 use Doctrine\ORM\EntityManagerInterface;
 
-final class InventoryOutboxService
+final class InventoryOutboxService implements InventoryOutboxServiceInterface
 {
     public function __construct(private readonly EntityManagerInterface $entityManager)
     {

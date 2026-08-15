@@ -213,6 +213,7 @@ final class MediaUploadIntegrationTest extends IntegrationWebTestCase
             public function new(): object { return new \stdClass(); }
             public function update($object, ?array $data = null, bool $noFlush = false): object { return new \stdClass(); }
             public function remove($object): bool { return false; }
+            public function wrapInTransaction(callable $fn): mixed { return $fn(null); }
         }) extends \App\Common\Controller\App\MediaController {
             protected function uploadOwner(): ?User
             {

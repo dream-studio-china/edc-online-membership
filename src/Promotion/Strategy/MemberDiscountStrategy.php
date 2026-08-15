@@ -11,7 +11,7 @@ use App\Trade\Service\Pricing\PriceCalculationContext;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
 #[AutoconfigureTag('promotion.strategy')]
-class MemberDiscountStrategy implements PromotionStrategyInterface
+final class MemberDiscountStrategy implements PromotionStrategyInterface
 {
     /** @var array<string, int> */
     private const LEVEL_RANK = [

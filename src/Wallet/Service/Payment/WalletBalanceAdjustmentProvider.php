@@ -8,19 +8,19 @@ use App\Payment\DTO\PaymentAdjustmentContext;
 use App\Payment\DTO\PaymentAdjustmentResult;
 use App\Payment\Entity\Invoice;
 use App\Payment\Service\Adjustment\PaymentAdjustmentProviderInterface;
-use App\Wallet\Entity\WalletPaymentDeduction;
-use App\Wallet\Repository\WalletPaymentDeductionRepository;
+use App\Wallet\Entity\PaymentDeduction;
+use App\Wallet\Repository\PaymentDeductionRepository;
 
 final class WalletBalanceAdjustmentProvider implements PaymentAdjustmentProviderInterface
 {
     public function __construct(
-        private readonly WalletPaymentDeductionService $deductionService,
-        private readonly WalletPaymentDeductionRepository $deductionRepository,
+        private readonly PaymentDeductionServiceInterface $deductionService,
+        private readonly PaymentDeductionRepository $deductionRepository,
     ) {}
 
     public static function getName(): string
     {
-        return WalletPaymentDeduction::TYPE_WALLET_BALANCE;
+        return PaymentDeduction::TYPE_WALLET_BALANCE;
     }
 
     /**
@@ -34,7 +34,7 @@ final class WalletBalanceAdjustmentProvider implements PaymentAdjustmentProvider
     public function apply(PaymentAdjustmentContext $context): PaymentAdjustmentResult
     {
         $deduction = $this->deductionService->applyFromOptions($context->invoice, $context->options);
-        if (!$deduction instanceof WalletPaymentDeduction) {
+        if (!$deduction instanceof PaymentDeduction) {
             throw new \RuntimeException('Wallet balance deduction request is missing.');
         }
 
@@ -44,7 +44,7 @@ final class WalletBalanceAdjustmentProvider implements PaymentAdjustmentProvider
     public function applied(Invoice $invoice): array
     {
         $deduction = $this->deductionService->findApplied($invoice);
-        return $deduction instanceof WalletPaymentDeduction ? [self::resultFromDeduction($deduction)] : [];
+        return $deduction instanceof PaymentDeduction ? [self::resultFromDeduction($deduction)] : [];
     }
 
     public function release(Invoice $invoice, PaymentAdjustmentResult $adjustment, string $reason): PaymentAdjustmentResult
@@ -63,17 +63,17 @@ final class WalletBalanceAdjustmentProvider implements PaymentAdjustmentProvider
         return self::resultFromDeduction($refunded ?? $deduction);
     }
 
-    private function deductionFromResult(PaymentAdjustmentResult $adjustment): WalletPaymentDeduction
+    private function deductionFromResult(PaymentAdjustmentResult $adjustment): PaymentDeduction
     {
         $deduction = $this->deductionRepository->findOneBy(['referenceId' => $adjustment->referenceId]);
-        if (!$deduction instanceof WalletPaymentDeduction) {
+        if (!$deduction instanceof PaymentDeduction) {
             throw new \RuntimeException(sprintf('Wallet balance deduction "%s" not found.', $adjustment->referenceId));
         }
 
         return $deduction;
     }
 
-    private static function resultFromDeduction(WalletPaymentDeduction $deduction): PaymentAdjustmentResult
+    private static function resultFromDeduction(PaymentDeduction $deduction): PaymentAdjustmentResult
     {
         return new PaymentAdjustmentResult(
             provider: self::getName(),
@@ -82,7 +82,7 @@ final class WalletBalanceAdjustmentProvider implements PaymentAdjustmentProvider
             referenceId: $deduction->getReferenceId(),
             payload: array_filter([
                 'deductionId' => $deduction->getUuid(),
-                'transactionId' => $deduction->getWalletTransactionId(),
+                'transactionId' => $deduction->getTransactionId(),
                 'reversalTransactionId' => $deduction->getReversalTransactionId(),
                 'status' => $deduction->getStatus(),
             ], static fn (mixed $value): bool => $value !== null),

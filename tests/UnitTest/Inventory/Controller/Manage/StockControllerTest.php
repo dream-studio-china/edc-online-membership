@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Tests\UnitTest\Inventory\Controller\Manage;
 
 use App\Inventory\Controller\Manage\StockController;
-use App\Inventory\Entity\InventoryStock;
+use App\Inventory\Entity\Stock;
 use App\Inventory\Service\InventoryServiceInterface;
-use App\Inventory\Service\InventoryStockServiceInterface;
+use App\Inventory\Service\StockServiceInterface;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Request;
@@ -18,13 +18,13 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 #[AllowMockObjectsWithoutExpectations]
 final class StockControllerTest extends TestCase
 {
-    private InventoryStockServiceInterface $stockService;
+    private StockServiceInterface $stockService;
     private InventoryServiceInterface $inventory;
     private StockController $controller;
 
     protected function setUp(): void
     {
-        $this->stockService = $this->createMock(InventoryStockServiceInterface::class);
+        $this->stockService = $this->createMock(StockServiceInterface::class);
         $this->inventory = $this->createMock(InventoryServiceInterface::class);
         $this->controller = new StockController($this->stockService, $this->inventory);
     }
@@ -120,7 +120,7 @@ final class StockControllerTest extends TestCase
         ]));
         $this->injectDependencies($requestStack);
 
-        $stock = $this->createMock(InventoryStock::class);
+        $stock = $this->createMock(Stock::class);
         $this->inventory->expects(self::once())->method('adjustStock')->with(
             '00000000-0000-4000-8000-000000000001',
             '00000000-0000-4000-8000-000000000002',
@@ -173,7 +173,7 @@ final class StockControllerTest extends TestCase
         $requestStack->push($this->jsonRequest('PUT', '/api/v1/manage/inventory/stocks/00000000-0000-4000-8000-000000000001/00000000-0000-4000-8000-000000000002/policy', ['allowNegativeStock' => true]));
         $this->injectDependencies($requestStack);
 
-        $stock = $this->createMock(InventoryStock::class);
+        $stock = $this->createMock(Stock::class);
         $this->inventory->expects(self::once())->method('setStockAllowNegative')->with(
             '00000000-0000-4000-8000-000000000001',
             '00000000-0000-4000-8000-000000000002',

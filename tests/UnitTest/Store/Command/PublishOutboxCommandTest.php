@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Tests\UnitTest\Store\Command;
 
-use App\Inventory\Message\InventoryReservationReleaseRequestedMessage;
-use App\Inventory\Message\InventoryReservationRequestedMessage;
+use App\Inventory\Message\ReservationReleaseRequestedMessage;
+use App\Inventory\Message\ReservationRequestedMessage;
 use App\Store\Command\PublishOutboxCommand;
 use App\Store\Entity\StoreOutboxMessage;
 use App\Store\Repository\StoreOutboxMessageRepository;
@@ -151,8 +151,8 @@ final class PublishOutboxCommandTest extends TestCase
         self::assertCount(4, $dispatched);
         self::assertInstanceOf(StoreOrderAcceptedMessage::class, $dispatched[0]);
         self::assertInstanceOf(StoreOrderRejectedMessage::class, $dispatched[1]);
-        self::assertInstanceOf(InventoryReservationRequestedMessage::class, $dispatched[2]);
-        self::assertInstanceOf(InventoryReservationReleaseRequestedMessage::class, $dispatched[3]);
+        self::assertInstanceOf(ReservationRequestedMessage::class, $dispatched[2]);
+        self::assertInstanceOf(ReservationReleaseRequestedMessage::class, $dispatched[3]);
 
         foreach ($messages as $index => $message) {
             self::assertTrue($message->isPublished(), 'Message ' . $index . ' should be marked published');

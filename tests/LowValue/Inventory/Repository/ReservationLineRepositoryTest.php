@@ -6,7 +6,7 @@ namespace App\Tests\LowValue\Inventory\Repository;
 
 
 use PHPUnit\Framework\Attributes\Group;
-use App\Inventory\Entity\InventoryReservation;
+use App\Inventory\Entity\Reservation;
 use App\Inventory\Entity\Material;
 use App\Inventory\Entity\ReservationLine;
 use App\Inventory\Repository\ReservationLineRepository;
@@ -29,7 +29,7 @@ final class ReservationLineRepositoryTest extends IntegrationKernelTestCase
 
         $this->em = static::getContainer()->get(EntityManagerInterface::class);
         $this->em->createQuery('DELETE FROM App\\Inventory\\Entity\\ReservationLine line')->execute();
-        $this->em->createQuery('DELETE FROM App\\Inventory\\Entity\\InventoryReservation reservation')->execute();
+        $this->em->createQuery('DELETE FROM App\\Inventory\\Entity\\Reservation reservation')->execute();
         $this->em->createQuery('DELETE FROM App\\Inventory\\Entity\\Material material')->execute();
 
         $repo = $this->em->getRepository(ReservationLine::class);
@@ -38,7 +38,7 @@ final class ReservationLineRepositoryTest extends IntegrationKernelTestCase
     }
 
     /**
-     * @return array{Material, InventoryReservation}
+     * @return array{Material, Reservation}
      */
     private function createReservation(string $reservationId, string $materialCode): array
     {
@@ -46,7 +46,7 @@ final class ReservationLineRepositoryTest extends IntegrationKernelTestCase
         $storeUuid = substr($reservationId, 0, 35) . '1';
         $tradeOrderUuid = substr($reservationId, 0, 35) . '2';
         $storeOrderUuid = $reservationId;
-        $reservation = new InventoryReservation(
+        $reservation = new Reservation(
             $reservationId,
             $storeUuid,
             $tradeOrderUuid,

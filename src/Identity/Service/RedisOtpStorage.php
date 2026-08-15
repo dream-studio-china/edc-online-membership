@@ -6,7 +6,7 @@ namespace App\Identity\Service;
 
 use Symfony\Component\Cache\Adapter\RedisAdapter;
 
-class RedisOtpStorage implements OtpStorageInterface
+final class RedisOtpStorage implements OtpStorageInterface
 {
     /**
      * @var object Redis-like client returned by RedisAdapter::createConnection

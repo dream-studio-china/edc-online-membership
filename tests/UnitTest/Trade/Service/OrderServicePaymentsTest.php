@@ -16,7 +16,7 @@ use App\Trade\Service\OrderService;
 use App\Trade\Service\TradeOutboxService;
 use App\Wallet\Entity\Wallet;
 use App\Wallet\Repository\WalletRepository;
-use App\Wallet\Service\TransferServiceInterface;
+use App\Wallet\Service\Transfer\TransferServiceInterface;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\Group;

@@ -11,7 +11,7 @@ use App\Core\View\DetailApiViewMixin;
 use App\Core\View\ListApiViewMixin;
 use App\Core\View\UpdateApiViewMixin;
 use App\Store\Entity\Store;
-use App\Store\Service\StoreMembershipServiceInterface;
+use App\Store\Service\MembershipServiceInterface;
 use App\Store\Service\StoreServiceInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -35,7 +35,7 @@ final class StoreController extends RestController
 
     public function __construct(
         protected readonly StoreServiceInterface $service,
-        private readonly StoreMembershipServiceInterface $membershipService,
+        private readonly MembershipServiceInterface $membershipService,
     ) {
     }
 

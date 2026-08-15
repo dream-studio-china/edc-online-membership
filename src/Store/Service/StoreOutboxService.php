@@ -7,7 +7,7 @@ namespace App\Store\Service;
 use App\Store\Entity\StoreOutboxMessage;
 use Doctrine\ORM\EntityManagerInterface;
 
-final readonly class StoreOutboxService
+final readonly class StoreOutboxService implements StoreOutboxServiceInterface
 {
     public function __construct(private EntityManagerInterface $entityManager)
     {

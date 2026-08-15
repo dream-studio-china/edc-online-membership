@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Inventory\Service;
 
-use App\Inventory\Entity\InventoryLedgerEntry;
-use App\Inventory\Entity\InventoryReservation;
-use App\Inventory\Entity\InventoryStock;
+use App\Inventory\Entity\LedgerEntry;
+use App\Inventory\Entity\Reservation;
+use App\Inventory\Entity\Stock;
 use App\Inventory\Entity\Material;
 use App\Inventory\Entity\ReservationLine;
-use App\Inventory\Repository\InventoryLedgerEntryRepository;
-use App\Inventory\Repository\InventoryReservationRepository;
-use App\Inventory\Repository\InventoryStockRepository;
+use App\Inventory\Repository\LedgerEntryRepository;
+use App\Inventory\Repository\ReservationRepository;
+use App\Inventory\Repository\StockRepository;
 use App\Inventory\Repository\MaterialRepository;
 use App\Inventory\Repository\SpecificationRecipeRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -21,11 +21,11 @@ final class InventoryService implements InventoryServiceInterface
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
         private readonly MaterialRepository $materialRepository,
-        private readonly InventoryStockRepository $stockRepository,
+        private readonly StockRepository $stockRepository,
         private readonly SpecificationRecipeRepository $recipeRepository,
-        private readonly InventoryReservationRepository $reservationRepository,
-        private readonly InventoryLedgerEntryRepository $ledgerRepository,
-        private readonly InventoryOutboxService $outbox,
+        private readonly ReservationRepository $reservationRepository,
+        private readonly LedgerEntryRepository $ledgerRepository,
+        private readonly InventoryOutboxServiceInterface $outbox,
     ) {
     }
 
@@ -70,7 +70,7 @@ final class InventoryService implements InventoryServiceInterface
         ?string $referenceId = null,
         ?string $actorReference = null,
         ?bool $allowNegativeStock = null,
-    ): InventoryStock
+    ): Stock
     {
         $this->assertStoreUuid($storeUuid);
         $quantityDelta = Quantity::normalize($quantityDelta);
@@ -86,7 +86,7 @@ final class InventoryService implements InventoryServiceInterface
             $referenceId,
             $actorReference,
             $allowNegativeStock,
-        ): InventoryStock {
+        ): Stock {
             // The material lock serializes first-stock creation, where no stock row exists to lock yet.
             $material = $this->materialRepository->findOneByUuidForUpdate($materialUuid);
             if ($material === null || !$material->isActive()) {
@@ -96,7 +96,7 @@ final class InventoryService implements InventoryServiceInterface
             $stock = $this->stockRepository->findOneByStoreAndMaterialForUpdate($storeUuid, $material);
             if (
                 $referenceId !== null
-                && $this->ledgerRepository->findOneByOperation(InventoryLedgerEntry::TYPE_ADJUSTMENT, $referenceId, $storeUuid, $material) !== null
+                && $this->ledgerRepository->findOneByOperation(LedgerEntry::TYPE_ADJUSTMENT, $referenceId, $storeUuid, $material) !== null
             ) {
                 if ($stock === null) {
                     throw new \LogicException('Adjustment ledger does not have a stock balance.');
@@ -106,7 +106,7 @@ final class InventoryService implements InventoryServiceInterface
             }
 
             if ($stock === null) {
-                $stock = new InventoryStock($storeUuid, $material, $allowNegativeStock ?? false);
+                $stock = new Stock($storeUuid, $material, $allowNegativeStock ?? false);
                 $this->entityManager->persist($stock);
             } elseif ($allowNegativeStock !== null) {
                 $stock->setAllowNegativeStock($allowNegativeStock);
@@ -120,9 +120,9 @@ final class InventoryService implements InventoryServiceInterface
             $operationReference = $referenceId ?? sprintf('adjustment:%s', \App\Core\Utils\UUID::v4());
             $stock->adjustOnHand($quantityDelta);
             $material->markStockMutated();
-            $this->entityManager->persist(new InventoryLedgerEntry(
+            $this->entityManager->persist(new LedgerEntry(
                 $stock,
-                InventoryLedgerEntry::TYPE_ADJUSTMENT,
+                LedgerEntry::TYPE_ADJUSTMENT,
                 $quantityDelta,
                 Quantity::ZERO,
                 'adjustment',
@@ -134,7 +134,7 @@ final class InventoryService implements InventoryServiceInterface
         });
     }
 
-    public function setStockAllowNegative(string $storeUuid, string $materialUuid, bool $allowNegativeStock): InventoryStock
+    public function setStockAllowNegative(string $storeUuid, string $materialUuid, bool $allowNegativeStock): Stock
     {
         $this->assertStoreUuid($storeUuid);
         if (!$allowNegativeStock) {
@@ -152,7 +152,7 @@ final class InventoryService implements InventoryServiceInterface
             $storeUuid,
             $materialUuid,
             $allowNegativeStock,
-        ): InventoryStock {
+        ): Stock {
             // The material lock serializes first-stock creation, where no stock row exists to lock yet.
             $material = $this->materialRepository->findOneByUuidForUpdate($materialUuid);
             if ($material === null) {
@@ -161,7 +161,7 @@ final class InventoryService implements InventoryServiceInterface
 
             $stock = $this->stockRepository->findOneByStoreAndMaterialForUpdate($storeUuid, $material);
             if ($stock === null) {
-                $stock = new InventoryStock($storeUuid, $material, $allowNegativeStock);
+                $stock = new Stock($storeUuid, $material, $allowNegativeStock);
                 $this->entityManager->persist($stock);
             } else {
                 $stock->setAllowNegativeStock($allowNegativeStock);
@@ -179,7 +179,7 @@ final class InventoryService implements InventoryServiceInterface
         string $storeOrderUuid,
         array $items,
         ?\DateTimeImmutable $expiresAt = null,
-    ): InventoryReservation
+    ): Reservation
     {
         $this->assertStoreUuid($storeUuid);
         $normalizedItems = $this->normalizeItems($items);
@@ -199,20 +199,20 @@ final class InventoryService implements InventoryServiceInterface
             $normalizedItems,
             $expiresAt,
             $hash,
-        ): InventoryReservation {
+        ): Reservation {
             $existing = $this->reservationRepository->findOneByReservationId($reservationId);
             if ($existing !== null) {
                 if (!hash_equals($existing->getRequestHash(), $hash)) {
-                    throw new InventoryReservationConflictException('Reservation ID was reused with a different request.');
+                    throw new ReservationConflictException('Reservation ID was reused with a different request.');
                 }
 
                 return $existing;
             }
             if ($this->reservationRepository->findOneByStoreOrderUuid($storeOrderUuid) !== null) {
-                throw new InventoryReservationConflictException('Store order already has a reservation.');
+                throw new ReservationConflictException('Store order already has a reservation.');
             }
 
-            $reservation = new InventoryReservation($reservationId, $storeUuid, $tradeOrderUuid, $storeOrderUuid, $hash, $expiresAt);
+            $reservation = new Reservation($reservationId, $storeUuid, $tradeOrderUuid, $storeOrderUuid, $hash, $expiresAt);
             $this->entityManager->persist($reservation);
             if ($expiresAt !== null && $expiresAt <= new \DateTimeImmutable()) {
                 return $this->reject($reservation, 'RESERVATION_EXPIRED', 'The reservation request has expired.');
@@ -224,7 +224,7 @@ final class InventoryService implements InventoryServiceInterface
                 return $this->reject($reservation, $exception->reasonCode, $exception->getMessage());
             }
 
-            /** @var array<string, InventoryStock> $stocks */
+            /** @var array<string, Stock> $stocks */
             $stocks = [];
             foreach ($demands as $materialUuid => $demand) {
                 $stock = $this->stockRepository->findOneByStoreAndMaterialForUpdate($storeUuid, $demand['material']);
@@ -246,9 +246,9 @@ final class InventoryService implements InventoryServiceInterface
                     $demand['quantity'],
                     $demand['specifications'],
                 ));
-                $this->entityManager->persist(new InventoryLedgerEntry(
+                $this->entityManager->persist(new LedgerEntry(
                     $stock,
-                    InventoryLedgerEntry::TYPE_RESERVATION,
+                    LedgerEntry::TYPE_RESERVATION,
                     Quantity::ZERO,
                     $demand['quantity'],
                     'reservation',
@@ -267,9 +267,9 @@ final class InventoryService implements InventoryServiceInterface
         });
     }
 
-    public function release(string $reservationId, ?string $reason = null): InventoryReservation
+    public function release(string $reservationId, ?string $reason = null): Reservation
     {
-        return $this->entityManager->wrapInTransaction(function () use ($reservationId, $reason): InventoryReservation {
+        return $this->entityManager->wrapInTransaction(function () use ($reservationId, $reason): Reservation {
             $reservation = $this->reservationRepository->findOneByReservationId($reservationId);
             if ($reservation === null) {
                 throw new \InvalidArgumentException('Reservation was not found.');
@@ -291,9 +291,9 @@ final class InventoryService implements InventoryServiceInterface
 
                 $quantity = $line->getReservedQuantity();
                 $stock->release($quantity);
-                $this->entityManager->persist(new InventoryLedgerEntry(
+                $this->entityManager->persist(new LedgerEntry(
                     $stock,
-                    InventoryLedgerEntry::TYPE_RELEASE,
+                    LedgerEntry::TYPE_RELEASE,
                     Quantity::subtract(Quantity::ZERO, Quantity::ZERO),
                     Quantity::subtract(Quantity::ZERO, $quantity),
                     'reservation',
@@ -409,7 +409,7 @@ final class InventoryService implements InventoryServiceInterface
         $demands[$uuid]['specifications'] = array_values(array_unique($demands[$uuid]['specifications']));
     }
 
-    private function reject(InventoryReservation $reservation, string $code, string $reason): InventoryReservation
+    private function reject(Reservation $reservation, string $code, string $reason): Reservation
     {
         $reservation->reject($code, $reason);
         $this->outbox->record('inventory.reservation.rejected.v1', 'inventory_reservation', $reservation->getReservationId(), [

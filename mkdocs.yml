@@ -36,11 +36,18 @@ markdown_extensions:
   - admonition
   - pymdownx.highlight:
       anchor_linenums: true
-  - pymdownx.superfences
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
   - pymdownx.inlinehilite
   - pymdownx.details
   - toc:
       permalink: true
+
+extra_javascript:
+  - https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js
+  - javascripts/mermaid-init.js
 
 nav:
   - Home: index.md
@@ -52,6 +59,7 @@ nav:
       - Controller Design: design/controller-design.md
       - API Documentation: design/api-documentation.md
       - System Contracts: design/system-contracts.md
+      - Naming Convention: design/naming-convention.md
   - Bundles:
       - Core Framework: design/bundles/core.md
       - Common (CMS): design/bundles/common.md
@@ -60,6 +68,7 @@ nav:
       - Inventory: design/bundles/inventory.md
       - Payment: design/bundles/payment.md
       - Wallet: design/bundles/wallet.md
+      - Exchange (Pool-backed Economy): design/bundles/exchange.md
       - Identity (Auth): design/bundles/identity.md
       - Wechat (Login + Pay): design/bundles/wechat.md
   - Research:

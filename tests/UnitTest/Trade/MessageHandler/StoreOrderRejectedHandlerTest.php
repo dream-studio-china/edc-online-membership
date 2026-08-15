@@ -7,7 +7,6 @@ namespace App\Tests\UnitTest\Trade\MessageHandler;
 use App\Trade\Entity\Order;
 use App\Trade\Message\StoreOrderRejectedMessage;
 use App\Trade\MessageHandler\StoreOrderRejectedHandler;
-use App\Trade\Service\OrderService;
 use App\Trade\Service\OrderServiceInterface;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
@@ -84,7 +83,7 @@ final class StoreOrderRejectedHandlerTest extends TestCase
     public function testDoesNotApplyWhenWorkflowCannotReject(): void
     {
         $order = (new Order())->setMetadata(['_store' => ['uuid' => self::STORE_UUID]]);
-        $orders = $this->createStub(OrderService::class);
+        $orders = $this->createStub(OrderServiceInterface::class);
         $orders->method('get')->willReturn($order);
         $orders->method('wrapInTransaction')->willReturnCallback(static fn (callable $callback): mixed => $callback());
         $workflow = $this->createMock(WorkflowInterface::class);
@@ -100,7 +99,7 @@ final class StoreOrderRejectedHandlerTest extends TestCase
     public function testStoreRejectionDoesNotTransitionTheOrderToCancelled(): void
     {
         $order = (new Order())->setStatus('awaiting_store_acceptance')->setMetadata(['_store' => ['uuid' => '00000000-0000-4000-8000-000000000040']]);
-        $orders = $this->createMock(OrderService::class);
+        $orders = $this->createMock(OrderServiceInterface::class);
         $orders->method('get')->willReturn($order);
         $orders->method('wrapInTransaction')->willReturnCallback(static fn (callable $callback): mixed => $callback());
         $workflow = $this->createMock(WorkflowInterface::class);

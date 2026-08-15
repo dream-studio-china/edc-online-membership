@@ -24,7 +24,7 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\Workflow\WorkflowInterface;
 
 /** @extends BaseService<\App\Payment\Entity\Invoice> */
-class InvoiceService extends BaseService implements InvoiceServiceInterface
+final class InvoiceService extends BaseService implements InvoiceServiceInterface
 {
     public function __construct(
         ContainerInterface $container,

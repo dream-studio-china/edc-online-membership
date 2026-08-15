@@ -6,8 +6,45 @@
 
 > 文件站點: [GitHub Pages](https://immane.github.io/crud-skeleton) | 設計契約: [docs/design/](docs/design/)
 
+## 架構
+
+```mermaid
+flowchart TB
+    Core["<b>Core 框架</b><br/>BaseService · View Mixins · Expression→DQL"]
+    Identity["Identity<br/>鑑權 · JWT · OTP · User"]
+    Common["Common<br/>CMS（7 實體）"]
+    Storage["Storage<br/>媒體驅動"]
+    Wechat["Wechat<br/>登入 + 支付"]
+    Wallet["Wallet<br/>餘額 · 轉帳 · 憑證"]
+    Payment["Payment<br/>發票 · 網關 · 抵扣"]
+    Trade["Trade<br/>訂單 · 定價"]
+    Store["Store<br/>多門店 Outbox"]
+    Inventory["Inventory<br/>庫存 · 預留"]
+    Promotion["Promotion<br/>DSL 引擎"]
+    Exchange["Exchange（設計）<br/>匯率 · 資金池 · 發行"]
+
+    Identity --> Core
+    Common --> Core
+    Storage --> Core
+    Storage --> Common
+    Wechat --> Core
+    Wechat --> Identity
+    Wallet --> Core
+    Wallet --> Identity
+    Payment --> Core
+    Payment --> Wallet
+    Trade --> Core
+    Trade --> Payment
+    Trade --> Store
+    Trade --> Inventory
+    Promotion --> Core
+    Promotion --> Trade
+    Exchange -. "design" .-> Core
+```
+
 ## 目錄
 
+- [架構](#架構)
 - [功能特性](#功能特性)
 - [技術棧](#技術棧)
 - [項目結構](#項目結構)
@@ -28,8 +65,11 @@
 - **訂單狀態機**：Symfony Workflow（草稿 → 完成），含完整工作流 API
 - **價格計算管道**：可插拔的價格計算器，按優先級排序執行
 - **支付抵扣提供方**：支付前鉤子（如錢包抵扣）在網關處理前減少發票金額 — 網關僅接收顯式金額
-- **原子錢包轉帳 + 系統注資**：死鎖預防（統一鎖定順序）、樂觀鎖、引用 ID 冪等
+- **原子錢包轉帳**：死鎖預防（統一鎖定順序）、悲觀鎖（`SELECT … FOR UPDATE`）、引用 ID 冪等
+- **憑證存款與取款**：以追加式 `wallet_voucher` 審計（邊界帳本）為背書的單邊入帳/出帳。voucher 類型權限由 provider 自行裁定（`manual` 需 `ROLE_ADMIN`；CLI/佇列視為可信呼叫），並發重複 `referenceId` 冪等返回
+- **錢包帳務**：餘額校驗（`SUM(餘額) == SUM(貸方憑證) − SUM(借方憑證)`）與逐錢包對帳
 - **錢包餘額抵扣**：錢包擁有的抵扣生命週期，透過 Payment 抵扣提供方模式接入 — Payment 編排，Wallet 實現
+- **匯率域（設計）**：資金池背書的點數經濟設計（`docs/design/bundles/exchange.md`）——生效期匯率、bcmath 換算、質押/發行/兌換/贖回
 - **可插拔檔案儲存**：`MediaStorageInterface`，本地與七牛 Kodo 驅動 — tagged iterator 自動發現
 - **OpenAPI 文件**：NelmioApiDocBundle + `#[OA\*]` 屬性，`/api/doc` 提供 Swagger UI
 - **系統自省**：實體元資料和路由匯出介面（`/system/*`）
@@ -88,12 +128,13 @@
 | **Common** | `App\Common` | CMS | 分類（樹）、標籤、內容、評論、頁面、媒體、設定 |
 | **Trade** | `App\Trade` | 電商 | 產品 + 規格、訂單（狀態機）、價格計算管道 |
 | **Inventory** | `App\Inventory` | 庫存管理 | 門店物料庫存 + 規格配方 + 預留（原子庫存鎖）+ 庫存台帳審計 + 負庫存策略 |
-| **Wallet** | `App\Wallet` | 錢包與抵扣 | 餘額（分）、原子轉帳、系統注資、冪等、對帳 |
+| **Wallet** | `App\Wallet` | 錢包與抵扣 | 餘額（分）、原子轉帳、憑證存款與取款（provider 權限）、冪等、對帳 |
 | **Payment** | `App\Payment` | 支付編排 | 發票（分+工作流）、網關抽象、支付抵扣提供方契約 |
 | **Wechat** | `App\Wechat` | 微信整合 | 小程式/公眾號登入、微信支付 V3 |
 | **Storage** | `App\Storage` | 檔案儲存驅動 | LocalStorage、QiniuStorage |
 | **Promotion** | `App\Promotion` | DSL 驅動促銷 | 自訂 DSL 詞法/語法/求值器、7 種策略類型、作為 `trade.price_calculator`（優先級 60）、會員定向 SKU 折扣、多門店路由、`best_price` 衝突模式 |
 | **Identity** | `App\Identity` | 鑑權 | JWT (RS256)、OTP (簡訊)、Refresh Token 輪換、Profile 實體（自動建立、等級、積分委託給 Wallet） |
+| **Exchange** | `App\ExchangeBundle` *(設計)* | 資金池背書的點數經濟 | 生效期匯率、bcmath 換算、質押/發行/兌換/贖回、造市商資金池 —— 僅設計，尚未實現 |
 
 ## 測試
 
@@ -154,6 +195,20 @@ PHPStan 以 Level 8 檢查設定的 `src/` 範圍。CI 的 Rector 僅檢查 Doct
 | Integration | 20+ | 跨模組整合測試 |
 
 ## Docker 部署
+
+### 架構
+
+```mermaid
+flowchart LR
+    Client[用戶端 / 瀏覽器] -->|:8080| Nginx[nginx:alpine]
+    Nginx -->|/api/*| Fpm["PHP-FPM 8.4<br/>(app, Symfony)"]
+    Nginx -->|/api/doc| Swagger[Swagger UI<br/>NelmioApiDoc]
+    Fpm --> MySQL[(MySQL 8)]
+    Fpm --> Redis[(Redis 7<br/>OTP / 快取)]
+    Fpm --> Mailpit[Mailpit<br/>郵件開發]
+    Fpm --> Worker[Messenger worker<br/>handler / outbox]
+    Fpm --> Scheduler[Scheduler<br/>outbox 發布]
+```
 
 ### 開發環境
 

@@ -217,7 +217,7 @@ Gateway adapters are responsible for converting cents into provider formats such
 
 Payment does not own wallet deduction internals. Payment owns only the invoice and the generic adjustment contract used to reduce the amount that must be processed by a gateway.
 
-Wallet balance deduction is a Wallet module concern because it is implemented through wallet balance transfer and reversal. The Wallet module MAY persist its own deduction entity, for example `WalletPaymentDeduction`, with wallet transaction ids, idempotency references, and operational metadata.
+Wallet balance deduction is a Wallet module concern because it is implemented through wallet balance transfer and reversal. The Wallet module MAY persist its own deduction entity, for example `PaymentDeduction`, with wallet transaction ids, idempotency references, and operational metadata.
 
 Business modules such as Trade should continue to react to invoice events and should not know adjustment or deduction internals.
 

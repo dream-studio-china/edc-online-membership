@@ -15,7 +15,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Validator\Exception\ValidatorException;
 
 /** @extends BaseService<\App\Promotion\Entity\PromotionTemplate> */
-class PromotionTemplateService extends BaseService implements PromotionTemplateServiceInterface
+final class PromotionTemplateService extends BaseService implements PromotionTemplateServiceInterface
 {
     public function __construct(ContainerInterface $container)
     {

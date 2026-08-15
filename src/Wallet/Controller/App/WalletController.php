@@ -9,7 +9,7 @@ use App\Core\View\ApiView;
 use App\Core\View\DetailApiViewMixin;
 use App\Core\View\ListApiViewMixin;
 use App\Identity\Entity\User;
-use App\Wallet\Service\WalletService;
+use App\Wallet\Service\WalletServiceInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
@@ -21,7 +21,7 @@ class WalletController extends RestController
     use ApiView, DetailApiViewMixin, ListApiViewMixin;
 
     public function __construct(
-        protected readonly WalletService $service,
+        protected readonly WalletServiceInterface $service,
     ) {}
 
     /** @return array<string, mixed> */

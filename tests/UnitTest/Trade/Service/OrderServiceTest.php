@@ -14,10 +14,11 @@ use App\Trade\Service\Pricing\PriceCalculationResult;
 use App\Trade\Service\Pricing\QuantityCalculator;
 use App\Trade\Service\Pricing\TotalAggregator;
 use App\Trade\Service\SpecificationServiceInterface;
+use App\Wallet\Entity\Transaction;
 use App\Wallet\Entity\Wallet;
 use App\Wallet\Repository\WalletRepository;
-use App\Wallet\Service\TransferResult;
-use App\Wallet\Service\TransferServiceInterface;
+use App\Wallet\Service\Transfer\TransferResult;
+use App\Wallet\Service\Transfer\TransferServiceInterface;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
@@ -231,7 +232,7 @@ final class OrderServiceTest extends TestCase
         $transferService->expects(self::once())
             ->method('transfer')
             ->with(7, 9, 1234, 'manual-pay-ref', 'Payment for order #0')
-            ->willReturn($this->createMock(TransferResult::class));
+            ->willReturn(new TransferResult(new Transaction('order-pay-tx', 1234, Transaction::TYPE_TRANSFER), 0, 0));
 
         $service = $this->createService([], $walletRepository, $transferService);
 
@@ -269,7 +270,7 @@ final class OrderServiceTest extends TestCase
         $transferService->expects(self::once())
             ->method('transfer')
             ->with(9, 7, 1234, 'manual-refund-ref', 'Refund for order #0: duplicate')
-            ->willReturn($this->createMock(TransferResult::class));
+            ->willReturn(new TransferResult(new Transaction('order-refund-tx', 1234, Transaction::TYPE_TRANSFER), 0, 0));
 
         $service = $this->createService([], $walletRepository, $transferService);
 

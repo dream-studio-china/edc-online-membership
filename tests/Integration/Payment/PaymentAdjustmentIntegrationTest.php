@@ -13,7 +13,7 @@ use App\Payment\Service\InvoiceServiceInterface;
 use App\Tests\Integration\DatabaseBootstrapTrait;
 use App\Tests\Integration\IntegrationKernelTestCase;
 use App\Wallet\Entity\Wallet;
-use App\Wallet\Service\Payment\WalletPaymentDeductionService;
+use App\Wallet\Service\Payment\PaymentDeductionService;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\Group;
 
@@ -23,7 +23,7 @@ final class PaymentAdjustmentIntegrationTest extends IntegrationKernelTestCase
 
     private EntityManagerInterface $em;
     private InvoiceServiceInterface $invoiceService;
-    private WalletPaymentDeductionService $deductionService;
+    private PaymentDeductionService $deductionService;
 
     protected function setUp(): void
     {
@@ -32,7 +32,7 @@ final class PaymentAdjustmentIntegrationTest extends IntegrationKernelTestCase
         self::bootKernel();
         $this->em = static::getContainer()->get(EntityManagerInterface::class);
         $this->invoiceService = static::getContainer()->get(InvoiceServiceInterface::class);
-        $this->deductionService = static::getContainer()->get(WalletPaymentDeductionService::class);
+        $this->deductionService = static::getContainer()->get(PaymentDeductionService::class);
     }
 
     #[Group('low-value')]

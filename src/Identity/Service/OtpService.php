@@ -7,7 +7,7 @@ namespace App\Identity\Service;
 use App\Identity\Sms\SmsProviderInterface;
 use Psr\Log\LoggerInterface;
 
-class OtpService
+final class OtpService implements OtpServiceInterface
 {
     public function __construct(
         private readonly OtpStorageInterface $storage,

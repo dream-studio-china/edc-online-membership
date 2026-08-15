@@ -10,7 +10,7 @@ use App\Identity\Controller\OtpController;
 use App\Identity\Entity\User;
 use App\Identity\Repository\UserRepository;
 use App\Identity\Security\TokenManager;
-use App\Identity\Service\OtpService;
+use App\Identity\Service\OtpServiceInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
@@ -23,7 +23,7 @@ final class OtpControllerTest extends TestCase
 {
     private TokenManager $tokenManager;
     private UserRepository $userRepository;
-    private OtpService $otpService;
+    private OtpServiceInterface $otpService;
     private EntityManagerInterface $em;
     private OtpController $controller;
 
@@ -31,7 +31,7 @@ final class OtpControllerTest extends TestCase
     {
         $this->tokenManager = $this->createMock(TokenManager::class);
         $this->userRepository = $this->createMock(UserRepository::class);
-        $this->otpService = $this->createMock(OtpService::class);
+        $this->otpService = $this->createMock(OtpServiceInterface::class);
         $this->em = $this->createMock(EntityManagerInterface::class);
         $translator = $this->createMock(TranslatorInterface::class);
         $translator->method('trans')->willReturnCallback(fn(string $msg) => $msg);

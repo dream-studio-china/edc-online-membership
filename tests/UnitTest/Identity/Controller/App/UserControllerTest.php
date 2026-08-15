@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\UnitTest\Identity\Controller\App;
 
 use App\Identity\Controller\App\UserController;
-use App\Identity\Service\UserService;
+use App\Identity\Service\UserServiceInterface;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\DependencyInjection\Container;
@@ -20,7 +20,7 @@ use Symfony\Component\Validator\Validation;
 
 final class UserControllerTest extends TestCase
 {
-    private function createController(UserService $service): UserController
+    private function createController(UserServiceInterface $service): UserController
     {
         $controller = new UserController($service);
 
@@ -47,7 +47,7 @@ final class UserControllerTest extends TestCase
     #[Group('low-value')]
     public function testChangePasswordRejectsUnauthenticatedUser(): void
     {
-        $service = $this->createMock(UserService::class);
+        $service = $this->createMock(UserServiceInterface::class);
         $controller = $this->createController($service);
 
         $request = Request::create('/change-password', 'POST', server: ['CONTENT_TYPE' => 'application/json'], content: '{"currentPassword":"old","newPassword":"new"}');
@@ -59,7 +59,7 @@ final class UserControllerTest extends TestCase
     #[Group('low-value')]
     public function testProfileRejectsUnauthenticatedUser(): void
     {
-        $service = $this->createMock(UserService::class);
+        $service = $this->createMock(UserServiceInterface::class);
         $controller = $this->createController($service);
 
         $response = $controller->profileAction();
@@ -70,7 +70,7 @@ final class UserControllerTest extends TestCase
     #[Group('low-value')]
     public function testUpdateProfileRejectsUnauthenticatedUser(): void
     {
-        $service = $this->createMock(UserService::class);
+        $service = $this->createMock(UserServiceInterface::class);
         $controller = $this->createController($service);
 
         $request = Request::create('/me', 'PUT', server: ['CONTENT_TYPE' => 'application/json'], content: '{"username":"test"}');

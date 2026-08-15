@@ -6,9 +6,10 @@ namespace App\Tests\UnitTest\Wallet\Service;
 
 use App\Identity\Entity\User;
 use App\Wallet\Entity\Wallet;
-use App\Wallet\Entity\WalletTransaction;
+use App\Wallet\Entity\Transaction;
 use App\Wallet\Repository\WalletRepository;
-use App\Wallet\Repository\WalletTransactionRepository;
+use App\Wallet\Repository\TransactionRepository;
+use App\Wallet\Repository\VoucherRepository;
 use App\Wallet\Service\WalletService;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
@@ -25,14 +26,16 @@ final class WalletServiceTest extends TestCase
 {
     private EntityManagerInterface $em;
     private WalletRepository $walletRepo;
-    private WalletTransactionRepository $txRepo;
+    private TransactionRepository $txRepo;
+    private VoucherRepository $voucherRepo;
     private WalletService $service;
 
     protected function setUp(): void
     {
         $this->em = $this->createMock(EntityManagerInterface::class);
         $this->walletRepo = $this->createMock(WalletRepository::class);
-        $this->txRepo = $this->createMock(WalletTransactionRepository::class);
+        $this->txRepo = $this->createMock(TransactionRepository::class);
+        $this->voucherRepo = $this->createMock(VoucherRepository::class);
 
         $this->em->method('getRepository')->with(Wallet::class)->willReturn($this->walletRepo);
 
@@ -57,7 +60,7 @@ final class WalletServiceTest extends TestCase
         );
         $container->method('has')->willReturn(true);
 
-        $this->service = new WalletService($container, $this->txRepo);
+        $this->service = new WalletService($container, $this->txRepo, $this->voucherRepo);
     }
 
     private function createWallet(int $id, int $balance): Wallet
@@ -78,46 +81,70 @@ final class WalletServiceTest extends TestCase
 
     public function testVerifyBalanceMatches(): void
     {
-        $this->walletRepo->method('getTotalBalance')->willReturn(500000);
-        $this->txRepo->method('getTotalDeposited')->willReturn(500000);
+        $this->walletRepo->method('getTotalBalanceByUnit')->willReturn([['currency' => 'CNY', 'total' => 500000]]);
+        $this->voucherRepo->method('getBoundaryTotalByUnit')->willReturn(['CNY' => 500000]);
+        $this->txRepo->method('getUnbackedDepositsByUnit')->willReturn([]);
         $this->walletRepo->method('count')->willReturn(4);
 
         $result = $this->service->verifyBalance();
 
         self::assertTrue($result['matches']);
-        self::assertSame(500000, $result['totalBalance']);
-        self::assertSame(500000, $result['totalDeposited']);
-        self::assertSame(0, $result['discrepancy']);
         self::assertSame(4, $result['walletCount']);
+        self::assertCount(1, $result['units']);
+        $unit = $result['units'][0];
+        self::assertSame('CNY', $unit['currency']);
+        self::assertSame(500000, $unit['totalBalance']);
+        self::assertSame(500000, $unit['voucherBoundary']);
+        self::assertSame(0, $unit['unmatchedDeposits']);
+        self::assertSame(500000, $unit['expected']);
+        self::assertTrue($unit['matches']);
     }
 
     public function testVerifyBalanceMismatch(): void
     {
-        $this->walletRepo->method('getTotalBalance')->willReturn(100000);
-        $this->txRepo->method('getTotalDeposited')->willReturn(200000);
+        $this->walletRepo->method('getTotalBalanceByUnit')->willReturn([['currency' => 'CNY', 'total' => 100000]]);
+        $this->voucherRepo->method('getBoundaryTotalByUnit')->willReturn(['CNY' => 200000]);
+        $this->txRepo->method('getUnbackedDepositsByUnit')->willReturn([]);
         $this->walletRepo->method('count')->willReturn(2);
 
         $result = $this->service->verifyBalance();
 
         self::assertFalse($result['matches']);
-        self::assertSame(100000, $result['totalBalance']);
-        self::assertSame(200000, $result['totalDeposited']);
-        self::assertSame(100000, $result['discrepancy']);
+        $unit = $result['units'][0];
+        self::assertSame(100000, $unit['totalBalance']);
+        self::assertSame(200000, $unit['voucherBoundary']);
+        self::assertFalse($unit['matches']);
+    }
+
+    public function testVerifyBalanceMatchesWithLegacyDeposits(): void
+    {
+        $this->walletRepo->method('getTotalBalanceByUnit')->willReturn([['currency' => 'CNY', 'total' => 600000]]);
+        $this->voucherRepo->method('getBoundaryTotalByUnit')->willReturn(['CNY' => 500000]);
+        $this->txRepo->method('getUnbackedDepositsByUnit')->willReturn(['CNY' => 100000]);
+        $this->walletRepo->method('count')->willReturn(3);
+
+        $result = $this->service->verifyBalance();
+
+        self::assertTrue($result['matches']);
+        $unit = $result['units'][0];
+        self::assertSame(600000, $unit['totalBalance']);
+        self::assertSame(100000, $unit['unmatchedDeposits']);
+        self::assertSame(600000, $unit['expected']);
     }
 
     #[Group('low-value')]
     public function testVerifyBalanceZero(): void
     {
-        $this->walletRepo->method('getTotalBalance')->willReturn(0);
-        $this->txRepo->method('getTotalDeposited')->willReturn(0);
+        $this->walletRepo->method('getTotalBalanceByUnit')->willReturn([]);
+        $this->voucherRepo->method('getBoundaryTotalByUnit')->willReturn([]);
+        $this->txRepo->method('getUnbackedDepositsByUnit')->willReturn([]);
         $this->walletRepo->method('count')->willReturn(0);
 
         $result = $this->service->verifyBalance();
 
         self::assertTrue($result['matches']);
-        self::assertSame(0, $result['totalBalance']);
-        self::assertSame(0, $result['totalDeposited']);
-        self::assertSame(0, $result['discrepancy']);
+        self::assertSame(0, $result['walletCount']);
+        self::assertCount(0, $result['units']);
     }
 
     // ───────────────── reconcile ─────────────────
@@ -151,7 +178,7 @@ final class WalletServiceTest extends TestCase
         $this->walletRepo->method('findAll')->willReturn([$wallet]);
         $this->txRepo->method('getExpectedBalance')->with(1)->willReturn(0);
 
-        $this->em->expects(self::once())->method('persist')->with(self::isInstanceOf(WalletTransaction::class));
+        $this->em->expects(self::once())->method('persist')->with(self::isInstanceOf(Transaction::class));
         $this->em->expects(self::once())->method('flush');
 
         $result = $this->service->reconcile();

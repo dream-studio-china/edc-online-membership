@@ -91,9 +91,8 @@ class OpenApiEnricherListener
         '/api/v1/manage/wallets' => ['summary' => ['get' => 'List wallets', 'post' => 'Create wallet'], 'desc' => ['post' => 'One wallet per user per currency. Balance starts at 0.']],
         '/api/v1/manage/wallets/batch-update' => ['summary' => ['post' => 'Batch update wallets']],
         '/api/v1/manage/wallets/{id}' => ['summary' => ['get' => 'Get wallet', 'put' => 'Update wallet (freeze/unfreeze)', 'delete' => 'Delete wallet']],
-        '/api/v1/manage/transactions' => ['summary' => ['get' => 'List wallet transactions']],
+        '/api/v1/manage/transactions' => ['summary' => ['get' => 'List wallet transactions', 'post' => 'Atomic wallet transfer'], 'desc' => ['post' => 'Atomic, deadlock-safe, idempotent (referenceId), currency match enforced. Cents.']],
         '/api/v1/manage/transactions/{id}' => ['summary' => ['get' => 'Get transaction detail']],
-        '/api/v1/manage/transfer' => ['summary' => ['post' => 'Atomic wallet transfer'], 'desc' => ['post' => 'Atomic, deadlock-safe, idempotent (referenceId), currency match enforced. Cents.']],
     ];
 
     public function onKernelResponse(ResponseEvent $event): void

@@ -9,7 +9,6 @@ use PHPUnit\Framework\Attributes\Group;
 use App\Common\Controller\App\MediaController as AppMediaController;
 use App\Common\Controller\Manage\MediaController as ManageMediaController;
 use App\Common\Entity\Media;
-use App\Common\Service\MediaService;
 use App\Common\Service\MediaServiceInterface;
 use App\Identity\Entity\User;
 use PHPUnit\Framework\TestCase;
@@ -55,6 +54,7 @@ final class MediaControllerUploadTest extends TestCase
             public function new() { return new \stdClass(); }
             public function update($object, ?array $data = null, bool $noFlush = false) { return $object; }
             public function remove($object): bool { return false; }
+            public function wrapInTransaction(callable $fn): mixed { return $fn(null); }
         };
 
         $controller = new class($service) extends AppMediaController {
@@ -74,14 +74,10 @@ final class MediaControllerUploadTest extends TestCase
 
     public function testManageUploadReturns500ForUnexpectedError(): void
     {
-        $service = new class extends MediaService {
-            public function __construct() {}
-
-        public function createFromUpload(UploadedFile $file, ?string $storage = null, array $meta = [], ?User $owner = null): Media
-        {
-            throw new \LogicException('unexpected manage failure');
-        }
-        };
+        $service = $this->createMock(MediaServiceInterface::class);
+        $service->method('createFromUpload')->willThrowException(
+            new \LogicException('unexpected manage failure')
+        );
 
         $controller = new ManageMediaController($service);
         $this->configureController($controller);

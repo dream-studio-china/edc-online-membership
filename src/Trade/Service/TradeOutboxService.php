@@ -7,7 +7,7 @@ namespace App\Trade\Service;
 use App\Trade\Entity\TradeOutboxMessage;
 use Doctrine\ORM\EntityManagerInterface;
 
-final readonly class TradeOutboxService
+final readonly class TradeOutboxService implements TradeOutboxServiceInterface
 {
     public function __construct(private EntityManagerInterface $entityManager)
     {

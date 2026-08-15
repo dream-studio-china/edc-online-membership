@@ -4,7 +4,7 @@ Symfony 8.1 API backend skeleton with modular architecture, JWT authentication, 
 
 ## Architecture
 
-```
+```text
 src/
 ├── Core/       # Framework core (RestController, BaseService, View Mixins, Expression Parser)
 ├── Common/     # CMS module (Category, Tag, Content, Comment, Page, Media, Setting)

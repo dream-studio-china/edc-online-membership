@@ -9,7 +9,7 @@ use App\Store\Repository\StoreConsumedEventRepository;
 use App\Store\Repository\StoreRepository;
 use App\Store\Repository\StoreTradeOrderCancellationRepository;
 use App\Store\Service\StoreOrderServiceInterface;
-use App\Store\Service\StoreOutboxService;
+use App\Store\Service\StoreOutboxServiceInterface;
 use App\Trade\Message\TradeOrderCreatedMessage;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
@@ -23,7 +23,7 @@ final readonly class TradeOrderCreatedHandler
         private StoreConsumedEventRepository $consumedEventRepository,
         private StoreTradeOrderCancellationRepository $cancellationRepository,
         private StoreOrderServiceInterface $storeOrderService,
-        private StoreOutboxService $outboxService,
+        private StoreOutboxServiceInterface $outboxService,
         private EntityManagerInterface $entityManager,
         #[Autowire('%env(bool:INVENTORY_ENABLED)%')]
         private bool $inventoryEnabled = false,

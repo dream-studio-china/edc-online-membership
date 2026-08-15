@@ -7,8 +7,8 @@ namespace App\Tests\UnitTest\Wechat\Controller;
 use App\Identity\Entity\User;
 use App\Identity\Security\TokenManager;
 use App\Wechat\Controller\LoginController;
-use App\Wechat\Service\WechatAuthService;
-use App\Wechat\Service\WechatService;
+use App\Wechat\Service\WechatAuthServiceInterface;
+use App\Wechat\Service\WechatServiceInterface;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Request;
@@ -23,16 +23,16 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 #[AllowMockObjectsWithoutExpectations]
 final class LoginControllerCoverageTest extends TestCase
 {
-    private WechatAuthService $authService;
+    private WechatAuthServiceInterface $authService;
     private TokenManager $tokenManager;
-    private WechatService $wechatService;
+    private WechatServiceInterface $wechatService;
     private LoginController $controller;
 
     protected function setUp(): void
     {
-        $this->authService = $this->createMock(WechatAuthService::class);
+        $this->authService = $this->createMock(WechatAuthServiceInterface::class);
         $this->tokenManager = $this->createMock(TokenManager::class);
-        $this->wechatService = $this->createMock(WechatService::class);
+        $this->wechatService = $this->createMock(WechatServiceInterface::class);
         $translator = $this->createMock(TranslatorInterface::class);
         $translator->method('trans')->willReturnCallback(fn(string $msg) => $msg);
 

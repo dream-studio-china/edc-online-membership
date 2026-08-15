@@ -9,7 +9,7 @@ use App\Core\View\DeleteApiViewMixin;
 use App\Core\View\DetailApiViewMixin;
 use App\Core\View\ListApiViewMixin;
 use App\Core\View\UpdateApiViewMixin;
-use App\Wallet\Service\WalletService;
+use App\Wallet\Service\WalletServiceInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
@@ -25,11 +25,17 @@ class WalletController extends RestController
     protected array $requiredCreateProperties = ['user', 'currency'];
     /** @var list<string> */
     protected array $acceptedCreateProperties = ['user', 'currency', 'status', 'label'];
-    /** @var list<string> */
-    protected array $acceptedUpdateProperties = ['status', 'label', 'currency'];
+    /**
+     * Only mutable business fields. `currency` is immutable: it is the unit of
+     * account of the wallet's ledger, and changing it would break transactions,
+     * vouchers, and balance verification.
+     *
+     * @var list<string>
+     */
+    protected array $acceptedUpdateProperties = ['status', 'label'];
 
     public function __construct(
-        protected readonly WalletService $service
+        protected readonly WalletServiceInterface $service
     ) {}
 
     #[Route('/balance', name: 'balance', methods: ['GET'])]

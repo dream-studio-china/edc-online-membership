@@ -12,7 +12,7 @@ use App\Payment\Exception\PaymentVerificationException;
 use App\Wechat\Entity\WechatUser;
 use App\Wechat\Repository\WechatUserRepository;
 use App\Wechat\Service\Payment\WechatPayGateway;
-use App\Wechat\Service\WechatService;
+use App\Wechat\Service\WechatServiceInterface;
 use EasyWeChat\Kernel\HttpClient\Response as WechatResponse;
 use EasyWeChat\MiniApp\Application as MiniApp;
 use EasyWeChat\MiniApp\Account as MiniAccount;
@@ -27,14 +27,14 @@ use Symfony\Component\HttpFoundation\Response;
 
 final class WechatPayGatewayTest extends TestCase
 {
-    private WechatService $wechatService;
+    private WechatServiceInterface $wechatService;
     private WechatUserRepository $wechatUserRepo;
     private HttpMessageFactoryInterface $psrHttpFactory;
     private WechatPayGateway $gateway;
 
     protected function setUp(): void
     {
-        $this->wechatService = $this->createMock(WechatService::class);
+        $this->wechatService = $this->createMock(WechatServiceInterface::class);
         $this->wechatUserRepo = $this->createMock(WechatUserRepository::class);
         $this->psrHttpFactory = $this->createMock(HttpMessageFactoryInterface::class);
 

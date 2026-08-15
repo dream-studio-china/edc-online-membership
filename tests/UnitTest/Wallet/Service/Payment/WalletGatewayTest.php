@@ -12,8 +12,8 @@ use App\Payment\Exception\PaymentVerificationException;
 use App\Wallet\Entity\Wallet;
 use App\Wallet\Repository\WalletRepository;
 use App\Wallet\Service\Payment\WalletGateway;
-use App\Wallet\Service\TransferResult;
-use App\Wallet\Service\TransferServiceInterface;
+use App\Wallet\Service\Transfer\TransferResult;
+use App\Wallet\Service\Transfer\TransferServiceInterface;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Request;
@@ -163,7 +163,7 @@ final class WalletGatewayTest extends TestCase
         $walletRepo = $this->createMock(WalletRepository::class);
         $walletRepo->method('findByUserAndCurrency')->willReturn($wallet);
 
-        $transaction = new \App\Wallet\Entity\WalletTransaction('uuid-1', 50, 'transfer');
+        $transaction = new \App\Wallet\Entity\Transaction('uuid-1', 50, 'transfer');
         $transferResult = new TransferResult($transaction, 50, 50);
         $transferService = $this->createMock(TransferServiceInterface::class);
         $transferService->method('transfer')->willReturn($transferResult);
@@ -192,7 +192,7 @@ final class WalletGatewayTest extends TestCase
         $walletRepo = $this->createMock(WalletRepository::class);
         $walletRepo->method('findByUserAndCurrency')->willReturn($wallet);
 
-        $transaction = new \App\Wallet\Entity\WalletTransaction('uuid-2', 200, 'transfer');
+        $transaction = new \App\Wallet\Entity\Transaction('uuid-2', 200, 'transfer');
         $transferResult = new TransferResult($transaction, 200, 200);
         $transferService = $this->createMock(TransferServiceInterface::class);
         $transferService->method('transfer')->willReturn($transferResult);

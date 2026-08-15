@@ -6,8 +6,66 @@
 
 > 文档站点: [GitHub Pages](https://immane.github.io/crud-skeleton) | 设计契约: [docs/design/](docs/design/)
 
+## 架构
+
+应用是分层 Symfony API：控制器基于 trait 组合的视图 mixin 调用 `BaseService`（CRUD + 动态查询），服务承载业务规则，Doctrine ORM 持久化到 MySQL。模块依赖 Core，跨模块仅通过服务接口交互。
+
+```mermaid
+flowchart TB
+    Core["<b>Core 框架</b><br/>BaseService · View Mixins · Expression→DQL"]
+
+    Identity["Identity<br/>鉴权 · JWT · OTP · User"]
+    Common["Common<br/>CMS（7 实体）"]
+    Storage["Storage<br/>媒体驱动"]
+    Wechat["Wechat<br/>登录 + 支付"]
+    Wallet["Wallet<br/>余额 · 转账 · 凭证"]
+    Payment["Payment<br/>发票 · 网关 · 抵扣"]
+    Trade["Trade<br/>订单 · 定价"]
+    Store["Store<br/>多门店 Outbox"]
+    Inventory["Inventory<br/>库存 · 预留"]
+    Promotion["Promotion<br/>DSL 引擎"]
+    Exchange["Exchange（设计）<br/>汇率 · 资金池 · 发行"]
+
+    Identity --> Core
+    Common --> Core
+    Storage --> Core
+    Storage --> Common
+    Wechat --> Core
+    Wechat --> Identity
+    Wallet --> Core
+    Wallet --> Identity
+    Payment --> Core
+    Payment --> Wallet
+    Trade --> Core
+    Trade --> Payment
+    Trade --> Store
+    Trade --> Inventory
+    Promotion --> Core
+    Promotion --> Trade
+    Exchange -. "design" .-> Core
+```
+
+一次业务操作（例如钱包支付）的请求流程：
+
+```mermaid
+sequenceDiagram
+    participant C as 客户端
+    participant Ctrl as 控制器
+    participant S as 服务
+    participant P as Provider
+    participant DB as Doctrine ORM / MySQL
+
+    C->>Ctrl: POST /api/v1/...（JSON body）
+    Ctrl->>S: 调用服务（校验后的载荷）
+    S->>P: 解析 provider + assertPermitted()
+    S->>DB: wrapInTransaction { 账本 + 审计写入 }
+    S-->>Ctrl: 结果 / 实体
+    Ctrl-->>C: 统一响应信封
+```
+
 ## 目录
 
+- [架构](#架构)
 - [快速上手指南](#快速上手指南)
 - [为什么使用这个项目](#为什么使用这个项目)
 - [功能特性](#功能特性)
@@ -65,8 +123,11 @@
 - **订单状态机**：Symfony Workflow（草稿 → 完成），含完整工作流 API。
 - **价格计算管道**：可插拔的价格计算器，按优先级排序执行。
 - **支付抵扣提供方**：支付前钩子（如钱包抵扣）在网关处理前减少发票金额 — 网关仅接收显式金额。
-- **原子钱包转账 + 系统注资**：死锁预防（统一锁定顺序）、乐观锁、引用 ID 幂等。
+- **原子钱包转账**：死锁预防（统一锁定顺序）、悲观锁（`SELECT … FOR UPDATE`）、引用 ID 幂等。
+- **凭证存款与取款**：以追加式的 `wallet_voucher` 审计（边界账本）为背书的单边入账/出账。voucher 类型的权限由 provider 自行裁决（`manual` 需要 `ROLE_ADMIN`；CLI/队列视为可信调用），并发重复 `referenceId` 幂等返回，不再撞唯一索引报错。
+- **钱包账务**：余额校验（`SUM(余额) == SUM(贷方凭证) − SUM(借方凭证)`）与逐钱包对账，覆盖存款、取款、转账与冻结。
 - **钱包余额抵扣**：钱包拥有的抵扣生命周期，通过 Payment 抵扣提供方模式接入 — Payment 编排，Wallet 实现。
+- **汇率域（设计）**：资金池背书的点数经济设计（`docs/design/bundles/exchange.md`）——生效期汇率、bcmath 换算引擎、质押/发行/兑换/赎回，围绕造市商监管的资金池。
 - **可插拔文件存储**：`MediaStorageInterface`，本地与七牛 Kodo 驱动 — tagged iterator 自动发现。
 - **OpenAPI 文档**：NelmioApiDocBundle + `#[OA\*]` 属性，`/api/doc` 提供 Swagger UI。
 - **系统自省**：实体元数据和路由导出接口（`/system/*`）。
@@ -127,12 +188,15 @@
 │   │   ├── Service/              #   StoreService
 │   │   └── MessageHandler/       #   创建/接受/拒绝/取消 出站消费者
 │   ├── Wallet/                    # 钱包模块
-│   │   ├── Controller/Manage/    #   钱包、交易、转账 API
-│   │   ├── DTO/                  #   WalletPaymentDeductionRequest
-│   │   ├── Entity/               #   Wallet, WalletTransaction, WalletPaymentDeduction
-│   │   ├── Repository/           #   + WalletPaymentDeductionRepository
-│   │   └── Service/              #   TransferService, WalletService
-│   │       └── Payment/          #   WalletGateway, WalletBalanceAdjustmentProvider, WalletPaymentDeductionService
+│   │   ├── Controller/App/       #   钱包、交易、凭证（自助服务）
+│   │   ├── Controller/Manage/    #   钱包、交易、凭证（存款/取款/反冲）
+│   │   ├── DTO/                  #   PaymentDeductionRequest
+│   │   ├── Entity/               #   Wallet, Transaction, Voucher, VoucherComment, PaymentDeduction
+│   │   ├── Repository/           #   Wallet, Transaction, Voucher, VoucherComment, PaymentDeduction
+│   │   └── Service/              #   TransferService, WalletService, VoucherService
+│   │       ├── Deposit/          #   DepositService + provider 注册表（凭证入账）
+│   │       ├── Withdraw/         #   WithdrawService + provider 注册表（凭证出账）
+│   │       └── Payment/          #   WalletGateway, WalletBalanceAdjustmentProvider, PaymentDeductionService
 │   ├── Payment/                  # 支付模块
 │   │   ├── Controller/App/       #   发票列表/详情/支付
 │   │   ├── Controller/Manage/    #   发票创建/取消/退款/转换
@@ -169,7 +233,7 @@
 │   │   └── Exception/
 │   ├── Inventory/                # 库存模块（物料、库存、配方、预留）
 │   │   ├── Controller/Manage/    #   物料、库存、配方管理
-│   │   ├── Entity/               #   Material、InventoryStock、SpecificationRecipe、InventoryReservation 等
+│   │   ├── Entity/               #   Material、Stock、SpecificationRecipe、Reservation 等
 │   │   ├── Repository/
 │   │   ├── Service/              #   InventoryService（预留/释放/调整）
 │   │   ├── MessageHandler/       #   预留请求/释放处理器
@@ -380,12 +444,13 @@ docker compose exec app php bin/console app:identity:user:create admin@example.c
 | **Common** | `App\Common` | CMS | 分类（树）、标签、内容、评论（多态）、页面、媒体、设置（KV） |
 | **Trade** | `App\Trade` | 电商 | 产品 + 规格、订单（状态机）、价格计算管道 |
 | **Inventory** | `App\Inventory` | 库存管理 | 门店物料库存 + 规格配方 + 预留（原子库存锁）+ 库存台账审计 + 负库存策略 |
-| **Wallet** | `App\Wallet` | 钱包与抵扣 | 余额（分）、原子转账、系统注资、幂等、钱包余额抵扣提供方、余额校验与对账 |
+| **Wallet** | `App\Wallet` | 钱包与抵扣 | 余额（分）、原子转账、凭证存款与取款（provider 权限）、幂等、钱包余额抵扣提供方、余额校验与对账 |
 | **Payment** | `App\Payment` | 支付编排 | 发票（分+工作流）、网关抽象（mock/wallet/wechat）、**支付抵扣提供方契约**、Webhook、事件 |
 | **Wechat** | `App\Wechat` | 微信集成 | 小程序/公众号登录、微信支付 V3、WechatUser（OneToOne→User） |
 | **Storage** | `App\Storage` | 文件存储驱动 | `MediaStorageInterface`、LocalStorage、QiniuStorage、tagged iterator 自动发现 |
 | **Promotion** | `App\Promotion` | DSL 驱动促销 | 自定义 DSL 词法/语法/求值器、7 种策略类型、作为 `trade.price_calculator`（优先级 60）、会员定向 SKU 折扣、多门店路由、`best_price` 冲突模式 |
 | **Identity** | `App\Identity` | 鉴权 | JWT (RS256)、OTP (短信)、Refresh Token 轮换、Profile 实体（自动创建、等级、积分委托给 Wallet） |
+| **Exchange** | `App\ExchangeBundle` *(设计)* | 资金池背书的点数经济 | 生效期汇率（混合：锚定 + 直接对）、bcmath 换算、质押/发行/兑换/赎回、造市商资金池 —— 仅设计文档，尚未实现 |
 
 ## API 路由
 
@@ -466,7 +531,16 @@ docker compose exec app php bin/console app:identity:user:create admin@example.c
 | **GET** | **`/api/v1/manage/wallets/balance`** | **校验会计恒等式** |
 | **POST** | **`/api/v1/manage/wallets/reconcile`** | **逐钱包对账** |
 | GET | `/api/v1/manage/transactions` | 交易列表 |
-| POST | `/api/v1/manage/transfer` | 原子转账 |
+| POST | `/api/v1/manage/transactions` | 原子转账（创建账本交易） |
+| **POST** | **`/api/v1/manage/vouchers/deposit`** | **凭证存款（充值）** |
+| **POST** | **`/api/v1/manage/vouchers/withdraw`** | **凭证取款（出账）** |
+| POST | `/api/v1/manage/vouchers/{uuid}/reverse` | 反冲存款或取款凭证 |
+| GET | `/api/v1/manage/vouchers[/{id}]` | 凭证列表/详情（管理端） |
+| **POST** | **`/api/v1/app/vouchers/deposit`** | **向自己钱包自助存款** |
+| **POST** | **`/api/v1/app/vouchers/withdraw`** | **从自己钱包自助取款** |
+| POST | `/api/v1/app/vouchers/{uuid}/reverse` | 反冲自己的凭证 |
+
+deposit/withdraw 的 `voucherType` 为请求参数：`Manage` 默认 `manual`（仅管理员），`App` 必须由外部集成方传入。类型的权限由已注册 provider 的 `assertPermitted()` 裁决。资金流向：存款 = 单边入账（`fromWallet = null`）；取款 = 单边出账（`toWallet = null`）；反冲把资金退回源钱包。
 
 ### Payment
 
@@ -700,22 +774,16 @@ PHPStan 以 Level 8 检查其配置的 `src/` 范围。CI 中的 Rector 仅检�
 
 ### 架构
 
-```
-                ┌──────────────┐
-   :8080  ──────│    nginx     │────── /api/* ──────┐
-                └──────────────┘                     │
-                                                    ▼
-                                            ┌──────────────┐
-                                            │  PHP-FPM 8.4 │
-                                            │   (app)      │
-                                            └──────┬───────┘
-                                                   │
-                      ┌────────────────────────────┼────────────────────┐
-                      │                            │                    │
-                ┌─────▼─────┐              ┌──────▼──────┐      ┌──────▼──────┐
-                │  MySQL 8   │              │    Redis 7   │      │   Mailpit   │
-                │            │              │  (OTP/缓存)  │      │ (邮件开发)  │
-                └───────────┘              └─────────────┘      └─────────────┘
+```mermaid
+flowchart LR
+    Client[客户端 / 浏览器] -->|:8080| Nginx[nginx:alpine]
+    Nginx -->|/api/*| Fpm["PHP-FPM 8.4<br/>(app, Symfony)"]
+    Nginx -->|/api/doc| Swagger[Swagger UI<br/>NelmioApiDoc]
+    Fpm --> MySQL[(MySQL 8)]
+    Fpm --> Redis[(Redis 7<br/>OTP / 缓存)]
+    Fpm --> Mailpit[Mailpit<br/>邮件开发]
+    Fpm --> Worker[Messenger worker<br/>handler / outbox]
+    Fpm --> Scheduler[Scheduler<br/>outbox 发布]
 ```
 
 | 服务 | 镜像 | 容器 | 用途 |

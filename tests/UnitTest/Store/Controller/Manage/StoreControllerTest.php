@@ -6,8 +6,8 @@ namespace App\Tests\UnitTest\Store\Controller\Manage;
 
 use App\Store\Controller\Manage\StoreController;
 use App\Store\Entity\Store;
-use App\Store\Entity\StoreMembership;
-use App\Store\Service\StoreMembershipServiceInterface;
+use App\Store\Entity\Membership;
+use App\Store\Service\MembershipServiceInterface;
 use App\Store\Service\StoreServiceInterface;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\Attributes\Group;
@@ -22,13 +22,13 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 final class StoreControllerTest extends TestCase
 {
     private StoreServiceInterface $service;
-    private StoreMembershipServiceInterface $membershipService;
+    private MembershipServiceInterface $membershipService;
     private StoreController $controller;
 
     protected function setUp(): void
     {
         $this->service = $this->createMock(StoreServiceInterface::class);
-        $this->membershipService = $this->createMock(StoreMembershipServiceInterface::class);
+        $this->membershipService = $this->createMock(MembershipServiceInterface::class);
         $this->controller = new StoreController($this->service, $this->membershipService);
     }
 
@@ -78,7 +78,7 @@ final class StoreControllerTest extends TestCase
     public function testListMembersActionReturnsMemberships(): void
     {
         $store = new Store('xuhui', 'Xuhui', 'Asia/Shanghai');
-        $membership = new StoreMembership($store, '47d07ad3-7e6e-4bfb-aea3-87bdb0e4de57', StoreMembership::ROLE_MANAGER);
+        $membership = new Membership($store, '47d07ad3-7e6e-4bfb-aea3-87bdb0e4de57', Membership::ROLE_MANAGER);
         $request = Request::create('/members', 'GET');
         $this->injectDependencies($request);
         $this->service->method('get')->with(['uuid' => $store->getUuid()])->willReturn($store);
@@ -137,7 +137,7 @@ final class StoreControllerTest extends TestCase
     public function testGrantMemberActionGrantsMembership(): void
     {
         $store = new Store('xuhui', 'Xuhui', 'Asia/Shanghai');
-        $membership = new StoreMembership($store, '47d07ad3-7e6e-4bfb-aea3-87bdb0e4de57', StoreMembership::ROLE_MANAGER);
+        $membership = new Membership($store, '47d07ad3-7e6e-4bfb-aea3-87bdb0e4de57', Membership::ROLE_MANAGER);
         $request = $this->jsonRequest('/members', ['userUuid' => '47d07ad3-7e6e-4bfb-aea3-87bdb0e4de57', 'role' => 'manager']);
         $this->injectDependencies($request);
         $this->service->method('get')->with(['uuid' => $store->getUuid()])->willReturn($store);

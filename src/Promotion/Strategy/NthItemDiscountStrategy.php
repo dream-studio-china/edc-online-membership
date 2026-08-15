@@ -9,7 +9,7 @@ use App\Trade\Service\Pricing\PriceCalculationContext;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
 #[AutoconfigureTag('promotion.strategy')]
-class NthItemDiscountStrategy implements PromotionStrategyInterface
+final class NthItemDiscountStrategy implements PromotionStrategyInterface
 {
     public static function supportedType(): string
     {

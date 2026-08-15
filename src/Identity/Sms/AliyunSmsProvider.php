@@ -9,7 +9,7 @@ use AlibabaCloud\Client\Exception\ClientException;
 use AlibabaCloud\Client\Exception\ServerException;
 use Psr\Log\LoggerInterface;
 
-class AliyunSmsProvider implements SmsProviderInterface
+final class AliyunSmsProvider implements SmsProviderInterface
 {
     private bool $dryRun;
 

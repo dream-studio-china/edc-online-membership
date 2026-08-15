@@ -6,20 +6,12 @@
 
 ## 1. Architecture
 
-```
-Controller #[OA\*] attributes
-        │
-        ▼
-  swagger-php (zircote) ─── generates raw OpenAPI paths + generic tags
-        │
-        ▼
-  NelmioApiDocBundle ─── merges config/packages/nelmio_api_doc.yaml
-        │                    (schemas, security, info)
-        ▼
-  OpenApiEnricherListener ─── kernel.response event
-        │                    overrides tags, summaries, descriptions
-        ▼
-  /api/doc  (Swagger UI)    /api/doc.json  (raw JSON)
+```mermaid
+flowchart TD
+    A["Controller #[OA\*] attributes"] --> B["swagger-php (zircote)"]
+    B -->|"generates raw OpenAPI paths + generic tags"| C["NelmioApiDocBundle"]
+    C -->|"merges config/packages/nelmio_api_doc.yaml<br/>(schemas, security, info)"| D["OpenApiEnricherListener"]
+    D -->|"kernel.response event<br/>overrides tags, summaries, descriptions"| E["/api/doc (Swagger UI)<br/>/api/doc.json (raw JSON)"]
 ```
 
 ## 2. Single-File Enricher
@@ -44,7 +36,7 @@ Extracts module tag from the route's `operationId`:
 | `manage-pages-*`, `app-pages-*` | Pages |
 | `manage-media-*`, `app-media-*` | Media |
 | `manage-settings-*`, `app-settings-*` | Settings |
-| `manage-wallets-*`, `manage-transactions-*`, `manage-transfers-*` | Wallet |
+| `manage-wallets-*`, `manage-transactions-*` | Wallet |
 | Any other `manage-{X}-*` or `app-{X}-*` | {X} (auto-title-cased) |
 
 ### 2.2 Summary/Description Overrides (`META`)
@@ -75,7 +67,7 @@ Example:
 
 Entity schemas are defined under `documentation.components.schemas`. Each schema provides field-level type, description, enum, and example values visible in Swagger UI.
 
-Current schemas: Order, OrderItem, Product, Specification, Category, Tag, Content, Comment, Page, Media, Setting, Wallet, WalletTransaction, TransferRequest, LoginResponse, UserRef.
+Current schemas: Order, OrderItem, Product, Specification, Category, Tag, Content, Comment, Page, Media, Setting, Wallet, Transaction, TransferRequest, LoginResponse, UserRef.
 
 ### 3.1 Adding a New Schema
 

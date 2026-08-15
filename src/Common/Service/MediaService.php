@@ -13,7 +13,7 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Validator\Exception\ValidatorException;
 
 /** @extends BaseService<\App\Common\Entity\Media> */
-class MediaService extends BaseService implements MediaServiceInterface
+final class MediaService extends BaseService implements MediaServiceInterface
 {
     /** @param string[] $allowedMimeTypes */
     public function __construct(

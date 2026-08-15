@@ -10,7 +10,7 @@ use App\Tests\Integration\DatabaseBootstrapTrait;
 use App\Tests\Integration\IntegrationWebTestCase;
 use App\Trade\Entity\Order;
 use App\Wallet\Entity\Wallet;
-use App\Wallet\Service\Payment\WalletPaymentDeductionService;
+use App\Wallet\Service\Payment\PaymentDeductionService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
@@ -795,9 +795,9 @@ final class PaymentTradeIntegrationTest extends IntegrationWebTestCase
         return $reloaded->getBalance();
     }
 
-    private function deductionService(): WalletPaymentDeductionService
+    private function deductionService(): PaymentDeductionService
     {
-        return $this->client->getContainer()->get(WalletPaymentDeductionService::class);
+        return $this->client->getContainer()->get(PaymentDeductionService::class);
     }
 
     /** @return array{Response, string} */

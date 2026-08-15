@@ -8,7 +8,7 @@ use App\Core\Service\BaseService;
 use App\Trade\Entity\Product;
 
 /** @extends BaseService<\App\Trade\Entity\Product> */
-class ProductService extends BaseService implements ProductServiceInterface
+final class ProductService extends BaseService implements ProductServiceInterface
 {
     public function __construct(
         \Symfony\Component\DependencyInjection\ContainerInterface $container,

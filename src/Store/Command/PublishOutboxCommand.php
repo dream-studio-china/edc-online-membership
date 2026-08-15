@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Store\Command;
 
 use App\Store\Repository\StoreOutboxMessageRepository;
-use App\Inventory\Message\InventoryReservationReleaseRequestedMessage;
-use App\Inventory\Message\InventoryReservationRequestedMessage;
+use App\Inventory\Message\ReservationReleaseRequestedMessage;
+use App\Inventory\Message\ReservationRequestedMessage;
 use App\Trade\Message\StoreOrderAcceptedMessage;
 use App\Trade\Message\StoreOrderRejectedMessage;
 use Doctrine\ORM\EntityManagerInterface;
@@ -45,8 +45,8 @@ final class PublishOutboxCommand extends Command
             $busMessage = match ($message->getTopic()) {
                 'store.order.accepted.v1' => new StoreOrderAcceptedMessage($envelope),
                 'store.order.rejected.v1' => new StoreOrderRejectedMessage($envelope),
-                'inventory.reservation.requested.v1' => new InventoryReservationRequestedMessage($envelope),
-                'inventory.reservation.release.requested.v1' => new InventoryReservationReleaseRequestedMessage($envelope),
+                'inventory.reservation.requested.v1' => new ReservationRequestedMessage($envelope),
+                'inventory.reservation.release.requested.v1' => new ReservationReleaseRequestedMessage($envelope),
                 default => null,
             };
             if ($busMessage === null) {

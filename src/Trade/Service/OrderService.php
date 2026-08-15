@@ -19,14 +19,14 @@ use App\Trade\Service\Pricing\PriceCalculationContext;
 use App\Trade\Service\Pricing\PriceCalculationResult;
 use App\Trade\Service\Pricing\PriceCalculatorInterface;
 use App\Wallet\Repository\WalletRepository;
-use App\Wallet\Service\TransferServiceInterface;
+use App\Wallet\Service\Transfer\TransferServiceInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Workflow\WorkflowInterface;
 
 /** @extends BaseService<\App\Trade\Entity\Order> */
-class OrderService extends BaseService implements OrderServiceInterface
+final class OrderService extends BaseService implements OrderServiceInterface
 {
     /**
      * @param iterable<PriceCalculatorInterface> $priceCalculators
@@ -38,7 +38,7 @@ class OrderService extends BaseService implements OrderServiceInterface
         private readonly ?WalletRepository $walletRepository = null,
         private readonly ?TransferServiceInterface $transferService = null,
         private readonly ?InvoiceServiceInterface $invoiceService = null,
-        private readonly ?TradeOutboxService $outboxService = null,
+        private readonly ?TradeOutboxServiceInterface $outboxService = null,
         #[Target('state_machine.order')]
         private readonly ?WorkflowInterface $workflow = null,
     ) {

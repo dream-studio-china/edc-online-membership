@@ -10,7 +10,7 @@ use Psr\Cache\CacheItemPoolInterface;
  * Local OTP storage backed by Symfony cache pool (cache.app).
  * Suitable as a temporary replacement when Redis is unavailable.
  */
-class LocalCacheOtpStorage implements OtpStorageInterface
+final class LocalCacheOtpStorage implements OtpStorageInterface
 {
     public function __construct(
         private readonly CacheItemPoolInterface $cache,

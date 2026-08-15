@@ -8,7 +8,7 @@ use App\Identity\Entity\User;
 use App\Wechat\Entity\WechatUser;
 use App\Wechat\Repository\WechatUserRepository;
 use App\Wechat\Service\WechatAuthService;
-use App\Wechat\Service\WechatService;
+use App\Wechat\Service\WechatServiceInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
@@ -16,14 +16,14 @@ use PHPUnit\Framework\TestCase;
 #[AllowMockObjectsWithoutExpectations]
 final class WechatAuthServiceTest extends TestCase
 {
-    private WechatService $wechatService;
+    private WechatServiceInterface $wechatService;
     private WechatUserRepository $wechatUserRepo;
     private EntityManagerInterface $em;
     private WechatAuthService $authService;
 
     protected function setUp(): void
     {
-        $this->wechatService = $this->createMock(WechatService::class);
+        $this->wechatService = $this->createMock(WechatServiceInterface::class);
         $this->wechatUserRepo = $this->createMock(WechatUserRepository::class);
         $this->em = $this->createMock(EntityManagerInterface::class);
 

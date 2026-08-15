@@ -6,8 +6,8 @@ namespace App\Tests\Integration\Inventory;
 
 use App\Inventory\Entity\Material;
 use App\Inventory\Entity\InventoryOutboxMessage;
-use App\Inventory\Message\InventoryReservationReleaseRequestedMessage;
-use App\Inventory\Message\InventoryReservationRequestedMessage;
+use App\Inventory\Message\ReservationReleaseRequestedMessage;
+use App\Inventory\Message\ReservationRequestedMessage;
 use App\Inventory\Repository\InventoryOutboxMessageRepository;
 use App\Inventory\Service\InventoryOutboxService;
 use App\Inventory\Service\InventoryMessageIntegrityException;
@@ -34,12 +34,12 @@ final class InventoryMessagingAndApiTest extends IntegrationWebTestCase
         foreach ([
             'App\\Inventory\\Entity\\InventoryOutboxMessage',
             'App\\Inventory\\Entity\\InventoryConsumedEvent',
-            'App\\Inventory\\Entity\\InventoryLedgerEntry',
+            'App\\Inventory\\Entity\\LedgerEntry',
             'App\\Inventory\\Entity\\ReservationLine',
-            'App\\Inventory\\Entity\\InventoryReservation',
+            'App\\Inventory\\Entity\\Reservation',
             'App\\Inventory\\Entity\\RecipeLine',
             'App\\Inventory\\Entity\\SpecificationRecipe',
-            'App\\Inventory\\Entity\\InventoryStock',
+            'App\\Inventory\\Entity\\Stock',
             'App\\Inventory\\Entity\\Material',
         ] as $entity) {
             $em->createQuery('DELETE FROM ' . $entity . ' entity')->execute();
@@ -148,9 +148,9 @@ final class InventoryMessagingAndApiTest extends IntegrationWebTestCase
                 'expiresAt' => (new \DateTimeImmutable('+1 day'))->format(DATE_ATOM),
             ],
         ];
-        $handler = $container->get(\App\Inventory\MessageHandler\InventoryReservationRequestedHandler::class);
-        $handler(new InventoryReservationRequestedMessage($envelope));
-        $handler(new InventoryReservationRequestedMessage($envelope));
+        $handler = $container->get(\App\Inventory\MessageHandler\ReservationRequestedHandler::class);
+        $handler(new ReservationRequestedMessage($envelope));
+        $handler(new ReservationRequestedMessage($envelope));
         self::assertSame('-2.000000', $inventory->getStockView($storeUuid, $material->getUuid())['availableQuantity']);
 
         $release = [
@@ -167,7 +167,7 @@ final class InventoryMessagingAndApiTest extends IntegrationWebTestCase
                 'requestedAt' => '2026-07-26T00:01:00+00:00',
             ],
         ];
-        $container->get(\App\Inventory\MessageHandler\InventoryReservationReleaseRequestedHandler::class)(new InventoryReservationReleaseRequestedMessage($release));
+        $container->get(\App\Inventory\MessageHandler\ReservationReleaseRequestedHandler::class)(new ReservationReleaseRequestedMessage($release));
         self::assertSame('0.000000', $inventory->getStockView($storeUuid, $material->getUuid())['availableQuantity']);
     }
 
@@ -240,13 +240,13 @@ final class InventoryMessagingAndApiTest extends IntegrationWebTestCase
     public function testMessageHandlersRejectMalformedEnvelopes(): void
     {
         $client = static::createClient();
-        $requestHandler = $client->getContainer()->get(\App\Inventory\MessageHandler\InventoryReservationRequestedHandler::class);
-        $releaseHandler = $client->getContainer()->get(\App\Inventory\MessageHandler\InventoryReservationReleaseRequestedHandler::class);
+        $requestHandler = $client->getContainer()->get(\App\Inventory\MessageHandler\ReservationRequestedHandler::class);
+        $releaseHandler = $client->getContainer()->get(\App\Inventory\MessageHandler\ReservationReleaseRequestedHandler::class);
 
         foreach ([
-            new InventoryReservationRequestedMessage([]),
-            new InventoryReservationRequestedMessage(['type' => 'inventory.reservation.requested', 'version' => 1, 'eventId' => 'invalid', 'aggregateId' => 'aggregate', 'payload' => []]),
-            new InventoryReservationRequestedMessage([
+            new ReservationRequestedMessage([]),
+            new ReservationRequestedMessage(['type' => 'inventory.reservation.requested', 'version' => 1, 'eventId' => 'invalid', 'aggregateId' => 'aggregate', 'payload' => []]),
+            new ReservationRequestedMessage([
                 'type' => 'inventory.reservation.requested',
                 'version' => 1,
                 'eventId' => '00000000-0000-4000-8000-000000000061',
@@ -271,8 +271,8 @@ final class InventoryMessagingAndApiTest extends IntegrationWebTestCase
         }
 
         foreach ([
-            new InventoryReservationReleaseRequestedMessage([]),
-            new InventoryReservationReleaseRequestedMessage([
+            new ReservationReleaseRequestedMessage([]),
+            new ReservationReleaseRequestedMessage([
                 'type' => 'inventory.reservation.release.requested',
                 'version' => 1,
                 'eventId' => '00000000-0000-4000-8000-000000000066',
@@ -302,7 +302,7 @@ final class InventoryMessagingAndApiTest extends IntegrationWebTestCase
         $inventory->adjustStock($storeUuid, $material->getUuid(), '1.000000', 'receipt');
         $inventory->reserve('00000000-0000-4000-8000-000000000112', $storeUuid, '00000000-0000-4000-8000-000000000113', '00000000-0000-4000-8000-000000000114', [['lineId' => '00000000-0000-4000-8000-000000000115', 'catalogReference' => $material->getCode(), 'quantity' => '1.000000']]);
 
-        $message = new InventoryReservationReleaseRequestedMessage([
+        $message = new ReservationReleaseRequestedMessage([
             'eventId' => '00000000-0000-4000-8000-000000000116',
             'type' => 'inventory.reservation.release.requested',
             'version' => 1,
@@ -318,7 +318,7 @@ final class InventoryMessagingAndApiTest extends IntegrationWebTestCase
         ]);
 
         $this->expectException(InventoryMessageIntegrityException::class);
-        $container->get(\App\Inventory\MessageHandler\InventoryReservationReleaseRequestedHandler::class)($message);
+        $container->get(\App\Inventory\MessageHandler\ReservationReleaseRequestedHandler::class)($message);
     }
 
     public function testInboxRejectsEventIdReusedWithDifferentPayload(): void
@@ -347,11 +347,11 @@ final class InventoryMessagingAndApiTest extends IntegrationWebTestCase
                 'expiresAt' => '2026-07-27T00:00:00+00:00',
             ],
         ];
-        $handler = $container->get(\App\Inventory\MessageHandler\InventoryReservationRequestedHandler::class);
-        $handler(new InventoryReservationRequestedMessage($envelope));
+        $handler = $container->get(\App\Inventory\MessageHandler\ReservationRequestedHandler::class);
+        $handler(new ReservationRequestedMessage($envelope));
         $envelope['payload']['items'][0]['quantity'] = '2.000000';
 
         $this->expectException(InventoryMessageIntegrityException::class);
-        $handler(new InventoryReservationRequestedMessage($envelope));
+        $handler(new ReservationRequestedMessage($envelope));
     }
 }

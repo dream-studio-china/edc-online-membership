@@ -8,7 +8,7 @@ use App\Core\Service\BaseService;
 use App\Trade\Entity\OrderItem;
 
 /** @extends BaseService<\App\Trade\Entity\OrderItem> */
-class OrderItemService extends BaseService implements OrderItemServiceInterface
+final class OrderItemService extends BaseService implements OrderItemServiceInterface
 {
     public function __construct(
         \Symfony\Component\DependencyInjection\ContainerInterface $container,

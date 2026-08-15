@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Trade\Service\Pricing;
 
-class PriceCalculationContext
+final class PriceCalculationContext
 {
     /**
      * @var list<array<string, mixed>>

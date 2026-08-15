@@ -28,11 +28,11 @@ framework:
             App\Trade\Message\TradeOrderCancelledMessage: async
             App\Trade\Message\StoreOrderAcceptedMessage: async
             App\Trade\Message\StoreOrderRejectedMessage: async
-            App\Inventory\Message\InventoryReservationRequestedMessage: async
-            App\Inventory\Message\InventoryReservationReleaseRequestedMessage: async
-            App\Inventory\Message\InventoryReservationConfirmedMessage: async
-            App\Inventory\Message\InventoryReservationRejectedMessage: async
-            App\Inventory\Message\InventoryReservationReleasedMessage: async
+            App\Inventory\Message\ReservationRequestedMessage: async
+            App\Inventory\Message\ReservationReleaseRequestedMessage: async
+            App\Inventory\Message\ReservationConfirmedMessage: async
+            App\Inventory\Message\ReservationRejectedMessage: async
+            App\Inventory\Message\ReservationReleasedMessage: async
 
             # Route your messages to the transports
             # 'App\Message\YourMessage': async

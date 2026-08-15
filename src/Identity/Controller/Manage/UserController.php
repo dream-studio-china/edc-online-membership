@@ -12,7 +12,7 @@ use App\Core\View\DetailApiViewMixin;
 use App\Core\View\ListApiViewMixin;
 use App\Core\View\UpdateApiViewMixin;
 use App\Identity\Entity\User;
-use App\Identity\Service\UserService;
+use App\Identity\Service\UserServiceInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -33,7 +33,7 @@ class UserController extends RestController
     protected array $acceptedUpdateProperties = ['email', 'username', 'password', 'phone', 'phoneVerified', 'roles'];
 
     public function __construct(
-        protected readonly UserService $service,
+        protected readonly UserServiceInterface $service,
     ) {}
 
     #[Route('/{id<\d+>}/change-password', name: 'change-password', methods: ['POST'])]

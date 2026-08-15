@@ -106,12 +106,12 @@ as a formatting step without reviewing its proposed changes.
 
 ## Project Structure
 
-```
+```text
 src/
 ├── Core/         # Framework core (RestController, BaseService, View mixins, Expression parser)
 ├── Common/       # CMS module (Category, Tag, Content, Comment, Page, Media, Setting)
 ├── Trade/        # E-commerce module (Product, Specification, Order, OrderItem)
-├── Wallet/       # Wallet module (Wallet, WalletTransaction, Transfer)
+├── Wallet/       # Wallet module (Wallet, Transaction, TransferService)
 ├── Payment/      # Payment module (Invoice, Gateways, Adjustment providers)
 ├── Wechat/       # WeChat module (Mini Program, Official Account, Pay V3)
 ├── Storage/      # File storage module (LocalStorage, QiniuStorage)

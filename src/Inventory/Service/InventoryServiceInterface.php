@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Inventory\Service;
 
-use App\Inventory\Entity\InventoryReservation;
-use App\Inventory\Entity\InventoryStock;
+use App\Inventory\Entity\Reservation;
+use App\Inventory\Entity\Stock;
 
 interface InventoryServiceInterface
 {
@@ -16,7 +16,7 @@ interface InventoryServiceInterface
         string $storeUuid,
         string $materialUuid,
         bool $allowNegativeStock,
-    ): InventoryStock;
+    ): Stock;
 
     public function adjustStock(
         string $storeUuid,
@@ -26,7 +26,7 @@ interface InventoryServiceInterface
         ?string $referenceId = null,
         ?string $actorReference = null,
         ?bool $allowNegativeStock = null,
-    ): InventoryStock;
+    ): Stock;
 
     /** @param list<array{lineId: string, catalogReference: string, quantity: string}> $items */
     public function reserve(
@@ -36,9 +36,9 @@ interface InventoryServiceInterface
         string $storeOrderUuid,
         array $items,
         ?\DateTimeImmutable $expiresAt = null,
-    ): InventoryReservation;
+    ): Reservation;
 
-    public function release(string $reservationId, ?string $reason = null): InventoryReservation;
+    public function release(string $reservationId, ?string $reason = null): Reservation;
 
     public function releaseExpiredReservations(): int;
 }

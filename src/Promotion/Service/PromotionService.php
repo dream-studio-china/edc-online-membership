@@ -15,7 +15,7 @@ use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /** @extends BaseService<\App\Promotion\Entity\Promotion> */
-class PromotionService extends BaseService implements PromotionServiceInterface
+final class PromotionService extends BaseService implements PromotionServiceInterface
 {
     /** @param iterable<PromotionStrategyInterface> $strategies */
     public function __construct(

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Trade\Service\Pricing;
 
-class PriceCalculationResult
+final class PriceCalculationResult
 {
     public int $totalAmount;
     public string $currency;

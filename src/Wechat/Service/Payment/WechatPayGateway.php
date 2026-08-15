@@ -11,7 +11,7 @@ use App\Payment\Entity\Invoice;
 use App\Payment\Exception\PaymentVerificationException;
 use App\Payment\Service\PaymentGatewayInterface;
 use App\Wechat\Repository\WechatUserRepository;
-use App\Wechat\Service\WechatService;
+use App\Wechat\Service\WechatServiceInterface;
 use Symfony\Bridge\PsrHttpMessage\HttpMessageFactoryInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -22,7 +22,7 @@ use Symfony\Contracts\HttpClient\ResponseInterface;
 final class WechatPayGateway implements PaymentGatewayInterface
 {
     public function __construct(
-        private readonly WechatService $wechatService,
+        private readonly WechatServiceInterface $wechatService,
         private readonly WechatUserRepository $wechatUserRepository,
         private readonly HttpMessageFactoryInterface $psrHttpFactory,
         #[Autowire('%wechat.pay.notify_url%')]
