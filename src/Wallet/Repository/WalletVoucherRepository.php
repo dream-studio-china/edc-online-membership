@@ -50,6 +50,34 @@ class WalletVoucherRepository extends ServiceEntityRepository
     }
 
     /**
+     * @return WalletVoucher[]
+     */
+    public function findForReconciliation(
+        string $currency,
+        ?string $fundSource = null,
+        ?\DateTimeImmutable $from = null,
+        ?\DateTimeImmutable $to = null
+    ): array {
+        $qb = $this->createQueryBuilder('v')
+            ->where('v.currency = :currency')
+            ->andWhere('v.status = :status')
+            ->orderBy('v.createdAt', 'ASC')
+            ->setParameter('currency', strtoupper($currency))
+            ->setParameter('status', WalletVoucher::STATUS_APPLIED);
+        if ($fundSource !== null) {
+            $qb->andWhere('v.fundSource = :fundSource')->setParameter('fundSource', $fundSource);
+        }
+        if ($from !== null) {
+            $qb->andWhere('v.createdAt >= :from')->setParameter('from', $from);
+        }
+        if ($to !== null) {
+            $qb->andWhere('v.createdAt <= :to')->setParameter('to', $to);
+        }
+
+        return $qb->getQuery()->getResult();
+    }
+
+    /**
      * Boundary invariant per unit of account:
      * SUM(applied credit vouchers) - SUM(applied debit vouchers).
      *
