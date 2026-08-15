@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\UnitTest\Wallet\Service;
+namespace App\Tests\UnitTest\Wallet\Service\Transfer;
 
 use App\Identity\Entity\User;
 use App\Wallet\Entity\Wallet;
@@ -12,8 +12,8 @@ use App\Wallet\Exception\SameWalletTransferException;
 use App\Wallet\Exception\WalletFrozenException;
 use App\Wallet\Repository\WalletRepository;
 use App\Wallet\Repository\WalletTransactionRepository;
-use App\Wallet\Service\TransferResult;
-use App\Wallet\Service\TransferService;
+use App\Wallet\Service\Transfer\TransferResult;
+use App\Wallet\Service\Transfer\TransferService;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Query;

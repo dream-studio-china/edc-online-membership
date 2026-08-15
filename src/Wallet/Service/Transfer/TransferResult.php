@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Wallet\Service;
+namespace App\Wallet\Service\Transfer;
 
 use App\Wallet\Entity\WalletTransaction;
 

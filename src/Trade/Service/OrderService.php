@@ -19,7 +19,7 @@ use App\Trade\Service\Pricing\PriceCalculationContext;
 use App\Trade\Service\Pricing\PriceCalculationResult;
 use App\Trade\Service\Pricing\PriceCalculatorInterface;
 use App\Wallet\Repository\WalletRepository;
-use App\Wallet\Service\TransferServiceInterface;
+use App\Wallet\Service\Transfer\TransferServiceInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\DependencyInjection\ContainerInterface;

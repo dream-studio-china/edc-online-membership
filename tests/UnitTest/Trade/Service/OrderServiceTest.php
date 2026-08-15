@@ -16,8 +16,8 @@ use App\Trade\Service\Pricing\TotalAggregator;
 use App\Trade\Service\SpecificationServiceInterface;
 use App\Wallet\Entity\Wallet;
 use App\Wallet\Repository\WalletRepository;
-use App\Wallet\Service\TransferResult;
-use App\Wallet\Service\TransferServiceInterface;
+use App\Wallet\Service\Transfer\TransferResult;
+use App\Wallet\Service\Transfer\TransferServiceInterface;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 

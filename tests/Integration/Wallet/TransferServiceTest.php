@@ -10,7 +10,7 @@ use App\Wallet\Exception\SameWalletTransferException;
 use App\Wallet\Exception\WalletFrozenException;
 use App\Wallet\Repository\WalletRepository;
 use App\Wallet\Repository\WalletTransactionRepository;
-use App\Wallet\Service\TransferService;
+use App\Wallet\Service\Transfer\TransferService;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Tests\Integration\IntegrationKernelTestCase;
 use App\Tests\Integration\DatabaseBootstrapTrait;

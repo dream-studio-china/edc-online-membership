@@ -11,7 +11,7 @@ use App\Payment\Entity\Invoice;
 use App\Payment\Exception\PaymentVerificationException;
 use App\Payment\Service\PaymentGatewayInterface;
 use App\Wallet\Repository\WalletRepository;
-use App\Wallet\Service\TransferServiceInterface;
+use App\Wallet\Service\Transfer\TransferServiceInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
