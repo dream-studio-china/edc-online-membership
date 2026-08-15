@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Tests\Integration\Inventory;
 
-use App\Inventory\Entity\InventoryReservation;
+use App\Inventory\Entity\Reservation;
 use App\Inventory\Entity\Material;
 use App\Inventory\Entity\RecipeLine;
 use App\Inventory\Entity\ReservationLine;
 use App\Inventory\Entity\SpecificationRecipe;
-use App\Inventory\Service\InventoryReservationConflictException;
+use App\Inventory\Service\ReservationConflictException;
 use App\Inventory\Service\InventoryServiceInterface;
 use App\Tests\Integration\DatabaseBootstrapTrait;
 use App\Tests\Integration\IntegrationWebTestCase;
@@ -29,12 +29,12 @@ final class InventoryServiceCoverageTest extends IntegrationWebTestCase
         foreach ([
             'App\\Inventory\\Entity\\InventoryOutboxMessage',
             'App\\Inventory\\Entity\\InventoryConsumedEvent',
-            'App\\Inventory\\Entity\\InventoryLedgerEntry',
+            'App\\Inventory\\Entity\\LedgerEntry',
             'App\\Inventory\\Entity\\ReservationLine',
-            'App\\Inventory\\Entity\\InventoryReservation',
+            'App\\Inventory\\Entity\\Reservation',
             'App\\Inventory\\Entity\\RecipeLine',
             'App\\Inventory\\Entity\\SpecificationRecipe',
-            'App\\Inventory\\Entity\\InventoryStock',
+            'App\\Inventory\\Entity\\Stock',
             'App\\Inventory\\Entity\\Material',
         ] as $entity) {
             $em->createQuery('DELETE FROM ' . $entity . ' entity')->execute();
@@ -122,7 +122,7 @@ final class InventoryServiceCoverageTest extends IntegrationWebTestCase
         $service->adjustStock($store, $material->getUuid(), '5.000000', 'receipt', 'ref-2');
 
         $em = $this->em();
-        $em->createQuery('DELETE FROM App\\Inventory\\Entity\\InventoryStock stock WHERE stock.material = :material')
+        $em->createQuery('DELETE FROM App\\Inventory\\Entity\\Stock stock WHERE stock.material = :material')
             ->setParameter('material', $material)
             ->execute();
         $em->clear();
@@ -218,7 +218,7 @@ final class InventoryServiceCoverageTest extends IntegrationWebTestCase
             [$this->reserveItem($material->getCode())],
         );
 
-        $this->expectException(InventoryReservationConflictException::class);
+        $this->expectException(ReservationConflictException::class);
         $this->expectExceptionMessage('Store order already has a reservation.');
         $service->reserve(
             '00000000-0000-4000-8000-000000000575',
@@ -236,7 +236,7 @@ final class InventoryServiceCoverageTest extends IntegrationWebTestCase
         $store = '00000000-0000-4000-8000-000000000581';
         $ghost = new Material('ghost-material', 'Ghost material', Material::KIND_FINISHED, 'piece');
 
-        $reservation = new InventoryReservation(
+        $reservation = new Reservation(
             '00000000-0000-4000-8000-000000000582',
             $store,
             '00000000-0000-4000-8000-000000000583',
@@ -264,7 +264,7 @@ final class InventoryServiceCoverageTest extends IntegrationWebTestCase
         $store = '00000000-0000-4000-8000-000000000591';
         $material = $this->material('missing-stock', Material::KIND_FINISHED);
 
-        $reservation = new InventoryReservation(
+        $reservation = new Reservation(
             '00000000-0000-4000-8000-000000000592',
             $store,
             '00000000-0000-4000-8000-000000000593',

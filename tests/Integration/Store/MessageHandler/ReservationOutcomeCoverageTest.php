@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Tests\Integration\Store\MessageHandler;
 
-use App\Inventory\Message\InventoryReservationConfirmedMessage;
-use App\Inventory\Message\InventoryReservationRejectedMessage;
-use App\Inventory\Message\InventoryReservationReleasedMessage;
+use App\Inventory\Message\ReservationConfirmedMessage;
+use App\Inventory\Message\ReservationRejectedMessage;
+use App\Inventory\Message\ReservationReleasedMessage;
 use App\Store\Entity\Store;
 use App\Store\Entity\StoreOrder;
 use App\Store\Repository\StoreConsumedEventRepository;
@@ -16,7 +16,7 @@ use App\Tests\Integration\DatabaseBootstrapTrait;
 use App\Tests\Integration\IntegrationWebTestCase;
 use Doctrine\ORM\EntityManagerInterface;
 
-final class InventoryReservationOutcomeCoverageTest extends IntegrationWebTestCase
+final class ReservationOutcomeCoverageTest extends IntegrationWebTestCase
 {
     use DatabaseBootstrapTrait;
 
@@ -35,17 +35,17 @@ final class InventoryReservationOutcomeCoverageTest extends IntegrationWebTestCa
     }
 
     // ------------------------------------------------------------------
-    // InventoryReservationConfirmedHandler
+    // ReservationConfirmedHandler
     // ------------------------------------------------------------------
 
     public function testConfirmationRejectsEnvelopeWithWrongType(): void
     {
         $client = static::createClient();
-        $handler = $client->getContainer()->get(\App\Store\MessageHandler\InventoryReservationConfirmedHandler::class);
+        $handler = $client->getContainer()->get(\App\Store\MessageHandler\ReservationConfirmedHandler::class);
 
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Invalid inventory.reservation.confirmed.v1 envelope.');
-        $handler(new InventoryReservationConfirmedMessage([
+        $handler(new ReservationConfirmedMessage([
             'eventId' => '00000000-0000-4000-8000-0000000000E1',
             'type' => 'inventory.reservation.released',
             'version' => 1,
@@ -56,11 +56,11 @@ final class InventoryReservationOutcomeCoverageTest extends IntegrationWebTestCa
     public function testConfirmationRejectsEnvelopeWithNonArrayPayload(): void
     {
         $client = static::createClient();
-        $handler = $client->getContainer()->get(\App\Store\MessageHandler\InventoryReservationConfirmedHandler::class);
+        $handler = $client->getContainer()->get(\App\Store\MessageHandler\ReservationConfirmedHandler::class);
 
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Invalid inventory.reservation.confirmed.v1 envelope.');
-        $handler(new InventoryReservationConfirmedMessage([
+        $handler(new ReservationConfirmedMessage([
             'eventId' => '00000000-0000-4000-8000-0000000000E2',
             'type' => 'inventory.reservation.confirmed',
             'version' => 1,
@@ -71,11 +71,11 @@ final class InventoryReservationOutcomeCoverageTest extends IntegrationWebTestCa
     public function testConfirmationRejectsPayloadMissingARequiredField(): void
     {
         $client = static::createClient();
-        $handler = $client->getContainer()->get(\App\Store\MessageHandler\InventoryReservationConfirmedHandler::class);
+        $handler = $client->getContainer()->get(\App\Store\MessageHandler\ReservationConfirmedHandler::class);
 
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Invalid inventory reservation confirmation payload.');
-        $handler(new InventoryReservationConfirmedMessage([
+        $handler(new ReservationConfirmedMessage([
             'eventId' => '00000000-0000-4000-8000-0000000000E3',
             'type' => 'inventory.reservation.confirmed',
             'version' => 1,
@@ -87,9 +87,9 @@ final class InventoryReservationOutcomeCoverageTest extends IntegrationWebTestCa
     {
         $client = static::createClient();
         $container = $client->getContainer();
-        $handler = $container->get(\App\Store\MessageHandler\InventoryReservationConfirmedHandler::class);
+        $handler = $container->get(\App\Store\MessageHandler\ReservationConfirmedHandler::class);
 
-        $handler(new InventoryReservationConfirmedMessage([
+        $handler(new ReservationConfirmedMessage([
             'eventId' => '00000000-0000-4000-8000-0000000000E4',
             'type' => 'inventory.reservation.confirmed',
             'version' => 1,
@@ -103,11 +103,11 @@ final class InventoryReservationOutcomeCoverageTest extends IntegrationWebTestCa
     public function testConfirmationIsIgnoredWhenStoreDoesNotMatch(): void
     {
         [$container, $order] = $this->awaitingOrder();
-        $handler = $container->get(\App\Store\MessageHandler\InventoryReservationConfirmedHandler::class);
+        $handler = $container->get(\App\Store\MessageHandler\ReservationConfirmedHandler::class);
         $payload = $this->outcomePayload($order, ['confirmedAt' => '2026-07-26T00:00:00+00:00']);
         $payload['storeUuid'] = '00000000-0000-4000-8000-0000000000F1';
 
-        $handler(new InventoryReservationConfirmedMessage(['eventId' => '00000000-0000-4000-8000-0000000000F2', 'type' => 'inventory.reservation.confirmed', 'version' => 1, 'payload' => $payload]));
+        $handler(new ReservationConfirmedMessage(['eventId' => '00000000-0000-4000-8000-0000000000F2', 'type' => 'inventory.reservation.confirmed', 'version' => 1, 'payload' => $payload]));
 
         self::assertSame(StoreOrder::STATUS_AWAITING_INVENTORY, $container->get(StoreOrderRepository::class)->findOneByUuid($order->getUuid())?->getOperationalStatus());
         self::assertCount(0, $container->get(StoreOutboxMessageRepository::class)->findUnpublished());
@@ -116,11 +116,11 @@ final class InventoryReservationOutcomeCoverageTest extends IntegrationWebTestCa
     public function testConfirmationIsIgnoredWhenTradeOrderDoesNotMatch(): void
     {
         [$container, $order] = $this->awaitingOrder();
-        $handler = $container->get(\App\Store\MessageHandler\InventoryReservationConfirmedHandler::class);
+        $handler = $container->get(\App\Store\MessageHandler\ReservationConfirmedHandler::class);
         $payload = $this->outcomePayload($order, ['confirmedAt' => '2026-07-26T00:00:00+00:00']);
         $payload['tradeOrderUuid'] = '00000000-0000-4000-8000-0000000000F3';
 
-        $handler(new InventoryReservationConfirmedMessage(['eventId' => '00000000-0000-4000-8000-0000000000F4', 'type' => 'inventory.reservation.confirmed', 'version' => 1, 'payload' => $payload]));
+        $handler(new ReservationConfirmedMessage(['eventId' => '00000000-0000-4000-8000-0000000000F4', 'type' => 'inventory.reservation.confirmed', 'version' => 1, 'payload' => $payload]));
 
         self::assertSame(StoreOrder::STATUS_AWAITING_INVENTORY, $container->get(StoreOrderRepository::class)->findOneByUuid($order->getUuid())?->getOperationalStatus());
         self::assertCount(0, $container->get(StoreOutboxMessageRepository::class)->findUnpublished());
@@ -129,11 +129,11 @@ final class InventoryReservationOutcomeCoverageTest extends IntegrationWebTestCa
     public function testConfirmationIsIgnoredWhenReservationDoesNotMatch(): void
     {
         [$container, $order] = $this->awaitingOrder();
-        $handler = $container->get(\App\Store\MessageHandler\InventoryReservationConfirmedHandler::class);
+        $handler = $container->get(\App\Store\MessageHandler\ReservationConfirmedHandler::class);
         $payload = $this->outcomePayload($order, ['confirmedAt' => '2026-07-26T00:00:00+00:00']);
         $payload['reservationId'] = '00000000-0000-4000-8000-0000000000F5';
 
-        $handler(new InventoryReservationConfirmedMessage(['eventId' => '00000000-0000-4000-8000-0000000000F6', 'type' => 'inventory.reservation.confirmed', 'version' => 1, 'payload' => $payload]));
+        $handler(new ReservationConfirmedMessage(['eventId' => '00000000-0000-4000-8000-0000000000F6', 'type' => 'inventory.reservation.confirmed', 'version' => 1, 'payload' => $payload]));
 
         self::assertSame(StoreOrder::STATUS_AWAITING_INVENTORY, $container->get(StoreOrderRepository::class)->findOneByUuid($order->getUuid())?->getOperationalStatus());
         self::assertCount(0, $container->get(StoreOutboxMessageRepository::class)->findUnpublished());
@@ -144,26 +144,26 @@ final class InventoryReservationOutcomeCoverageTest extends IntegrationWebTestCa
         [$container, $order] = $this->awaitingOrder();
         $order->accept();
         $container->get(EntityManagerInterface::class)->flush();
-        $handler = $container->get(\App\Store\MessageHandler\InventoryReservationConfirmedHandler::class);
+        $handler = $container->get(\App\Store\MessageHandler\ReservationConfirmedHandler::class);
 
-        $handler(new InventoryReservationConfirmedMessage(['eventId' => '00000000-0000-4000-8000-0000000000F7', 'type' => 'inventory.reservation.confirmed', 'version' => 1, 'payload' => $this->outcomePayload($order, ['confirmedAt' => '2026-07-26T00:00:00+00:00'])]));
+        $handler(new ReservationConfirmedMessage(['eventId' => '00000000-0000-4000-8000-0000000000F7', 'type' => 'inventory.reservation.confirmed', 'version' => 1, 'payload' => $this->outcomePayload($order, ['confirmedAt' => '2026-07-26T00:00:00+00:00'])]));
 
         self::assertSame(StoreOrder::STATUS_ACCEPTED, $container->get(StoreOrderRepository::class)->findOneByUuid($order->getUuid())?->getOperationalStatus());
         self::assertCount(0, $container->get(StoreOutboxMessageRepository::class)->findUnpublished());
     }
 
     // ------------------------------------------------------------------
-    // InventoryReservationRejectedHandler
+    // ReservationRejectedHandler
     // ------------------------------------------------------------------
 
     public function testRejectionRejectsEnvelopeWithWrongVersion(): void
     {
         $client = static::createClient();
-        $handler = $client->getContainer()->get(\App\Store\MessageHandler\InventoryReservationRejectedHandler::class);
+        $handler = $client->getContainer()->get(\App\Store\MessageHandler\ReservationRejectedHandler::class);
 
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Invalid inventory.reservation.rejected.v1 envelope.');
-        $handler(new InventoryReservationRejectedMessage([
+        $handler(new ReservationRejectedMessage([
             'eventId' => '00000000-0000-4000-8000-0000000000F8',
             'type' => 'inventory.reservation.rejected',
             'version' => 2,
@@ -174,11 +174,11 @@ final class InventoryReservationOutcomeCoverageTest extends IntegrationWebTestCa
     public function testRejectionRejectsPayloadMissingARequiredField(): void
     {
         $client = static::createClient();
-        $handler = $client->getContainer()->get(\App\Store\MessageHandler\InventoryReservationRejectedHandler::class);
+        $handler = $client->getContainer()->get(\App\Store\MessageHandler\ReservationRejectedHandler::class);
 
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Invalid inventory reservation rejection payload.');
-        $handler(new InventoryReservationRejectedMessage([
+        $handler(new ReservationRejectedMessage([
             'eventId' => '00000000-0000-4000-8000-0000000000F9',
             'type' => 'inventory.reservation.rejected',
             'version' => 1,
@@ -189,11 +189,11 @@ final class InventoryReservationOutcomeCoverageTest extends IntegrationWebTestCa
     public function testRejectionRejectsPayloadWithNonStringReason(): void
     {
         $client = static::createClient();
-        $handler = $client->getContainer()->get(\App\Store\MessageHandler\InventoryReservationRejectedHandler::class);
+        $handler = $client->getContainer()->get(\App\Store\MessageHandler\ReservationRejectedHandler::class);
 
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Invalid inventory reservation rejection payload.');
-        $handler(new InventoryReservationRejectedMessage([
+        $handler(new ReservationRejectedMessage([
             'eventId' => '00000000-0000-4000-8000-0000000000G1',
             'type' => 'inventory.reservation.rejected',
             'version' => 1,
@@ -204,8 +204,8 @@ final class InventoryReservationOutcomeCoverageTest extends IntegrationWebTestCa
     public function testDuplicateRejectionEventIsIgnored(): void
     {
         [$container, $order] = $this->awaitingOrder();
-        $handler = $container->get(\App\Store\MessageHandler\InventoryReservationRejectedHandler::class);
-        $message = new InventoryReservationRejectedMessage(['eventId' => '00000000-0000-4000-8000-0000000000G2', 'type' => 'inventory.reservation.rejected', 'version' => 1, 'payload' => $this->outcomePayload($order, ['reasonCode' => 'OUT_OF_STOCK', 'reason' => 'No stock.', 'rejectedAt' => '2026-07-26T00:00:00+00:00'])]);
+        $handler = $container->get(\App\Store\MessageHandler\ReservationRejectedHandler::class);
+        $message = new ReservationRejectedMessage(['eventId' => '00000000-0000-4000-8000-0000000000G2', 'type' => 'inventory.reservation.rejected', 'version' => 1, 'payload' => $this->outcomePayload($order, ['reasonCode' => 'OUT_OF_STOCK', 'reason' => 'No stock.', 'rejectedAt' => '2026-07-26T00:00:00+00:00'])]);
 
         $handler($message);
         $handler($message);
@@ -222,9 +222,9 @@ final class InventoryReservationOutcomeCoverageTest extends IntegrationWebTestCa
     {
         $client = static::createClient();
         $container = $client->getContainer();
-        $handler = $container->get(\App\Store\MessageHandler\InventoryReservationRejectedHandler::class);
+        $handler = $container->get(\App\Store\MessageHandler\ReservationRejectedHandler::class);
 
-        $handler(new InventoryReservationRejectedMessage([
+        $handler(new ReservationRejectedMessage([
             'eventId' => '00000000-0000-4000-8000-0000000000G3',
             'type' => 'inventory.reservation.rejected',
             'version' => 1,
@@ -238,11 +238,11 @@ final class InventoryReservationOutcomeCoverageTest extends IntegrationWebTestCa
     public function testRejectionIsIgnoredWhenStoreDoesNotMatch(): void
     {
         [$container, $order] = $this->awaitingOrder();
-        $handler = $container->get(\App\Store\MessageHandler\InventoryReservationRejectedHandler::class);
+        $handler = $container->get(\App\Store\MessageHandler\ReservationRejectedHandler::class);
         $payload = $this->outcomePayload($order, ['reasonCode' => 'OUT_OF_STOCK', 'reason' => 'No stock.', 'rejectedAt' => '2026-07-26T00:00:00+00:00']);
         $payload['storeUuid'] = '00000000-0000-4000-8000-0000000000G8';
 
-        $handler(new InventoryReservationRejectedMessage(['eventId' => '00000000-0000-4000-8000-0000000000G9', 'type' => 'inventory.reservation.rejected', 'version' => 1, 'payload' => $payload]));
+        $handler(new ReservationRejectedMessage(['eventId' => '00000000-0000-4000-8000-0000000000G9', 'type' => 'inventory.reservation.rejected', 'version' => 1, 'payload' => $payload]));
 
         self::assertSame(StoreOrder::STATUS_AWAITING_INVENTORY, $container->get(StoreOrderRepository::class)->findOneByUuid($order->getUuid())?->getOperationalStatus());
         self::assertCount(0, $container->get(StoreOutboxMessageRepository::class)->findUnpublished());
@@ -253,9 +253,9 @@ final class InventoryReservationOutcomeCoverageTest extends IntegrationWebTestCa
         [$container, $order] = $this->awaitingOrder();
         $order->reject('MANUAL', 'manual');
         $container->get(EntityManagerInterface::class)->flush();
-        $handler = $container->get(\App\Store\MessageHandler\InventoryReservationRejectedHandler::class);
+        $handler = $container->get(\App\Store\MessageHandler\ReservationRejectedHandler::class);
 
-        $handler(new InventoryReservationRejectedMessage(['eventId' => '00000000-0000-4000-8000-0000000000H1', 'type' => 'inventory.reservation.rejected', 'version' => 1, 'payload' => $this->outcomePayload($order, ['reasonCode' => 'OUT_OF_STOCK', 'reason' => 'No stock.', 'rejectedAt' => '2026-07-26T00:00:00+00:00'])]));
+        $handler(new ReservationRejectedMessage(['eventId' => '00000000-0000-4000-8000-0000000000H1', 'type' => 'inventory.reservation.rejected', 'version' => 1, 'payload' => $this->outcomePayload($order, ['reasonCode' => 'OUT_OF_STOCK', 'reason' => 'No stock.', 'rejectedAt' => '2026-07-26T00:00:00+00:00'])]));
 
         $stored = $container->get(StoreOrderRepository::class)->findOneByUuid($order->getUuid());
         self::assertSame('MANUAL', $stored?->getRejectionCode());
@@ -263,17 +263,17 @@ final class InventoryReservationOutcomeCoverageTest extends IntegrationWebTestCa
     }
 
     // ------------------------------------------------------------------
-    // InventoryReservationReleasedHandler
+    // ReservationReleasedHandler
     // ------------------------------------------------------------------
 
     public function testReleaseRejectsEnvelopeWithWrongType(): void
     {
         $client = static::createClient();
-        $handler = $client->getContainer()->get(\App\Store\MessageHandler\InventoryReservationReleasedHandler::class);
+        $handler = $client->getContainer()->get(\App\Store\MessageHandler\ReservationReleasedHandler::class);
 
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Invalid inventory.reservation.released.v1 envelope.');
-        $handler(new InventoryReservationReleasedMessage([
+        $handler(new ReservationReleasedMessage([
             'eventId' => '00000000-0000-4000-8000-0000000000H2',
             'type' => 'inventory.reservation.confirmed',
             'version' => 1,
@@ -284,11 +284,11 @@ final class InventoryReservationOutcomeCoverageTest extends IntegrationWebTestCa
     public function testReleaseRejectsPayloadMissingReleasedAt(): void
     {
         $client = static::createClient();
-        $handler = $client->getContainer()->get(\App\Store\MessageHandler\InventoryReservationReleasedHandler::class);
+        $handler = $client->getContainer()->get(\App\Store\MessageHandler\ReservationReleasedHandler::class);
 
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Invalid inventory.reservation.released.v1 envelope.');
-        $handler(new InventoryReservationReleasedMessage([
+        $handler(new ReservationReleasedMessage([
             'eventId' => '00000000-0000-4000-8000-0000000000H3',
             'type' => 'inventory.reservation.released',
             'version' => 1,
@@ -299,11 +299,11 @@ final class InventoryReservationOutcomeCoverageTest extends IntegrationWebTestCa
     public function testReleaseRejectsPayloadMissingReservationId(): void
     {
         $client = static::createClient();
-        $handler = $client->getContainer()->get(\App\Store\MessageHandler\InventoryReservationReleasedHandler::class);
+        $handler = $client->getContainer()->get(\App\Store\MessageHandler\ReservationReleasedHandler::class);
 
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Invalid inventory.reservation.released.v1 envelope.');
-        $handler(new InventoryReservationReleasedMessage([
+        $handler(new ReservationReleasedMessage([
             'eventId' => '00000000-0000-4000-8000-0000000000H4',
             'type' => 'inventory.reservation.released',
             'version' => 1,
@@ -315,9 +315,9 @@ final class InventoryReservationOutcomeCoverageTest extends IntegrationWebTestCa
     {
         $client = static::createClient();
         $container = $client->getContainer();
-        $handler = $container->get(\App\Store\MessageHandler\InventoryReservationReleasedHandler::class);
+        $handler = $container->get(\App\Store\MessageHandler\ReservationReleasedHandler::class);
 
-        $handler(new InventoryReservationReleasedMessage([
+        $handler(new ReservationReleasedMessage([
             'eventId' => '00000000-0000-4000-8000-0000000000H5',
             'type' => 'inventory.reservation.released',
             'version' => 1,

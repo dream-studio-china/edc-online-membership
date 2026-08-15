@@ -16,9 +16,9 @@ class ReservationLine
     #[ORM\Id, ORM\GeneratedValue, ORM\Column(type: 'integer')]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(targetEntity: InventoryReservation::class, inversedBy: 'lines')]
+    #[ORM\ManyToOne(targetEntity: Reservation::class, inversedBy: 'lines')]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
-    private ?InventoryReservation $reservation = null;
+    private ?Reservation $reservation = null;
 
     #[ORM\Column(name: 'material_uuid', type: 'string', length: 36)]
     private string $materialUuid;
@@ -64,7 +64,7 @@ class ReservationLine
         return $this->reservedQuantity;
     }
 
-    public function setReservation(InventoryReservation $reservation): void
+    public function setReservation(Reservation $reservation): void
     {
         $this->reservation = $reservation;
     }

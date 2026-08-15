@@ -8,7 +8,7 @@ use App\Core\Controller\RestController;
 use App\Core\View\ApiView;
 use App\Core\View\ListApiViewMixin;
 use App\Inventory\Service\InventoryServiceInterface;
-use App\Inventory\Service\InventoryStockServiceInterface;
+use App\Inventory\Service\StockServiceInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -21,7 +21,7 @@ final class StockController extends RestController
     use ApiView, ListApiViewMixin;
 
     public function __construct(
-        protected readonly InventoryStockServiceInterface $service,
+        protected readonly StockServiceInterface $service,
         private readonly InventoryServiceInterface $inventory,
     ) {
     }

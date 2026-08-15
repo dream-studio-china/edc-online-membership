@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Tests\UnitTest\Inventory\Message;
 
-use App\Inventory\Message\InventoryReservationReleaseRequestedMessage;
-use App\Inventory\Message\InventoryReservationReleasedMessage;
-use App\Inventory\Message\InventoryReservationRequestedMessage;
+use App\Inventory\Message\ReservationReleaseRequestedMessage;
+use App\Inventory\Message\ReservationReleasedMessage;
+use App\Inventory\Message\ReservationRequestedMessage;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
@@ -16,8 +16,8 @@ final class InventoryMessageTest extends TestCase
     public function testMessagesExposeTheirEnvelope(): void
     {
         $envelope = ['eventId' => 'event'];
-        self::assertSame($envelope, (new InventoryReservationRequestedMessage($envelope))->envelope);
-        self::assertSame($envelope, (new InventoryReservationReleaseRequestedMessage($envelope))->envelope);
-        self::assertSame($envelope, (new InventoryReservationReleasedMessage($envelope))->envelope);
+        self::assertSame($envelope, (new ReservationRequestedMessage($envelope))->envelope);
+        self::assertSame($envelope, (new ReservationReleaseRequestedMessage($envelope))->envelope);
+        self::assertSame($envelope, (new ReservationReleasedMessage($envelope))->envelope);
     }
 }

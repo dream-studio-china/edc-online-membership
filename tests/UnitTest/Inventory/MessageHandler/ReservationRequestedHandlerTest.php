@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace App\Tests\UnitTest\Inventory\MessageHandler;
 
 use App\Inventory\Entity\InventoryConsumedEvent;
-use App\Inventory\Message\InventoryReservationRequestedMessage;
-use App\Inventory\MessageHandler\InventoryReservationRequestedHandler;
+use App\Inventory\Message\ReservationRequestedMessage;
+use App\Inventory\MessageHandler\ReservationRequestedHandler;
 use App\Inventory\Repository\InventoryConsumedEventRepository;
-use App\Inventory\Repository\InventoryLedgerEntryRepository;
-use App\Inventory\Repository\InventoryReservationRepository;
-use App\Inventory\Repository\InventoryStockRepository;
+use App\Inventory\Repository\LedgerEntryRepository;
+use App\Inventory\Repository\ReservationRepository;
+use App\Inventory\Repository\StockRepository;
 use App\Inventory\Repository\MaterialRepository;
 use App\Inventory\Repository\SpecificationRecipeRepository;
 use App\Inventory\Service\InventoryOutboxService;
@@ -20,7 +20,7 @@ use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 
 #[AllowMockObjectsWithoutExpectations]
-final class InventoryReservationRequestedHandlerTest extends TestCase
+final class ReservationRequestedHandlerTest extends TestCase
 {
     /**
      * @return array<string, mixed>
@@ -53,10 +53,10 @@ final class InventoryReservationRequestedHandlerTest extends TestCase
         return new InventoryService(
             $this->createMock(EntityManagerInterface::class),
             $this->createMock(MaterialRepository::class),
-            $this->createMock(InventoryStockRepository::class),
+            $this->createMock(StockRepository::class),
             $this->createMock(SpecificationRecipeRepository::class),
-            $this->createMock(InventoryReservationRepository::class),
-            $this->createMock(InventoryLedgerEntryRepository::class),
+            $this->createMock(ReservationRepository::class),
+            $this->createMock(LedgerEntryRepository::class),
             new InventoryOutboxService($this->createMock(EntityManagerInterface::class)),
         );
     }
@@ -65,8 +65,8 @@ final class InventoryReservationRequestedHandlerTest extends TestCase
         ?InventoryConsumedEventRepository $consumed = null,
         ?InventoryService $service = null,
         ?EntityManagerInterface $em = null,
-    ): InventoryReservationRequestedHandler {
-        return new InventoryReservationRequestedHandler(
+    ): ReservationRequestedHandler {
+        return new ReservationRequestedHandler(
             $consumed ?? $this->createMock(InventoryConsumedEventRepository::class),
             $service ?? $this->unusedInventoryService(),
             $em ?? $this->createMock(EntityManagerInterface::class),
@@ -80,7 +80,7 @@ final class InventoryReservationRequestedHandlerTest extends TestCase
     {
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage($message);
-        $this->createHandler()(new InventoryReservationRequestedMessage($envelope));
+        $this->createHandler()(new ReservationRequestedMessage($envelope));
     }
 
     public function testRejectsWrongTypeOrVersion(): void
@@ -191,8 +191,8 @@ final class InventoryReservationRequestedHandlerTest extends TestCase
         $em->method('wrapInTransaction')->willReturnCallback(static fn (callable $callback) => $callback());
         $em->expects($this->never())->method('persist');
 
-        $handler = new InventoryReservationRequestedHandler($consumedRepo, $this->unusedInventoryService(), $em);
-        $handler(new InventoryReservationRequestedMessage($envelope));
+        $handler = new ReservationRequestedHandler($consumedRepo, $this->unusedInventoryService(), $em);
+        $handler(new ReservationRequestedMessage($envelope));
 
         $this->addToAssertionCount(1);
     }

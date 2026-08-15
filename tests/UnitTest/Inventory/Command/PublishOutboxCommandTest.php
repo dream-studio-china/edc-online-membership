@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Tests\UnitTest\Inventory\Command;
 
 use App\Inventory\Command\PublishOutboxCommand;
-use App\Inventory\Message\InventoryReservationConfirmedMessage;
-use App\Inventory\Message\InventoryReservationRejectedMessage;
-use App\Inventory\Message\InventoryReservationReleasedMessage;
+use App\Inventory\Message\ReservationConfirmedMessage;
+use App\Inventory\Message\ReservationRejectedMessage;
+use App\Inventory\Message\ReservationReleasedMessage;
 use App\Inventory\Repository\InventoryOutboxMessageRepository;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
@@ -67,7 +67,7 @@ final class PublishOutboxCommandTest extends TestCase
 
         $bus = $this->createMock(MessageBusInterface::class);
         $bus->expects(self::once())->method('dispatch')->with(
-            self::callback(static fn (object $m) => $m instanceof InventoryReservationConfirmedMessage),
+            self::callback(static fn (object $m) => $m instanceof ReservationConfirmedMessage),
         )->willReturn(new Envelope(new \stdClass()));
 
         $output = $this->runCommand($repository, $bus);
@@ -85,7 +85,7 @@ final class PublishOutboxCommandTest extends TestCase
 
         $bus = $this->createMock(MessageBusInterface::class);
         $bus->expects(self::once())->method('dispatch')->with(
-            self::callback(static fn (object $m) => $m instanceof InventoryReservationRejectedMessage),
+            self::callback(static fn (object $m) => $m instanceof ReservationRejectedMessage),
         )->willReturn(new Envelope(new \stdClass()));
 
         $output = $this->runCommand($repository, $bus);
@@ -103,7 +103,7 @@ final class PublishOutboxCommandTest extends TestCase
 
         $bus = $this->createMock(MessageBusInterface::class);
         $bus->expects(self::once())->method('dispatch')->with(
-            self::callback(static fn (object $m) => $m instanceof InventoryReservationReleasedMessage),
+            self::callback(static fn (object $m) => $m instanceof ReservationReleasedMessage),
         )->willReturn(new Envelope(new \stdClass()));
 
         $output = $this->runCommand($repository, $bus);

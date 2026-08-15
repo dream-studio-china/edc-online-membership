@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace App\Inventory\Entity;
 
-use App\Inventory\Repository\InventoryStockRepository;
+use App\Inventory\Repository\StockRepository;
 use App\Inventory\Service\Quantity;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity(repositoryClass: InventoryStockRepository::class)]
+#[ORM\Entity(repositoryClass: StockRepository::class)]
 #[ORM\Table(name: 'inventory_stock')]
 #[ORM\UniqueConstraint(name: 'uniq_inventory_stock_store_material', columns: ['store_uuid', 'material_id'])]
 #[ORM\Index(name: 'idx_inventory_stock_store_updated', columns: ['store_uuid', 'updated_at'])]
-class InventoryStock
+class Stock
 {
     #[ORM\Id, ORM\GeneratedValue, ORM\Column(type: 'integer')]
     private ?int $id = null;

@@ -5,16 +5,16 @@ declare(strict_types=1);
 namespace App\Inventory\Entity;
 
 use App\Core\Utils\UUID;
-use App\Inventory\Repository\InventoryReservationRepository;
+use App\Inventory\Repository\ReservationRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity(repositoryClass: InventoryReservationRepository::class)]
+#[ORM\Entity(repositoryClass: ReservationRepository::class)]
 #[ORM\Table(name: 'inventory_reservation')]
 #[ORM\UniqueConstraint(name: 'uniq_inventory_reservation_id', columns: ['reservation_id'])]
 #[ORM\UniqueConstraint(name: 'uniq_inventory_reservation_store_order', columns: ['store_order_uuid'])]
-class InventoryReservation
+class Reservation
 {
     public const STATUS_REQUESTED = 'requested';
     public const STATUS_CONFIRMED = 'confirmed';

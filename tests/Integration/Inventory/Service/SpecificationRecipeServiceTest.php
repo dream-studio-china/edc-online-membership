@@ -23,12 +23,12 @@ final class SpecificationRecipeServiceTest extends IntegrationWebTestCase
         foreach ([
             'App\\Inventory\\Entity\\InventoryOutboxMessage',
             'App\\Inventory\\Entity\\InventoryConsumedEvent',
-            'App\\Inventory\\Entity\\InventoryLedgerEntry',
+            'App\\Inventory\\Entity\\LedgerEntry',
             'App\\Inventory\\Entity\\ReservationLine',
-            'App\\Inventory\\Entity\\InventoryReservation',
+            'App\\Inventory\\Entity\\Reservation',
             'App\\Inventory\\Entity\\RecipeLine',
             'App\\Inventory\\Entity\\SpecificationRecipe',
-            'App\\Inventory\\Entity\\InventoryStock',
+            'App\\Inventory\\Entity\\Stock',
             'App\\Inventory\\Entity\\Material',
         ] as $entity) {
             $em->createQuery('DELETE FROM ' . $entity . ' entity')->execute();

@@ -6,15 +6,15 @@ namespace App\Tests\Integration\Inventory\MessageHandler;
 
 use App\Inventory\Entity\InventoryConsumedEvent;
 use App\Inventory\Entity\Material;
-use App\Inventory\Message\InventoryReservationReleaseRequestedMessage;
-use App\Inventory\MessageHandler\InventoryReservationReleaseRequestedHandler;
+use App\Inventory\Message\ReservationReleaseRequestedMessage;
+use App\Inventory\MessageHandler\ReservationReleaseRequestedHandler;
 use App\Inventory\Service\InventoryServiceInterface;
 use App\Tests\Integration\DatabaseBootstrapTrait;
 use App\Tests\Integration\IntegrationWebTestCase;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\Group;
 
-final class InventoryReservationReleaseRequestedHandlerIntegrationTest extends IntegrationWebTestCase
+final class ReservationReleaseRequestedHandlerIntegrationTest extends IntegrationWebTestCase
 {
     use DatabaseBootstrapTrait;
 
@@ -27,12 +27,12 @@ final class InventoryReservationReleaseRequestedHandlerIntegrationTest extends I
         foreach ([
             'App\\Inventory\\Entity\\InventoryOutboxMessage',
             'App\\Inventory\\Entity\\InventoryConsumedEvent',
-            'App\\Inventory\\Entity\\InventoryLedgerEntry',
+            'App\\Inventory\\Entity\\LedgerEntry',
             'App\\Inventory\\Entity\\ReservationLine',
-            'App\\Inventory\\Entity\\InventoryReservation',
+            'App\\Inventory\\Entity\\Reservation',
             'App\\Inventory\\Entity\\RecipeLine',
             'App\\Inventory\\Entity\\SpecificationRecipe',
-            'App\\Inventory\\Entity\\InventoryStock',
+            'App\\Inventory\\Entity\\Stock',
             'App\\Inventory\\Entity\\Material',
         ] as $entity) {
             $em->createQuery('DELETE FROM ' . $entity . ' entity')->execute();
@@ -91,11 +91,11 @@ final class InventoryReservationReleaseRequestedHandlerIntegrationTest extends I
     public function testReleaseForUnknownReservationThrows(): void
     {
         $client = static::createClient();
-        $handler = $client->getContainer()->get(InventoryReservationReleaseRequestedHandler::class);
+        $handler = $client->getContainer()->get(ReservationReleaseRequestedHandler::class);
 
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Reservation was not found.');
-        $handler(new InventoryReservationReleaseRequestedMessage(
+        $handler(new ReservationReleaseRequestedMessage(
             $this->releaseEnvelope('00000000-0000-4000-8000-000000000310', '00000000-0000-4000-8000-000000000311'),
         ));
     }
@@ -104,11 +104,11 @@ final class InventoryReservationReleaseRequestedHandlerIntegrationTest extends I
     {
         [$container, $storeUuid, $material] = $this->reservedScenario('00000000-0000-4000-8000-000000000311');
         $inventory = $container->get(InventoryServiceInterface::class);
-        $handler = $container->get(InventoryReservationReleaseRequestedHandler::class);
+        $handler = $container->get(ReservationReleaseRequestedHandler::class);
         $envelope = $this->releaseEnvelope('00000000-0000-4000-8000-000000000312', '00000000-0000-4000-8000-000000000311');
 
-        $handler(new InventoryReservationReleaseRequestedMessage($envelope));
-        $handler(new InventoryReservationReleaseRequestedMessage($envelope));
+        $handler(new ReservationReleaseRequestedMessage($envelope));
+        $handler(new ReservationReleaseRequestedMessage($envelope));
 
         self::assertSame('5.000000', $inventory->getStockView($storeUuid, $material->getUuid())['availableQuantity']);
 
@@ -122,13 +122,13 @@ final class InventoryReservationReleaseRequestedHandlerIntegrationTest extends I
     {
         [$container, $storeUuid, $material] = $this->reservedScenario('00000000-0000-4000-8000-000000000313');
         $inventory = $container->get(InventoryServiceInterface::class);
-        $handler = $container->get(InventoryReservationReleaseRequestedHandler::class);
+        $handler = $container->get(ReservationReleaseRequestedHandler::class);
 
         $first = $this->releaseEnvelope('00000000-0000-4000-8000-000000000314', '00000000-0000-4000-8000-000000000313');
         $second = $this->releaseEnvelope('00000000-0000-4000-8000-000000000315', '00000000-0000-4000-8000-000000000313', 'double release');
 
-        $handler(new InventoryReservationReleaseRequestedMessage($first));
-        $handler(new InventoryReservationReleaseRequestedMessage($second));
+        $handler(new ReservationReleaseRequestedMessage($first));
+        $handler(new ReservationReleaseRequestedMessage($second));
 
         self::assertSame('5.000000', $inventory->getStockView($storeUuid, $material->getUuid())['availableQuantity']);
         $consumed = $container->get(EntityManagerInterface::class)

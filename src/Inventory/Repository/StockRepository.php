@@ -4,28 +4,28 @@ declare(strict_types=1);
 
 namespace App\Inventory\Repository;
 
-use App\Inventory\Entity\InventoryStock;
+use App\Inventory\Entity\Stock;
 use App\Inventory\Entity\Material;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\DBAL\LockMode;
 use Doctrine\Persistence\ManagerRegistry;
 
-/** @extends ServiceEntityRepository<InventoryStock> */
-class InventoryStockRepository extends ServiceEntityRepository
+/** @extends ServiceEntityRepository<Stock> */
+class StockRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, InventoryStock::class);
+        parent::__construct($registry, Stock::class);
     }
 
-    public function findOneByStoreAndMaterial(string $storeUuid, Material $material): ?InventoryStock
+    public function findOneByStoreAndMaterial(string $storeUuid, Material $material): ?Stock
     {
         return $this->findOneBy([
             'storeUuid' => $storeUuid,
             'material' => $material,
         ]);
     }
-    public function findOneByStoreAndMaterialForUpdate(string $storeUuid, Material $material): ?InventoryStock
+    public function findOneByStoreAndMaterialForUpdate(string $storeUuid, Material $material): ?Stock
     {
         return $this->createQueryBuilder('stock')
             ->andWhere('stock.storeUuid = :storeUuid')

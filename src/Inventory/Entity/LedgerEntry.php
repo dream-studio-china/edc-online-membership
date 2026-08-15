@@ -5,15 +5,15 @@ declare(strict_types=1);
 namespace App\Inventory\Entity;
 
 use App\Core\Utils\UUID;
-use App\Inventory\Repository\InventoryLedgerEntryRepository;
+use App\Inventory\Repository\LedgerEntryRepository;
 use App\Inventory\Service\Quantity;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity(repositoryClass: InventoryLedgerEntryRepository::class)]
+#[ORM\Entity(repositoryClass: LedgerEntryRepository::class)]
 #[ORM\Table(name: 'inventory_ledger_entry')]
 #[ORM\UniqueConstraint(name: 'uniq_inventory_ledger_operation', columns: ['type', 'reference_id', 'store_uuid', 'material_id'])]
 #[ORM\Index(name: 'idx_inventory_ledger_store_material_created', columns: ['store_uuid', 'material_id', 'created_at'])]
-class InventoryLedgerEntry
+class LedgerEntry
 {
     public const TYPE_INITIAL = 'initial';
     public const TYPE_ADJUSTMENT = 'adjustment';
@@ -64,7 +64,7 @@ class InventoryLedgerEntry
     #[ORM\Column(name: 'created_at', type: 'datetime_immutable')]
     private \DateTimeImmutable $createdAt;
 
-    public function __construct(InventoryStock $stock, string $type, string $onHandDelta, string $reservedDelta, string $referenceType, string $referenceId, ?string $actorReference = null, ?string $reason = null)
+    public function __construct(Stock $stock, string $type, string $onHandDelta, string $reservedDelta, string $referenceType, string $referenceId, ?string $actorReference = null, ?string $reason = null)
     {
         $this->uuid = UUID::v4();
         $this->material = $stock->getMaterial();

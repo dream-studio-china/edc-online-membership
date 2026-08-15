@@ -6,8 +6,8 @@ namespace App\Tests\LowValue\Inventory\Entity;
 
 
 use PHPUnit\Framework\Attributes\Group;
-use App\Inventory\Entity\InventoryReservation;
-use App\Inventory\Entity\InventoryStock;
+use App\Inventory\Entity\Reservation;
+use App\Inventory\Entity\Stock;
 use App\Inventory\Entity\Material;
 use PHPUnit\Framework\TestCase;
 
@@ -16,7 +16,7 @@ final class InventoryEntityCoverageTest extends TestCase
 {
     public function testReservationExposesNullDatabaseIdBeforePersist(): void
     {
-        $reservation = new InventoryReservation(
+        $reservation = new Reservation(
             '00000000-0000-4000-8000-000000000401',
             '00000000-0000-4000-8000-000000000402',
             '00000000-0000-4000-8000-000000000403',
@@ -39,7 +39,7 @@ final class InventoryEntityCoverageTest extends TestCase
     public function testStockRejectsDisablingNegativePolicyWhileBalanceNegative(): void
     {
         $material = new Material('neg-policy', 'Negative policy', Material::KIND_RAW, 'kg');
-        $stock = new InventoryStock('00000000-0000-4000-8000-000000000405', $material);
+        $stock = new Stock('00000000-0000-4000-8000-000000000405', $material);
         $stock->adjustOnHand('-5.000000');
         self::assertSame('-5.000000', $stock->getAvailableQuantity());
 

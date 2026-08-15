@@ -8,18 +8,18 @@ use App\Inventory\Entity\InventoryConsumedEvent;
 use App\Inventory\Entity\Material;
 use App\Inventory\Entity\RecipeLine;
 use App\Inventory\Entity\SpecificationRecipe;
-use App\Inventory\Message\InventoryReservationRequestedMessage;
-use App\Inventory\MessageHandler\InventoryReservationRequestedHandler;
+use App\Inventory\Message\ReservationRequestedMessage;
+use App\Inventory\MessageHandler\ReservationRequestedHandler;
 use App\Inventory\Repository\InventoryConsumedEventRepository;
-use App\Inventory\Repository\InventoryReservationRepository;
-use App\Inventory\Service\InventoryReservationConflictException;
+use App\Inventory\Repository\ReservationRepository;
+use App\Inventory\Service\ReservationConflictException;
 use App\Inventory\Service\InventoryServiceInterface;
 use App\Tests\Integration\DatabaseBootstrapTrait;
 use App\Tests\Integration\IntegrationWebTestCase;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\Group;
 
-final class InventoryReservationRequestedHandlerIntegrationTest extends IntegrationWebTestCase
+final class ReservationRequestedHandlerIntegrationTest extends IntegrationWebTestCase
 {
     use DatabaseBootstrapTrait;
 
@@ -32,12 +32,12 @@ final class InventoryReservationRequestedHandlerIntegrationTest extends Integrat
         foreach ([
             'App\\Inventory\\Entity\\InventoryOutboxMessage',
             'App\\Inventory\\Entity\\InventoryConsumedEvent',
-            'App\\Inventory\\Entity\\InventoryLedgerEntry',
+            'App\\Inventory\\Entity\\LedgerEntry',
             'App\\Inventory\\Entity\\ReservationLine',
-            'App\\Inventory\\Entity\\InventoryReservation',
+            'App\\Inventory\\Entity\\Reservation',
             'App\\Inventory\\Entity\\RecipeLine',
             'App\\Inventory\\Entity\\SpecificationRecipe',
-            'App\\Inventory\\Entity\\InventoryStock',
+            'App\\Inventory\\Entity\\Stock',
             'App\\Inventory\\Entity\\Material',
         ] as $entity) {
             $em->createQuery('DELETE FROM ' . $entity . ' entity')->execute();
@@ -89,10 +89,10 @@ final class InventoryReservationRequestedHandlerIntegrationTest extends Integrat
         $em->persist($recipe);
         $em->flush();
 
-        $handler = $container->get(InventoryReservationRequestedHandler::class);
-        $handler(new InventoryReservationRequestedMessage($this->envelope()));
+        $handler = $container->get(ReservationRequestedHandler::class);
+        $handler(new ReservationRequestedMessage($this->envelope()));
 
-        $reservation = $container->get(InventoryReservationRepository::class)
+        $reservation = $container->get(ReservationRepository::class)
             ->findOneByReservationId('00000000-0000-4000-8000-000000000402');
         self::assertNotNull($reservation);
         self::assertSame('rejected', $reservation->getStatus());
@@ -122,10 +122,10 @@ final class InventoryReservationRequestedHandlerIntegrationTest extends Integrat
             ],
         ]);
 
-        $handler = $container->get(InventoryReservationRequestedHandler::class);
-        $handler(new InventoryReservationRequestedMessage($envelope));
+        $handler = $container->get(ReservationRequestedHandler::class);
+        $handler(new ReservationRequestedMessage($envelope));
 
-        $reservation = $container->get(InventoryReservationRepository::class)
+        $reservation = $container->get(ReservationRepository::class)
             ->findOneByReservationId('00000000-0000-4000-8000-000000000422');
         self::assertNotNull($reservation);
         self::assertSame('rejected', $reservation->getStatus());
@@ -168,11 +168,11 @@ final class InventoryReservationRequestedHandlerIntegrationTest extends Integrat
             ],
         ]);
 
-        $handler = $container->get(InventoryReservationRequestedHandler::class);
+        $handler = $container->get(ReservationRequestedHandler::class);
         try {
-            $handler(new InventoryReservationRequestedMessage($envelope));
+            $handler(new ReservationRequestedMessage($envelope));
             self::fail('Expected reservation conflict to propagate.');
-        } catch (InventoryReservationConflictException) {
+        } catch (ReservationConflictException) {
             self::assertTrue(true);
         }
 

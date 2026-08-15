@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Inventory\MessageHandler;
 
 use App\Inventory\Entity\InventoryConsumedEvent;
-use App\Inventory\Message\InventoryReservationRequestedMessage;
+use App\Inventory\Message\ReservationRequestedMessage;
 use App\Inventory\Repository\InventoryConsumedEventRepository;
 use App\Inventory\Service\InventoryMessageIntegrityException;
 use App\Inventory\Service\InventoryService;
@@ -13,7 +13,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 #[AsMessageHandler]
-final readonly class InventoryReservationRequestedHandler
+final readonly class ReservationRequestedHandler
 {
     public function __construct(
         private InventoryConsumedEventRepository $consumedEventRepository,
@@ -22,7 +22,7 @@ final readonly class InventoryReservationRequestedHandler
     ) {
     }
 
-    public function __invoke(InventoryReservationRequestedMessage $message): void
+    public function __invoke(ReservationRequestedMessage $message): void
     {
         [$eventId, $payload] = $this->validateEnvelope($message->envelope);
         $payloadHash = hash('sha256', json_encode($message->envelope, JSON_THROW_ON_ERROR));

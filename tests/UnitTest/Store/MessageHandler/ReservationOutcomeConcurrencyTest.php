@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Tests\UnitTest\Store\MessageHandler;
 
-use App\Inventory\Message\InventoryReservationConfirmedMessage;
-use App\Inventory\Message\InventoryReservationRejectedMessage;
-use App\Inventory\Message\InventoryReservationReleasedMessage;
+use App\Inventory\Message\ReservationConfirmedMessage;
+use App\Inventory\Message\ReservationRejectedMessage;
+use App\Inventory\Message\ReservationReleasedMessage;
 use App\Store\Entity\StoreConsumedEvent;
-use App\Store\MessageHandler\InventoryReservationConfirmedHandler;
-use App\Store\MessageHandler\InventoryReservationRejectedHandler;
-use App\Store\MessageHandler\InventoryReservationReleasedHandler;
+use App\Store\MessageHandler\ReservationConfirmedHandler;
+use App\Store\MessageHandler\ReservationRejectedHandler;
+use App\Store\MessageHandler\ReservationReleasedHandler;
 use App\Store\Repository\StoreConsumedEventRepository;
 use App\Store\Repository\StoreOrderRepository;
 use App\Store\Service\StoreOrderServiceInterface;
@@ -19,7 +19,7 @@ use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 
 #[AllowMockObjectsWithoutExpectations]
-final class InventoryReservationOutcomeConcurrencyTest extends TestCase
+final class ReservationOutcomeConcurrencyTest extends TestCase
 {
     public function testConfirmationReturnsWhenEventIsConsumedInsideTheTransaction(): void
     {
@@ -27,8 +27,8 @@ final class InventoryReservationOutcomeConcurrencyTest extends TestCase
         $storeOrderRepository = $this->createMock(StoreOrderRepository::class);
         $storeOrderService = $this->createMock(StoreOrderServiceInterface::class);
 
-        $handler = new InventoryReservationConfirmedHandler($consumedRepository, $storeOrderRepository, $storeOrderService, $entityManager);
-        $handler(new InventoryReservationConfirmedMessage([
+        $handler = new ReservationConfirmedHandler($consumedRepository, $storeOrderRepository, $storeOrderService, $entityManager);
+        $handler(new ReservationConfirmedMessage([
             'eventId' => '00000000-0000-4000-8000-0000000000J1',
             'type' => 'inventory.reservation.confirmed',
             'version' => 1,
@@ -44,8 +44,8 @@ final class InventoryReservationOutcomeConcurrencyTest extends TestCase
         $storeOrderRepository = $this->createMock(StoreOrderRepository::class);
         $storeOrderService = $this->createMock(StoreOrderServiceInterface::class);
 
-        $handler = new InventoryReservationRejectedHandler($consumedRepository, $storeOrderRepository, $storeOrderService, $entityManager);
-        $handler(new InventoryReservationRejectedMessage([
+        $handler = new ReservationRejectedHandler($consumedRepository, $storeOrderRepository, $storeOrderService, $entityManager);
+        $handler(new ReservationRejectedMessage([
             'eventId' => '00000000-0000-4000-8000-0000000000J2',
             'type' => 'inventory.reservation.rejected',
             'version' => 1,
@@ -59,8 +59,8 @@ final class InventoryReservationOutcomeConcurrencyTest extends TestCase
     {
         [$entityManager, $consumedRepository, $persistCount] = $this->concurrencyMocks();
 
-        $handler = new InventoryReservationReleasedHandler($consumedRepository, $entityManager);
-        $handler(new InventoryReservationReleasedMessage([
+        $handler = new ReservationReleasedHandler($consumedRepository, $entityManager);
+        $handler(new ReservationReleasedMessage([
             'eventId' => '00000000-0000-4000-8000-0000000000J3',
             'type' => 'inventory.reservation.released',
             'version' => 1,

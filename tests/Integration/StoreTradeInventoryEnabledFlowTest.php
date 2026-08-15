@@ -6,7 +6,7 @@ namespace App\Tests\Integration;
 
 use App\Inventory\Entity\Material;
 use App\Inventory\Repository\InventoryOutboxMessageRepository;
-use App\Inventory\Repository\InventoryReservationRepository;
+use App\Inventory\Repository\ReservationRepository;
 use App\Inventory\Service\InventoryServiceInterface;
 use App\Store\Entity\StoreOrder;
 use App\Store\Repository\StoreOrderRepository;
@@ -44,7 +44,7 @@ final class StoreTradeInventoryEnabledFlowTest extends StoreTradeFlowTestCase
         putenv('INVENTORY_ENABLED=0');
     }
 
-    public function testInventoryReservationAcceptAndReleaseOnTradeCancellation(): void
+    public function testReservationAcceptAndReleaseOnTradeCancellation(): void
     {
         $client = self::createAuthenticatedClient();
         $container = $client->getContainer();
@@ -79,8 +79,8 @@ final class StoreTradeInventoryEnabledFlowTest extends StoreTradeFlowTestCase
         self::assertCount(1, $inventoryOutbox);
         self::assertSame('inventory.reservation.confirmed.v1', $inventoryOutbox[0]['topic']);
 
-        $reservation = $container->get(InventoryReservationRepository::class)->findOneByReservationId($storeOrder->getReservationId());
-        self::assertInstanceOf(\App\Inventory\Entity\InventoryReservation::class, $reservation);
+        $reservation = $container->get(ReservationRepository::class)->findOneByReservationId($storeOrder->getReservationId());
+        self::assertInstanceOf(\App\Inventory\Entity\Reservation::class, $reservation);
         self::assertSame('confirmed', $reservation->getStatus());
         self::assertSame('8.000000', $inventory->getStockView($store->getUuid(), $material->getUuid())['availableQuantity']);
 
@@ -124,8 +124,8 @@ final class StoreTradeInventoryEnabledFlowTest extends StoreTradeFlowTestCase
         $this->storePublish($container);
 
         $em->clear();
-        $reservation = $container->get(InventoryReservationRepository::class)->findOneByReservationId($storeOrder->getReservationId());
-        self::assertInstanceOf(\App\Inventory\Entity\InventoryReservation::class, $reservation);
+        $reservation = $container->get(ReservationRepository::class)->findOneByReservationId($storeOrder->getReservationId());
+        self::assertInstanceOf(\App\Inventory\Entity\Reservation::class, $reservation);
         self::assertSame('released', $reservation->getStatus());
         self::assertSame('10.000000', $inventory->getStockView($store->getUuid(), $material->getUuid())['availableQuantity']);
 
@@ -138,7 +138,7 @@ final class StoreTradeInventoryEnabledFlowTest extends StoreTradeFlowTestCase
     }
 
     /**
-     * BUG: src/Inventory/MessageHandler/InventoryReservationReleaseRequestedHandler.php:41
+     * BUG: src/Inventory/MessageHandler/ReservationReleaseRequestedHandler.php:41
      * throws "Reservation was not found." when a release request arrives before
      * the reservation exists. A Trade cancellation delivered while the reservation
      * request is still in flight records inventory.reservation.release.requested.v1
@@ -150,7 +150,7 @@ final class StoreTradeInventoryEnabledFlowTest extends StoreTradeFlowTestCase
      */
     public function testReleaseBeforeReserveIsHandledGracefully(): void
     {
-        self::markTestSkipped('InventoryReservationReleaseRequestedHandler throws for a reservation that does not exist yet (release-before-reserve, documented TODO).');
+        self::markTestSkipped('ReservationReleaseRequestedHandler throws for a reservation that does not exist yet (release-before-reserve, documented TODO).');
 
         $client = self::createAuthenticatedClient();
         $container = $client->getContainer();
@@ -175,8 +175,8 @@ final class StoreTradeInventoryEnabledFlowTest extends StoreTradeFlowTestCase
             }
         }
         self::assertNotNull($release);
-        $handler = $container->get(\App\Inventory\MessageHandler\InventoryReservationReleaseRequestedHandler::class);
-        $handler(new \App\Inventory\Message\InventoryReservationReleaseRequestedMessage([
+        $handler = $container->get(\App\Inventory\MessageHandler\ReservationReleaseRequestedHandler::class);
+        $handler(new \App\Inventory\Message\ReservationReleaseRequestedMessage([
             'eventId' => $release->getEventId(),
             'type' => 'inventory.reservation.release.requested',
             'version' => 1,
@@ -184,7 +184,7 @@ final class StoreTradeInventoryEnabledFlowTest extends StoreTradeFlowTestCase
             'payload' => $release->getPayload(),
         ]));
         $container->get(EntityManagerInterface::class)->clear();
-        self::assertNull($container->get(\App\Inventory\Repository\InventoryReservationRepository::class)->findOneByReservationId($storeOrder->getReservationId()));
+        self::assertNull($container->get(\App\Inventory\Repository\ReservationRepository::class)->findOneByReservationId($storeOrder->getReservationId()));
     }
 
     public function testReservationRejectionPropagatesToTradeStoreRejected(): void    {

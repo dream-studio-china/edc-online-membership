@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Inventory\Command;
 
-use App\Inventory\Message\InventoryReservationConfirmedMessage;
-use App\Inventory\Message\InventoryReservationRejectedMessage;
-use App\Inventory\Message\InventoryReservationReleasedMessage;
+use App\Inventory\Message\ReservationConfirmedMessage;
+use App\Inventory\Message\ReservationRejectedMessage;
+use App\Inventory\Message\ReservationReleasedMessage;
 use App\Inventory\Repository\InventoryOutboxMessageRepository;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -39,9 +39,9 @@ final class PublishOutboxCommand extends Command
                 'payload' => $message['payload'],
             ];
             $busMessage = match ($message['topic']) {
-                'inventory.reservation.confirmed.v1' => new InventoryReservationConfirmedMessage($envelope),
-                'inventory.reservation.rejected.v1' => new InventoryReservationRejectedMessage($envelope),
-                'inventory.reservation.released.v1' => new InventoryReservationReleasedMessage($envelope),
+                'inventory.reservation.confirmed.v1' => new ReservationConfirmedMessage($envelope),
+                'inventory.reservation.rejected.v1' => new ReservationRejectedMessage($envelope),
+                'inventory.reservation.released.v1' => new ReservationReleasedMessage($envelope),
                 default => null,
             };
             if ($busMessage === null) {

@@ -29,12 +29,12 @@ final class InventoryServiceTest extends IntegrationWebTestCase
         foreach ([
             'App\\Inventory\\Entity\\InventoryOutboxMessage',
             'App\\Inventory\\Entity\\InventoryConsumedEvent',
-            'App\\Inventory\\Entity\\InventoryLedgerEntry',
+            'App\\Inventory\\Entity\\LedgerEntry',
             'App\\Inventory\\Entity\\ReservationLine',
-            'App\\Inventory\\Entity\\InventoryReservation',
+            'App\\Inventory\\Entity\\Reservation',
             'App\\Inventory\\Entity\\RecipeLine',
             'App\\Inventory\\Entity\\SpecificationRecipe',
-            'App\\Inventory\\Entity\\InventoryStock',
+            'App\\Inventory\\Entity\\Stock',
             'App\\Inventory\\Entity\\Material',
         ] as $entity) {
             $em->createQuery('DELETE FROM '.$entity.' entity')->execute();
@@ -158,7 +158,7 @@ final class InventoryServiceTest extends IntegrationWebTestCase
             [['lineId' => '00000000-0000-4000-8000-000000000055', 'catalogReference' => $material->getCode(), 'quantity' => '1.000000']],
         ));
 
-        $this->expectException(\App\Inventory\Service\InventoryReservationConflictException::class);
+        $this->expectException(\App\Inventory\Service\ReservationConflictException::class);
         $service->reserve(
             '00000000-0000-4000-8000-000000000052',
             $storeUuid,
@@ -246,7 +246,7 @@ final class InventoryServiceTest extends IntegrationWebTestCase
         $em->flush();
         $service->adjustStock($storeUuid, $material->getUuid(), '2.000000', 'receipt');
         $reservation = $service->reserve('00000000-0000-4000-8000-000000000098', $storeUuid, '00000000-0000-4000-8000-000000000099', '00000000-0000-4000-8000-000000000100', [['lineId' => '00000000-0000-4000-8000-000000000101', 'catalogReference' => $material->getCode(), 'quantity' => '1.000000']], new \DateTimeImmutable('+1 hour'));
-        $em->createQuery('UPDATE App\\Inventory\\Entity\\InventoryReservation reservation SET reservation.expiresAt = :expired WHERE reservation.reservationId = :reservationId')
+        $em->createQuery('UPDATE App\\Inventory\\Entity\\Reservation reservation SET reservation.expiresAt = :expired WHERE reservation.reservationId = :reservationId')
             ->setParameter('expired', new \DateTimeImmutable('-1 minute'))
             ->setParameter('reservationId', $reservation->getReservationId())
             ->execute();

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Store\MessageHandler;
 
-use App\Inventory\Message\InventoryReservationConfirmedMessage;
+use App\Inventory\Message\ReservationConfirmedMessage;
 use App\Store\Entity\StoreConsumedEvent;
 use App\Store\Entity\StoreOrder;
 use App\Store\Repository\StoreConsumedEventRepository;
@@ -14,7 +14,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 
 #[AsMessageHandler]
-final readonly class InventoryReservationConfirmedHandler
+final readonly class ReservationConfirmedHandler
 {
     public function __construct(
         private StoreConsumedEventRepository $consumedEventRepository,
@@ -24,7 +24,7 @@ final readonly class InventoryReservationConfirmedHandler
     ) {
     }
 
-    public function __invoke(InventoryReservationConfirmedMessage $message): void
+    public function __invoke(ReservationConfirmedMessage $message): void
     {
         $eventId = $message->envelope['eventId'] ?? null;
         $payload = $message->envelope['payload'] ?? null;

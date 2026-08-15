@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Inventory\Message;
 
-final readonly class InventoryReservationRejectedMessage
+final readonly class ReservationConfirmedMessage
 {
     /** @param array<string, mixed> $envelope */
     public function __construct(public array $envelope)

@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Tests\UnitTest\Inventory\Entity;
 
 use App\Inventory\Entity\InventoryConsumedEvent;
-use App\Inventory\Entity\InventoryLedgerEntry;
+use App\Inventory\Entity\LedgerEntry;
 use App\Inventory\Entity\InventoryOutboxMessage;
-use App\Inventory\Entity\InventoryReservation;
-use App\Inventory\Entity\InventoryStock;
+use App\Inventory\Entity\Reservation;
+use App\Inventory\Entity\Stock;
 use App\Inventory\Entity\Material;
 use App\Inventory\Entity\RecipeLine;
 use App\Inventory\Entity\ReservationLine;
@@ -31,7 +31,7 @@ final class InventoryDomainEntityTest extends TestCase
         self::assertSame(Material::KIND_FINISHED, $material->getKind());
         self::assertSame(Material::STATUS_INACTIVE, $material->getStatus());
         self::assertFalse($material->isActive());
-        $stock = new InventoryStock('store-uuid', $material);
+        $stock = new Stock('store-uuid', $material);
         $stock->setAllowNegativeStock(true);
         $stock->adjustOnHand('5.000000');
         $stock->reserve('2.000000');
@@ -39,7 +39,7 @@ final class InventoryDomainEntityTest extends TestCase
         $stock->release('2.000000');
         self::assertSame('0.000000', $stock->getReservedQuantity());
 
-        $ledger = new InventoryLedgerEntry($stock, InventoryLedgerEntry::TYPE_ADJUSTMENT, '5.000000', '0.000000', 'test', 'reference');
+        $ledger = new LedgerEntry($stock, LedgerEntry::TYPE_ADJUSTMENT, '5.000000', '0.000000', 'test', 'reference');
         self::assertNull($ledger->getId());
         self::assertNotSame('', $ledger->getUuid());
         $outbox = new InventoryOutboxMessage('inventory.reservation.confirmed.v1', 'reservation', 'reservation-id', []);
@@ -64,7 +64,7 @@ final class InventoryDomainEntityTest extends TestCase
         $recipe->removeLine($line)->setStatus(SpecificationRecipe::STATUS_INACTIVE);
         self::assertFalse($recipe->isActive());
 
-        $reservation = new InventoryReservation('reservation-id', 'store', 'trade-order', 'store-order', str_repeat('a', 64), null);
+        $reservation = new Reservation('reservation-id', 'store', 'trade-order', 'store-order', str_repeat('a', 64), null);
         self::assertNotSame('', $reservation->getUuid());
         self::assertSame('store', $reservation->getStoreUuid());
         self::assertSame('trade-order', $reservation->getTradeOrderUuid());
@@ -85,7 +85,7 @@ final class InventoryDomainEntityTest extends TestCase
     public function testEntityValidationBranches(): void
     {
         $material = new Material('validation-material', 'Validation Material', Material::KIND_RAW, 'piece');
-        $stock = new InventoryStock('store', $material);
+        $stock = new Stock('store', $material);
         $this->expectException(\LogicException::class);
         $stock->release('1.000000');
     }
