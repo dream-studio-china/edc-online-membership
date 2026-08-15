@@ -277,6 +277,32 @@ final class BaseServiceInfrastructureTraitCoverageTest extends TestCase
 
         self::assertFalse($em->rolledBack);
     }
+
+    public function testWrapInTransactionRecoversClosedEntityManager(): void
+    {
+        $closedEm = new InfraCovTransactionalEntityManager(new InfraCovRepository([]), true, false);
+        $freshEm = $this->createStub(\Doctrine\Persistence\ObjectManager::class);
+
+        $registry = $this->createMock(\Doctrine\Persistence\ManagerRegistry::class);
+        $registry->method('getManager')->willReturn($freshEm);
+        $registry->expects(self::once())->method('resetManager');
+
+        $container = new InfraCovContainer($closedEm, null, null, $registry);
+        $service = $this->createService($container, InfraCovEntity::class);
+
+        try {
+            $service->callWrapInTransaction(function () {
+                throw new \RuntimeException('boom');
+            });
+            self::fail('expected exception');
+        } catch (\RuntimeException $e) {
+            self::assertSame('boom', $e->getMessage());
+        }
+
+        // After automatic EM recovery, the service uses the fresh EntityManager.
+        self::assertSame($freshEm, $service->callGetEntityManager());
+        self::assertTrue($closedEm->rolledBack);
+    }
 }
 
 final class InfraCovEntity
@@ -359,6 +385,7 @@ final class InfraCovTransactionalEntityManager
     public function __construct(
         private readonly InfraCovRepository $repo,
         private readonly bool $transactionActive,
+        private readonly bool $open = true,
     ) {
     }
 
@@ -405,6 +432,11 @@ final class InfraCovTransactionalEntityManager
             }
         };
     }
+
+    public function isOpen(): bool
+    {
+        return $this->open;
+    }
 }
 
 final class InfraCovContainer implements ContainerInterface
@@ -413,6 +445,7 @@ final class InfraCovContainer implements ContainerInterface
         private readonly object $em,
         private readonly ?object $logger = null,
         private readonly ?object $serializer = null,
+        private readonly ?object $registry = null,
     ) {
     }
 
@@ -420,6 +453,7 @@ final class InfraCovContainer implements ContainerInterface
     {
         return match ($id) {
             'doctrine.orm.entity_manager' => $this->em,
+            'doctrine' => $this->registry,
             'logger' => $this->logger ?? new NullLogger(),
             'serializer' => $this->serializer,
             'security.token_storage' => new class {
@@ -436,6 +470,9 @@ final class InfraCovContainer implements ContainerInterface
     {
         if ($id === 'serializer') {
             return $this->serializer !== null;
+        }
+        if ($id === 'doctrine') {
+            return $this->registry !== null;
         }
 
         return in_array($id, ['doctrine.orm.entity_manager', 'logger', 'security.token_storage'], true);

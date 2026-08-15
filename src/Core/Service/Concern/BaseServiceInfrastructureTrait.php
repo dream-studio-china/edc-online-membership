@@ -250,10 +250,41 @@ trait BaseServiceInfrastructureTrait
             $em->commit();
             return $result;
         } catch (\Throwable $e) {
-            if ($em->getConnection()->isTransactionActive()) {
-                $em->rollback();
+            try {
+                if ($em->getConnection()->isTransactionActive()) {
+                    $em->rollback();
+                }
+            } catch (\Throwable $ignored) {
+                // The connection may be broken; recovery below still applies.
+            }
+            if (!$em->isOpen()) {
+                $this->resetEntityManager();
             }
             throw $e;
+        }
+    }
+
+    /**
+     * Recover from a closed EntityManager (e.g. after a DB connection failure).
+     * Resets the manager registry, rebinds a fresh EntityManager and refreshes
+     * the repository so the service stays usable after the error.
+     */
+    protected function resetEntityManager(): void
+    {
+        $registry = ($this->container && $this->container->has('doctrine'))
+            ? $this->container->get('doctrine')
+            : null;
+
+        if (!$registry instanceof \Doctrine\Persistence\ManagerRegistry) {
+            return;
+        }
+
+        $registry->resetManager();
+        /** @var \Doctrine\ORM\EntityManagerInterface $newEm */
+        $newEm = $registry->getManager();
+        $this->em = $newEm;
+        if ($this->entityClass !== null) {
+            $this->rep = $newEm->getRepository($this->entityClass);
         }
     }
 }
