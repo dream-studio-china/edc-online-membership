@@ -80,14 +80,14 @@
 │       # Planned phase 1: Payment Outbox -> Trade Inbox; Payment Inbox is deferred.
 │
 ├── src/Wallet/                   # Wallet module
-│   ├── Entity/                   # Wallet, WalletTransaction, WalletPaymentDeduction
-│   ├── Repository/               # + WalletPaymentDeductionRepository
-│   ├── Service/TransferService.php     # Atomic transfer + deposit
+│   ├── Entity/                   # Wallet, Transaction, PaymentDeduction
+│   ├── Repository/               # + PaymentDeductionRepository
+│   ├── Service/Transfer/TransferService.php     # Atomic transfers
 │   ├── Service/WalletService.php       # verifyBalance() + reconcile()
 │   ├── Service/Payment/WalletGateway.php              # Implements PaymentGatewayInterface
 │   ├── Service/Payment/WalletBalanceAdjustmentProvider.php  # Wallet deduction as Payment adjustment provider
-│   ├── Service/Payment/WalletPaymentDeductionService.php    # Wallet-owned deduction lifecycle
-│   ├── DTO/WalletPaymentDeductionRequest.php
+│   ├── Service/Payment/PaymentDeductionService.php    # Wallet-owned deduction lifecycle
+│   ├── DTO/PaymentDeductionRequest.php
 │   └── Controller/App/ + Manage/       # App list/detail/balance, Manage CRUD/audit/reconcile
 │
 ├── src/Wechat/                   # WeChat module
@@ -117,7 +117,7 @@
 │   └── Exception/
 │
 ├── src/Inventory/                # Inventory module (material, stock, recipe, reservation)
-│   ├── Entity/                   # Material, InventoryStock, SpecificationRecipe, RecipeLine, InventoryReservation, ReservationLine, InventoryLedgerEntry, Inbox, Outbox
+│   ├── Entity/                   # Material, Stock, SpecificationRecipe, RecipeLine, Reservation, ReservationLine, LedgerEntry, Inbox, Outbox
 │   ├── Repository/
 │   ├── Service/                  # InventoryService (reserve/release/adjust), MaterialService
 │   ├── MessageHandler/           # Reservation request/release consumers with inbox idempotency
@@ -582,7 +582,7 @@ Placed in `src/Core/Controller/System/` (framework layer). NelmioApiDoc path_pat
 | **Order metadata** | Trade | App order creation accepts optional `metadata` JSON and persists it as-is to `trade_order.metadata`, useful for receiver/address snapshots and frontend extension data |
 | **State machine** | Trade | Symfony Workflow for orders |
 | **Token rotation + reuse detection** | Identity | HMAC-SHA256 refresh tokens |
-| **Idempotency** | Wallet | `referenceId` unique constraint on WalletTransaction |
+| **Idempotency** | Wallet | `referenceId` unique constraint on Transaction |
 | **Pipeline** | Trade | `PriceCalculatorInterface` with priority ordering |
 | **Meta channel** | Trade | `PriceCalculationContext.meta` / `PriceCalculationResult.meta` — bidirectional opaque channel. Calculators read/write module-specific keys (`meta['promotion']`, `meta['coupon']`). Trade never inspects content. |
 | **Optimistic locking** | Wallet | `#[ORM\Version]` on Wallet |
@@ -591,10 +591,10 @@ Placed in `src/Core/Controller/System/` (framework layer). NelmioApiDoc path_pat
 | **Payment via wallet** | Trade | `POST /app/orders/{id}/payment` with `payment: "wallet"` creates Invoice → WalletGateway deducts user wallet |
 | **Payment integration migration** | Payment -> Trade | Next phase replaces synchronous Invoice domain-event consumption with Payment Outbox and Trade Inbox; Payment request Inbox/Saga remains deferred |
 | **Balance audit** | Wallet | `GET /app/wallets/balance` audits only current user's wallets; `GET /manage/wallets/balance` is global; `POST /manage/wallets/reconcile` fixes per-wallet gaps with `TYPE_ADJUSTMENT` |
-| **Idempotent deposit** | Wallet | `POST /transfers/deposit` with `referenceId` — duplicate requests return existing transaction |
+| **Idempotent deposit** | Wallet | `POST /api/v1/manage/deposits` with `referenceId` — duplicate requests return existing transaction |
 | **Gateway registry** | Payment | `#[AutowireIterator]` + `_instanceof` auto-tags all `PaymentGatewayInterface` implementations |
 | **Adjustment provider registry** | Payment | `#[AutowireIterator]` + `_instanceof` for `PaymentAdjustmentProviderInterface` — wallet deduction is a Wallet-owned provider |
-| **Deduction owned by Wallet** | Wallet | Wallet balance deduction lives in Wallet (`WalletPaymentDeduction` entity, `WalletPaymentDeductionService`, `WalletBalanceAdjustmentProvider`). Payment owns only the generic adjustment contract |
+| **Deduction owned by Wallet** | Wallet | Wallet balance deduction lives in Wallet (`PaymentDeduction` entity, `PaymentDeductionService`, `WalletBalanceAdjustmentProvider`). Payment owns only the generic adjustment contract |
 | **OneToOne extension** | Wechat | `WechatUser` extends User identity without modifying User entity |
 | **Storage driver registry** | Storage | `MediaStorageInterface` implementations are tagged `media.storage`; callers select driver with multipart `storage` field |
 | **Media ownership** | Common | App media endpoints are user-scoped via `commonFilter()`, including delete. Manage media endpoints inherit App upload code but override `commonFilter()` to `[]`. Public media endpoints expose only ownerless media (`user IS NULL`) over anonymous GET. |
@@ -609,7 +609,7 @@ Placed in `src/Core/Controller/System/` (framework layer). NelmioApiDoc path_pat
 | **Points delegated to Wallet** | Identity | Profile points use Wallet with currency=POINTS |
 | **Inventory reservation** | Inventory | Store requests reservation by specification; Inventory resolves recipes, reserves material stock atomically, produces confirmed/rejected events |
 | **Inventory global bypass** | Store + Inventory | INVENTORY_ENABLED env var allows deployments without inventory management |
-| **Per-stock negative inventory** | Inventory | Each InventoryStock has allowNegativeStock flag; independent per store/material pair |
+| **Per-stock negative inventory** | Inventory | Each Stock has allowNegativeStock flag; independent per store/material pair |
 | **Outbox claim pattern** | Inventory + Store + Trade | Outbox publishers atomically claim rows via UPDATE WHERE, preventing concurrent delivery |
 
 ## 14. API Documentation System
@@ -821,12 +821,12 @@ covered by concurrency tests. The disabled schema/module may be deployed safely.
 | Entity | Purpose |
 |--------|---------|
 | `Material` | Raw material or finished good. code is unique, immutably frozen upon stock mutation |
-| `InventoryStock` | Per-store per-material balance with onHandQuantity, reservedQuantity, allowNegativeStock flag |
+| `Stock` | Per-store per-material balance with onHandQuantity, reservedQuantity, allowNegativeStock flag |
 | `SpecificationRecipe` | One active recipe per Trade Specification UUID; stores material BOM lines |
 | `RecipeLine` | Quantity of a material required per unit of the parent Specification |
-| `InventoryReservation` | Idempotent reservation aggregate with status: requested, confirmed, rejected, released, consumed |
+| `Reservation` | Idempotent reservation aggregate with status: requested, confirmed, rejected, released, consumed |
 | `ReservationLine` | Immutable snapshot of material demand and reserved quantity per reservation |
-| `InventoryLedgerEntry` | Append-only audit trail for every stock mutation |
+| `LedgerEntry` | Append-only audit trail for every stock mutation |
 | `InventoryConsumedEvent` | Inbox idempotency record |
 | `InventoryOutboxMessage` | Durable integration event relay |
 
@@ -862,7 +862,7 @@ Recipes expand a Specification into material demand. Material demand is aggregat
 
 ### 22.7 Store Integration Changes
 - `TradeOrderCreatedHandler`: when INVENTORY_ENABLED, creates reservationId and writes awaiting_inventory state + reservation request outbox
-- New handlers: `InventoryReservationConfirmedHandler`, `InventoryReservationRejectedHandler`, `InventoryReservationReleasedHandler`
+- New handlers: `ReservationConfirmedHandler`, `ReservationRejectedHandler`, `ReservationReleasedHandler`
 - `TradeOrderCancelledHandler`: requests inventory release for cancelled orders with reservation
 - `StoreTradeOrderCancellation` tombstone entity: handles out-of-order cancellation events
 - Trade events use OrderItem.uuid as stable lineId (not specification UUID)

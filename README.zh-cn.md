@@ -466,7 +466,8 @@ docker compose exec app php bin/console app:identity:user:create admin@example.c
 | **GET** | **`/api/v1/manage/wallets/balance`** | **校验会计恒等式** |
 | **POST** | **`/api/v1/manage/wallets/reconcile`** | **逐钱包对账** |
 | GET | `/api/v1/manage/transactions` | 交易列表 |
-| POST | `/api/v1/manage/transfer` | 原子转账 |
+| POST | `/api/v1/manage/transactions` | 原子转账（创建账本交易） |
+| **POST** | **`/api/v1/manage/deposits`** | **凭证存款（充值）** |
 
 ### Payment
 

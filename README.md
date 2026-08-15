@@ -132,7 +132,7 @@ See `composer.json` for the full dependency list.
 │   │   ├── Service/              #   StoreService
 │   │   └── MessageHandler/       #   Create/accept/reject/cancel outcome consumers
 │   ├── Wallet/                    # Wallet module
-│   │   ├── Controller/Manage/    #   Wallet, Transaction, Transfer (deposit) endpoints
+│   │   ├── Controller/Manage/    #   Wallet, Transaction, Deposit endpoints
 │   │   ├── DTO/                  #   PaymentDeductionRequest
 │   │   ├── Entity/               #   Wallet, Transaction, PaymentDeduction
 │   │   ├── Repository/           #   + PaymentDeductionRepository

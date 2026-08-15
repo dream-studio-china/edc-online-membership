@@ -60,8 +60,8 @@ namespace App\Store\Entity;   class StoreOrder { ... }   // 前缀仅为消歧�
 4. **它在既有模块里是否与邻类一致？** → 违反 N4（同模块前缀不一致）即视为命名违约。
 
 **反例（禁止）**：
-- 实体 `WalletTransaction`，服务却叫 `TransactionService`（N3：服务必须镜像实体名）
-- 同模块内 `InventoryStock` 与 `Material` 一个带前缀一个裸名（N4）
+- 实体 `Transaction`，服务却叫 `WalletTransactionService`（N3：服务必须镜像实体名，前缀不能自创）
+- 同模块内既有 `Stock` 又有 `InventoryStock`（N4：同模块前缀必须一致）
 - 用 `Service` 后缀给非服务类（如 `StoreContextResolver` 保留原名，不加 `Service`）
 
 ---

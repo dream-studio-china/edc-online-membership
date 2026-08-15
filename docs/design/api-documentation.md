@@ -44,7 +44,7 @@ Extracts module tag from the route's `operationId`:
 | `manage-pages-*`, `app-pages-*` | Pages |
 | `manage-media-*`, `app-media-*` | Media |
 | `manage-settings-*`, `app-settings-*` | Settings |
-| `manage-wallets-*`, `manage-transactions-*`, `manage-transfers-*` | Wallet |
+| `manage-wallets-*`, `manage-transactions-*` | Wallet |
 | Any other `manage-{X}-*` or `app-{X}-*` | {X} (auto-title-cased) |
 
 ### 2.2 Summary/Description Overrides (`META`)
