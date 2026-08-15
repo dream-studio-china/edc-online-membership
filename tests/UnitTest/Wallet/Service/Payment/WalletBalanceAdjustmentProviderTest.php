@@ -13,7 +13,7 @@ use App\Wallet\Entity\Wallet;
 use App\Wallet\Entity\PaymentDeduction;
 use App\Wallet\Repository\PaymentDeductionRepository;
 use App\Wallet\Service\Payment\WalletBalanceAdjustmentProvider;
-use App\Wallet\Service\Payment\PaymentDeductionService;
+use App\Wallet\Service\Payment\PaymentDeductionServiceInterface;
 use PHPUnit\Framework\TestCase;
 
 final class WalletBalanceAdjustmentProviderTest extends TestCase
@@ -21,7 +21,7 @@ final class WalletBalanceAdjustmentProviderTest extends TestCase
     public function testSupportsUsesDeductionRequestParsing(): void
     {
         $invoice = self::invoiceAndWallet()[0];
-        $deductionService = $this->createMock(PaymentDeductionService::class);
+        $deductionService = $this->createMock(PaymentDeductionServiceInterface::class);
         $deductionService->method('createRequestFromOptions')
             ->willReturnOnConsecutiveCalls(
                 new PaymentDeductionRequest(PaymentDeduction::TYPE_WALLET_BALANCE, 300, 'CNY'),
@@ -38,7 +38,7 @@ final class WalletBalanceAdjustmentProviderTest extends TestCase
     {
         $invoice = self::invoiceAndWallet()[0];
         $deduction = self::deduction($invoice)->markApplied('txn-1');
-        $deductionService = $this->createMock(PaymentDeductionService::class);
+        $deductionService = $this->createMock(PaymentDeductionServiceInterface::class);
         $deductionService->method('applyFromOptions')->willReturn($deduction);
 
         $provider = new WalletBalanceAdjustmentProvider($deductionService, $this->createMock(PaymentDeductionRepository::class));
@@ -54,7 +54,7 @@ final class WalletBalanceAdjustmentProviderTest extends TestCase
 
     public function testApplyRejectsMissingDeductionRequest(): void
     {
-        $deductionService = $this->createMock(PaymentDeductionService::class);
+        $deductionService = $this->createMock(PaymentDeductionServiceInterface::class);
         $deductionService->method('applyFromOptions')->willReturn(null);
         $provider = new WalletBalanceAdjustmentProvider($deductionService, $this->createMock(PaymentDeductionRepository::class));
 
@@ -68,7 +68,7 @@ final class WalletBalanceAdjustmentProviderTest extends TestCase
     {
         $invoice = self::invoiceAndWallet()[0];
         $deduction = self::deduction($invoice)->markApplied('txn-1');
-        $deductionService = $this->createMock(PaymentDeductionService::class);
+        $deductionService = $this->createMock(PaymentDeductionServiceInterface::class);
         $deductionService->method('findApplied')->willReturnOnConsecutiveCalls(null, $deduction);
 
         $provider = new WalletBalanceAdjustmentProvider($deductionService, $this->createMock(PaymentDeductionRepository::class));
@@ -86,7 +86,7 @@ final class WalletBalanceAdjustmentProviderTest extends TestCase
 
         $deductionRepository = $this->createMock(PaymentDeductionRepository::class);
         $deductionRepository->method('findOneBy')->willReturn($deduction);
-        $deductionService = $this->createMock(PaymentDeductionService::class);
+        $deductionService = $this->createMock(PaymentDeductionServiceInterface::class);
         $deductionService->method('release')->with($invoice, 'cancel')->willReturn($released);
         $deductionService->method('refund')->with($invoice, 'refund')->willReturn($refunded);
 
@@ -106,7 +106,7 @@ final class WalletBalanceAdjustmentProviderTest extends TestCase
     {
         $deductionRepository = $this->createMock(PaymentDeductionRepository::class);
         $deductionRepository->method('findOneBy')->willReturn(null);
-        $provider = new WalletBalanceAdjustmentProvider($this->createMock(PaymentDeductionService::class), $deductionRepository);
+        $provider = new WalletBalanceAdjustmentProvider($this->createMock(PaymentDeductionServiceInterface::class), $deductionRepository);
 
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('Wallet balance deduction "missing-ref" not found.');

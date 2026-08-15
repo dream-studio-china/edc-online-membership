@@ -8,8 +8,8 @@ use App\Identity\Controller\AuthController;
 use App\Identity\Entity\User;
 use App\Identity\Repository\UserRepository;
 use App\Identity\Security\TokenManager;
-use App\Identity\Service\OtpService;
-use App\Identity\Service\UserService;
+use App\Identity\Service\OtpServiceInterface;
+use App\Identity\Service\UserServiceInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
@@ -32,8 +32,8 @@ final class AuthControllerCoverageTest extends TestCase
     private TokenManager $tokenManager;
     private UserRepository $userRepository;
     private UserPasswordHasherInterface $hasher;
-    private OtpService $otpService;
-    private UserService $userService;
+    private OtpServiceInterface $otpService;
+    private UserServiceInterface $userService;
     private EntityManagerInterface $em;
     private AuthController $controller;
 
@@ -42,8 +42,8 @@ final class AuthControllerCoverageTest extends TestCase
         $this->tokenManager = $this->createMock(TokenManager::class);
         $this->userRepository = $this->createMock(UserRepository::class);
         $this->hasher = $this->createMock(UserPasswordHasherInterface::class);
-        $this->otpService = $this->createMock(OtpService::class);
-        $this->userService = $this->createMock(UserService::class);
+        $this->otpService = $this->createMock(OtpServiceInterface::class);
+        $this->userService = $this->createMock(UserServiceInterface::class);
         $this->em = $this->createMock(EntityManagerInterface::class);
         $translator = $this->createMock(TranslatorInterface::class);
         $translator->method('trans')->willReturnCallback(fn (string $msg) => $msg);

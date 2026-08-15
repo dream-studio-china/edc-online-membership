@@ -8,7 +8,7 @@ namespace App\Identity\Service;
  * Null implementation of OtpStorageInterface for testing.
  * All operations succeed without real storage.
  */
-class NullOtpStorage implements OtpStorageInterface
+final class NullOtpStorage implements OtpStorageInterface
 {
     /** @var array<string, string> */
     private array $data = [];

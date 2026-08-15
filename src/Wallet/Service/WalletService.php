@@ -13,7 +13,7 @@ use App\Wallet\Repository\VoucherRepository;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /** @extends BaseService<\App\Wallet\Entity\Wallet> */
-class WalletService extends BaseService implements WalletServiceInterface
+final class WalletService extends BaseService implements WalletServiceInterface
 {
     public function __construct(
         ContainerInterface $container,

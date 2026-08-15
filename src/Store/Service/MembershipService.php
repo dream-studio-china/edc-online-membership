@@ -11,7 +11,7 @@ use App\Store\Repository\MembershipRepository;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /** @extends BaseService<Membership> */
-class MembershipService extends BaseService implements MembershipServiceInterface
+final class MembershipService extends BaseService implements MembershipServiceInterface
 {
     public function __construct(ContainerInterface $container, private readonly MembershipRepository $membershipRepository)
     {

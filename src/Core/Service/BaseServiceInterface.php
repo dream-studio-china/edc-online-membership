@@ -8,7 +8,6 @@ use Doctrine\ORM\QueryBuilder;
 
 /**
  * @template TEntity of object
- * @method mixed wrapInTransaction(callable(\Doctrine\ORM\EntityManagerInterface): mixed $callback)
  */
 interface BaseServiceInterface
 {
@@ -47,5 +46,12 @@ interface BaseServiceInterface
      * @param TEntity|int|string|array<string, mixed> $object
      */
     public function remove($object): bool;
+
+    /**
+     * Run the callback inside a DB transaction (all-or-nothing semantics).
+     * @param callable(\Doctrine\ORM\EntityManagerInterface): mixed $fn
+     * @return mixed
+     */
+    public function wrapInTransaction(callable $fn): mixed;
 
 }

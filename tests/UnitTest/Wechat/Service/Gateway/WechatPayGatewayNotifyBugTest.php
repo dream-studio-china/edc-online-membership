@@ -7,7 +7,7 @@ namespace App\Tests\UnitTest\Wechat\Service\Gateway;
 use App\Payment\Exception\PaymentVerificationException;
 use App\Wechat\Repository\WechatUserRepository;
 use App\Wechat\Service\Payment\WechatPayGateway;
-use App\Wechat\Service\WechatService;
+use App\Wechat\Service\WechatServiceInterface;
 use EasyWeChat\Pay\Application as PayApp;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
@@ -35,7 +35,7 @@ final class WechatPayGatewayNotifyBugTest extends TestCase
             '"Invalid request body". Removing the skip makes this test fail.'
         );
 
-        $wechatService = $this->createMock(WechatService::class);
+        $wechatService = $this->createMock(WechatServiceInterface::class);
         $wechatUserRepo = $this->createMock(WechatUserRepository::class);
         $psrHttpFactory = $this->createMock(HttpMessageFactoryInterface::class);
 

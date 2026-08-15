@@ -10,7 +10,7 @@ use App\Store\Repository\StoreRepository;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /** @extends BaseService<Store> */
-class StoreService extends BaseService implements StoreServiceInterface
+final class StoreService extends BaseService implements StoreServiceInterface
 {
     public function __construct(ContainerInterface $container, private readonly StoreRepository $storeRepository)
     {

@@ -12,7 +12,7 @@ use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /** @extends BaseService<StoreOrder> */
-class StoreOrderService extends BaseService implements StoreOrderServiceInterface
+final class StoreOrderService extends BaseService implements StoreOrderServiceInterface
 {
     public function __construct(
         ContainerInterface $container,

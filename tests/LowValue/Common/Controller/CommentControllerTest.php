@@ -154,7 +154,7 @@ final class FakeCommentService implements CommentServiceInterface
         return false;
     }
 
-    public function wrapInTransaction(callable $fn)
+    public function wrapInTransaction(callable $fn): mixed
     {
         return $fn(null);
     }

@@ -11,7 +11,7 @@ use App\Wallet\Entity\Transaction;
 use App\Wallet\Exception\InsufficientFundsException;
 use App\Wallet\Exception\SameWalletTransferException;
 use App\Wallet\Exception\WalletFrozenException;
-use App\Wallet\Service\TransactionService;
+use App\Wallet\Service\TransactionServiceInterface;
 use App\Wallet\Service\Transfer\TransferResult;
 use App\Wallet\Service\Transfer\TransferServiceInterface;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
@@ -25,13 +25,13 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 #[AllowMockObjectsWithoutExpectations]
 final class TransactionControllerTest extends TestCase
 {
-    private TransactionService $transactionService;
+    private TransactionServiceInterface $transactionService;
     private TransferServiceInterface $transferService;
     private TransactionController $controller;
 
     protected function setUp(): void
     {
-        $this->transactionService = $this->createMock(TransactionService::class);
+        $this->transactionService = $this->createMock(TransactionServiceInterface::class);
         $this->transferService = $this->createMock(TransferServiceInterface::class);
         $this->controller = new TransactionController($this->transactionService, $this->transferService);
     }

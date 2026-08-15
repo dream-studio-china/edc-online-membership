@@ -9,7 +9,7 @@ use App\Wallet\Controller\Manage\VoucherCommentController;
 use App\Wallet\Entity\Wallet;
 use App\Wallet\Entity\Voucher;
 use App\Wallet\Entity\VoucherComment;
-use App\Wallet\Service\VoucherCommentService;
+use App\Wallet\Service\VoucherCommentServiceInterface;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Request;
@@ -20,12 +20,12 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 #[AllowMockObjectsWithoutExpectations]
 final class VoucherCommentControllerTest extends TestCase
 {
-    private VoucherCommentService $service;
+    private VoucherCommentServiceInterface $service;
     private VoucherCommentController $controller;
 
     protected function setUp(): void
     {
-        $this->service = $this->createMock(VoucherCommentService::class);
+        $this->service = $this->createMock(VoucherCommentServiceInterface::class);
         $this->controller = new VoucherCommentController($this->service);
     }
 

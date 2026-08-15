@@ -46,4 +46,6 @@ interface OrderServiceInterface extends BaseServiceInterface
     public function refundPayment(Order $order, string $reason, array $options = []): PaymentRefundResult;
 
     public function cancel(Order $order): void;
+
+    public function wrapInTransaction(callable $fn): mixed;
 }

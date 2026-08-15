@@ -9,7 +9,7 @@ use App\Wechat\Entity\WechatUser;
 use App\Wechat\Repository\WechatUserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 
-class WechatAuthService implements WechatAuthServiceInterface
+final class WechatAuthService implements WechatAuthServiceInterface
 {
     public function __construct(
         private readonly WechatServiceInterface $wechatService,

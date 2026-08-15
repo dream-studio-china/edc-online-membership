@@ -26,7 +26,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Workflow\WorkflowInterface;
 
 /** @extends BaseService<\App\Trade\Entity\Order> */
-class OrderService extends BaseService implements OrderServiceInterface
+final class OrderService extends BaseService implements OrderServiceInterface
 {
     /**
      * @param iterable<PriceCalculatorInterface> $priceCalculators

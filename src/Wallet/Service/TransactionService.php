@@ -9,7 +9,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use App\Wallet\Entity\Transaction;
 
 /** @extends BaseService<\App\Wallet\Entity\Transaction> */
-class TransactionService extends BaseService implements TransactionServiceInterface
+final class TransactionService extends BaseService implements TransactionServiceInterface
 {
     public function __construct(ContainerInterface $container)
     {

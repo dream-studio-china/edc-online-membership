@@ -8,7 +8,7 @@ use App\Core\Service\BaseService;
 use App\Trade\Entity\Specification;
 
 /** @extends BaseService<\App\Trade\Entity\Specification> */
-class SpecificationService extends BaseService implements SpecificationServiceInterface
+final class SpecificationService extends BaseService implements SpecificationServiceInterface
 {
     public function __construct(
         \Symfony\Component\DependencyInjection\ContainerInterface $container,

@@ -98,12 +98,12 @@ class TransactionController extends RestController
     }
 
     /**
-     * @return array<string, mixed>|object|false
+     * @return array<string, mixed>
      */
     protected function afterCreated(object|false $entity): mixed
     {
         if (!$entity instanceof Transaction || !$this->lastTransfer instanceof TransferResult) {
-            return $entity;
+            return [];
         }
 
         return [

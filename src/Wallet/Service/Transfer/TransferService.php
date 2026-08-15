@@ -15,7 +15,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
 use Psr\Log\LoggerInterface;
 
-class TransferService implements TransferServiceInterface
+final class TransferService implements TransferServiceInterface
 {
     private EntityManagerInterface $em;
 

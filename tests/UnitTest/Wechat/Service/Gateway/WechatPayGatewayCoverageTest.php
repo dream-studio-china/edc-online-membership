@@ -7,7 +7,7 @@ namespace App\Tests\UnitTest\Wechat\Service\Gateway;
 use App\Payment\Entity\Invoice;
 use App\Wechat\Repository\WechatUserRepository;
 use App\Wechat\Service\Payment\WechatPayGateway;
-use App\Wechat\Service\WechatService;
+use App\Wechat\Service\WechatServiceInterface;
 use EasyWeChat\MiniApp\Account as MiniAccount;
 use EasyWeChat\MiniApp\Application as MiniApp;
 use EasyWeChat\Pay\Application as PayApp;
@@ -27,13 +27,13 @@ use Symfony\Contracts\HttpClient\ResponseStreamInterface;
 #[AllowMockObjectsWithoutExpectations]
 final class WechatPayGatewayCoverageTest extends TestCase
 {
-    private WechatService $wechatService;
+    private WechatServiceInterface $wechatService;
     private WechatUserRepository $wechatUserRepo;
     private WechatPayGateway $gateway;
 
     protected function setUp(): void
     {
-        $this->wechatService = $this->createMock(WechatService::class);
+        $this->wechatService = $this->createMock(WechatServiceInterface::class);
         $this->wechatUserRepo = $this->createMock(WechatUserRepository::class);
         $psrHttpFactory = $this->createMock(HttpMessageFactoryInterface::class);
 

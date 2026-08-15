@@ -8,7 +8,7 @@ use EasyWeChat\MiniApp\Application as MiniApp;
 use EasyWeChat\OfficialAccount\Application as OfficialAccount;
 use EasyWeChat\Pay\Application as Pay;
 
-class WechatService implements WechatServiceInterface
+final class WechatService implements WechatServiceInterface
 {
     private ?MiniApp $miniApp = null;
     private ?OfficialAccount $officialAccount = null;

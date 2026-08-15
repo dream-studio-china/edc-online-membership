@@ -10,7 +10,7 @@ use App\Identity\Entity\User;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /** @extends BaseService<\App\Identity\Entity\Profile> */
-class ProfileService extends BaseService implements ProfileServiceInterface
+final class ProfileService extends BaseService implements ProfileServiceInterface
 {
     public function __construct(ContainerInterface $container)
     {

@@ -7,7 +7,6 @@ namespace App\Tests\UnitTest\Trade\MessageHandler;
 use App\Trade\Entity\Order;
 use App\Trade\Message\StoreOrderAcceptedMessage;
 use App\Trade\MessageHandler\StoreOrderAcceptedHandler;
-use App\Trade\Service\OrderService;
 use App\Trade\Service\OrderServiceInterface;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Workflow\WorkflowInterface;
@@ -108,7 +107,7 @@ final class StoreOrderAcceptedHandlerTest extends TestCase
     public function testAppliesStoreAcceptTransitionWithinTransaction(): void
     {
         $order = (new Order())->setMetadata(['_store' => ['uuid' => self::STORE_UUID]]);
-        $orders = $this->createMock(OrderService::class);
+        $orders = $this->createMock(OrderServiceInterface::class);
         $orders->expects(self::once())->method('get')->willReturn($order);
         $orders->expects(self::once())->method('wrapInTransaction')->willReturnCallback(
             static fn (callable $callback): mixed => $callback()
