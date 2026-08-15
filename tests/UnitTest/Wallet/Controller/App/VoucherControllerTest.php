@@ -10,8 +10,8 @@ use App\Wallet\Entity\Voucher;
 use App\Wallet\Entity\Wallet;
 use App\Wallet\Repository\VoucherRepository;
 use App\Wallet\Repository\WalletRepository;
-use App\Wallet\Service\Deposit\DepositService;
-use App\Wallet\Service\VoucherService;
+use App\Wallet\Service\Deposit\DepositServiceInterface;
+use App\Wallet\Service\VoucherServiceInterface;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
@@ -25,18 +25,18 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 #[AllowMockObjectsWithoutExpectations]
 final class VoucherControllerTest extends TestCase
 {
-    private VoucherService $service;
+    private VoucherServiceInterface $service;
     private VoucherRepository $voucherRepository;
-    private DepositService $depositService;
+    private DepositServiceInterface $depositService;
     private WalletRepository $walletRepository;
     private VoucherController $controller;
     private User $user;
 
     protected function setUp(): void
     {
-        $this->service = $this->createMock(VoucherService::class);
+        $this->service = $this->createMock(VoucherServiceInterface::class);
         $this->voucherRepository = $this->createMock(VoucherRepository::class);
-        $this->depositService = $this->createMock(DepositService::class);
+        $this->depositService = $this->createMock(DepositServiceInterface::class);
         $this->walletRepository = $this->createMock(WalletRepository::class);
 
         $this->user = new User();
