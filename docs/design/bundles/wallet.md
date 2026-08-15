@@ -106,7 +106,7 @@ src/Wallet/
 | `fromWallet` | ManyToOne -> Wallet (nullable) | Source wallet |
 | `toWallet` | ManyToOne -> Wallet (nullable) | Destination wallet |
 | `amount` | int (bigint) | Amount in cents |
-| `type` | string | `deposit`, `withdrawal`, `transfer`, `fee`, `refund`, **`adjustment`** |
+| `type` | string | `deposit`, `withdrawal`, `transfer`, `fee`, `refund`, `adjustment`, **`credit_reversal`** |
 | `status` | string | `pending`, `completed`, `failed`, `reversed` |
 | `referenceId` | string (unique) | Idempotency key |
 | `description` | string | Human-readable note |
@@ -115,6 +115,25 @@ src/Wallet/
 **Unique constraint**: `referenceId` -- prevents duplicate transactions.
 
 **Methods**: `markCompleted()`, `markFailed()`
+
+**Single-sided semantics (contract)**: `fromWallet`/`toWallet` nulls are meaningful, not bugs.
+
+| Movement shape | Meaning |
+|----------------|---------|
+| `fromWallet = wallet`, `toWallet = wallet` | Internal transfer (zero-sum, both sides present) |
+| `fromWallet = null`, `toWallet = wallet` | **Single-sided credit** — funds enter the wallet system from outside, backed by a `wallet_voucher` (deposit) |
+| `fromWallet = wallet`, `toWallet = null` | **Single-sided debit** — funds leave the wallet system (withdrawal, or `credit_reversal` of a deposit) |
+
+A deposit MUST write `fromWallet = null`; a reversal/withdrawal MUST write `toWallet = null`. A transfer MUST have both sides. Anything else is a contract violation. `credit_reversal` reverses a credit (deposit) with a single-sided debit; `debit_reversal` (future) reverses a debit (withdrawal) with a single-sided credit.
+
+**Two-layer ledger (contract)**: wallet movements and boundary events are recorded separately and must not be conflated.
+
+| Layer | Table | Answers | Read by |
+|-------|-------|---------|---------|
+| Internal (movement journal) | `wallet_transaction` | How each wallet's balance changed | `getExpectedBalance(walletId)` — per-wallet reconciliation |
+| Boundary (provenance) | `wallet_voucher` | Why funds entered/left the system (`fund_source`, `created_by`, reversal state) | Boundary invariant — `verifyBalance()` |
+
+Both a `wallet_transaction` AND a `wallet_voucher` are written for a boundary event. The transaction feeds the unified per-wallet movement journal (internal transfers have no voucher, so the journal cannot be built from vouchers alone); the voucher feeds provenance and the boundary invariant. Removing either breaks the corresponding audit surface.
 
 ### 3.3 WalletPaymentDeduction
 
