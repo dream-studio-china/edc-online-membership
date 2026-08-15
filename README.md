@@ -6,8 +6,66 @@ A production-oriented Symfony 8.1 API skeleton with reusable service-layer abstr
 
 > Documentation site: [GitHub Pages](https://immane.github.io/crud-skeleton) | Design contracts: [docs/design/](docs/design/)
 
+## Architecture
+
+The application is a layered Symfony API: controllers compose trait-based view mixins over `BaseService` (CRUD + dynamic query), services own the business rules, and Doctrine ORM persists to MySQL. Modules depend on Core and on each other only through service interfaces.
+
+```mermaid
+flowchart TB
+    Core["<b>Core Framework</b><br/>BaseService · View Mixins · Expression→DQL"]
+
+    Identity["Identity<br/>Auth · JWT · OTP · User"]
+    Common["Common<br/>CMS (7 entities)"]
+    Storage["Storage<br/>Media drivers"]
+    Wechat["Wechat<br/>Login + Pay"]
+    Wallet["Wallet<br/>Balance · Transfer · Voucher"]
+    Payment["Payment<br/>Invoice · Gateway · Adjustment"]
+    Trade["Trade<br/>Order · Pricing"]
+    Store["Store<br/>Multi-store Outbox"]
+    Inventory["Inventory<br/>Stock · Reservation"]
+    Promotion["Promotion<br/>DSL engine"]
+    Exchange["Exchange (design)<br/>Rates · Pool · Mint"]
+
+    Identity --> Core
+    Common --> Core
+    Storage --> Core
+    Storage --> Common
+    Wechat --> Core
+    Wechat --> Identity
+    Wallet --> Core
+    Wallet --> Identity
+    Payment --> Core
+    Payment --> Wallet
+    Trade --> Core
+    Trade --> Payment
+    Trade --> Store
+    Trade --> Inventory
+    Promotion --> Core
+    Promotion --> Trade
+    Exchange -. "design" .-> Core
+```
+
+Request flow for a business operation (e.g. a wallet payment):
+
+```mermaid
+sequenceDiagram
+    participant C as Client
+    participant Ctrl as Controller
+    participant S as Service
+    participant P as Provider
+    participant DB as Doctrine ORM / MySQL
+
+    C->>Ctrl: POST /api/v1/... (JSON body)
+    Ctrl->>S: service call (validated payload)
+    S->>P: resolve provider + assertPermitted()
+    S->>DB: wrapInTransaction { ledger + audit writes }
+    S-->>Ctrl: result / entity
+    Ctrl-->>C: unified response envelope
+```
+
 ## Table of Contents
 
+- [Architecture](#architecture)
 - [Quick Start Guide](#quick-start-guide)
 - [Why This Project](#why-this-project)
 - [Features](#features)
@@ -67,10 +125,12 @@ Compared with plain generated boilerplate, it provides:
 - **User Management**: App profile endpoints + admin CRUD with password management.
 - **Order State Machine**: Symfony Workflow for order lifecycle (draft → completed), with workflow API endpoints.
 - **Price Calculation Pipeline**: Pluggable calculators with priority ordering for e-commerce order pricing.
-- **Atomic Wallet Transfers**: Deadlock prevention (consistent lock ordering), optimistic locking, idempotency via reference ID.
+- **Atomic Wallet Transfers**: Deadlock prevention (consistent lock ordering), pessimistic locking (`SELECT … FOR UPDATE`), idempotency via reference ID.
 - **Payment Adjustment Providers**: Pre-payment hooks (e.g., wallet deduction) reduce invoice amounts before gateway processing — gateways receive explicit amounts only.
-- **Wallet Accounting**: System-injected deposits with audit trail, balance verification (`SUM(wallets) == SUM(deposits)`), per-wallet reconciliation.
+- **Voucher-Backed Deposit & Withdrawal**: Single-sided credit/debit entries backed by an append-only `wallet_voucher` audit trail (the boundary ledger). Providers own voucher-type permission (`manual` requires `ROLE_ADMIN`; CLI/queue calls are trusted), and concurrent duplicate `referenceId`s resolve idempotently instead of erroring on the unique index.
+- **Wallet Accounting**: Balance verification (`SUM(balance) == SUM(credit vouchers) − SUM(debit vouchers)`) and per-wallet reconciliation across deposits, withdrawals, transfers, and holds.
 - **Wallet Balance Deduction**: Wallet-owned deduction lifecycle with Payment adjustment provider pattern — Payment orchestrates, Wallet implements.
+- **Exchange Rate Domain (design)**: Pool-backed points economy design (`docs/design/bundles/exchange.md`) — effective-dated exchange rates, bcmath conversion engine, and pledge/mint/exchange/redemption around a market-maker-supervised pool.
 - **Pluggable File Storage**: `MediaStorageInterface` with local and Qiniu Kodo drivers — tagged iterator auto-discovery.
 - **OpenAPI Documentation**: NelmioApiDocBundle with `#[OA\*]` attributes, Swagger UI at `/api/doc`.
 - **System Introspection**: Entity metadata and route export endpoints (`/system/*`).
@@ -132,11 +192,14 @@ See `composer.json` for the full dependency list.
 │   │   ├── Service/              #   StoreService
 │   │   └── MessageHandler/       #   Create/accept/reject/cancel outcome consumers
 │   ├── Wallet/                    # Wallet module
-│   │   ├── Controller/Manage/    #   Wallet, Transaction, Deposit endpoints
+│   │   ├── Controller/App/       #   Wallet, Transaction, Voucher (self-service)
+│   │   ├── Controller/Manage/    #   Wallet, Transaction, Voucher (deposit/withdraw/reverse)
 │   │   ├── DTO/                  #   PaymentDeductionRequest
-│   │   ├── Entity/               #   Wallet, Transaction, PaymentDeduction
-│   │   ├── Repository/           #   + PaymentDeductionRepository
-│   │   └── Service/              #   TransferService, WalletService
+│   │   ├── Entity/               #   Wallet, Transaction, Voucher, VoucherComment, PaymentDeduction
+│   │   ├── Repository/           #   Wallet, Transaction, Voucher, VoucherComment, PaymentDeduction
+│   │   └── Service/              #   TransferService, WalletService, VoucherService
+│   │       ├── Deposit/          #   DepositService + provider registry (voucher-backed credit)
+│   │       ├── Withdraw/         #   WithdrawService + provider registry (voucher-backed debit)
 │   │       └── Payment/          #   WalletGateway, WalletBalanceAdjustmentProvider, PaymentDeductionService
 │   ├── Payment/                  # Payment module
 │   │   ├── Controller/App/       #   Invoice list/detail/pay
@@ -385,12 +448,13 @@ The app runs at `http://localhost:${APP_PORT:-8080}`.
 | **Common** | `App\Common` | CMS | Category (tree), Tag, Content, Comment (polymorphic), Page, Media, Setting (KV) |
 | **Trade** | `App\Trade` | E-Commerce | Product + Specification, Order (state machine), Price pipeline |
 | **Inventory** | `App\Inventory` | Inventory Management | Per-store stock + Specification Recipes + Reservation + Stock Ledger + Negative Inventory Policy |
-| **Wallet** | `App\Wallet` | Payments & deduction | Balance (cents), Atomic transfers, System deposits, Idempotency, Wallet balance deduction adjustment provider, Balance verification + reconciliation |
+| **Wallet** | `App\Wallet` | Payments & deduction | Balance (cents), Atomic transfers, Voucher-backed deposits & withdrawals (provider-permissioned), Idempotency, Wallet balance deduction adjustment provider, Balance verification + reconciliation |
 | **Payment** | `App\Payment` | Invoicing & orchestration | Invoice (cents + workflow), Gateway abstraction (mock/wallet/wechat), **Payment adjustment provider contract**, Webhooks, Events |
 | **Wechat** | `App\Wechat` | WeChat integration | Mini Program/Official Account login, WeChat Pay V3, WechatUser (OneToOne→User) |
 | **Storage** | `App\Storage` | File upload drivers | `MediaStorageInterface`, LocalStorage, QiniuStorage, tagged iterator auto-discovery |
 | **Promotion** | `App\Promotion` | DSL-driven promotions | Custom DSL lexer/parser/evaluator, 7 strategy types, tagged `trade.price_calculator` (priority 60), member-targeted SKU discounts, multi-store routing, `best_price` conflict mode |
 | **Identity** | `App\Identity` | Authentication | JWT (RS256), OTP (SMS), Refresh token rotation, Password registration, User profile/CRUD, Profile entity (auto-created, level, points delegated to Wallet) |
+| **Exchange** | `App\ExchangeBundle` *(design)* | Pool-backed points economy | Effective-dated exchange rates (hybrid: anchor + direct pairs), bcmath conversion, pledge/mint/exchange/redemption, market-maker pool — design doc only, not yet implemented |
 
 ## API Endpoints
 
@@ -476,7 +540,15 @@ Resources: `categories`, `contents`, `tags`, `comments`, `pages`, `media`, `sett
 | **POST** | **`/api/v1/manage/wallets/reconcile`** | **Per-wallet reconciliation** |
 | GET | `/api/v1/manage/transactions` | List transactions |
 | POST | `/api/v1/manage/transactions` | Atomic transfer (creates a ledger transaction) |
-| **POST** | **`/api/v1/manage/deposits`** | **Voucher-backed deposit (funding)** |
+| **POST** | **`/api/v1/manage/vouchers/deposit`** | **Voucher-backed deposit (funding)** |
+| **POST** | **`/api/v1/manage/vouchers/withdraw`** | **Voucher-backed withdrawal (debit)** |
+| POST | `/api/v1/manage/vouchers/{uuid}/reverse` | Reverse a deposit or withdrawal voucher |
+| GET | `/api/v1/manage/vouchers[/{id}]` | List/detail vouchers (admin) |
+| **POST** | **`/api/v1/app/vouchers/deposit`** | **Self-service deposit into own wallet** |
+| **POST** | **`/api/v1/app/vouchers/withdraw`** | **Self-service withdrawal out of own wallet** |
+| POST | `/api/v1/app/vouchers/{uuid}/reverse` | Reverse own voucher |
+
+`voucherType` is a request parameter on deposit/withdraw: `Manage` defaults to `manual` (admin-only), `App` requires a type supplied by the external integration. Permission for a type is enforced by the registered provider's `assertPermitted()`. Funds flow: deposit = single-sided credit (`fromWallet = null`); withdrawal = single-sided debit (`toWallet = null`); reversal returns funds to the source wallet.
 
 ### Payment
 
@@ -714,22 +786,16 @@ See [docs/testing/crud-skeleton-production/](docs/testing/crud-skeleton-producti
 
 ### Architecture
 
-```
-                ┌──────────────┐
-   :8080  ──────│    nginx     │────── /api/* ─────┐
-                └──────────────┘                   │
-                                                   ▼
-                                            ┌──────────────┐
-                                            │  PHP-FPM 8.4 │
-                                            │   (app)      │
-                                            └──────┬───────┘
-                                                   │
-                      ┌────────────────────────────┼────────────────────┐
-                      │                            │                    │
-                ┌─────▼─────┐               ┌──────▼──────┐      ┌──────▼──────┐
-                │  MySQL 8  │               │   Redis 7   │      │   Mailpit   │
-                │           │               │ (OTP/cache) │      │ (email dev) │
-                └───────────┘               └─────────────┘      └─────────────┘
+```mermaid
+flowchart LR
+    Client[Client / Browser] -->|:8080| Nginx[nginx:alpine]
+    Nginx -->|/api/*| Fpm["PHP-FPM 8.4<br/>(app, Symfony)"]
+    Nginx -->|/api/doc| Swagger[Swagger UI<br/>NelmioApiDoc]
+    Fpm --> MySQL[(MySQL 8)]
+    Fpm --> Redis[(Redis 7<br/>OTP / cache)]
+    Fpm --> Mailpit[Mailpit<br/>email dev]
+    Fpm --> Worker[Messenger worker<br/>handlers / outbox]
+    Fpm --> Scheduler[Scheduler<br/>outbox publish]
 ```
 
 | Service | Image | Container | Purpose |

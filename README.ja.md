@@ -6,8 +6,45 @@ Symfony 8.1 ベースのプロダクション向け API スケルトン。再利
 
 > ドキュメントサイト: [GitHub Pages](https://immane.github.io/crud-skeleton) | 設計契約: [docs/design/](docs/design/)
 
+## アーキテクチャ
+
+```mermaid
+flowchart TB
+    Core["<b>Core フレームワーク</b><br/>BaseService · View Mixins · Expression→DQL"]
+    Identity["Identity<br/>認証 · JWT · OTP · User"]
+    Common["Common<br/>CMS（7 エンティティ）"]
+    Storage["Storage<br/>メディアドライバ"]
+    Wechat["Wechat<br/>ログイン + 決済"]
+    Wallet["Wallet<br/>残高 · 転送 · バウチャー"]
+    Payment["Payment<br/>請求書 · ゲートウェイ · 調整"]
+    Trade["Trade<br/>注文 · 価格計算"]
+    Store["Store<br/>マルチストア Outbox"]
+    Inventory["Inventory<br/>在庫 · 予約"]
+    Promotion["Promotion<br/>DSL エンジン"]
+    Exchange["Exchange（設計）<br/>為替 · プール · 発行"]
+
+    Identity --> Core
+    Common --> Core
+    Storage --> Core
+    Storage --> Common
+    Wechat --> Core
+    Wechat --> Identity
+    Wallet --> Core
+    Wallet --> Identity
+    Payment --> Core
+    Payment --> Wallet
+    Trade --> Core
+    Trade --> Payment
+    Trade --> Store
+    Trade --> Inventory
+    Promotion --> Core
+    Promotion --> Trade
+    Exchange -. "design" .-> Core
+```
+
 ## 目次
 
+- [アーキテクチャ](#アーキテクチャ)
 - [機能](#機能)
 - [技術スタック](#技術スタック)
 - [プロジェクト構成](#プロジェクト構成)
@@ -27,8 +64,11 @@ Symfony 8.1 ベースのプロダクション向け API スケルトン。再利
 - **OTP ログイン**: 電話番号ベースのワンタイムパスワード（SMS）
 - **注文ステートマシン**: Symfony Workflow（下書き → 完了）、完全なワークフロー API
 - **価格計算パイプライン**: プラグイン可能な価格計算機、優先順位順に実行
-- **原子ウォレット転送**: デッドロック防止、楽観的ロック、冪等性
+- **原子ウォレット転送**: デッドロック防止（一貫したロック順序）、悲観的ロック（`SELECT … FOR UPDATE`）、referenceId による冪等性
+- **バウチャー入金・出金**: 追加専用の `wallet_voucher` 監査（境界台帳）を裏付けとする単側貸方/借方。バウチャータイプの権限は provider が判定（`manual` は `ROLE_ADMIN` 必須、CLI/キューは信頼された呼び出し）、並行する重複 `referenceId` は一意索引エラーではなく冪等に解決
+- **ウォレット会計**: 残高検証（`SUM(残高) == SUM(貸方バウチャー) − SUM(借方バウチャー)`）とウォレット単位の照合
 - **ファイルストレージ**: ローカルおよび Qiniu Kodo ドライバのプラグイン可能なアーキテクチャ
+- **為替ドメイン（設計）**: プール担保のポイント経済設計（`docs/design/bundles/exchange.md`）— 有効期間付き為替レート、bcmath 換算、担保/発行/交換/償還
 - **OpenAPI ドキュメント**: NelmioApiDocBundle + Swagger UI（`/api/doc`）
 - **プロモーション DSL エンジン**: カスタム lexer/parser/evaluator による人間可読なプロモーションルール。7 種類のプロモーション（full_reduction、discount、gift、nth_discount、tiered、free_shipping、member_discount）。タグ付き価格計算機（優先度 60）として Trade 価格パイプラインの小計集計後に実行。会員向け SKU 割引、マルチストアルーティング、グローバルキャンペーン、`best_price` コンフリクトモード（候補をシミュレーションして最低金額を選択）をサポート。
 - **Profile エンティティ**: ユーザー登録時に Doctrine リスナーにより自動生成。レベル（bronze→diamond）、ニックネーム、アバター、メタデータを保持。ポイントは Wallet（currency=POINTS）に委譲。
@@ -85,12 +125,13 @@ Symfony 8.1 ベースのプロダクション向け API スケルトン。再利
 | **Common** | `App\Common` | CMS | カテゴリ、タグ、コンテンツ、コメント、ページ、メディア、設定 |
 | **Trade** | `App\Trade` | EC | 商品 + 仕様、注文（ステートマシン）、価格計算パイプライン |
 | **Inventory** | `App\Inventory` | 在庫管理 | 店舗別マテリアル在庫 + 仕様レシピ + 予約（アトミック在庫ロック）+ 在庫台帳監査 + マイナス在庫ポリシー |
-| **Wallet** | `App\Wallet` | ウォレット | 残高（セント）、原子転送、システム入金、冪等性、調整 |
+| **Wallet** | `App\Wallet` | ウォレット | 残高（セント）、原子転送、バウチャー入金・出金（provider 権限）、冪等性、調整 |
 | **Payment** | `App\Payment` | 決済管理 | 請求書（セント+ワークフロー）、ゲートウェイ抽象化 |
 | **Wechat** | `App\Wechat` | 微信連携 | ミニプログラム/公式アカウントログイン、微信 Pay V3 |
 | **Storage** | `App\Storage` | ファイルストレージ | LocalStorage、QiniuStorage |
 | **Promotion** | `App\Promotion` | DSL駆動プロモーション | カスタム DSL lexer/parser/evaluator、7 種類の戦略、`trade.price_calculator`（優先度 60）、会員向け SKU 割引、マルチストアルーティング、`best_price` コンフリクトモード |
 | **Identity** | `App\Identity` | 認証 | JWT（RS256）、OTP（SMS）、リフレッシュトークンローテーション、Profile エンティティ（自動生成、レベル、ポイントは Wallet に委譲） |
+| **Exchange** | `App\ExchangeBundle` *(設計)* | プール担保のポイント経済 | 有効期間付き為替レート、bcmath 換算、担保/発行/交換/償還、マーケットメーカープール — 設計のみ、未実装 |
 
 ## テスト
 
@@ -164,6 +205,20 @@ PHPStan は設定済みの `src/` を Level 8 で検査します。CI の Rector
 | Integration | 20+ | モジュール間結合テスト |
 
 ## Docker デプロイ
+
+### アーキテクチャ
+
+```mermaid
+flowchart LR
+    Client[クライアント / ブラウザ] -->|:8080| Nginx[nginx:alpine]
+    Nginx -->|/api/*| Fpm["PHP-FPM 8.4<br/>(app, Symfony)"]
+    Nginx -->|/api/doc| Swagger[Swagger UI<br/>NelmioApiDoc]
+    Fpm --> MySQL[(MySQL 8)]
+    Fpm --> Redis[(Redis 7<br/>OTP / キャッシュ)]
+    Fpm --> Mailpit[Mailpit<br/>メール開発]
+    Fpm --> Worker[Messenger worker<br/>handler / outbox]
+    Fpm --> Scheduler[Scheduler<br/>outbox 発行]
+```
 
 ### 開発環境
 
