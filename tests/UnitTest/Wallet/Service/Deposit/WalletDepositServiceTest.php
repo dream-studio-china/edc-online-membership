@@ -1,0 +1,468 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Tests\UnitTest\Wallet\Service\Deposit;
+
+use App\Identity\Entity\User;
+use App\Wallet\Entity\Wallet;
+use App\Wallet\Entity\WalletTransaction;
+use App\Wallet\Entity\WalletVoucher;
+use App\Wallet\Exception\InsufficientFundsException;
+use App\Wallet\Exception\WalletFrozenException;
+use App\Wallet\Repository\WalletRepository;
+use App\Wallet\Repository\WalletVoucherRepository;
+use App\Wallet\Service\Deposit\WalletDepositProviderInterface;
+use App\Wallet\Service\Deposit\WalletDepositProviderRegistry;
+use App\Wallet\Service\Deposit\WalletDepositService;
+use Doctrine\DBAL\Connection;
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Query;
+use Doctrine\Persistence\ManagerRegistry;
+use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
+use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
+
+final class RecordingDepositProvider implements WalletDepositProviderInterface
+{
+    public bool $authorized = false;
+    public bool $reversed = false;
+
+    public function __construct(private readonly string $supportedType)
+    {
+    }
+
+    public static function getName(): string
+    {
+        return 'test';
+    }
+
+    public function supports(string $voucherType): bool
+    {
+        return $voucherType === $this->supportedType;
+    }
+
+    public function authorize(WalletVoucher $voucher, array $options): void
+    {
+        $this->authorized = true;
+    }
+
+    public function reverse(WalletVoucher $voucher, string $reason, array $options = []): void
+    {
+        $this->reversed = true;
+    }
+}
+
+#[AllowMockObjectsWithoutExpectations]
+final class WalletDepositServiceTest extends TestCase
+{
+    private ManagerRegistry $registry;
+    private EntityManagerInterface $em;
+    private Connection $connection;
+    private WalletVoucherRepository $voucherRepo;
+    private WalletDepositProviderRegistry $providerRegistry;
+    private WalletRepository $walletRepo;
+    private RecordingDepositProvider $provider;
+    private WalletDepositService $service;
+
+    private bool $transactionActive = false;
+    private bool $emOpen = true;
+
+    protected function setUp(): void
+    {
+        $this->connection = $this->createMock(Connection::class);
+        $this->connection->method('isTransactionActive')->willReturnCallback(fn() => $this->transactionActive);
+
+        $this->em = $this->createMock(EntityManagerInterface::class);
+        $this->em->method('getConnection')->willReturn($this->connection);
+        $this->em->method('beginTransaction')->willReturnCallback(function (): void {
+            $this->transactionActive = true;
+        });
+        $this->em->method('commit')->willReturnCallback(function (): void {
+            $this->transactionActive = false;
+        });
+        $this->em->method('rollback')->willReturnCallback(function (): void {
+            $this->transactionActive = false;
+        });
+        $this->em->method('isOpen')->willReturnCallback(fn() => $this->emOpen);
+
+        $this->registry = $this->createMock(ManagerRegistry::class);
+        $this->registry->method('getManager')->willReturn($this->em);
+
+        $this->voucherRepo = $this->createMock(WalletVoucherRepository::class);
+        $this->walletRepo = $this->createMock(WalletRepository::class);
+        $this->provider = new RecordingDepositProvider(WalletVoucher::VOUCHER_TYPE_MANUAL);
+        $this->providerRegistry = new WalletDepositProviderRegistry([$this->provider]);
+
+        $this->service = new WalletDepositService(
+            $this->registry,
+            $this->voucherRepo,
+            $this->providerRegistry,
+            $this->walletRepo,
+            $this->createMock(LoggerInterface::class),
+        );
+    }
+
+    private function createWallet(int $id, int $balance, string $currency = 'CNY', string $status = 'active'): Wallet
+    {
+        $user = new User();
+        $user->setEmail('t@t.com')->setUsername('t');
+        $wallet = new Wallet($user, $currency);
+        $rId = new \ReflectionProperty(Wallet::class, 'id');
+        $rId->setValue($wallet, $id);
+        $rBal = new \ReflectionProperty(Wallet::class, 'balance');
+        $rBal->setValue($wallet, $balance);
+        if ($status === 'frozen') {
+            $wallet->setStatus('frozen');
+        }
+        return $wallet;
+    }
+
+    private function setWalletBalance(Wallet $wallet, int $balance): void
+    {
+        $rBal = new \ReflectionProperty(Wallet::class, 'balance');
+        $rBal->setValue($wallet, $balance);
+    }
+
+    private function createAppliedCreditVoucher(Wallet $wallet, int $amount, string $uuid = 'voucher-uuid'): WalletVoucher
+    {
+        $voucher = new WalletVoucher(
+            $wallet,
+            WalletVoucher::DIRECTION_CREDIT,
+            WalletVoucher::FUND_SOURCE_EXTERNAL,
+            WalletVoucher::VOUCHER_TYPE_MANUAL,
+            'manual-' . $uuid,
+            $amount,
+            $wallet->getCurrency(),
+            'ref-' . $uuid,
+            'admin',
+        );
+        $voucher->markApplied('credit-tx-' . $uuid);
+        return $voucher;
+    }
+
+    private function mockQuery(): Query
+    {
+        $query = $this->createMock(Query::class);
+        $query->method('setParameter')->willReturnSelf();
+        $query->method('execute')->willReturn(1);
+        return $query;
+    }
+
+    // ──────────────── deposit ────────────────
+
+    public function testDepositHappyPath(): void
+    {
+        $wallet = $this->createWallet(1, 0, 'CNY');
+        $this->walletRepo->method('findByIdForUpdate')->with(1)->willReturn($wallet);
+        $this->em->method('createQuery')->willReturn($this->mockQuery());
+        $this->em->method('refresh')->with($wallet)->willReturnCallback(function () use ($wallet) {
+            $this->setWalletBalance($wallet, 50000);
+        });
+        $captured = null;
+        $this->em->method('persist')->willReturnCallback(function (mixed $entity) use (&$captured): void {
+            if ($entity instanceof WalletTransaction) {
+                $captured = $entity;
+            }
+        });
+        $this->em->method('flush');
+
+        $voucher = $this->service->deposit(
+            WalletVoucher::VOUCHER_TYPE_MANUAL,
+            'manual-1',
+            1,
+            50000,
+            'CNY',
+            'ref-dep-1',
+            'admin',
+            'Manual funding',
+        );
+
+        self::assertTrue($this->provider->authorized);
+        self::assertSame(WalletVoucher::STATUS_APPLIED, $voucher->getStatus());
+        self::assertSame(WalletVoucher::DIRECTION_CREDIT, $voucher->getDirection());
+        self::assertSame(WalletVoucher::FUND_SOURCE_EXTERNAL, $voucher->getFundSource());
+        self::assertSame($wallet, $voucher->getWallet());
+        self::assertSame(50000, $voucher->getAmount());
+        self::assertSame('admin', $voucher->getCreatedBy());
+        self::assertNotNull($voucher->getWalletTransactionId());
+        self::assertSame(50000, $wallet->getBalance());
+
+        self::assertInstanceOf(WalletTransaction::class, $captured);
+        self::assertSame(WalletTransaction::TYPE_DEPOSIT, $captured->getType());
+        self::assertSame(50000, $captured->getAmount());
+        self::assertSame($wallet, $captured->getToWallet());
+        self::assertNull($captured->getFromWallet());
+        self::assertStringStartsWith('deposit-', $captured->getReferenceId());
+        self::assertTrue($captured->isCompleted());
+    }
+
+    public function testDepositAmountNotPositive(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Deposit amount must be positive');
+        $this->service->deposit('manual', 'm1', 1, 0, 'CNY', 'ref', 'admin');
+    }
+
+    public function testDepositRequiresReferenceId(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Reference id is required');
+        $this->service->deposit('manual', 'm1', 1, 100, 'CNY', '', 'admin');
+    }
+
+    public function testDepositIdempotent(): void
+    {
+        $wallet = $this->createWallet(1, 50000, 'CNY');
+        $existing = $this->createAppliedCreditVoucher($wallet, 50000, 'same');
+        $this->voucherRepo->method('findByReferenceId')->with('ref-dep-1')->willReturn($existing);
+
+        $result = $this->service->deposit('manual', 'other', 1, 99999, 'CNY', 'ref-dep-1', 'admin');
+
+        self::assertSame($existing, $result);
+    }
+
+    public function testDepositRejectsDuplicateVoucherSource(): void
+    {
+        $wallet = $this->createWallet(1, 50000, 'CNY');
+        $existing = $this->createAppliedCreditVoucher($wallet, 50000, 'dup');
+        $this->voucherRepo->method('findByReferenceId')->willReturn(null);
+        $this->voucherRepo->method('findByVoucherSource')->with('manual', 'manual-1')->willReturn($existing);
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('already processed');
+        $this->service->deposit('manual', 'manual-1', 1, 100, 'CNY', 'ref-new', 'admin');
+    }
+
+    public function testDepositRejectsUnsupportedVoucherType(): void
+    {
+        $this->voucherRepo->method('findByReferenceId')->willReturn(null);
+        $this->voucherRepo->method('findByVoucherSource')->willReturn(null);
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Unsupported voucher type "transfer".');
+        $this->service->deposit('transfer', 'x', 1, 100, 'CNY', 'ref-t', 'admin');
+    }
+
+    public function testDepositWalletNotFound(): void
+    {
+        $this->voucherRepo->method('findByReferenceId')->willReturn(null);
+        $this->voucherRepo->method('findByVoucherSource')->willReturn(null);
+        $this->walletRepo->method('findByIdForUpdate')->with(999)->willReturn(null);
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Target wallet #999 not found');
+        $this->service->deposit('manual', 'm1', 999, 100, 'CNY', 'ref', 'admin');
+    }
+
+    public function testDepositWalletFrozen(): void
+    {
+        $wallet = $this->createWallet(1, 0, 'CNY', 'frozen');
+        $this->voucherRepo->method('findByReferenceId')->willReturn(null);
+        $this->voucherRepo->method('findByVoucherSource')->willReturn(null);
+        $this->walletRepo->method('findByIdForUpdate')->with(1)->willReturn($wallet);
+
+        $this->expectException(WalletFrozenException::class);
+        $this->service->deposit('manual', 'm1', 1, 100, 'CNY', 'ref', 'admin');
+    }
+
+    public function testDepositCurrencyMismatch(): void
+    {
+        $wallet = $this->createWallet(1, 0, 'CNY');
+        $this->voucherRepo->method('findByReferenceId')->willReturn(null);
+        $this->voucherRepo->method('findByVoucherSource')->willReturn(null);
+        $this->walletRepo->method('findByIdForUpdate')->with(1)->willReturn($wallet);
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Currency mismatch');
+        $this->service->deposit('manual', 'm1', 1, 100, 'USD', 'ref', 'admin');
+    }
+
+    public function testDepositRollbackOnError(): void
+    {
+        $wallet = $this->createWallet(1, 0, 'CNY');
+        $this->voucherRepo->method('findByReferenceId')->willReturn(null);
+        $this->voucherRepo->method('findByVoucherSource')->willReturn(null);
+        $this->walletRepo->method('findByIdForUpdate')->with(1)->willReturn($wallet);
+        $this->em->method('createQuery')->willThrowException(new \RuntimeException('DB failure'));
+
+        $this->connection->expects(self::once())->method('isTransactionActive');
+        $this->em->expects(self::once())->method('rollback');
+
+        $this->expectException(\RuntimeException::class);
+        $this->service->deposit('manual', 'm1', 1, 100, 'CNY', 'ref', 'admin');
+    }
+
+    // ──────────────── reverse ────────────────
+
+    public function testReverseSingleSidedDebit(): void
+    {
+        $wallet = $this->createWallet(1, 50000, 'CNY');
+        $voucher = $this->createAppliedCreditVoucher($wallet, 30000, 'rev');
+        $this->voucherRepo->method('findByUuid')->with('voucher-uuid-rev')->willReturn($voucher);
+        $this->walletRepo->method('findByIdForUpdate')->with(1)->willReturn($wallet);
+        $this->em->method('createQuery')->willReturn($this->mockQuery());
+        $this->em->method('refresh')->with($wallet)->willReturnCallback(function () use ($wallet) {
+            $this->setWalletBalance($wallet, 20000);
+        });
+        $captured = null;
+        $this->em->method('persist')->willReturnCallback(function (mixed $entity) use (&$captured): void {
+            if ($entity instanceof WalletTransaction) {
+                $captured = $entity;
+            }
+        });
+        $this->em->method('flush');
+
+        $result = $this->service->reverse('voucher-uuid-rev', 'Admin correction');
+
+        self::assertTrue($this->provider->reversed);
+        self::assertSame(WalletVoucher::STATUS_REVERSED, $result->getStatus());
+        self::assertSame('Admin correction', $result->getReason());
+        self::assertNotNull($result->getReversalTransactionId());
+        self::assertSame(20000, $wallet->getBalance());
+
+        self::assertInstanceOf(WalletTransaction::class, $captured);
+        self::assertSame(WalletTransaction::TYPE_CREDIT_REVERSAL, $captured->getType());
+        self::assertSame(30000, $captured->getAmount());
+        self::assertSame($wallet, $captured->getFromWallet());
+        self::assertNull($captured->getToWallet());
+        self::assertSame('deposit-reverse-' . $voucher->getUuid(), $captured->getReferenceId());
+        self::assertTrue($captured->isCompleted());
+    }
+
+    public function testReverseVoucherNotFound(): void
+    {
+        $this->voucherRepo->method('findByUuid')->with('missing')->willReturn(null);
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Voucher "missing" not found.');
+        $this->service->reverse('missing', 'reason');
+    }
+
+    public function testReverseRequiresAppliedStatus(): void
+    {
+        $wallet = $this->createWallet(1, 10000, 'CNY');
+        $voucher = new WalletVoucher(
+            $wallet,
+            WalletVoucher::DIRECTION_CREDIT,
+            WalletVoucher::FUND_SOURCE_EXTERNAL,
+            WalletVoucher::VOUCHER_TYPE_MANUAL,
+            'manual-pending',
+            10000,
+            'CNY',
+            'ref-pending',
+            'admin',
+        );
+        $this->voucherRepo->method('findByUuid')->willReturn($voucher);
+
+        $this->expectException(\LogicException::class);
+        $this->expectExceptionMessage('cannot be reversed from status "pending"');
+        $this->service->reverse('voucher-uuid', 'reason');
+    }
+
+    public function testReverseRejectsDebitVoucher(): void
+    {
+        $wallet = $this->createWallet(1, 10000, 'CNY');
+        $voucher = new WalletVoucher(
+            $wallet,
+            WalletVoucher::DIRECTION_DEBIT,
+            WalletVoucher::FUND_SOURCE_EXTERNAL,
+            WalletVoucher::VOUCHER_TYPE_MANUAL,
+            'manual-debit',
+            10000,
+            'CNY',
+            'ref-debit',
+            'admin',
+        );
+        $voucher->markApplied('debit-tx');
+        $this->voucherRepo->method('findByUuid')->willReturn($voucher);
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Only credit (deposit) vouchers can be reversed.');
+        $this->service->reverse('voucher-uuid', 'reason');
+    }
+
+    public function testReverseInsufficientAvailable(): void
+    {
+        $wallet = $this->createWallet(1, 10000, 'CNY');
+        $voucher = $this->createAppliedCreditVoucher($wallet, 30000, 'insuff');
+        $this->voucherRepo->method('findByUuid')->willReturn($voucher);
+        $this->walletRepo->method('findByIdForUpdate')->with(1)->willReturn($wallet);
+
+        $this->expectException(InsufficientFundsException::class);
+        $this->service->reverse('voucher-uuid-insuff', 'reason');
+    }
+
+    public function testReverseRollbackOnError(): void
+    {
+        $wallet = $this->createWallet(1, 50000, 'CNY');
+        $voucher = $this->createAppliedCreditVoucher($wallet, 10000, 'rollback');
+        $this->voucherRepo->method('findByUuid')->willReturn($voucher);
+        $this->walletRepo->method('findByIdForUpdate')->with(1)->willReturn($wallet);
+        $this->em->method('createQuery')->willThrowException(new \RuntimeException('DB failure'));
+
+        $this->connection->expects(self::once())->method('isTransactionActive');
+        $this->em->expects(self::once())->method('rollback');
+
+        $this->expectException(\RuntimeException::class);
+        $this->service->reverse('voucher-uuid-rollback', 'reason');
+    }
+
+    public function testReverseWalletNotFound(): void
+    {
+        $wallet = $this->createWallet(1, 10000, 'CNY');
+        $voucher = $this->createAppliedCreditVoucher($wallet, 10000, 'missing-wallet');
+        $this->voucherRepo->method('findByUuid')->willReturn($voucher);
+        $this->walletRepo->method('findByIdForUpdate')->with(1)->willReturn(null);
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Wallet #1 not found');
+        $this->service->reverse('voucher-uuid-missing-wallet', 'reason');
+    }
+
+    public function testDepositEmClosedRecovery(): void
+    {
+        $wallet = $this->createWallet(1, 0, 'CNY');
+        $this->voucherRepo->method('findByReferenceId')->willReturn(null);
+        $this->voucherRepo->method('findByVoucherSource')->willReturn(null);
+        $this->walletRepo->method('findByIdForUpdate')->with(1)->willReturn($wallet);
+        $this->em->method('createQuery')->willThrowException(new \RuntimeException('closed'));
+
+        $newEm = $this->createMock(EntityManagerInterface::class);
+        $newConn = $this->createMock(Connection::class);
+        $newConn->method('isTransactionActive')->willReturn(false);
+        $newEm->method('getConnection')->willReturn($newConn);
+        $newEm->method('isOpen')->willReturn(true);
+
+        $this->emOpen = false;
+
+        $this->registry->expects(self::once())->method('resetManager');
+        $this->registry->expects(self::once())->method('getManager')->willReturn($newEm);
+
+        $this->expectException(\RuntimeException::class);
+        $this->service->deposit('manual', 'm1', 1, 100, 'CNY', 'ref', 'admin');
+    }
+
+    public function testReverseEmClosedRecovery(): void
+    {
+        $wallet = $this->createWallet(1, 50000, 'CNY');
+        $voucher = $this->createAppliedCreditVoucher($wallet, 10000, 'em-closed');
+        $this->voucherRepo->method('findByUuid')->willReturn($voucher);
+        $this->walletRepo->method('findByIdForUpdate')->with(1)->willReturn($wallet);
+        $this->em->method('createQuery')->willThrowException(new \RuntimeException('closed'));
+
+        $newEm = $this->createMock(EntityManagerInterface::class);
+        $newConn = $this->createMock(Connection::class);
+        $newConn->method('isTransactionActive')->willReturn(false);
+        $newEm->method('getConnection')->willReturn($newConn);
+        $newEm->method('isOpen')->willReturn(true);
+
+        $this->emOpen = false;
+
+        $this->registry->expects(self::once())->method('resetManager');
+        $this->registry->expects(self::once())->method('getManager')->willReturn($newEm);
+
+        $this->expectException(\RuntimeException::class);
+        $this->service->reverse('voucher-uuid-em-closed', 'reason');
+    }
+}
