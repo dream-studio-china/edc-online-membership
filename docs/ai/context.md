@@ -591,7 +591,7 @@ Placed in `src/Core/Controller/System/` (framework layer). NelmioApiDoc path_pat
 | **Payment via wallet** | Trade | `POST /app/orders/{id}/payment` with `payment: "wallet"` creates Invoice → WalletGateway deducts user wallet |
 | **Payment integration migration** | Payment -> Trade | Next phase replaces synchronous Invoice domain-event consumption with Payment Outbox and Trade Inbox; Payment request Inbox/Saga remains deferred |
 | **Balance audit** | Wallet | `GET /app/wallets/balance` audits only current user's wallets; `GET /manage/wallets/balance` is global; `POST /manage/wallets/reconcile` fixes per-wallet gaps with `TYPE_ADJUSTMENT` |
-| **Idempotent deposit** | Wallet | `POST /api/v1/manage/deposits` with `referenceId` — duplicate requests return existing transaction |
+| **Idempotent deposit** | Wallet | `POST /api/v1/manage/vouchers/deposit` with `referenceId` — duplicate requests return existing transaction |
 | **Gateway registry** | Payment | `#[AutowireIterator]` + `_instanceof` auto-tags all `PaymentGatewayInterface` implementations |
 | **Adjustment provider registry** | Payment | `#[AutowireIterator]` + `_instanceof` for `PaymentAdjustmentProviderInterface` — wallet deduction is a Wallet-owned provider |
 | **Deduction owned by Wallet** | Wallet | Wallet balance deduction lives in Wallet (`PaymentDeduction` entity, `PaymentDeductionService`, `WalletBalanceAdjustmentProvider`). Payment owns only the generic adjustment contract |

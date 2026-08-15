@@ -165,7 +165,7 @@ final class WalletApiRegressionTest extends IntegrationWebTestCase
         $walletId = json_decode((string) $client->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR)['data']['id'];
 
         // Manual deposit (voucher-backed)
-        $client->request('POST', '/api/v1/manage/deposits', server: ['CONTENT_TYPE' => 'application/json'], content: json_encode([
+        $client->request('POST', '/api/v1/manage/vouchers/deposit', server: ['CONTENT_TYPE' => 'application/json'], content: json_encode([
             'walletId' => $walletId, 'amount' => 50000, 'currency' => 'CNY',
             'referenceId' => 'INT-DEP-1', 'reason' => 'integration deposit',
         ], JSON_THROW_ON_ERROR));
@@ -208,13 +208,13 @@ final class WalletApiRegressionTest extends IntegrationWebTestCase
         self::assertSame(50000, $wallet['balance']);
 
         // Duplicate referenceId is idempotent
-        $client->request('POST', '/api/v1/manage/deposits', server: ['CONTENT_TYPE' => 'application/json'], content: json_encode([
+        $client->request('POST', '/api/v1/manage/vouchers/deposit', server: ['CONTENT_TYPE' => 'application/json'], content: json_encode([
             'walletId' => $walletId, 'amount' => 50000, 'currency' => 'CNY', 'referenceId' => 'INT-DEP-1',
         ], JSON_THROW_ON_ERROR));
         self::assertSame(201, $client->getResponse()->getStatusCode());
 
         // Reverse returns funds
-        $client->request('POST', '/api/v1/manage/deposits/' . $uuid . '/reverse', server: ['CONTENT_TYPE' => 'application/json'], content: json_encode([
+        $client->request('POST', '/api/v1/manage/vouchers/' . $uuid . '/reverse', server: ['CONTENT_TYPE' => 'application/json'], content: json_encode([
             'reason' => 'integration revert',
         ], JSON_THROW_ON_ERROR));
         self::assertSame(200, $client->getResponse()->getStatusCode());

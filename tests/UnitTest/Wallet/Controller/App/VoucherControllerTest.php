@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace App\Tests\UnitTest\Wallet\Controller\App;
 
 use App\Identity\Entity\User;
-use App\Wallet\Controller\App\DepositController;
+use App\Wallet\Controller\App\VoucherController;
 use App\Wallet\Entity\Voucher;
 use App\Wallet\Entity\Wallet;
 use App\Wallet\Repository\VoucherRepository;
 use App\Wallet\Repository\WalletRepository;
 use App\Wallet\Service\Deposit\DepositService;
+use App\Wallet\Service\VoucherService;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
@@ -22,29 +23,32 @@ use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 #[AllowMockObjectsWithoutExpectations]
-final class DepositControllerTest extends TestCase
+final class VoucherControllerTest extends TestCase
 {
+    private VoucherService $service;
+    private VoucherRepository $voucherRepository;
     private DepositService $depositService;
     private WalletRepository $walletRepository;
-    private VoucherRepository $voucherRepository;
-    private DepositController $controller;
+    private VoucherController $controller;
     private User $user;
 
     protected function setUp(): void
     {
+        $this->service = $this->createMock(VoucherService::class);
+        $this->voucherRepository = $this->createMock(VoucherRepository::class);
         $this->depositService = $this->createMock(DepositService::class);
         $this->walletRepository = $this->createMock(WalletRepository::class);
-        $this->voucherRepository = $this->createMock(VoucherRepository::class);
 
         $this->user = new User();
-        $this->user->setEmail('dep@t.com')->setUsername('dep');
+        $this->user->setEmail('v@t.com')->setUsername('v');
         $rId = new \ReflectionProperty(User::class, 'id');
         $rId->setValue($this->user, 77);
 
-        $this->controller = new DepositController(
+        $this->controller = new VoucherController(
+            $this->service,
+            $this->voucherRepository,
             $this->depositService,
             $this->walletRepository,
-            $this->voucherRepository,
         );
     }
 
@@ -108,17 +112,17 @@ final class DepositControllerTest extends TestCase
             $amount,
             'CNY',
             'ref-1',
-            'dep',
+            'v',
         );
         $voucher->markApplied('tx-1');
 
         return $voucher;
     }
 
-    public function testCreateDepositIntoOwnWallet(): void
+    public function testDepositIntoOwnWallet(): void
     {
         $requestStack = new RequestStack();
-        $requestStack->push($this->jsonRequest('/api/v1/app/deposits', [
+        $requestStack->push($this->jsonRequest('/api/v1/app/vouchers/deposit', [
             'walletId' => 5, 'amount' => 50000, 'currency' => 'CNY',
             'referenceId' => 'APP-DEP-1', 'reason' => 'self top-up',
         ]));
@@ -127,21 +131,20 @@ final class DepositControllerTest extends TestCase
         $this->walletRepository->method('find')->with(5)->willReturn($this->makeWallet(5, $this->user));
         $voucher = $this->makeAppliedVoucher(5, 50000, $this->user);
         $this->depositService->method('deposit')
-            ->with(Voucher::VOUCHER_TYPE_MANUAL, 'APP-DEP-1', 5, 50000, 'CNY', 'APP-DEP-1', 'dep', 'self top-up')
+            ->with(Voucher::VOUCHER_TYPE_MANUAL, 'APP-DEP-1', 5, 50000, 'CNY', 'APP-DEP-1', 'v', 'self top-up')
             ->willReturn($voucher);
 
-        $response = $this->controller->createAction($requestStack->getCurrentRequest());
+        $response = $this->controller->depositAction($requestStack->getCurrentRequest());
 
         self::assertSame(201, $response->getStatusCode());
         $body = json_decode((string) $response->getContent(), true);
-        self::assertSame('applied', $body['data']['status']);
-        self::assertSame(50000, $body['data']['amount']);
+        self::assertSame('Deposit completed', $body['message']);
     }
 
-    public function testCreateDepositIntoForeignWalletIsForbidden(): void
+    public function testDepositIntoForeignWalletIsForbidden(): void
     {
         $requestStack = new RequestStack();
-        $requestStack->push($this->jsonRequest('/api/v1/app/deposits', [
+        $requestStack->push($this->jsonRequest('/api/v1/app/vouchers/deposit', [
             'walletId' => 5, 'amount' => 100, 'currency' => 'CNY', 'referenceId' => 'r1',
         ]));
         $this->injectDependencies($requestStack);
@@ -152,7 +155,7 @@ final class DepositControllerTest extends TestCase
         $rId->setValue($other, 88);
         $this->walletRepository->method('find')->with(5)->willReturn($this->makeWallet(5, $other));
 
-        $response = $this->controller->createAction($requestStack->getCurrentRequest());
+        $response = $this->controller->depositAction($requestStack->getCurrentRequest());
 
         self::assertSame(404, $response->getStatusCode());
         $body = json_decode((string) $response->getContent(), true);
@@ -160,23 +163,23 @@ final class DepositControllerTest extends TestCase
     }
 
     #[Group('low-value')]
-    public function testCreateDepositRejectsMissingFields(): void
+    public function testDepositRejectsMissingFields(): void
     {
         $requestStack = new RequestStack();
-        $requestStack->push($this->jsonRequest('/api/v1/app/deposits', ['walletId' => 5]));
+        $requestStack->push($this->jsonRequest('/api/v1/app/vouchers/deposit', ['walletId' => 5]));
         $this->injectDependencies($requestStack);
 
-        $response = $this->controller->createAction($requestStack->getCurrentRequest());
+        $response = $this->controller->depositAction($requestStack->getCurrentRequest());
 
         self::assertSame(400, $response->getStatusCode());
         $body = json_decode((string) $response->getContent(), true);
         self::assertStringContainsString('required', $body['message']);
     }
 
-    public function testReverseOwnDeposit(): void
+    public function testReverseOwnVoucher(): void
     {
         $requestStack = new RequestStack();
-        $requestStack->push($this->jsonRequest('/api/v1/app/deposits/uuid-1/reverse', [
+        $requestStack->push($this->jsonRequest('/api/v1/app/vouchers/uuid-1/reverse', [
             'reason' => 'self revert',
         ]));
         $this->injectDependencies($requestStack);
@@ -190,13 +193,13 @@ final class DepositControllerTest extends TestCase
 
         self::assertSame(200, $response->getStatusCode());
         $body = json_decode((string) $response->getContent(), true);
-        self::assertSame('reversed', $body['data']['status']);
+        self::assertSame('Deposit reversed', $body['message']);
     }
 
-    public function testReverseForeignDepositIsForbidden(): void
+    public function testReverseForeignVoucherIsForbidden(): void
     {
         $requestStack = new RequestStack();
-        $requestStack->push($this->jsonRequest('/api/v1/app/deposits/uuid-1/reverse', []));
+        $requestStack->push($this->jsonRequest('/api/v1/app/vouchers/uuid-1/reverse', []));
         $this->injectDependencies($requestStack);
 
         $other = new User();

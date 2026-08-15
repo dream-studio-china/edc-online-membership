@@ -148,7 +148,7 @@ USR_WID=$(api "create user wallet" POST /api/v1/manage/wallets "$ADMIN_TOKEN" \
 echo "  bank_wallet=$BANK_WID | user_wallet=$USR_WID"
 
 # Fund bank wallet with enough money for all operations
-api "deposit 5000 CNY to bank" POST /api/v1/manage/deposits "$ADMIN_TOKEN" \
+api "deposit 5000 CNY to bank" POST /api/v1/manage/vouchers/deposit "$ADMIN_TOKEN" \
   "{\"walletId\":$BANK_WID,\"amount\":500000,\"currency\":\"CNY\",\"referenceId\":\"smoke-bank-fund-1\",\"reason\":\"Bank funding\"}" 201 >/dev/null
 
 # Recharge user wallet for wallet-payment tests
@@ -161,8 +161,8 @@ echo "  user wallet balance BEFORE payments: $USR_BAL_BEFORE cent ($(python3 -c 
 
 api "transfer insufficient (400)"  POST /api/v1/manage/transactions "$ADMIN_TOKEN" "{\"fromWalletId\":$USR_WID,\"toWalletId\":$BANK_WID,\"amount\":999999}" 400 >/dev/null
 api "transfer same wallet (400)"   POST /api/v1/manage/transactions "$ADMIN_TOKEN" "{\"fromWalletId\":$BANK_WID,\"toWalletId\":$BANK_WID,\"amount\":100}" 400 >/dev/null
-api "deposit negative (400)"       POST /api/v1/manage/deposits "$ADMIN_TOKEN" '{"walletId":1,"amount":-100,"currency":"CNY","referenceId":"x"}' 400 >/dev/null
-api "deposit nonexistent (404)"    POST /api/v1/manage/deposits "$ADMIN_TOKEN" '{"walletId":99999,"amount":100,"currency":"CNY","referenceId":"x"}' 404 >/dev/null
+api "deposit negative (400)"       POST /api/v1/manage/vouchers/deposit "$ADMIN_TOKEN" '{"walletId":1,"amount":-100,"currency":"CNY","referenceId":"x"}' 400 >/dev/null
+api "deposit nonexistent (404)"    POST /api/v1/manage/vouchers/deposit "$ADMIN_TOKEN" '{"walletId":99999,"amount":100,"currency":"CNY","referenceId":"x"}' 404 >/dev/null
 
 # ══════════════════════════════════════════════════════════════════════════════
 #  PHASE 5 — Browse + Profile
