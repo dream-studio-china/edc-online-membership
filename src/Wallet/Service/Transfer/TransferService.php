@@ -11,12 +11,15 @@ use App\Wallet\Exception\SameWalletTransferException;
 use App\Wallet\Exception\WalletFrozenException;
 use App\Wallet\Repository\WalletRepository;
 use App\Wallet\Repository\TransactionRepository;
+use App\Wallet\Service\Concern\WrapInTransactionTrait;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
 use Psr\Log\LoggerInterface;
 
 final class TransferService implements TransferServiceInterface
 {
+    use WrapInTransactionTrait;
+
     private EntityManagerInterface $em;
 
     public function __construct(
@@ -60,9 +63,7 @@ final class TransferService implements TransferServiceInterface
 
         $uuid = self::generateUuid();
 
-        $this->em->beginTransaction();
-
-        try {
+        return $this->wrapInTransaction(function () use ($fromWalletId, $toWalletId, $amount, $referenceId, $description, $uuid) {
             // Lock wallets in consistent order (by ID) to prevent deadlocks
             [$firstId, $secondId] = $fromWalletId < $toWalletId
                 ? [$fromWalletId, $toWalletId]
@@ -125,9 +126,6 @@ final class TransferService implements TransferServiceInterface
             $transaction->markCompleted();
 
             $this->em->persist($transaction);
-            $this->em->flush();
-
-            $this->em->commit();
 
             $this->logger->info('Transfer completed', [
                 'uuid' => $uuid,
@@ -137,18 +135,7 @@ final class TransferService implements TransferServiceInterface
             ]);
 
             return new TransferResult($transaction, $fromWallet->getBalance(), $toWallet->getBalance());
-        } catch (\Throwable $e) {
-            if ($this->em->getConnection()->isTransactionActive()) {
-                $this->em->rollback();
-            }
-            if (!$this->em->isOpen()) {
-                $this->registry->resetManager();
-                /** @var EntityManagerInterface $newEm */
-                $newEm = $this->registry->getManager();
-                $this->em = $newEm;
-            }
-            throw $e;
-        }
+        });
     }
 
     public function hold(int $walletId, int $amount, ?string $description = null): Wallet
@@ -176,9 +163,7 @@ final class TransferService implements TransferServiceInterface
      */
     private function mutateHeld(int $walletId, int $amount, ?string $description = null): Wallet
     {
-        $this->em->beginTransaction();
-
-        try {
+        return $this->wrapInTransaction(function () use ($walletId, $amount, $description) {
             $wallet = $this->walletRepo->findByIdForUpdate($walletId);
 
             if ($wallet === null) {
@@ -205,26 +190,13 @@ final class TransferService implements TransferServiceInterface
 
             $this->em->refresh($wallet);
 
-            $this->em->commit();
-
             $this->logger->info(
                 $amount > 0 ? 'Hold applied' : 'Hold released',
                 ['walletId' => $walletId, 'amount' => $amount, 'description' => $description],
             );
 
             return $wallet;
-        } catch (\Throwable $e) {
-            if ($this->em->getConnection()->isTransactionActive()) {
-                $this->em->rollback();
-            }
-            if (!$this->em->isOpen()) {
-                $this->registry->resetManager();
-                /** @var EntityManagerInterface $newEm */
-                $newEm = $this->registry->getManager();
-                $this->em = $newEm;
-            }
-            throw $e;
-        }
+        });
     }
 
     private static function generateUuid(): string

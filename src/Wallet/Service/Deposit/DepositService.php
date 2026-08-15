@@ -11,6 +11,7 @@ use App\Wallet\Exception\InsufficientFundsException;
 use App\Wallet\Exception\WalletFrozenException;
 use App\Wallet\Repository\WalletRepository;
 use App\Wallet\Repository\VoucherRepository;
+use App\Wallet\Service\Concern\WrapInTransactionTrait;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
 use Psr\Log\LoggerInterface;
@@ -25,6 +26,8 @@ use Psr\Log\LoggerInterface;
  */
 final class DepositService implements DepositServiceInterface
 {
+    use WrapInTransactionTrait;
+
     private EntityManagerInterface $em;
 
     public function __construct(
@@ -81,9 +84,10 @@ final class DepositService implements DepositServiceInterface
             throw new \InvalidArgumentException(sprintf('Unsupported voucher type "%s".', $voucherType));
         }
 
-        $this->em->beginTransaction();
-
-        try {
+        return $this->wrapInTransaction(function () use (
+            $voucherType, $voucherId, $walletId, $amount, $currency,
+            $referenceId, $createdBy, $reason, $fundSource, $options, $provider,
+        ) {
             $wallet = $this->walletRepository->findByIdForUpdate($walletId);
             if ($wallet === null) {
                 throw new \RuntimeException("Target wallet #$walletId not found");
@@ -132,9 +136,6 @@ final class DepositService implements DepositServiceInterface
 
             $this->em->persist($voucher);
             $this->em->persist($tx);
-            $this->em->flush();
-
-            $this->em->commit();
 
             $this->logger->info('Deposit applied', [
                 'uuid' => $voucher->getUuid(),
@@ -145,18 +146,7 @@ final class DepositService implements DepositServiceInterface
             ]);
 
             return $voucher;
-        } catch (\Throwable $e) {
-            if ($this->em->getConnection()->isTransactionActive()) {
-                $this->em->rollback();
-            }
-            if (!$this->em->isOpen()) {
-                $this->registry->resetManager();
-                /** @var EntityManagerInterface $newEm */
-                $newEm = $this->registry->getManager();
-                $this->em = $newEm;
-            }
-            throw $e;
-        }
+        });
     }
 
     /**
@@ -183,9 +173,7 @@ final class DepositService implements DepositServiceInterface
         $walletId = $voucher->getWallet()->getId();
         \assert($walletId !== null);
 
-        $this->em->beginTransaction();
-
-        try {
+        $this->wrapInTransaction(function () use ($voucher, $walletId, $amount, $reason) {
             $wallet = $this->walletRepository->findByIdForUpdate($walletId);
             if ($wallet === null) {
                 throw new \RuntimeException("Wallet #$walletId not found");
@@ -211,27 +199,13 @@ final class DepositService implements DepositServiceInterface
             $voucher->markReversed($tx->getUuid(), $reason);
 
             $this->em->persist($tx);
-            $this->em->flush();
-
-            $this->em->commit();
 
             $this->logger->info('Deposit reversed', [
                 'uuid' => $voucher->getUuid(),
                 'walletId' => $walletId,
                 'amount' => $amount,
             ]);
-        } catch (\Throwable $e) {
-            if ($this->em->getConnection()->isTransactionActive()) {
-                $this->em->rollback();
-            }
-            if (!$this->em->isOpen()) {
-                $this->registry->resetManager();
-                /** @var EntityManagerInterface $newEm */
-                $newEm = $this->registry->getManager();
-                $this->em = $newEm;
-            }
-            throw $e;
-        }
+        });
 
         $provider = $this->depositRegistry->forVoucherType($voucher->getVoucherType());
         if ($provider !== null) {
