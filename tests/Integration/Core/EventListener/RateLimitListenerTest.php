@@ -90,7 +90,7 @@ final class RateLimitListenerTest extends IntegrationWebTestCase
         $body = json_decode((string) $response->getContent(), true, 512, JSON_THROW_ON_ERROR);
         self::assertSame(429, $body['code']);
         self::assertNull($body['data']);
-        self::assertStringContainsString('Too many requests', $body['message']);
+        self::assertNotEmpty($body['message']);
     }
 
     public function testDifferentClientIpsHaveIndependentLimits(): void

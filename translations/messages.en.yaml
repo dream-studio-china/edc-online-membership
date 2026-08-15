@@ -23,20 +23,20 @@
 "Invoice": "Invoice"
 "Wallet": "Wallet"
 "Transaction": "Transaction"
-"PaymentDeduction": "PaymentDeduction"
+"PaymentDeduction": "Payment Deduction"
 "WechatUser": "WechatUser"
 "Material": "Material"
-"Stock": "Inventory Stock"
+"Stock": "Stock"
 "SpecificationRecipe": "Specification Recipe"
 "RecipeLine": "Recipe Line"
-"Reservation": "Inventory Reservation"
+"Reservation": "Reservation"
 "ReservationLine": "Reservation Line"
-"LedgerEntry": "Inventory Ledger Entry"
+"LedgerEntry": "Ledger Entry"
 "InventoryConsumedEvent": "Inventory Consumed Event"
 "InventoryOutboxMessage": "Inventory Outbox Message"
 "StoreTradeOrderCancellation": "Store Trade Order Cancellation"
 "StoreOrder": "Store Order"
-"Membership": "Store Membership"
+"Membership": "Membership"
 "Profile": "Profile"
 "Promotion": "Promotion"
 "PromotionTemplate": "Promotion Template"
@@ -44,6 +44,10 @@
 "StoreConsumedEvent": "Store Consumed Event"
 "StoreOutboxMessage": "Store Outbox Message"
 "TradeOutboxMessage": "Trade Outbox Message"
+"Voucher": "Voucher"
+"VoucherComment": "Voucher Comment"
+"Reconciliation": "Reconciliation"
+"Refund": "Refund"
 
 # ====================================================================
 # Entity field names (camelCase → plain text, used by EntityController)
@@ -270,6 +274,7 @@
 "OTP sent too recently, please wait.": "OTP sent too recently, please wait."
 "Failed to send SMS.": "Failed to send SMS."
 "Password cannot be empty.": "Password cannot be empty."
+"Too many requests. Please try again later.": "Too many requests. Please try again later."
 
 # ====================================================================
 # JWT
@@ -352,6 +357,7 @@
 "Deduction currency must match invoice currency.": "Deduction currency must match invoice currency."
 "Invoice payer is required for wallet payment deduction.": "Invoice payer is required for wallet payment deduction."
 "%d wallet(s) reconciled": "%d wallet(s) reconciled"
+"walletId, amount, currency, and referenceId are required": "walletId, amount, currency, and referenceId are required"
 
 # ====================================================================
 # Trade / Order
