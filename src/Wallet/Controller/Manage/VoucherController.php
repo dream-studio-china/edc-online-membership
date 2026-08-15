@@ -51,6 +51,9 @@ class VoucherController extends RestController
             return $this->warning('walletId, amount, currency, and referenceId are required', 400, '', 400);
         }
 
+        $user = $this->getUser();
+        $actorName = $user instanceof User ? $user->getUsername() : 'system';
+
         try {
             $voucher = $this->depositService->deposit(
                 Voucher::VOUCHER_TYPE_MANUAL,
@@ -59,7 +62,7 @@ class VoucherController extends RestController
                 $amount,
                 $currency,
                 $referenceId,
-                $this->actorName(),
+                $actorName,
                 $reason,
             );
 
@@ -71,7 +74,7 @@ class VoucherController extends RestController
         } catch (\InvalidArgumentException $e) {
             return $this->warning($e->getMessage(), 400, '', 400);
         } catch (\RuntimeException $e) {
-            $status = $this->isNotFound($e) ? 404 : 500;
+            $status = str_contains($e->getMessage(), 'not found') ? 404 : 500;
             return $this->warning($e->getMessage() ?: 'Deposit failed', $status, '', $status);
         }
     }
@@ -91,23 +94,8 @@ class VoucherController extends RestController
         } catch (\LogicException $e) {
             return $this->warning($e->getMessage(), 409, '', 409);
         } catch (\RuntimeException $e) {
-            $status = $this->isNotFound($e) ? 404 : 500;
+            $status = str_contains($e->getMessage(), 'not found') ? 404 : 500;
             return $this->warning($e->getMessage() ?: 'Reversal failed', $status, '', $status);
         }
-    }
-
-    private function isNotFound(\RuntimeException $e): bool
-    {
-        return str_contains($e->getMessage(), 'not found');
-    }
-
-    private function actorName(): string
-    {
-        $user = $this->getUser();
-        if ($user instanceof User) {
-            return $user->getUsername();
-        }
-
-        return 'system';
     }
 }
