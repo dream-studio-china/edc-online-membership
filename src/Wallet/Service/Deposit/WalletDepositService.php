@@ -23,7 +23,7 @@ use Psr\Log\LoggerInterface;
  * the source, so the boundary invariant SUM(balance) == SUM(credit vouchers) -
  * SUM(debit vouchers) stays exact.
  */
-final class WalletDepositService
+class WalletDepositService
 {
     private EntityManagerInterface $em;
 

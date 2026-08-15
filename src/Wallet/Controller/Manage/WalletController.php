@@ -25,8 +25,14 @@ class WalletController extends RestController
     protected array $requiredCreateProperties = ['user', 'currency'];
     /** @var list<string> */
     protected array $acceptedCreateProperties = ['user', 'currency', 'status', 'label'];
-    /** @var list<string> */
-    protected array $acceptedUpdateProperties = ['status', 'label', 'currency'];
+    /**
+     * Only mutable business fields. `currency` is immutable: it is the unit of
+     * account of the wallet's ledger, and changing it would break transactions,
+     * vouchers, and balance verification.
+     *
+     * @var list<string>
+     */
+    protected array $acceptedUpdateProperties = ['status', 'label'];
 
     public function __construct(
         protected readonly WalletService $service
