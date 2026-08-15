@@ -10,6 +10,8 @@ use App\Wallet\Entity\Voucher;
 use App\Wallet\Entity\Wallet;
 use App\Wallet\Service\Deposit\DepositServiceInterface;
 use App\Wallet\Service\VoucherServiceInterface;
+use App\Wallet\Service\Withdraw\WithdrawServiceInterface;
+use App\Wallet\Repository\VoucherRepository;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Request;
@@ -22,13 +24,22 @@ final class VoucherControllerTest extends TestCase
 {
     private VoucherServiceInterface $service;
     private DepositServiceInterface $depositService;
+    private WithdrawServiceInterface $withdrawService;
+    private VoucherRepository $voucherRepository;
     private VoucherController $controller;
 
     protected function setUp(): void
     {
         $this->service = $this->createMock(VoucherServiceInterface::class);
         $this->depositService = $this->createMock(DepositServiceInterface::class);
-        $this->controller = new VoucherController($this->service, $this->depositService);
+        $this->withdrawService = $this->createMock(WithdrawServiceInterface::class);
+        $this->voucherRepository = $this->createMock(VoucherRepository::class);
+        $this->controller = new VoucherController(
+            $this->service,
+            $this->depositService,
+            $this->withdrawService,
+            $this->voucherRepository,
+        );
     }
 
     private function injectDependencies(RequestStack $requestStack): void
@@ -91,6 +102,30 @@ final class VoucherControllerTest extends TestCase
         return $voucher;
     }
 
+    private function makeAppliedDebitVoucher(int $amount): Voucher
+    {
+        $user = new User();
+        $user->setEmail('m@t.com')->setUsername('m');
+        $wallet = new Wallet($user, 'CNY');
+        $r = new \ReflectionProperty(Wallet::class, 'id');
+        $r->setValue($wallet, 9);
+
+        $voucher = new Voucher(
+            $wallet,
+            Voucher::DIRECTION_DEBIT,
+            Voucher::FUND_SOURCE_EXTERNAL,
+            Voucher::VOUCHER_TYPE_MANUAL,
+            'manual-1',
+            $amount,
+            'CNY',
+            'ref-1',
+            'admin',
+        );
+        $voucher->markApplied('tx-1');
+
+        return $voucher;
+    }
+
     public function testDepositIntoAnyWallet(): void
     {
         $requestStack = new RequestStack();
@@ -134,6 +169,7 @@ final class VoucherControllerTest extends TestCase
 
         $voucher = $this->makeAppliedVoucher(30000);
         $voucher->markReversed('rev-tx-1', 'admin revert');
+        $this->voucherRepository->method('findByUuid')->with('uuid-1')->willReturn($voucher);
         $this->depositService->method('reverse')->with('uuid-1', 'admin revert')->willReturn($voucher);
 
         $response = $this->controller->reverseAction('uuid-1', $requestStack->getCurrentRequest());
@@ -143,18 +179,69 @@ final class VoucherControllerTest extends TestCase
         self::assertSame('Deposit reversed', $body['message']);
     }
 
+    public function testReverseWithdrawalVoucher(): void
+    {
+        $requestStack = new RequestStack();
+        $requestStack->push($this->jsonRequest('/api/v1/manage/vouchers/uuid-1/reverse', [
+            'reason' => 'admin revert',
+        ]));
+        $this->injectDependencies($requestStack);
+
+        $voucher = $this->makeAppliedDebitVoucher(30000);
+        $voucher->markReversed('rev-tx-1', 'admin revert');
+        $this->voucherRepository->method('findByUuid')->with('uuid-1')->willReturn($voucher);
+        $this->withdrawService->method('reverse')->with('uuid-1', 'admin revert')->willReturn($voucher);
+
+        $response = $this->controller->reverseAction('uuid-1', $requestStack->getCurrentRequest());
+
+        self::assertSame(200, $response->getStatusCode());
+        $body = json_decode((string) $response->getContent(), true);
+        self::assertSame('Withdrawal reversed', $body['message']);
+    }
+
     public function testReverseVoucherNotFound(): void
     {
         $requestStack = new RequestStack();
         $requestStack->push($this->jsonRequest('/api/v1/manage/vouchers/missing/reverse', []));
         $this->injectDependencies($requestStack);
 
-        $this->depositService->method('reverse')->willThrowException(
-            new \RuntimeException('Voucher "missing" not found.')
-        );
+        $this->voucherRepository->method('findByUuid')->with('missing')->willReturn(null);
 
         $response = $this->controller->reverseAction('missing', $requestStack->getCurrentRequest());
 
         self::assertSame(404, $response->getStatusCode());
+    }
+
+    public function testWithdrawFromAnyWallet(): void
+    {
+        $requestStack = new RequestStack();
+        $requestStack->push($this->jsonRequest('/api/v1/manage/vouchers/withdraw', [
+            'walletId' => 9, 'amount' => 30000, 'currency' => 'CNY', 'referenceId' => 'WD-1',
+        ]));
+        $this->injectDependencies($requestStack);
+
+        $voucher = $this->makeAppliedDebitVoucher(30000);
+        $this->withdrawService->method('withdraw')
+            ->with(Voucher::VOUCHER_TYPE_MANUAL, 'WD-1', 9, 30000, 'CNY', 'WD-1', 'system', null)
+            ->willReturn($voucher);
+
+        $response = $this->controller->withdrawAction($requestStack->getCurrentRequest());
+
+        self::assertSame(201, $response->getStatusCode());
+        $body = json_decode((string) $response->getContent(), true);
+        self::assertSame('Withdrawal completed', $body['message']);
+    }
+
+    public function testWithdrawRejectsMissingFields(): void
+    {
+        $requestStack = new RequestStack();
+        $requestStack->push($this->jsonRequest('/api/v1/manage/vouchers/withdraw', ['walletId' => 9]));
+        $this->injectDependencies($requestStack);
+
+        $response = $this->controller->withdrawAction($requestStack->getCurrentRequest());
+
+        self::assertSame(400, $response->getStatusCode());
+        $body = json_decode((string) $response->getContent(), true);
+        self::assertStringContainsString('required', $body['message']);
     }
 }

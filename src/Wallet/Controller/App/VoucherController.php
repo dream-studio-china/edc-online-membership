@@ -17,6 +17,7 @@ use App\Wallet\Repository\VoucherRepository;
 use App\Wallet\Repository\WalletRepository;
 use App\Wallet\Service\Deposit\DepositServiceInterface;
 use App\Wallet\Service\VoucherServiceInterface;
+use App\Wallet\Service\Withdraw\WithdrawServiceInterface;
 use Doctrine\ORM\QueryBuilder;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -39,6 +40,7 @@ class VoucherController extends RestController
         protected readonly VoucherServiceInterface $service,
         private readonly VoucherRepository $voucherRepository,
         private readonly DepositServiceInterface $depositService,
+        private readonly WithdrawServiceInterface $withdrawService,
         private readonly WalletRepository $walletRepository,
     ) {}
 
@@ -101,11 +103,59 @@ class VoucherController extends RestController
         }
     }
 
+    #[Route('/withdraw', name: 'withdraw', methods: ['POST'])]
+    public function withdrawAction(Request $request): Response
+    {
+        $content = json_decode($request->getContent(), true) ?: [];
+
+        $walletId = (int) ($content['walletId'] ?? 0);
+        $amount = (int) ($content['amount'] ?? 0);
+        $currency = (string) ($content['currency'] ?? '');
+        $referenceId = (string) ($content['referenceId'] ?? '');
+        $voucherId = (string) ($content['voucherId'] ?? $referenceId);
+        $reason = isset($content['reason']) ? (string) $content['reason'] : null;
+
+        if ($walletId <= 0 || $amount <= 0 || $currency === '' || $referenceId === '') {
+            return $this->warning('walletId, amount, currency, and referenceId are required', 400, '', 400);
+        }
+
+        $user = $this->getUser();
+        \assert($user instanceof User);
+        $wallet = $this->walletRepository->find($walletId);
+        if (!$wallet instanceof Wallet || $wallet->getUser()?->getId() !== $user->getId()) {
+            return $this->warning('Wallet not found', 404, '', 404);
+        }
+
+        try {
+            $voucher = $this->withdrawService->withdraw(
+                Voucher::VOUCHER_TYPE_MANUAL,
+                $voucherId,
+                $walletId,
+                $amount,
+                $currency,
+                $referenceId,
+                $user->getUsername(),
+                $reason,
+            );
+
+            return $this->success($voucher, 'Withdrawal completed', 201);
+        } catch (WalletFrozenException $e) {
+            return $this->warning($e->getMessage(), 403, '', 403);
+        } catch (InsufficientFundsException $e) {
+            return $this->warning($e->getMessage(), 402, '', 402);
+        } catch (\InvalidArgumentException $e) {
+            return $this->warning($e->getMessage(), 400, '', 400);
+        } catch (\RuntimeException $e) {
+            $status = str_contains($e->getMessage(), 'not found') ? 404 : 500;
+            return $this->warning($e->getMessage() ?: 'Withdrawal failed', $status, '', $status);
+        }
+    }
+
     #[Route('/{uuid}/reverse', name: 'reverse', methods: ['POST'])]
     public function reverseAction(string $uuid, Request $request): Response
     {
         $content = json_decode($request->getContent(), true) ?: [];
-        $reason = (string) ($content['reason'] ?? 'Deposit reversed');
+        $reason = (string) ($content['reason'] ?? 'Voucher reversed');
 
         $user = $this->getUser();
         \assert($user instanceof User);
@@ -115,9 +165,15 @@ class VoucherController extends RestController
         }
 
         try {
-            $voucher = $this->depositService->reverse($uuid, $reason);
+            $voucher = $voucher->getDirection() === Voucher::DIRECTION_CREDIT
+                ? $this->depositService->reverse($uuid, $reason)
+                : $this->withdrawService->reverse($uuid, $reason);
 
-            return $this->success($voucher, 'Deposit reversed', 200);
+            $message = $voucher->getDirection() === Voucher::DIRECTION_CREDIT
+                ? 'Deposit reversed'
+                : 'Withdrawal reversed';
+
+            return $this->success($voucher, $message, 200);
         } catch (\InvalidArgumentException $e) {
             return $this->warning($e->getMessage(), 400, '', 400);
         } catch (\LogicException $e) {

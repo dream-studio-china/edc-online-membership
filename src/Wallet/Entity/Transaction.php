@@ -18,6 +18,7 @@ class Transaction
     public const TYPE_REFUND = 'refund';
     public const TYPE_ADJUSTMENT = 'adjustment';
     public const TYPE_CREDIT_REVERSAL = 'credit_reversal';
+    public const TYPE_DEBIT_REVERSAL = 'debit_reversal';
 
     public const STATUS_PENDING = 'pending';
     public const STATUS_COMPLETED = 'completed';
@@ -135,6 +136,7 @@ class Transaction
             self::TYPE_REFUND,
             self::TYPE_ADJUSTMENT,
             self::TYPE_CREDIT_REVERSAL,
+            self::TYPE_DEBIT_REVERSAL,
         ];
         if (!in_array($type, $allowed, true)) {
             throw new \InvalidArgumentException("Invalid transaction type: $type");

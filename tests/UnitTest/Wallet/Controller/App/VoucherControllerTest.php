@@ -12,6 +12,7 @@ use App\Wallet\Repository\VoucherRepository;
 use App\Wallet\Repository\WalletRepository;
 use App\Wallet\Service\Deposit\DepositServiceInterface;
 use App\Wallet\Service\VoucherServiceInterface;
+use App\Wallet\Service\Withdraw\WithdrawServiceInterface;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
@@ -28,6 +29,7 @@ final class VoucherControllerTest extends TestCase
     private VoucherServiceInterface $service;
     private VoucherRepository $voucherRepository;
     private DepositServiceInterface $depositService;
+    private WithdrawServiceInterface $withdrawService;
     private WalletRepository $walletRepository;
     private VoucherController $controller;
     private User $user;
@@ -37,6 +39,7 @@ final class VoucherControllerTest extends TestCase
         $this->service = $this->createMock(VoucherServiceInterface::class);
         $this->voucherRepository = $this->createMock(VoucherRepository::class);
         $this->depositService = $this->createMock(DepositServiceInterface::class);
+        $this->withdrawService = $this->createMock(WithdrawServiceInterface::class);
         $this->walletRepository = $this->createMock(WalletRepository::class);
 
         $this->user = new User();
@@ -48,6 +51,7 @@ final class VoucherControllerTest extends TestCase
             $this->service,
             $this->voucherRepository,
             $this->depositService,
+            $this->withdrawService,
             $this->walletRepository,
         );
     }
@@ -106,6 +110,25 @@ final class VoucherControllerTest extends TestCase
         $voucher = new Voucher(
             $wallet,
             Voucher::DIRECTION_CREDIT,
+            Voucher::FUND_SOURCE_EXTERNAL,
+            Voucher::VOUCHER_TYPE_MANUAL,
+            'manual-1',
+            $amount,
+            'CNY',
+            'ref-1',
+            'v',
+        );
+        $voucher->markApplied('tx-1');
+
+        return $voucher;
+    }
+
+    private function makeAppliedDebitVoucher(int $walletId, int $amount, ?User $owner = null): Voucher
+    {
+        $wallet = $this->makeWallet($walletId, $owner);
+        $voucher = new Voucher(
+            $wallet,
+            Voucher::DIRECTION_DEBIT,
             Voucher::FUND_SOURCE_EXTERNAL,
             Voucher::VOUCHER_TYPE_MANUAL,
             'manual-1',
@@ -214,5 +237,62 @@ final class VoucherControllerTest extends TestCase
         self::assertSame(404, $response->getStatusCode());
         $body = json_decode((string) $response->getContent(), true);
         self::assertStringContainsString('Voucher not found', $body['message']);
+    }
+
+    public function testWithdrawFromOwnWallet(): void
+    {
+        $requestStack = new RequestStack();
+        $requestStack->push($this->jsonRequest('/api/v1/app/vouchers/withdraw', [
+            'walletId' => 5, 'amount' => 30000, 'currency' => 'CNY',
+            'referenceId' => 'APP-WD-1', 'reason' => 'self payout',
+        ]));
+        $this->injectDependencies($requestStack);
+
+        $this->walletRepository->method('find')->with(5)->willReturn($this->makeWallet(5, $this->user));
+        $voucher = $this->makeAppliedDebitVoucher(5, 30000, $this->user);
+        $this->withdrawService->method('withdraw')
+            ->with(Voucher::VOUCHER_TYPE_MANUAL, 'APP-WD-1', 5, 30000, 'CNY', 'APP-WD-1', 'v', 'self payout')
+            ->willReturn($voucher);
+
+        $response = $this->controller->withdrawAction($requestStack->getCurrentRequest());
+
+        self::assertSame(201, $response->getStatusCode());
+        $body = json_decode((string) $response->getContent(), true);
+        self::assertSame('Withdrawal completed', $body['message']);
+    }
+
+    public function testWithdrawFromForeignWalletIsForbidden(): void
+    {
+        $requestStack = new RequestStack();
+        $requestStack->push($this->jsonRequest('/api/v1/app/vouchers/withdraw', [
+            'walletId' => 5, 'amount' => 100, 'currency' => 'CNY', 'referenceId' => 'r1',
+        ]));
+        $this->injectDependencies($requestStack);
+
+        $other = new User();
+        $other->setEmail('other@t.com')->setUsername('other');
+        $rId = new \ReflectionProperty(User::class, 'id');
+        $rId->setValue($other, 88);
+        $this->walletRepository->method('find')->with(5)->willReturn($this->makeWallet(5, $other));
+
+        $response = $this->controller->withdrawAction($requestStack->getCurrentRequest());
+
+        self::assertSame(404, $response->getStatusCode());
+        $body = json_decode((string) $response->getContent(), true);
+        self::assertStringContainsString('Wallet not found', $body['message']);
+    }
+
+    #[Group('low-value')]
+    public function testWithdrawRejectsMissingFields(): void
+    {
+        $requestStack = new RequestStack();
+        $requestStack->push($this->jsonRequest('/api/v1/app/vouchers/withdraw', ['walletId' => 5]));
+        $this->injectDependencies($requestStack);
+
+        $response = $this->controller->withdrawAction($requestStack->getCurrentRequest());
+
+        self::assertSame(400, $response->getStatusCode());
+        $body = json_decode((string) $response->getContent(), true);
+        self::assertStringContainsString('required', $body['message']);
     }
 }

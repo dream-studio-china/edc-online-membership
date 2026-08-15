@@ -68,6 +68,12 @@ src/Wallet/
     |-- TransferService.php              # Core transfer + deposit logic
     |-- TransferServiceInterface.php     # Transfer + deposit contract
     |-- WalletService.php                # + verifyBalance(), reconcile()
+    |-- Withdraw/
+    |   |-- WithdrawService.php          # Voucher-backed withdrawal + reversal
+    |   |-- WithdrawServiceInterface.php # Withdrawal contract
+    |   |-- WithdrawProviderInterface.php
+    |   |-- WithdrawProviderRegistry.php
+    |   |-- ManualWithdrawProvider.php
 ```
 
 ---
@@ -106,7 +112,7 @@ src/Wallet/
 | `fromWallet` | ManyToOne -> Wallet (nullable) | Source wallet |
 | `toWallet` | ManyToOne -> Wallet (nullable) | Destination wallet |
 | `amount` | int (bigint) | Amount in cents |
-| `type` | string | `deposit`, `withdrawal`, `transfer`, `fee`, `refund`, `adjustment`, **`credit_reversal`** |
+| `type` | string | `deposit`, `withdrawal`, `transfer`, `fee`, `refund`, `adjustment`, **`credit_reversal`**, **`debit_reversal`** |
 | `status` | string | `pending`, `completed`, `failed`, `reversed` |
 | `referenceId` | string (unique) | Idempotency key |
 | `description` | string | Human-readable note |
@@ -124,7 +130,7 @@ src/Wallet/
 | `fromWallet = null`, `toWallet = wallet` | **Single-sided credit** — funds enter the wallet system from outside, backed by a `wallet_voucher` (deposit) |
 | `fromWallet = wallet`, `toWallet = null` | **Single-sided debit** — funds leave the wallet system (withdrawal, or `credit_reversal` of a deposit) |
 
-A deposit MUST write `fromWallet = null`; a reversal/withdrawal MUST write `toWallet = null`. A transfer MUST have both sides. Anything else is a contract violation. `credit_reversal` reverses a credit (deposit) with a single-sided debit; `debit_reversal` (future) reverses a debit (withdrawal) with a single-sided credit.
+A deposit MUST write `fromWallet = null`; a reversal/withdrawal MUST write `toWallet = null`. A transfer MUST have both sides. Anything else is a contract violation. `credit_reversal` reverses a credit (deposit) with a single-sided debit; `debit_reversal` reverses a debit (withdrawal) with a single-sided credit.
 
 **Two-layer ledger (contract)**: wallet movements and boundary events are recorded separately and must not be conflated.
 
@@ -279,6 +285,46 @@ class TransferResult
     public int $toWalletBalanceAfter;    // Post-operation
 }
 ```
+
+### 4.5 WithdrawService — Voucher-Backed Withdrawal
+
+`WithdrawService` is the mirror of deposit: the single gate for funds **leaving** the wallet system. A withdrawal writes a **single-sided debit** (`fromWallet = wallet`, `toWallet = null`) backed by a **`DIRECTION_DEBIT` voucher**. Reversal is its mirror — a **single-sided credit** (`fromWallet = null`, `toWallet = wallet`, type `debit_reversal`) returning the funds to the source wallet.
+
+```
+withdraw(voucherType, voucherId, walletId, amount, currency, referenceId, createdBy, reason)
+  |
+  v
+1. Validation
+   -> amount > 0, referenceId required
+   -> Idempotency: findByReferenceId -> return existing voucher
+   -> Duplicate source: findByVoucherSource -> reject
+   -> Provider whitelist: withdrawRegistry.forVoucherType -> reject unsupported type
+  |
+  v
+2. Within DB transaction (wrapInTransaction)
+   -> Lock wallet (SELECT ... FOR UPDATE)
+   -> Wallet exists, not frozen, currency matches
+   -> available balance >= amount (InsufficientFundsException)
+   -> provider.authorize(voucher, options)
+   -> DQL UPDATE: wallet.balance -= amount
+   -> Create Transaction (type=withdrawal, fromWallet=wallet)
+   -> Voucher DIRECTION_DEBIT -> markApplied(tx.uuid)
+```
+
+```
+reverse(voucherUuid, reason)
+  |
+  v
+1. Voucher must be APPLIED + DIRECTION_DEBIT
+2. Within DB transaction
+   -> Lock wallet
+   -> DQL UPDATE: wallet.balance += amount
+   -> Create Transaction (type=debit_reversal, toWallet=wallet)
+   -> voucher->markReversed(tx.uuid, reason)
+3. provider.reverse(voucher, reason) hook
+```
+
+Both operations are atomic (rollback + EM recovery on failure) and idempotent by `referenceId`. The provider tag is `wallet.withdraw_provider`; `ManualWithdrawProvider` is the built-in no-op authorization.
 
 ---
 
@@ -474,6 +520,7 @@ These references are passed to `TransferServiceInterface::transfer()` and stored
 | GET | `/api/v1/manage/transactions` | List transactions |
 | POST | `/api/v1/manage/transactions` | Execute wallet-to-wallet transfer |
 | **POST** | **`/api/v1/manage/vouchers/deposit`** | **Voucher-backed deposit with audit trail** |
+| **POST** | **`/api/v1/manage/vouchers/withdraw`** | **Voucher-backed withdrawal with audit trail** |
 
 ---
 
