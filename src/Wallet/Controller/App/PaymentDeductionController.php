@@ -15,7 +15,7 @@ use Doctrine\ORM\QueryBuilder;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
-#[Route('/app/wallet-payment-deductions', name: 'app-wallet-payment-deductions-')]
+#[Route('/app/payment-deductions', name: 'app-payment-deductions-')]
 #[IsGranted('ROLE_USER')]
 class PaymentDeductionController extends RestController
 {

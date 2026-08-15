@@ -12,7 +12,7 @@ use App\Wallet\Service\Payment\PaymentDeductionService;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
-#[Route('/manage/wallet-payment-deductions', name: 'manage-wallet-payment-deductions-')]
+#[Route('/manage/payment-deductions', name: 'manage-payment-deductions-')]
 #[IsGranted('ROLE_ADMIN')]
 class PaymentDeductionController extends RestController
 {
