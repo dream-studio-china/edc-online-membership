@@ -475,8 +475,8 @@ Resources: `categories`, `contents`, `tags`, `comments`, `pages`, `media`, `sett
 | **GET** | **`/api/v1/manage/wallets/balance`** | **Verify accounting invariant** |
 | **POST** | **`/api/v1/manage/wallets/reconcile`** | **Per-wallet reconciliation** |
 | GET | `/api/v1/manage/transactions` | List transactions |
-| POST | `/api/v1/manage/transfers` | Atomic transfer |
-| **POST** | **`/api/v1/manage/transfers/deposit`** | **System deposit (funding)** |
+| POST | `/api/v1/manage/transactions` | Atomic transfer (creates a ledger transaction) |
+| **POST** | **`/api/v1/manage/deposits`** | **Voucher-backed deposit (funding)** |
 
 ### Payment
 

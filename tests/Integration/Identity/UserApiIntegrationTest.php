@@ -627,7 +627,7 @@ final class UserApiIntegrationTest extends IntegrationWebTestCase
         $this->seedWalletBalance($em, $wa, 50000);
 
         // Transfer from A to B
-        $client->jsonRequest('POST', '/api/v1/manage/transfers', [
+        $client->jsonRequest('POST', '/api/v1/manage/transactions', [
             'fromWalletId' => $wa, 'toWalletId' => $wb, 'amount' => 10000, 'description' => 'test transfer',
         ]);
         self::assertResponseStatusCodeSame(201);
@@ -635,11 +635,11 @@ final class UserApiIntegrationTest extends IntegrationWebTestCase
         self::assertSame(40000, $t['fromWalletBalanceAfter']);
         self::assertSame(10000, $t['toWalletBalanceAfter']);
 
-        // Insufficient funds
-        $client->jsonRequest('POST', '/api/v1/manage/transfers', [
+        // Insufficient funds (mixin lifecycle maps client errors to 400)
+        $client->jsonRequest('POST', '/api/v1/manage/transactions', [
             'fromWalletId' => $wa, 'toWalletId' => $wb, 'amount' => 999999, 'description' => 'too much',
         ]);
-        self::assertResponseStatusCodeSame(402);
+        self::assertResponseStatusCodeSame(400);
     }
 
     #[Group('low-value')]
@@ -666,7 +666,7 @@ final class UserApiIntegrationTest extends IntegrationWebTestCase
         $this->seedWalletBalance($em, $wid, 50000);
 
         // Same wallet transfer — should be rejected
-        $client->jsonRequest('POST', '/api/v1/manage/transfers', [
+        $client->jsonRequest('POST', '/api/v1/manage/transactions', [
             'fromWalletId' => $wid, 'toWalletId' => $wid, 'amount' => 100,
         ]);
         self::assertResponseStatusCodeSame(400);
@@ -679,7 +679,7 @@ final class UserApiIntegrationTest extends IntegrationWebTestCase
         $adminToken = $this->createAdminAndGetToken($client);
 
         $client->setServerParameter('HTTP_AUTHORIZATION', 'Bearer ' . $adminToken);
-        $client->jsonRequest('POST', '/api/v1/manage/transfers', [
+        $client->jsonRequest('POST', '/api/v1/manage/transactions', [
             'fromWalletId' => 1, 'toWalletId' => 2, 'amount' => -100,
         ]);
         self::assertResponseStatusCodeSame(400);
@@ -692,7 +692,7 @@ final class UserApiIntegrationTest extends IntegrationWebTestCase
         $adminToken = $this->createAdminAndGetToken($client);
 
         $client->setServerParameter('HTTP_AUTHORIZATION', 'Bearer ' . $adminToken);
-        $client->jsonRequest('POST', '/api/v1/manage/transfers', [
+        $client->jsonRequest('POST', '/api/v1/manage/transactions', [
             'fromWalletId' => 1,
         ]);
         self::assertResponseStatusCodeSame(400);

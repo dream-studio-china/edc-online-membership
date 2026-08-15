@@ -106,8 +106,8 @@ SYS_WID=$(api "create system wallet" POST /api/v1/manage/wallets "$ADMIN_TOKEN" 
 
 # Massive deposit — 100 million cent = 1,000,000 CNY
 DEPOSIT_TOTAL=10000000000
-api "mega deposit" POST /api/v1/manage/transfers/deposit "$ADMIN_TOKEN" \
-  "{\"toWalletId\":$SYS_WID,\"amount\":$DEPOSIT_TOTAL,\"description\":\"Stress test funding\"}" >/dev/null
+api "mega deposit" POST /api/v1/manage/deposits "$ADMIN_TOKEN" \
+  "{\"walletId\":$SYS_WID,\"amount\":$DEPOSIT_TOTAL,\"currency\":\"CNY\",\"referenceId\":\"stress-bank-1\",\"reason\":\"Stress test funding\"}" >/dev/null
 echo "  System wallet $SYS_WID funded with $DEPOSIT_TOTAL cent ($(python3 -c "print($DEPOSIT_TOTAL/100)") CNY)"
 
 # Create users in parallel-like batches
@@ -133,7 +133,7 @@ for i in $(seq 1 $NUM_USERS); do
   USER_WIDS+=("$wid")
   
   # Distribute funds: system → user
-  api "fund user $i" POST /api/v1/manage/transfers "$ADMIN_TOKEN" \
+  api "fund user $i" POST /api/v1/manage/transactions "$ADMIN_TOKEN" \
     "{\"fromWalletId\":$SYS_WID,\"toWalletId\":$wid,\"amount\":$INITIAL_BALANCE,\"description\":\"Fund user $i\"}" >/dev/null
 
   USER_BALANCES_BEFORE+=("$INITIAL_BALANCE")

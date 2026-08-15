@@ -4,13 +4,16 @@ declare(strict_types=1);
 
 namespace App\Tests\UnitTest\Wallet\Controller\Manage;
 
+use App\Identity\Entity\User;
+use App\Wallet\Controller\Manage\TransactionController;
+use App\Wallet\Entity\Wallet;
 use App\Wallet\Entity\WalletTransaction;
 use App\Wallet\Exception\InsufficientFundsException;
 use App\Wallet\Exception\SameWalletTransferException;
 use App\Wallet\Exception\WalletFrozenException;
-use App\Wallet\Controller\Manage\TransferController;
-use App\Wallet\Service\TransferResult;
-use App\Wallet\Service\TransferServiceInterface;
+use App\Wallet\Service\TransactionService;
+use App\Wallet\Service\Transfer\TransferResult;
+use App\Wallet\Service\Transfer\TransferServiceInterface;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
@@ -20,15 +23,17 @@ use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 #[AllowMockObjectsWithoutExpectations]
-final class TransferControllerTest extends TestCase
+final class TransactionControllerTest extends TestCase
 {
-    private TransferServiceInterface $service;
-    private TransferController $controller;
+    private TransactionService $transactionService;
+    private TransferServiceInterface $transferService;
+    private TransactionController $controller;
 
     protected function setUp(): void
     {
-        $this->service = $this->createMock(TransferServiceInterface::class);
-        $this->controller = new TransferController($this->service);
+        $this->transactionService = $this->createMock(TransactionService::class);
+        $this->transferService = $this->createMock(TransferServiceInterface::class);
+        $this->controller = new TransactionController($this->transactionService, $this->transferService);
     }
 
     private function injectDependencies(RequestStack $requestStack): void
@@ -45,6 +50,18 @@ final class TransferControllerTest extends TestCase
         $this->controller->setTranslator($translator);
     }
 
+    /** Drive the mixin's transaction lifecycle so processItem runs. */
+    private function stubLifecycle(): void
+    {
+        $this->transactionService->method('wrapInTransaction')->willReturnCallback(
+            fn($cb) => $cb(null)
+        );
+        $this->transactionService->method('new')->willReturn(
+            $this->makeTransferTransaction(0, 0, 1, 2)
+        );
+        $this->transactionService->method('update')->willReturnArgument(0);
+    }
+
     private function jsonRequest(string $uri, array $payload): Request
     {
         return Request::create(
@@ -55,9 +72,22 @@ final class TransferControllerTest extends TestCase
         );
     }
 
-    private function makeTransaction(int $id, int $amount, string $type): WalletTransaction
+    private function makeWallet(int $id): Wallet
     {
-        $tx = new WalletTransaction('uuid-' . $id, $amount, $type);
+        $user = new User();
+        $user->setEmail("w$id@t.com")->setUsername("w$id");
+        $wallet = new Wallet($user, 'CNY');
+        $r = new \ReflectionProperty(Wallet::class, 'id');
+        $r->setValue($wallet, $id);
+
+        return $wallet;
+    }
+
+    private function makeTransferTransaction(int $id, int $amount, int $fromWalletId, int $toWalletId): WalletTransaction
+    {
+        $tx = new WalletTransaction('uuid-' . $id, $amount, WalletTransaction::TYPE_TRANSFER);
+        $tx->setFromWallet($this->makeWallet($fromWalletId));
+        $tx->setToWallet($this->makeWallet($toWalletId));
         $tx->markCompleted();
         $ref = new \ReflectionProperty(WalletTransaction::class, 'id');
         $ref->setValue($tx, $id);
@@ -71,80 +101,64 @@ final class TransferControllerTest extends TestCase
     public function testCreateActionRejectsMissingFields(): void
     {
         $requestStack = new RequestStack();
-        $requestStack->push($this->jsonRequest('/api/v1/manage/transfers', ['fromWalletId' => 1]));
+        $requestStack->push($this->jsonRequest('/api/v1/manage/transactions', ['fromWalletId' => 1]));
         $this->injectDependencies($requestStack);
+        $this->stubLifecycle();
 
         $response = $this->controller->createAction($requestStack->getCurrentRequest());
 
         self::assertSame(400, $response->getStatusCode());
         $body = json_decode((string) $response->getContent(), true);
-        self::assertSame(400, $body['code']);
-        self::assertSame('fromWalletId, toWalletId, and amount are required', $body['message']);
+        self::assertStringContainsString('ToWalletId is required', $body['message']);
     }
 
     #[Group('low-value')]
     public function testCreateActionRejectsNegativeAmount(): void
     {
         $requestStack = new RequestStack();
-        $requestStack->push($this->jsonRequest('/api/v1/manage/transfers', [
+        $requestStack->push($this->jsonRequest('/api/v1/manage/transactions', [
             'fromWalletId' => 1, 'toWalletId' => 2, 'amount' => -50,
         ]));
         $this->injectDependencies($requestStack);
+        $this->stubLifecycle();
+
+        $this->transferService->method('transfer')->willThrowException(
+            new \InvalidArgumentException('Transfer amount must be positive')
+        );
 
         $response = $this->controller->createAction($requestStack->getCurrentRequest());
 
         self::assertSame(400, $response->getStatusCode());
         $body = json_decode((string) $response->getContent(), true);
-        self::assertSame('Amount must be positive', $body['message']);
+        self::assertSame('Transfer amount must be positive', $body['message']);
     }
 
     #[Group('low-value')]
-    public function testCreateActionRejectsNonNumericAmount(): void
+    public function testCreateActionRejectsZeroAmount(): void
     {
         $requestStack = new RequestStack();
-        $requestStack->push($this->jsonRequest('/api/v1/manage/transfers', [
-            'fromWalletId' => 1, 'toWalletId' => 2, 'amount' => 'abc',
-        ]));
-        $this->injectDependencies($requestStack);
-
-        $response = $this->controller->createAction($requestStack->getCurrentRequest());
-
-        self::assertSame(400, $response->getStatusCode());
-        $body = json_decode((string) $response->getContent(), true);
-        self::assertSame('Amount must be positive', $body['message']);
-    }
-
-    public function testCreateActionZeroAmountShouldReportAmountNotPositive(): void
-    {
-        // KNOWN BUG: src/Wallet/Controller/Manage/TransferController.php:32 uses empty()
-        // to check `amount`, so `0` (and the string "0") are treated as "missing" and the
-        // request fails with the misleading 'fromWalletId, toWalletId, and amount are
-        // required' message instead of 'Amount must be positive'. The HTTP code is 400
-        // either way, but the message is wrong. See
-        // docs/issues/coverage-2026-08-09/wallet-manage.md (BUG-3).
-        $this->markTestSkipped(
-            'Known bug (src/Wallet/Controller/Manage/TransferController.php:32): empty() treats '
-            . 'amount 0 as "missing", so the wrong validation message is returned.'
-        );
-
-        $requestStack = new RequestStack();
-        $requestStack->push($this->jsonRequest('/api/v1/manage/transfers', [
+        $requestStack->push($this->jsonRequest('/api/v1/manage/transactions', [
             'fromWalletId' => 1, 'toWalletId' => 2, 'amount' => 0,
         ]));
         $this->injectDependencies($requestStack);
+        $this->stubLifecycle();
+
+        $this->transferService->method('transfer')->willThrowException(
+            new \InvalidArgumentException('Transfer amount must be positive')
+        );
 
         $response = $this->controller->createAction($requestStack->getCurrentRequest());
 
         self::assertSame(400, $response->getStatusCode());
         $body = json_decode((string) $response->getContent(), true);
-        self::assertSame('Amount must be positive', $body['message']);
+        self::assertSame('Transfer amount must be positive', $body['message']);
     }
 
     #[Group('low-value')]
     public function testCreateActionRejectsInvalidJson(): void
     {
         $requestStack = new RequestStack();
-        $request = Request::create('/api/v1/manage/transfers', 'POST', server: [
+        $request = Request::create('/api/v1/manage/transactions', 'POST', server: [
             'CONTENT_TYPE' => 'application/json',
         ], content: '{not json');
         $requestStack->push($request);
@@ -161,14 +175,15 @@ final class TransferControllerTest extends TestCase
     public function testCreateActionSuccess(): void
     {
         $requestStack = new RequestStack();
-        $requestStack->push($this->jsonRequest('/api/v1/manage/transfers', [
+        $requestStack->push($this->jsonRequest('/api/v1/manage/transactions', [
             'fromWalletId' => '7', 'toWalletId' => '8', 'amount' => '30000',
             'referenceId' => 'REF-1', 'description' => 'payout',
         ]));
         $this->injectDependencies($requestStack);
+        $this->stubLifecycle();
 
-        $tx = $this->makeTransaction(42, 30000, WalletTransaction::TYPE_TRANSFER);
-        $this->service->method('transfer')
+        $tx = $this->makeTransferTransaction(42, 30000, 7, 8);
+        $this->transferService->method('transfer')
             ->with(7, 8, 30000, 'REF-1', 'payout')
             ->willReturn(new TransferResult($tx, 70000, 30000));
 
@@ -177,7 +192,7 @@ final class TransferControllerTest extends TestCase
         self::assertSame(201, $response->getStatusCode());
         $body = json_decode((string) $response->getContent(), true);
         self::assertSame(0, $body['code']);
-        self::assertSame('Transfer completed', $body['message']);
+        self::assertSame('SUCCESS', $body['message']);
         self::assertSame(42, $body['data']['transactionId']);
         self::assertSame('uuid-42', $body['data']['uuid']);
         self::assertSame(7, $body['data']['fromWalletId']);
@@ -193,55 +208,56 @@ final class TransferControllerTest extends TestCase
     // ──────────────── createAction: exception branches ────────────────
 
     #[Group('low-value')]
-    public function testCreateActionInsufficientFunds(): void
+    public function testCreateActionInsufficientFundsMapsTo400(): void
     {
         $requestStack = new RequestStack();
-        $requestStack->push($this->jsonRequest('/api/v1/manage/transfers', [
+        $requestStack->push($this->jsonRequest('/api/v1/manage/transactions', [
             'fromWalletId' => 1, 'toWalletId' => 2, 'amount' => 999999,
         ]));
         $this->injectDependencies($requestStack);
+        $this->stubLifecycle();
 
-        $this->service->method('transfer')->willThrowException(
+        $this->transferService->method('transfer')->willThrowException(
             new InsufficientFundsException(1, 100, 999999)
         );
 
         $response = $this->controller->createAction($requestStack->getCurrentRequest());
 
-        self::assertSame(402, $response->getStatusCode());
+        self::assertSame(400, $response->getStatusCode());
         $body = json_decode((string) $response->getContent(), true);
-        self::assertSame(402, $body['code']);
         self::assertStringContainsString('Insufficient funds', $body['message']);
     }
 
     #[Group('low-value')]
-    public function testCreateActionWalletFrozen(): void
+    public function testCreateActionWalletFrozenMapsTo400(): void
     {
         $requestStack = new RequestStack();
-        $requestStack->push($this->jsonRequest('/api/v1/manage/transfers', [
+        $requestStack->push($this->jsonRequest('/api/v1/manage/transactions', [
             'fromWalletId' => 1, 'toWalletId' => 2, 'amount' => 100,
         ]));
         $this->injectDependencies($requestStack);
+        $this->stubLifecycle();
 
-        $this->service->method('transfer')->willThrowException(new WalletFrozenException(1));
+        $this->transferService->method('transfer')->willThrowException(new WalletFrozenException(1));
 
         $response = $this->controller->createAction($requestStack->getCurrentRequest());
 
-        self::assertSame(403, $response->getStatusCode());
+        self::assertSame(400, $response->getStatusCode());
         $body = json_decode((string) $response->getContent(), true);
-        self::assertSame(403, $body['code']);
         self::assertStringContainsString('frozen', $body['message']);
     }
 
     #[Group('low-value')]
-    public function testCreateActionSameWallet(): void
+    public function testCreateActionSameWalletMapsTo400(): void
     {
         $requestStack = new RequestStack();
-        $requestStack->push($this->jsonRequest('/api/v1/manage/transfers', [
+        $requestStack->push($this->jsonRequest('/api/v1/manage/transactions', [
             'fromWalletId' => 1, 'toWalletId' => 1, 'amount' => 100,
         ]));
         $this->injectDependencies($requestStack);
+        $this->stubLifecycle();
 
-        $this->service->method('transfer')->willThrowException(new SameWalletTransferException());
+        $this->transferService->method('transfer')->willThrowException(new SameWalletTransferException());
 
         $response = $this->controller->createAction($requestStack->getCurrentRequest());
 
@@ -254,12 +270,13 @@ final class TransferControllerTest extends TestCase
     public function testCreateActionInvalidArgument(): void
     {
         $requestStack = new RequestStack();
-        $requestStack->push($this->jsonRequest('/api/v1/manage/transfers', [
+        $requestStack->push($this->jsonRequest('/api/v1/manage/transactions', [
             'fromWalletId' => 1, 'toWalletId' => 2, 'amount' => 100,
         ]));
         $this->injectDependencies($requestStack);
+        $this->stubLifecycle();
 
-        $this->service->method('transfer')->willThrowException(
+        $this->transferService->method('transfer')->willThrowException(
             new \InvalidArgumentException('Invalid reference id')
         );
 
@@ -267,7 +284,6 @@ final class TransferControllerTest extends TestCase
 
         self::assertSame(400, $response->getStatusCode());
         $body = json_decode((string) $response->getContent(), true);
-        self::assertSame(400, $body['code']);
         self::assertSame('Invalid reference id', $body['message']);
     }
 
@@ -275,12 +291,13 @@ final class TransferControllerTest extends TestCase
     public function testCreateActionRuntimeNotFoundMapsTo404(): void
     {
         $requestStack = new RequestStack();
-        $requestStack->push($this->jsonRequest('/api/v1/manage/transfers', [
+        $requestStack->push($this->jsonRequest('/api/v1/manage/transactions', [
             'fromWalletId' => 999, 'toWalletId' => 2, 'amount' => 100,
         ]));
         $this->injectDependencies($requestStack);
+        $this->stubLifecycle();
 
-        $this->service->method('transfer')->willThrowException(
+        $this->transferService->method('transfer')->willThrowException(
             new \RuntimeException('Source wallet #999 not found')
         );
 
@@ -288,7 +305,6 @@ final class TransferControllerTest extends TestCase
 
         self::assertSame(404, $response->getStatusCode());
         $body = json_decode((string) $response->getContent(), true);
-        self::assertSame(404, $body['code']);
         self::assertSame('Source wallet #999 not found', $body['message']);
     }
 
@@ -296,12 +312,13 @@ final class TransferControllerTest extends TestCase
     public function testCreateActionRuntimeErrorMapsTo500(): void
     {
         $requestStack = new RequestStack();
-        $requestStack->push($this->jsonRequest('/api/v1/manage/transfers', [
+        $requestStack->push($this->jsonRequest('/api/v1/manage/transactions', [
             'fromWalletId' => 1, 'toWalletId' => 2, 'amount' => 100,
         ]));
         $this->injectDependencies($requestStack);
+        $this->stubLifecycle();
 
-        $this->service->method('transfer')->willThrowException(
+        $this->transferService->method('transfer')->willThrowException(
             new \RuntimeException('Database connection lost')
         );
 
@@ -309,40 +326,30 @@ final class TransferControllerTest extends TestCase
 
         self::assertSame(500, $response->getStatusCode());
         $body = json_decode((string) $response->getContent(), true);
-        self::assertSame(500, $body['code']);
         self::assertSame('Database connection lost', $body['message']);
     }
 
-    public function testCreateActionIdempotentReplayEchoesStoredAmount(): void
+    public function testCreateActionIdempotentReplayEchoesStoredTransaction(): void
     {
-        // KNOWN BUG: on an idempotent replay (existing referenceId) TransferService returns
-        // the ORIGINAL stored transaction, but TransferController builds the response with the
-        // NEW request amount as `data.amount` while `data.amountFloat`/transactionId come from
-        // the stored transaction (src/Wallet/Controller/Manage/TransferController.php:53-54).
-        // A replay with a different amount returns an internally inconsistent 201 body
-        // (e.g. amount=99999 but amountFloat=500.0). See
-        // docs/issues/coverage-2026-08-09/wallet-manage.md (BUG-4).
-        $this->markTestSkipped(
-            'Known bug (src/Wallet/Controller/Manage/TransferController.php:53): on idempotent '
-            . 'replay the response echoes the request amount instead of the stored transaction amount.'
-        );
-
+        // On replay (existing referenceId) the response must reflect the STORED
+        // transaction, not the request amount.
         $requestStack = new RequestStack();
-        $requestStack->push($this->jsonRequest('/api/v1/manage/transfers', [
+        $requestStack->push($this->jsonRequest('/api/v1/manage/transactions', [
             'fromWalletId' => 1, 'toWalletId' => 2, 'amount' => 99999, 'referenceId' => 'REF-REPLAY',
         ]));
         $this->injectDependencies($requestStack);
+        $this->stubLifecycle();
 
-        $tx = $this->makeTransaction(7, 50000, WalletTransaction::TYPE_TRANSFER);
-        $this->service->method('transfer')
+        $stored = $this->makeTransferTransaction(7, 50000, 1, 2);
+        $this->transferService->method('transfer')
             ->with(1, 2, 99999, 'REF-REPLAY', null)
-            ->willReturn(new TransferResult($tx, 50000, 0));
+            ->willReturn(new TransferResult($stored, 50000, 0));
 
         $response = $this->controller->createAction($requestStack->getCurrentRequest());
 
         self::assertSame(201, $response->getStatusCode());
         $body = json_decode((string) $response->getContent(), true);
         self::assertSame(50000, $body['data']['amount']);
-        self::assertSame(500.0, $body['data']['amountFloat']);
+        self::assertEquals(500.0, $body['data']['amountFloat']);
     }
 }

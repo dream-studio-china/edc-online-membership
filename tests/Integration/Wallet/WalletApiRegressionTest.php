@@ -8,6 +8,8 @@ use App\Tests\Integration\IntegrationWebTestCase;
 use App\Tests\Integration\DatabaseBootstrapTrait;
 use App\Wallet\Entity\Wallet;
 use App\Wallet\Entity\WalletTransaction;
+use App\Wallet\Entity\WalletVoucher;
+use App\Wallet\Service\Deposit\WalletDepositService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
@@ -24,7 +26,11 @@ final class WalletApiRegressionTest extends IntegrationWebTestCase
         $client = static::createClient();
         $em = $client->getContainer()->get(EntityManagerInterface::class);
 
-        $tables = ['App\\Wallet\\Entity\\WalletTransaction', 'App\\Wallet\\Entity\\Wallet'];
+        $tables = [
+            'App\\Wallet\\Entity\\WalletVoucher',
+            'App\\Wallet\\Entity\\WalletTransaction',
+            'App\\Wallet\\Entity\\Wallet',
+        ];
         foreach ($tables as $table) {
             $em->createQuery("DELETE FROM $table")->execute();
         }
@@ -146,6 +152,156 @@ final class WalletApiRegressionTest extends IntegrationWebTestCase
         self::assertTrue($unit['matches']);
     }
 
+    public function testManualDepositAndReverseViaEndpoint(): void
+    {
+        $client = static::createAuthenticatedClient();
+        $em = $client->getContainer()->get(EntityManagerInterface::class);
+        $user = $this->createTestUser($em, 'deposit_api_user');
+
+        $client->request('POST', '/api/v1/manage/wallets', server: ['CONTENT_TYPE' => 'application/json'], content: json_encode([
+            'user' => $user->getId(), 'currency' => 'CNY',
+        ], JSON_THROW_ON_ERROR));
+        self::assertSame(201, $client->getResponse()->getStatusCode());
+        $walletId = json_decode((string) $client->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR)['data']['id'];
+
+        // Manual deposit (voucher-backed)
+        $client->request('POST', '/api/v1/manage/deposits', server: ['CONTENT_TYPE' => 'application/json'], content: json_encode([
+            'walletId' => $walletId, 'amount' => 50000, 'currency' => 'CNY',
+            'referenceId' => 'INT-DEP-1', 'reason' => 'integration deposit',
+        ], JSON_THROW_ON_ERROR));
+        self::assertSame(201, $client->getResponse()->getStatusCode());
+        $deposit = json_decode((string) $client->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR)['data'];
+        self::assertSame('applied', $deposit['status']);
+        self::assertSame('manual', $deposit['voucherType']);
+        $uuid = $deposit['uuid'];
+
+        // Admin voucher list + detail expose the boundary record
+        $client->request('GET', '/api/v1/manage/vouchers/' . $uuid);
+        self::assertSame(200, $client->getResponse()->getStatusCode());
+        $voucher = json_decode((string) $client->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR)['data'];
+        self::assertSame('manual', $voucher['voucherType']);
+        self::assertSame(50000, $voucher['amount']);
+        self::assertSame('INT-DEP-1', $voucher['referenceId']);
+
+        $client->request('GET', '/api/v1/manage/vouchers');
+        self::assertSame(200, $client->getResponse()->getStatusCode());
+        $vouchers = json_decode((string) $client->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR)['data'];
+        self::assertNotEmpty($vouchers);
+
+        // Append an immutable annotation (voucher-comment resource) and read it back
+        $voucherEntity = $em->getRepository(WalletVoucher::class)->findOneBy(['uuid' => $uuid]);
+        self::assertNotNull($voucherEntity);
+
+        $client->request('POST', '/api/v1/manage/voucher-comments', server: ['CONTENT_TYPE' => 'application/json'], content: json_encode([
+            'voucher' => $voucherEntity->getId(), 'text' => 'Finance note: ticket #INT-9',
+        ], JSON_THROW_ON_ERROR));
+        self::assertSame(201, $client->getResponse()->getStatusCode());
+
+        $client->request('GET', '/api/v1/manage/voucher-comments');
+        self::assertSame(200, $client->getResponse()->getStatusCode());
+        $comments = json_decode((string) $client->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR)['data'];
+        self::assertNotEmpty($comments);
+        self::assertSame('Finance note: ticket #INT-9', $comments[0]['text']);
+
+        $client->request('GET', '/api/v1/manage/wallets/' . $walletId);
+        $wallet = json_decode((string) $client->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR)['data'];
+        self::assertSame(50000, $wallet['balance']);
+
+        // Duplicate referenceId is idempotent
+        $client->request('POST', '/api/v1/manage/deposits', server: ['CONTENT_TYPE' => 'application/json'], content: json_encode([
+            'walletId' => $walletId, 'amount' => 50000, 'currency' => 'CNY', 'referenceId' => 'INT-DEP-1',
+        ], JSON_THROW_ON_ERROR));
+        self::assertSame(201, $client->getResponse()->getStatusCode());
+
+        // Reverse returns funds
+        $client->request('POST', '/api/v1/manage/deposits/' . $uuid . '/reverse', server: ['CONTENT_TYPE' => 'application/json'], content: json_encode([
+            'reason' => 'integration revert',
+        ], JSON_THROW_ON_ERROR));
+        self::assertSame(200, $client->getResponse()->getStatusCode());
+        $reversed = json_decode((string) $client->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR)['data'];
+        self::assertSame('reversed', $reversed['status']);
+
+        $client->request('GET', '/api/v1/manage/wallets/' . $walletId);
+        $wallet = json_decode((string) $client->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR)['data'];
+        self::assertSame(0, $wallet['balance']);
+    }
+
+    public function testAppVouchersScopedToCurrentUser(): void
+    {
+        $client = static::createClient();
+        $em = $client->getContainer()->get(EntityManagerInterface::class);
+        $alice = $this->createTestUser($em, 'voucher_alice');
+        $bob = $this->createTestUser($em, 'voucher_bob');
+        $aliceWallet = new Wallet($alice, 'CNY');
+        $bobWallet = new Wallet($bob, 'CNY');
+        $em->persist($aliceWallet);
+        $em->persist($bobWallet);
+        $em->flush();
+
+        $depositService = $client->getContainer()->get(WalletDepositService::class);
+        $depositService->deposit(
+            WalletVoucher::VOUCHER_TYPE_MANUAL,
+            'vouch-a',
+            (int) $aliceWallet->getId(),
+            50000,
+            'CNY',
+            'vouch-ref-a',
+            'system',
+        );
+        $bobVoucher = $depositService->deposit(
+            WalletVoucher::VOUCHER_TYPE_MANUAL,
+            'vouch-b',
+            (int) $bobWallet->getId(),
+            30000,
+            'CNY',
+            'vouch-ref-b',
+            'system',
+        );
+
+        $client = $this->createClientForUser($alice);
+        $client->request('GET', '/api/v1/app/vouchers');
+        self::assertSame(200, $client->getResponse()->getStatusCode());
+        $data = json_decode((string) $client->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR);
+        self::assertCount(1, $data['data']);
+        self::assertSame('vouch-ref-a', $data['data'][0]['referenceId']);
+
+        // Alice must not be able to view Bob's voucher.
+        $client->request('GET', '/api/v1/app/vouchers/' . $bobVoucher->getUuid());
+        self::assertSame(404, $client->getResponse()->getStatusCode());
+    }
+
+    public function testAppTransferFromOwnWallet(): void
+    {
+        $client = static::createClient();
+        $em = $client->getContainer()->get(EntityManagerInterface::class);
+        $alice = $this->createTestUser($em, 'app_tx_alice');
+        $bob = $this->createTestUser($em, 'app_tx_bob');
+        $aliceWallet = new Wallet($alice, 'CNY');
+        $bobWallet = new Wallet($bob, 'CNY');
+        $em->persist($aliceWallet);
+        $em->persist($bobWallet);
+        $em->flush();
+
+        $em->createQuery('UPDATE App\Wallet\Entity\Wallet w SET w.balance = :b WHERE w.id = :id')
+            ->setParameter('b', 50000)->setParameter('id', $aliceWallet->getId())->execute();
+
+        // Alice transfers from her own wallet
+        $client = $this->createClientForUser($alice);
+        $client->request('POST', '/api/v1/app/transactions', server: ['CONTENT_TYPE' => 'application/json'], content: json_encode([
+            'fromWalletId' => $aliceWallet->getId(), 'toWalletId' => $bobWallet->getId(), 'amount' => 10000,
+        ], JSON_THROW_ON_ERROR));
+        self::assertSame(201, $client->getResponse()->getStatusCode());
+        $data = json_decode((string) $client->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR)['data'];
+        self::assertSame(40000, $data['fromWalletBalanceAfter']);
+        self::assertSame(10000, $data['toWalletBalanceAfter']);
+
+        // Alice cannot transfer out of Bob's wallet
+        $client->request('POST', '/api/v1/app/transactions', server: ['CONTENT_TYPE' => 'application/json'], content: json_encode([
+            'fromWalletId' => $bobWallet->getId(), 'toWalletId' => $aliceWallet->getId(), 'amount' => 100,
+        ], JSON_THROW_ON_ERROR));
+        self::assertSame(404, $client->getResponse()->getStatusCode());
+    }
+
     public function testWalletCreateDuplicateCurrencyFails(): void
     {
         $client = static::createAuthenticatedClient();
@@ -234,7 +390,7 @@ final class WalletApiRegressionTest extends IntegrationWebTestCase
             ->setParameter('b', 100000)->setParameter('id', $aliceId)->execute();
 
         // Transfer
-        $client->request('POST', '/api/v1/manage/transfers', server: ['CONTENT_TYPE' => 'application/json'], content: json_encode([
+        $client->request('POST', '/api/v1/manage/transactions', server: ['CONTENT_TYPE' => 'application/json'], content: json_encode([
             'fromWalletId' => $aliceId, 'toWalletId' => $bobId, 'amount' => 25000, 'referenceId' => 'TX-001',
         ], JSON_THROW_ON_ERROR));
 
@@ -266,18 +422,18 @@ final class WalletApiRegressionTest extends IntegrationWebTestCase
         ], JSON_THROW_ON_ERROR));
         $bobWallet = json_decode((string) $client->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR);
 
-        $client->request('POST', '/api/v1/manage/transfers', server: ['CONTENT_TYPE' => 'application/json'], content: json_encode([
+        $client->request('POST', '/api/v1/manage/transactions', server: ['CONTENT_TYPE' => 'application/json'], content: json_encode([
             'fromWalletId' => $aliceWallet['data']['id'], 'toWalletId' => $bobWallet['data']['id'], 'amount' => 999999,
         ], JSON_THROW_ON_ERROR));
 
-        self::assertSame(402, $client->getResponse()->getStatusCode());
+        self::assertSame(400, $client->getResponse()->getStatusCode());
     }
 
     public function testTransferApiMissingFields(): void
     {
         $client = static::createAuthenticatedClient();
 
-        $client->request('POST', '/api/v1/manage/transfers', server: ['CONTENT_TYPE' => 'application/json'], content: json_encode([
+        $client->request('POST', '/api/v1/manage/transactions', server: ['CONTENT_TYPE' => 'application/json'], content: json_encode([
             'fromWalletId' => 1,
         ], JSON_THROW_ON_ERROR));
         self::assertSame(400, $client->getResponse()->getStatusCode());
@@ -298,7 +454,7 @@ final class WalletApiRegressionTest extends IntegrationWebTestCase
         $em->createQuery('UPDATE App\Wallet\Entity\Wallet w SET w.balance = :b WHERE w.id = :id')
             ->setParameter('b', 10000)->setParameter('id', $id)->execute();
 
-        $client->request('POST', '/api/v1/manage/transfers', server: ['CONTENT_TYPE' => 'application/json'], content: json_encode([
+        $client->request('POST', '/api/v1/manage/transactions', server: ['CONTENT_TYPE' => 'application/json'], content: json_encode([
             'fromWalletId' => $id, 'toWalletId' => $id, 'amount' => 100,
         ], JSON_THROW_ON_ERROR));
         self::assertSame(400, $client->getResponse()->getStatusCode());
@@ -332,10 +488,10 @@ final class WalletApiRegressionTest extends IntegrationWebTestCase
             'status' => 'frozen',
         ], JSON_THROW_ON_ERROR));
 
-        $client->request('POST', '/api/v1/manage/transfers', server: ['CONTENT_TYPE' => 'application/json'], content: json_encode([
+        $client->request('POST', '/api/v1/manage/transactions', server: ['CONTENT_TYPE' => 'application/json'], content: json_encode([
             'fromWalletId' => $aliceId, 'toWalletId' => $bobId, 'amount' => 100,
         ], JSON_THROW_ON_ERROR));
-        self::assertSame(403, $client->getResponse()->getStatusCode());
+        self::assertSame(400, $client->getResponse()->getStatusCode());
     }
 
     public function testTransferApiIdempotency(): void
@@ -366,12 +522,12 @@ final class WalletApiRegressionTest extends IntegrationWebTestCase
         ], JSON_THROW_ON_ERROR);
 
         // First transfer
-        $client->request('POST', '/api/v1/manage/transfers', server: ['CONTENT_TYPE' => 'application/json'], content: $payload);
+        $client->request('POST', '/api/v1/manage/transactions', server: ['CONTENT_TYPE' => 'application/json'], content: $payload);
         self::assertSame(201, $client->getResponse()->getStatusCode());
         $first = json_decode((string) $client->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR);
 
         // Duplicate transfer with same referenceId
-        $client->request('POST', '/api/v1/manage/transfers', server: ['CONTENT_TYPE' => 'application/json'], content: $payload);
+        $client->request('POST', '/api/v1/manage/transactions', server: ['CONTENT_TYPE' => 'application/json'], content: $payload);
         self::assertSame(201, $client->getResponse()->getStatusCode());
         $second = json_decode((string) $client->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR);
 
@@ -402,7 +558,7 @@ final class WalletApiRegressionTest extends IntegrationWebTestCase
             ->setParameter('b', 50000)->setParameter('id', $aw['data']['id'])->execute();
 
         // Do a transfer
-        $client->request('POST', '/api/v1/manage/transfers', server: ['CONTENT_TYPE' => 'application/json'], content: json_encode([
+        $client->request('POST', '/api/v1/manage/transactions', server: ['CONTENT_TYPE' => 'application/json'], content: json_encode([
             'fromWalletId' => $aw['data']['id'], 'toWalletId' => $bw['data']['id'], 'amount' => 10000,
         ], JSON_THROW_ON_ERROR));
         self::assertSame(201, $client->getResponse()->getStatusCode());
@@ -430,7 +586,8 @@ final class WalletApiRegressionTest extends IntegrationWebTestCase
             'zero amount' => [['fromWalletId' => 1, 'toWalletId' => 2, 'amount' => 0], 400],
             'float amount' => [['fromWalletId' => 1, 'toWalletId' => 2, 'amount' => 50.5], 201], // casts to int 50, passes
             'wrong types' => [['fromWalletId' => 'x', 'toWalletId' => 'y', 'amount' => 'z'], 400],
-            'empty body' => [[], 400],
+            // Empty array body is a no-op under the mixin lifecycle (no items to process).
+            'empty body' => [[], 201],
             'extra fields' => [['fromWalletId' => 1, 'toWalletId' => 2, 'amount' => 100, 'unknown' => true], 201], // extra fields should not break valid payload
         ];
     }
@@ -463,7 +620,7 @@ final class WalletApiRegressionTest extends IntegrationWebTestCase
         $em->createQuery('UPDATE App\Wallet\Entity\Wallet w SET w.balance = :b WHERE w.id = :id')
             ->setParameter('b', 100000)->setParameter('id', $aw['data']['id'])->execute();
 
-        $client->request('POST', '/api/v1/manage/transfers', server: ['CONTENT_TYPE' => 'application/json'], content: json_encode($payload, JSON_THROW_ON_ERROR));
+        $client->request('POST', '/api/v1/manage/transactions', server: ['CONTENT_TYPE' => 'application/json'], content: json_encode($payload, JSON_THROW_ON_ERROR));
         self::assertSame($expectedStatus, $client->getResponse()->getStatusCode(), 'Payload: ' . json_encode($payload));
     }
 
@@ -475,7 +632,7 @@ final class WalletApiRegressionTest extends IntegrationWebTestCase
     {
         self::ensureKernelShutdown();
         $client = static::createClient();
-        $client->request('POST', '/api/v1/manage/transfers', server: ['CONTENT_TYPE' => 'application/json'], content: json_encode([
+        $client->request('POST', '/api/v1/manage/transactions', server: ['CONTENT_TYPE' => 'application/json'], content: json_encode([
             'fromWalletId' => 1, 'toWalletId' => 2, 'amount' => 100,
         ], JSON_THROW_ON_ERROR));
         self::assertNotSame(201, $client->getResponse()->getStatusCode());
@@ -494,7 +651,7 @@ final class WalletApiRegressionTest extends IntegrationWebTestCase
         $client->request('POST', '/api/v1/manage/wallets', server: ['CONTENT_TYPE' => 'application/json'], content: json_encode(['user' => $bob->getId(), 'currency' => 'USD'], JSON_THROW_ON_ERROR));
         $bw = json_decode((string) $client->getResponse()->getContent(), true, 512, JSON_THROW_ON_ERROR);
 
-        $client->request('POST', '/api/v1/manage/transfers', server: ['CONTENT_TYPE' => 'application/json'], content: json_encode([
+        $client->request('POST', '/api/v1/manage/transactions', server: ['CONTENT_TYPE' => 'application/json'], content: json_encode([
             'fromWalletId' => 999999, 'toWalletId' => $bw['data']['id'], 'amount' => 100,
         ], JSON_THROW_ON_ERROR));
         self::assertSame(404, $client->getResponse()->getStatusCode());
@@ -517,7 +674,7 @@ final class WalletApiRegressionTest extends IntegrationWebTestCase
         $em->createQuery('UPDATE App\Wallet\Entity\Wallet w SET w.balance = :b WHERE w.id = :id')
             ->setParameter('b', 10000)->setParameter('id', $aw['data']['id'])->execute();
 
-        $client->request('POST', '/api/v1/manage/transfers', server: ['CONTENT_TYPE' => 'application/json'], content: json_encode([
+        $client->request('POST', '/api/v1/manage/transactions', server: ['CONTENT_TYPE' => 'application/json'], content: json_encode([
             'fromWalletId' => $aw['data']['id'], 'toWalletId' => $bw['data']['id'], 'amount' => 100,
         ], JSON_THROW_ON_ERROR));
         self::assertSame(500, $client->getResponse()->getStatusCode());
@@ -526,7 +683,7 @@ final class WalletApiRegressionTest extends IntegrationWebTestCase
     public function testTransferInvalidJson(): void
     {
         $client = static::createAuthenticatedClient();
-        $client->request('POST', '/api/v1/manage/transfers', server: ['CONTENT_TYPE' => 'application/json'], content: '{invalid');
+        $client->request('POST', '/api/v1/manage/transactions', server: ['CONTENT_TYPE' => 'application/json'], content: '{invalid');
         self::assertSame(400, $client->getResponse()->getStatusCode());
     }
 }

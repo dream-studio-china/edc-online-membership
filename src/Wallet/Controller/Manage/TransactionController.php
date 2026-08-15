@@ -1,73 +1,93 @@
 <?php /** @noinspection PhpMissingParentConstructorInspection */
 
+declare(strict_types=1);
+
 namespace App\Wallet\Controller\Manage;
 
 use App\Core\Controller\RestController;
 use App\Core\View\ApiView;
-use App\Wallet\Service\TransferService;
-use App\Wallet\Service\TransferServiceInterface;
+use App\Core\View\CreateApiViewMixin;
+use App\Core\View\DetailApiViewMixin;
+use App\Core\View\ListApiViewMixin;
+use App\Wallet\Entity\WalletTransaction;
 use App\Wallet\Exception\InsufficientFundsException;
 use App\Wallet\Exception\SameWalletTransferException;
 use App\Wallet\Exception\WalletFrozenException;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
+use App\Wallet\Service\TransactionService;
+use App\Wallet\Service\Transfer\TransferResult;
+use App\Wallet\Service\Transfer\TransferServiceInterface;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
-#[Route('/manage/transfers', name: 'manage-transfers-')]
+/**
+ * Transaction resource: create a WalletTransaction through a transfer using the
+ * standard create lifecycle, plus list/detail of the ledger. Update/Delete
+ * mixins are intentionally omitted: the ledger is append-only.
+ */
+#[Route('/manage/transactions', name: 'manage-transactions-')]
 #[IsGranted('ROLE_ADMIN')]
-class TransferController extends RestController
+class TransactionController extends RestController
 {
-    use ApiView;
+    use ApiView, CreateApiViewMixin, DetailApiViewMixin, ListApiViewMixin;
+
+    /** @var list<string> */
+    protected array $requiredCreateProperties = ['fromWalletId', 'toWalletId', 'amount'];
+    /** @var list<string> */
+    protected array $acceptedCreateProperties = ['fromWalletId', 'toWalletId', 'amount', 'referenceId', 'description'];
+
+    private ?TransferResult $lastTransfer = null;
 
     public function __construct(
-        protected readonly TransferServiceInterface $transferService,
+        protected readonly TransactionService $service,
+        private readonly TransferServiceInterface $transferService,
     ) {}
 
-    #[Route('', name: 'create', methods: ['POST'])]
-    public function createAction(Request $request): Response
+    /**
+     * @param array<string, mixed> $content
+     */
+    protected function processEntity(array $content, object $entity): object
     {
-        $content = json_decode($request->getContent(), true) ?: [];
-
-        if (empty($content['fromWalletId']) || empty($content['toWalletId']) || empty($content['amount'])) {
-            return $this->warning('fromWalletId, toWalletId, and amount are required', 400, '', 400);
-        }
-
-        $amount = (int) ($content['amount']);
-        if ($amount <= 0) {
-            return $this->warning('Amount must be positive', 400, '', 400);
-        }
-
-        $fromWalletId = (int) $content['fromWalletId'];
-        $toWalletId = (int) $content['toWalletId'];
-        $referenceId = $content['referenceId'] ?? null;
-        $description = $content['description'] ?? null;
-
         try {
-            $result = $this->transferService->transfer($fromWalletId, $toWalletId, $amount, $referenceId, $description);
-            return $this->success([
-                'transactionId' => $result->transaction->getId(),
-                'uuid' => $result->transaction->getUuid(),
-                'fromWalletId' => $fromWalletId,
-                'toWalletId' => $toWalletId,
-                'amount' => $amount,
-                'amountFloat' => $result->transaction->getAmountAsFloat(),
-                'status' => $result->transaction->getStatus(),
-                'fromWalletBalanceAfter' => $result->fromWalletBalanceAfter,
-                'toWalletBalanceAfter' => $result->toWalletBalanceAfter,
-                'createdAt' => $result->transaction->getCreatedAt(),
-            ], 'Transfer completed', 201);
-        } catch (InsufficientFundsException $e) {
-            return $this->warning($e->getMessage(), 402, '', 402);
-        } catch (WalletFrozenException $e) {
-            return $this->warning($e->getMessage(), 403, '', 403);
-        } catch (SameWalletTransferException $e) {
-            return $this->warning($e->getMessage(), 400, '', 400);
-        } catch (\InvalidArgumentException $e) {
-            return $this->warning($e->getMessage(), 400, '', 400);
+            $this->lastTransfer = $this->transferService->transfer(
+                (int) $content['fromWalletId'],
+                (int) $content['toWalletId'],
+                (int) $content['amount'],
+                isset($content['referenceId']) ? (string) $content['referenceId'] : null,
+                isset($content['description']) ? (string) $content['description'] : null,
+            );
+        } catch (InsufficientFundsException|WalletFrozenException|SameWalletTransferException $e) {
+            throw new \InvalidArgumentException($e->getMessage());
         } catch (\RuntimeException $e) {
-            $status = str_ends_with($e->getMessage(), 'not found') ? 404 : 500;
-            return $this->warning($e->getMessage() ?: 'Transfer failed', $status, '', $status);
+            if (str_contains($e->getMessage(), 'not found')) {
+                throw new NotFoundHttpException($e->getMessage());
+            }
+            throw $e;
         }
+
+        return $this->lastTransfer->transaction;
+    }
+
+    /**
+     * @return array<string, mixed>|object|false
+     */
+    protected function afterCreated(object|false $entity): mixed
+    {
+        if (!$entity instanceof WalletTransaction || !$this->lastTransfer instanceof TransferResult) {
+            return $entity;
+        }
+
+        return [
+            'transactionId' => $entity->getId(),
+            'uuid' => $entity->getUuid(),
+            'fromWalletId' => $entity->getFromWallet()?->getId(),
+            'toWalletId' => $entity->getToWallet()?->getId(),
+            'amount' => $entity->getAmount(),
+            'amountFloat' => $entity->getAmountAsFloat(),
+            'status' => $entity->getStatus(),
+            'fromWalletBalanceAfter' => $this->lastTransfer->fromWalletBalanceAfter,
+            'toWalletBalanceAfter' => $this->lastTransfer->toWalletBalanceAfter,
+            'createdAt' => $entity->getCreatedAt(),
+        ];
     }
 }

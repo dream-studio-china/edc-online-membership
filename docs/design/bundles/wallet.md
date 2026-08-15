@@ -472,8 +472,8 @@ These references are passed to `TransferServiceInterface::transfer()` and stored
 | **GET** | **`/api/v1/manage/wallets/balance`** | **Verify accounting invariant** |
 | **POST** | **`/api/v1/manage/wallets/reconcile`** | **Per-wallet reconciliation** |
 | GET | `/api/v1/manage/transactions` | List transactions |
-| POST | `/api/v1/manage/transfers` | Execute wallet-to-wallet transfer |
-| **POST** | **`/api/v1/manage/transfers/deposit`** | **System deposit with audit trail** |
+| POST | `/api/v1/manage/transactions` | Execute wallet-to-wallet transfer |
+| **POST** | **`/api/v1/manage/deposits`** | **Voucher-backed deposit with audit trail** |
 
 ---
 
