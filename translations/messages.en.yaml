@@ -392,6 +392,7 @@
 "Invalid mock payment secret.": "Invalid mock payment secret."
 "Payment notify amount or currency does not match invoice.": "Payment notify amount or currency does not match invoice."
 "amount and reason are required.": "amount and reason are required."
+"Invoice has an active wallet deposit voucher; reverse the deposit before refunding.": "Invoice has an active wallet deposit voucher; reverse the deposit before refunding."
 
 # ====================================================================
 # Payment gateway / adjustment

@@ -121,6 +121,17 @@ services:
             $storage: '@App\Identity\Service\LocalCacheOtpStorage'
             $sms: '@App\Identity\Sms\AliyunSmsProvider'
 
+    # Guards invoice refunds while an invoice-backed wallet deposit voucher is
+    # applied. Decoration keeps the InvoiceService interface alias transparent:
+    # every consumer (Payment controllers, Trade order refunds) sees the guard.
+    App\Wallet\Service\Payment\InvoiceDepositRefundGuard:
+        decorates: App\Payment\Service\InvoiceService
+        arguments:
+            - '@.inner'
+    # Once the service is decorated there are two candidates for the interface;
+    # point the alias at the guard (the outer, decorated service).
+    App\Payment\Service\InvoiceServiceInterface: '@App\Wallet\Service\Payment\InvoiceDepositRefundGuard'
+
 when@test:
     services:
         App\Identity\Service\OtpStorageInterface: '@App\Identity\Service\NullOtpStorage'

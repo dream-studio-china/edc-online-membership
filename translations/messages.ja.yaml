@@ -367,6 +367,7 @@
 "Invalid mock payment secret.": "無効なモック支払いシークレット。"
 "Payment notify amount or currency does not match invoice.": "支払通知の金額または通貨が請求書と一致しません。"
 "amount and reason are required.": "金額と理由は必須です。"
+"Invoice has an active wallet deposit voucher; reverse the deposit before refunding.": "請求書に有効なウォレット入金バウチャーが存在します。返金前に入金を取り消してください。"
 
 # Payment gateway / adjustment
 "Payment gateway \"%s\" is not registered.": "支払いゲートウェイ\"%s\"は登録されていません。"

@@ -367,6 +367,7 @@
 "Invalid mock payment secret.": "無效的模擬支付金鑰。"
 "Payment notify amount or currency does not match invoice.": "支付通知的金額或幣別與發票不匹配。"
 "amount and reason are required.": "金額和原因為必填項。"
+"Invoice has an active wallet deposit voucher; reverse the deposit before refunding.": "發票存在已生效的錢包入帳憑證，請先撤回入帳再退款。"
 
 # Payment gateway / adjustment
 "Payment gateway \"%s\" is not registered.": "支付閘道\"%s\"未註冊。"
