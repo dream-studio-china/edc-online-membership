@@ -29,6 +29,7 @@ class Voucher
     public const FUND_SOURCE_INTERNAL = 'internal';
 
     public const VOUCHER_TYPE_MANUAL = 'manual';
+    public const VOUCHER_TYPE_INVOICE = 'invoice';
 
     public const STATUS_PENDING = 'pending';
     public const STATUS_APPLIED = 'applied';
