@@ -566,6 +566,7 @@ Note on controller construction: Controllers extending `RestController` receive 
 ## Documentation
 
 - **[Design Contracts](docs/design/)** — System architecture, API design, data model, module design, controller contract, cross-cutting contracts
+- **[Development Manual](docs/manual/)** — Task-oriented developer guide (getting started, architecture, core framework, query system, testing, deployment)
 - **[Bundle Design Docs](docs/design/bundles/)** — Per-module design documents (Core, Common, Trade, Wallet, Identity, Promotion, Settlement)
 - **[Runbooks](docs/runbooks/)** — Step-by-step operational guides (Promotion, Settlement)
 - **[AI Context](docs/ai/context.md)** — Full codebase snapshot for AI-assisted development

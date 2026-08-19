@@ -51,6 +51,23 @@ extra_javascript:
 
 nav:
   - Home: index.md
+  - Development Manual:
+      - Manual Index: manual/index.md
+      - Getting Started: manual/getting-started.md
+      - Architecture: manual/architecture.md
+      - Project Structure: manual/project-structure.md
+      - Core Framework: manual/core-framework.md
+      - Core Usage: manual/core-usage.md
+      - Query System: manual/query-system.md
+      - Development Workflow: manual/development-workflow.md
+      - Testing: manual/testing.md
+      - API Contracts: manual/api-contracts.md
+      - Development Contracts: manual/development-contracts.md
+      - Integration Events: manual/integration-events.md
+      - Database & Migrations: manual/database-and-migrations.md
+      - Deployment: manual/deployment.md
+      - Extracting a Service: manual/extracting-a-service.md
+      - Internationalization: manual/i18n.md
   - Design Contracts:
       - System Architecture: design/system-architecture.md
       - API Design: design/api-design.md
