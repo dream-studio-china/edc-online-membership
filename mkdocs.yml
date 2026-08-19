@@ -72,6 +72,20 @@ nav:
       - Exchange (Pool-backed Economy): design/bundles/exchange.md
       - Identity (Auth): design/bundles/identity.md
       - Wechat (Login + Pay): design/bundles/wechat.md
+  - Runbooks:
+      - Common: runbooks/common.md
+      - Core: runbooks/core.md
+      - Exchange: runbooks/exchange.md
+      - Identity: runbooks/identity.md
+      - Inventory: runbooks/inventory.md
+      - Payment: runbooks/payment.md
+      - Promotion: runbooks/promotion.md
+      - Settlement: runbooks/settlement.md
+      - Storage: runbooks/storage.md
+      - Store: runbooks/store.md
+      - Trade: runbooks/trade.md
+      - Wallet: runbooks/wallet.md
+      - WeChat: runbooks/wechat.md
   - Research:
       - EasyWeChat 6.x Usage: research/easywechat-6.x-usage.md
       - Huifu Payment API: research/huifu-payment-api.md
