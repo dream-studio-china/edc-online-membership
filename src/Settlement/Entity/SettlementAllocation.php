@@ -16,6 +16,7 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\UniqueConstraint(name: 'uniq_settlement_allocation_reversal_key', columns: ['reversal_idempotency_key'])]
 #[ORM\Index(name: 'idx_settlement_allocation_plan_status', columns: ['plan_uuid', 'status'])]
 #[ORM\Index(name: 'idx_settlement_allocation_retry', columns: ['status', 'next_attempt_at'])]
+#[ORM\Index(name: 'idx_settlement_allocation_source_item', columns: ['source_item_id'])]
 #[ORM\HasLifecycleCallbacks]
 class SettlementAllocation
 {
@@ -65,6 +66,13 @@ class SettlementAllocation
 
     #[ORM\Column(name: 'rule_version_uuid', type: 'string', length: 36, nullable: true)]
     private ?string $ruleVersionUuid = null;
+
+    #[ORM\Column(name: 'source_item_id', type: 'string', length: 64, nullable: true)]
+    private ?string $sourceItemId = null;
+
+    /** @var array<string, mixed>|null */
+    #[ORM\Column(name: 'source_item_snapshot', type: 'json', nullable: true)]
+    private ?array $sourceItemSnapshot = null;
 
     #[ORM\Column(name: 'reason_code', type: 'string', length: 100)]
     private string $reasonCode;
@@ -125,6 +133,7 @@ class SettlementAllocation
 
     /**
      * @param array<string, mixed> $recipientSnapshot
+     * @param array<string, mixed>|null $sourceItemSnapshot
      */
     public function __construct(
         SettlementPlan $plan,
@@ -141,6 +150,8 @@ class SettlementAllocation
         int $postingScale,
         string $roundingDeltaQuantum,
         string $postingIdempotencyKey,
+        ?string $sourceItemId = null,
+        ?array $sourceItemSnapshot = null,
     ) {
         $this->uuid = UUID::v4();
         $this->plan = $plan;
@@ -152,6 +163,8 @@ class SettlementAllocation
         $this->recipientSnapshot = $recipientSnapshot;
         $this->ruleCode = $ruleCode;
         $this->ruleVersionUuid = $ruleVersionUuid;
+        $this->sourceItemId = $sourceItemId;
+        $this->sourceItemSnapshot = $sourceItemSnapshot;
         $this->reasonCode = $reasonCode;
         $this->exactAmountQuantum = $exactAmountQuantum;
         $this->postingAmount = $postingAmount;
@@ -175,6 +188,9 @@ class SettlementAllocation
     public function getRecipientSnapshot(): array { return $this->recipientSnapshot; }
     public function getRuleCode(): ?string { return $this->ruleCode; }
     public function getRuleVersionUuid(): ?string { return $this->ruleVersionUuid; }
+    public function getSourceItemId(): ?string { return $this->sourceItemId; }
+    /** @return array<string, mixed>|null */
+    public function getSourceItemSnapshot(): ?array { return $this->sourceItemSnapshot; }
     public function getReasonCode(): string { return $this->reasonCode; }
     public function getExactAmountQuantum(): string { return $this->exactAmountQuantum; }
     public function getPostingAmount(): string { return $this->postingAmount; }

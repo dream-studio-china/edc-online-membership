@@ -443,6 +443,7 @@ final readonly class SettlementContext
     /**
      * @param array<string, scalar|list<scalar>|null> $facts
      * @param array<string, RecipientReference> $recipientCandidates
+     * @param list<SettlementItemContext> $items
      */
     public function __construct(
         public SettlementSubject $subject,
@@ -453,6 +454,7 @@ final readonly class SettlementContext
         public array $recipientCandidates,
         public string $sourceSnapshotVersion,
         public \DateTimeImmutable $resolvedAt,
+        public array $items = [],
     ) {
     }
 }
@@ -487,10 +489,15 @@ Example `trade.order.v1` facts:
 }
 ```
 
-The source adapter decides whether a plan has one aggregate context or one context per
-line. It must make the allocation basis explicit. It MUST NOT assume that the current
-`OrderItem::price` is authoritative where order-level promotions were not allocated to
-lines.
+An order remains one funding and one plan. A source adapter may additionally provide
+frozen item contexts; `order_item` rules are evaluated once per item and create distinct
+allocations within that plan. It must make the allocation basis explicit. It MUST NOT
+assume that the current `OrderItem::price` is authoritative where order-level promotions
+were not allocated to lines.
+
+Each item context has an immutable item ID, flat `item.*` facts, optional item-level
+recipient candidates, and an audit snapshot. Item facts overlay order facts while that
+item is evaluated. They cannot inspect other items or live source entities.
 
 ### 6.4 Context Resolver Rules
 
@@ -517,6 +524,7 @@ publishing creates a new version and never mutates the published version used by
 ```json
 {
   "appliesTo": ["trade.order.v1"],
+  "scope": "order",
   "conflictMode": "stack",
   "eligibility": {
     "all": [
@@ -555,7 +563,8 @@ Rule selection is deterministic:
 3. Sort by `priority ASC`, then immutable rule UUID ASC.
 4. Validate each rule against the context version.
 5. Evaluate its eligibility predicate.
-6. Apply its conflict mode and produce zero or more proposals.
+6. Evaluate `order` rules once, then evaluate each `order_item` rule once for every
+   frozen item context; apply conflict mode independently within each scope/item.
 7. Apply plan-level conservation and rounding.
 8. Create the plan only if every validation succeeds.
 
@@ -566,6 +575,43 @@ Supported conflict modes in phase one:
 | `stack` | Rule may add allocations alongside other matched rules. |
 | `exclusive_group` | First matched rule in a named group wins; later rules in that group are skipped. |
 | `stop` | A matched rule ends further rule selection after its proposals are accepted. |
+
+Rule scope defaults to `order`. `order_item` requires item contexts from the source
+adapter. Its allocation key is automatically made item-specific, even when multiple
+items resolve to the same recipient, so each item remains independently auditable.
+
+An agent reward for every qualifying line can be expressed as:
+
+```json
+{
+  "appliesTo": ["trade.order.v1"],
+  "scope": "order_item",
+  "eligibility": {
+    "all": {
+      "children": [
+        {"factEquals": ["item.specificationId", 32]},
+        {"amountAtLeast": ["item.unitPrice", "3.01"]}
+      ]
+    }
+  },
+  "recipient": {
+    "resolver": "fact_reference",
+    "typeFact": "order.agentRecipientType",
+    "idFact": "order.agentRecipientId"
+  },
+  "formula": {
+    "multiplyByQuantity": {
+      "value": {"fixedAmount": {"amount": "3.00"}},
+      "quantity": "item.quantity"
+    }
+  },
+  "reasonCode": "agent_specification_reward"
+}
+```
+
+For CNY, `item.unitPrice` above is a decimal snapshot amount; `3.01` expresses strict
+greater-than `3.00` while the current grammar supplies inclusive amount comparisons.
+Each resulting allocation persists the source item ID and immutable item snapshot.
 
 ### 7.3 Eligibility Primitives
 

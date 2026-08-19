@@ -84,6 +84,69 @@ final class SettlementFlowIntegrationTest extends IntegrationKernelTestCase
         self::assertSame('0', $planB->getUnallocatedAmountQuantum());
     }
 
+    public function testOrderItemRulesCreateAuditableAllocationsWithinOneOrderPlan(): void
+    {
+        $this->publishAgentItemRule();
+        $plan = $this->service->createPlanFromFunding($this->funding('100.00', [
+            'facts' => [
+                'order.status' => 'paid',
+                'order.agentRecipientType' => 'wallet',
+                'order.agentRecipientId' => 'agent-wallet-a',
+            ],
+            'items' => [
+                [
+                    'id' => 'item-eligible-a',
+                    'facts' => [
+                        'item.specificationId' => 32,
+                        'item.unitPrice' => '4.00',
+                        'item.quantity' => 2,
+                    ],
+                    'snapshot' => ['specificationId' => 32, 'unitPrice' => '4.00', 'quantity' => 2],
+                ],
+                [
+                    'id' => 'item-ineligible-price',
+                    'facts' => [
+                        'item.specificationId' => 32,
+                        'item.unitPrice' => '3.00',
+                        'item.quantity' => 4,
+                    ],
+                    'snapshot' => ['specificationId' => 32, 'unitPrice' => '3.00', 'quantity' => 4],
+                ],
+                [
+                    'id' => 'item-eligible-b',
+                    'facts' => [
+                        'item.specificationId' => 32,
+                        'item.unitPrice' => '5.00',
+                        'item.quantity' => 3,
+                    ],
+                    'snapshot' => ['specificationId' => 32, 'unitPrice' => '5.00', 'quantity' => 3],
+                ],
+                [
+                    'id' => 'item-ineligible-specification',
+                    'facts' => [
+                        'item.specificationId' => 33,
+                        'item.unitPrice' => '5.00',
+                        'item.quantity' => 5,
+                    ],
+                    'snapshot' => ['specificationId' => 33, 'unitPrice' => '5.00', 'quantity' => 5],
+                ],
+            ],
+        ]));
+
+        self::assertCount(3, $plan->getAllocations());
+        $allocations = [];
+        foreach ($plan->getAllocations() as $allocation) {
+            $allocations[$allocation->getSourceItemId() ?? 'fallback'] = $allocation;
+        }
+        self::assertSame('agent-wallet-a', $allocations['item-eligible-a']->getRecipientId());
+        self::assertSame('6000000000000000000', $allocations['item-eligible-a']->getExactAmountQuantum());
+        self::assertSame(['specificationId' => 32, 'unitPrice' => '4.00', 'quantity' => 2], $allocations['item-eligible-a']->getSourceItemSnapshot());
+        self::assertSame('agent-wallet-a', $allocations['item-eligible-b']->getRecipientId());
+        self::assertSame('9000000000000000000', $allocations['item-eligible-b']->getExactAmountQuantum());
+        self::assertSame('85000000000000000000', $allocations['fallback']->getExactAmountQuantum());
+        self::assertNull($allocations['fallback']->getSourceItemId());
+    }
+
     public function testPostingIsIdempotent(): void
     {
         $this->publishSupplierRule();
@@ -223,7 +286,55 @@ final class SettlementFlowIntegrationTest extends IntegrationKernelTestCase
         $this->em->flush();
     }
 
-    private function funding(string $amount): SettlementFunding
+    private function publishAgentItemRule(): void
+    {
+        self::$ruleCounter++;
+        $code = 'agent-item-share-' . self::$ruleCounter;
+        $rule = new SettlementRule($code, 'Agent item share');
+        $rule->setStatus(SettlementRule::STATUS_PUBLISHED);
+        $this->em->persist($rule);
+        $this->em->flush();
+
+        $definition = [
+            'code' => $code,
+            'scope' => 'order_item',
+            'appliesTo' => ['fixture.order.' . self::$ruleCounter . '.v1'],
+            'eligibility' => [
+                'all' => [
+                    'children' => [
+                        ['factEquals' => ['item.specificationId', 32]],
+                        ['amountAtLeast' => ['item.unitPrice', '3.01']],
+                    ],
+                ],
+            ],
+            'recipient' => [
+                'resolver' => 'fact_reference',
+                'typeFact' => 'order.agentRecipientType',
+                'idFact' => 'order.agentRecipientId',
+            ],
+            'formula' => [
+                'multiplyByQuantity' => [
+                    'value' => ['fixedAmount' => ['amount' => '3.00']],
+                    'quantity' => 'item.quantity',
+                ],
+            ],
+            'reasonCode' => 'agent_specification_reward',
+        ];
+        $version = new SettlementRuleVersion(
+            $rule->getUuid(),
+            1,
+            $definition,
+            hash('sha256', (string) json_encode($definition)),
+            new \DateTimeImmutable('-1 day'),
+            100,
+        );
+        $version->publish('admin');
+        $this->em->persist($version);
+        $this->em->flush();
+    }
+
+    /** @param array<string, mixed>|null $snapshot */
+    private function funding(string $amount, ?array $snapshot = null): SettlementFunding
     {
         return new SettlementFunding(
             fundingId: 'funding-' . uniqid(),
@@ -235,7 +346,7 @@ final class SettlementFlowIntegrationTest extends IntegrationKernelTestCase
             calculationScale: 18,
             confirmedAt: new \DateTimeImmutable(),
             idempotencyKey: 'idem-' . uniqid(),
-            snapshot: [
+            snapshot: $snapshot ?? [
                 'facts' => [
                     'order.status' => 'paid',
                     'order.id' => 'order-1',

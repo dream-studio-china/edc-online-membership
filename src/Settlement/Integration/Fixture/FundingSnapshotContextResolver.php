@@ -7,6 +7,7 @@ namespace App\Settlement\Integration\Fixture;
 use App\Settlement\Contract\RecipientReference;
 use App\Settlement\Contract\SettlementContext;
 use App\Settlement\Contract\SettlementFunding;
+use App\Settlement\Contract\SettlementItemContext;
 use App\Settlement\Contract\SettlementSubject;
 use App\Settlement\Context\SettlementContextResolverInterface;
 
@@ -46,6 +47,29 @@ final class FundingSnapshotContextResolver implements SettlementContextResolverI
                 $candidates[$key] = new RecipientReference((string) $ref['type'], (string) $ref['id']);
             }
         }
+        $items = [];
+        $itemSnapshot = $funding->snapshot['items'] ?? [];
+        if (!is_array($itemSnapshot) || !array_is_list($itemSnapshot)) {
+            throw new \InvalidArgumentException('Funding snapshot items must be a list');
+        }
+        foreach ($itemSnapshot as $item) {
+            if (!is_array($item) || !is_string($item['id'] ?? null) || $item['id'] === '' || !is_array($item['facts'] ?? null)
+                || (isset($item['snapshot']) && !is_array($item['snapshot']))) {
+                throw new \InvalidArgumentException('Funding snapshot item requires id and facts');
+            }
+            $itemCandidates = [];
+            foreach (($item['recipientCandidates'] ?? []) as $key => $ref) {
+                if (is_string($key) && is_array($ref) && isset($ref['type'], $ref['id'])) {
+                    $itemCandidates[$key] = new RecipientReference((string) $ref['type'], (string) $ref['id']);
+                }
+            }
+            $items[] = new SettlementItemContext(
+                id: $item['id'],
+                facts: $item['facts'],
+                recipientCandidates: $itemCandidates,
+                snapshot: $item['snapshot'] ?? $item['facts'],
+            );
+        }
 
         return new SettlementContext(
             subject: $subject,
@@ -56,6 +80,7 @@ final class FundingSnapshotContextResolver implements SettlementContextResolverI
             recipientCandidates: $candidates,
             sourceSnapshotVersion: '1',
             resolvedAt: $asOf,
+            items: $items,
         );
     }
 }

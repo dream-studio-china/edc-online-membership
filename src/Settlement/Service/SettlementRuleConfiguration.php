@@ -13,8 +13,9 @@ final class SettlementRuleConfiguration
         return [
             'definition' => [
                 'required' => ['appliesTo', 'recipient', 'formula'],
-                'optional' => ['allocationKey', 'reasonCode', 'conflictMode', 'group', 'eligibility'],
+                'optional' => ['allocationKey', 'reasonCode', 'conflictMode', 'group', 'eligibility', 'scope'],
                 'conflictModes' => ['stack', 'exclusive_group', 'stop'],
+                'scopes' => ['order', 'order_item'],
             ],
             'recipient' => [
                 'literal' => ['required' => ['resolver', 'type', 'id']],
@@ -46,6 +47,10 @@ final class SettlementRuleConfiguration
         }
         if ($mode === 'exclusive_group') {
             $this->string($definition['group'] ?? null, 'exclusive_group group');
+        }
+        $scope = $definition['scope'] ?? 'order';
+        if (!in_array($scope, ['order', 'order_item'], true)) {
+            throw new \InvalidArgumentException('Invalid rule scope.');
         }
 
         $this->recipient($this->object($definition['recipient'] ?? null, 'recipient'));

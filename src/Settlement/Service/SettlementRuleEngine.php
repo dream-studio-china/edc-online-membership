@@ -8,6 +8,7 @@ use App\Settlement\Contract\AllocationProposal;
 use App\Settlement\Contract\ComputedAllocation;
 use App\Settlement\Contract\RecipientReference;
 use App\Settlement\Contract\SettlementContext;
+use App\Settlement\Contract\SettlementItemContext;
 use App\Settlement\Entity\SettlementRuleVersion;
 use App\Settlement\Service\Money\AllocationRoundingService;
 use App\Settlement\Service\Money\QuantumAmount;
@@ -92,6 +93,8 @@ final class SettlementRuleEngine
                 reasonCode: $proposal->reasonCode,
                 recipientSnapshot: $proposal->recipientSnapshot,
                 evidence: $proposal->calculationEvidence,
+                sourceItemId: $proposal->sourceItemId,
+                sourceItemSnapshot: $proposal->sourceItemSnapshot,
             );
         }
 
@@ -112,11 +115,33 @@ final class SettlementRuleEngine
      */
     private function collectProposals(SettlementContext $context, array $versions): array
     {
+        $proposals = $this->collectScopeProposals($context, $versions, 'order');
+        foreach ($context->items as $item) {
+            $proposals = array_merge($proposals, $this->collectScopeProposals($context, $versions, 'order_item', $item));
+        }
+
+        return $proposals;
+    }
+
+    /**
+     * @param list<SettlementRuleVersion> $versions
+     * @return list<AllocationProposal>
+     */
+    private function collectScopeProposals(
+        SettlementContext $context,
+        array $versions,
+        string $scope,
+        ?SettlementItemContext $item = null,
+    ): array {
+        $evaluationContext = $item === null ? $context : $context->forItem($item);
         $proposals = [];
         $exclusiveGroups = [];
         foreach ($versions as $version) {
             $definition = $version->getDefinition();
-            if (!$this->appliesTo($definition, $context->subject->type)) {
+            if (($definition['scope'] ?? 'order') !== $scope) {
+                continue;
+            }
+            if (!$this->appliesTo($definition, $evaluationContext->subject->type)) {
                 continue;
             }
             $mode = $definition['conflictMode'] ?? 'stack';
@@ -125,24 +150,34 @@ final class SettlementRuleEngine
                 continue;
             }
             $eligibility = $definition['eligibility'] ?? null;
-            if ($eligibility !== null && (!is_array($eligibility) || !$this->eligible($context, $eligibility))) {
+            if ($eligibility !== null && (!is_array($eligibility) || !$this->eligible($evaluationContext, $eligibility))) {
                 continue;
             }
 
-            $recipient = $this->recipient($context, $this->array($definition['recipient'] ?? null, 'recipient'));
-            $amount = $this->formula($context, $this->array($definition['formula'] ?? null, 'formula'));
+            $recipient = $this->recipient($evaluationContext, $this->array($definition['recipient'] ?? null, 'recipient'));
+            $amount = $this->formula($evaluationContext, $this->array($definition['formula'] ?? null, 'formula'));
             $code = (string) ($definition['code'] ?? $version->getRuleUuid());
+            $allocationKey = (string) ($definition['allocationKey'] ?? "$code.{$recipient->asString()}");
+            if ($item !== null) {
+                $allocationKey = $this->itemAllocationKey($allocationKey, $item->id);
+            }
             $proposals[] = new AllocationProposal(
-                allocationKey: (string) ($definition['allocationKey'] ?? "$code.{$recipient->asString()}"),
+                allocationKey: $allocationKey,
                 recipient: $recipient,
                 exactAmountQuantum: $amount,
-                calculationScale: $context->calculationScale,
-                currency: $context->currency,
+                calculationScale: $evaluationContext->calculationScale,
+                currency: $evaluationContext->currency,
                 ruleCode: $code,
                 ruleVersionUuid: $version->getUuid(),
                 reasonCode: (string) ($definition['reasonCode'] ?? 'rule'),
                 recipientSnapshot: ['recipient' => $definition['recipient']],
-                calculationEvidence: ['formula' => $definition['formula']],
+                calculationEvidence: array_filter([
+                    'formula' => $definition['formula'],
+                    'scope' => $scope,
+                    'sourceItemId' => $item?->id,
+                ], static fn (mixed $value): bool => $value !== null),
+                sourceItemId: $item?->id,
+                sourceItemSnapshot: $item?->snapshot,
             );
             if (is_string($group)) {
                 $exclusiveGroups[$group] = true;
@@ -152,6 +187,16 @@ final class SettlementRuleEngine
             }
         }
         return $proposals;
+    }
+
+    private function itemAllocationKey(string $base, string $itemId): string
+    {
+        $key = $base . '.' . $itemId;
+        if (strlen($key) <= 128) {
+            return $key;
+        }
+
+        return substr($key, 0, 63) . '.' . hash('sha256', $key);
     }
 
     /** @param array<string, mixed> $definition */

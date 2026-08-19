@@ -14,6 +14,7 @@ final readonly class AllocationProposal
     /**
      * @param array<string, mixed> $recipientSnapshot
      * @param array<string, mixed> $calculationEvidence
+     * @param array<string, mixed>|null $sourceItemSnapshot
      */
     public function __construct(
         public string $allocationKey,
@@ -26,6 +27,8 @@ final readonly class AllocationProposal
         public string $reasonCode,
         public array $recipientSnapshot = [],
         public array $calculationEvidence = [],
+        public ?string $sourceItemId = null,
+        public ?array $sourceItemSnapshot = null,
     ) {
     }
 }

@@ -13,6 +13,7 @@ final readonly class ComputedAllocation
     /**
      * @param array<string, mixed> $recipientSnapshot
      * @param array<string, mixed> $evidence
+     * @param array<string, mixed>|null $sourceItemSnapshot
      */
     public function __construct(
         public string $allocationKey,
@@ -27,6 +28,8 @@ final readonly class ComputedAllocation
         public string $reasonCode,
         public array $recipientSnapshot,
         public array $evidence,
+        public ?string $sourceItemId,
+        public ?array $sourceItemSnapshot,
     ) {
     }
 }

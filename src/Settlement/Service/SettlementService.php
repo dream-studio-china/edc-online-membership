@@ -240,6 +240,18 @@ class SettlementService implements SettlementServiceInterface
                 static fn (RecipientReference $recipient): array => ['type' => $recipient->type, 'id' => $recipient->id],
                 $context->recipientCandidates,
             ),
+            'items' => array_map(
+                static fn (\App\Settlement\Contract\SettlementItemContext $item): array => [
+                    'id' => $item->id,
+                    'facts' => $item->facts,
+                    'recipientCandidates' => array_map(
+                        static fn (RecipientReference $recipient): array => ['type' => $recipient->type, 'id' => $recipient->id],
+                        $item->recipientCandidates,
+                    ),
+                    'snapshot' => $item->snapshot,
+                ],
+                $context->items,
+            ),
         ];
         $ruleSnapshot = [];
         $calculationTrace = [];
@@ -299,6 +311,8 @@ class SettlementService implements SettlementServiceInterface
             postingScale: $c->postingScale,
             roundingDeltaQuantum: $c->roundingDeltaQuantum,
             postingIdempotencyKey: 'settlement-credit:' . $plan->getUuid() . ':' . $c->allocationKey,
+            sourceItemId: $c->sourceItemId,
+            sourceItemSnapshot: $c->sourceItemSnapshot,
         );
         $allocation->setRoundingRank($c->roundingRank);
         return $allocation;

@@ -15,6 +15,7 @@ final readonly class SettlementContext
     /**
      * @param array<string, mixed> $facts
      * @param array<string, RecipientReference> $recipientCandidates
+     * @param list<SettlementItemContext> $items
      */
     public function __construct(
         public SettlementSubject $subject,
@@ -25,6 +26,7 @@ final readonly class SettlementContext
         public array $recipientCandidates,
         public string $sourceSnapshotVersion,
         public \DateTimeImmutable $resolvedAt,
+        public array $items = [],
     ) {
     }
 
@@ -41,5 +43,19 @@ final readonly class SettlementContext
     public function hasFact(string $name): bool
     {
         return array_key_exists($name, $this->facts);
+    }
+
+    public function forItem(SettlementItemContext $item): self
+    {
+        return new self(
+            subject: $this->subject,
+            currency: $this->currency,
+            distributableAmountQuantum: $this->distributableAmountQuantum,
+            calculationScale: $this->calculationScale,
+            facts: array_replace($this->facts, $item->facts),
+            recipientCandidates: array_replace($this->recipientCandidates, $item->recipientCandidates),
+            sourceSnapshotVersion: $this->sourceSnapshotVersion,
+            resolvedAt: $this->resolvedAt,
+        );
     }
 }
