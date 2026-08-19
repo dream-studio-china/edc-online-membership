@@ -27,10 +27,9 @@ if ($explicitDatabaseUrl === false) {
 
 if (($_SERVER['PARATEST'] ?? getenv('PARATEST')) === '1') {
     // ------------------------------------------------------------------
-    // Parallel runner (paratest). Give every worker process its own sqlite
-    // file keyed by PID so concurrent schema drop/create calls never race
-    // on one DB. (config/packages/doctrine.yaml's when@test block resolves
-    // %env(DATABASE_URL)%).
+    // Parallel runner (paratest). Give every worker process an isolated
+    // database so concurrent schema drop/create calls never race. Local runs
+    // use sqlite files; CI supplies a PostgreSQL URL template keyed by token.
     //
     // NOTE: the main paratest process also executes this bootstrap (for test
     // discovery) and, like workers, putenv()s its own per-PID URL. That value
@@ -38,12 +37,14 @@ if (($_SERVER['PARATEST'] ?? getenv('PARATEST')) === '1') {
     // point is usually NOT empty — it is the main process's leaked URL. We
     // therefore also override when the current URL already looks like a
     // paratest sqlite file (or the default sqlite), so every worker ends up
-    // with its own DB. An explicit non-sqlite URL (e.g. CI PostgreSQL) is
-    // left untouched — but note parallel execution against one shared external
-    // DB is still unsupported (schema drop/create would race).
+    // with its own DB. CI passes PARATEST_DATABASE_URL_TEMPLATE for external
+    // databases; a shared external database remains unsupported.
     // ------------------------------------------------------------------
     $pid = getmypid();
     $currentUrl = getenv('DATABASE_URL') ?: ($_SERVER['DATABASE_URL'] ?? '');
+    $token = getenv('TEST_TOKEN');
+    $databaseUrlTemplate = getenv('PARATEST_DATABASE_URL_TEMPLATE');
+    $isolatedDatabase = false;
     $usePerProcessSqlite = $explicitDatabaseUrl === false
         || $currentUrl === ''
         || str_contains($currentUrl, 'test_paratest_')
@@ -53,6 +54,17 @@ if (($_SERVER['PARATEST'] ?? getenv('PARATEST')) === '1') {
         $_SERVER['DATABASE_URL'] = $url;
         $_ENV['DATABASE_URL'] = $url;
         putenv('DATABASE_URL='.$url);
+        $isolatedDatabase = true;
+    } elseif (is_string($databaseUrlTemplate) && $databaseUrlTemplate !== ''
+        && is_string($token) && ctype_digit($token)) {
+        $url = str_replace('{token}', $token, $databaseUrlTemplate);
+        $_SERVER['DATABASE_URL'] = $url;
+        $_ENV['DATABASE_URL'] = $url;
+        putenv('DATABASE_URL='.$url);
+        $isolatedDatabase = true;
+    }
+
+    if ($isolatedDatabase) {
         // Eagerly create the schema so tests that query the DB without the
         // DatabaseBootstrapTrait find tables already present in this worker.
         try {

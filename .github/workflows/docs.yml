@@ -5,17 +5,46 @@ on:
     branches: [main, dev]
     paths:
       - 'docs/**'
+      - 'README*.md'
+      - 'scripts/build-docs.sh'
+      - 'scripts/translate-docs.py'
+      - 'mkdocs.yml'
+      - '.github/workflows/docs.yml'
+  pull_request:
+    branches: [main, master, dev]
+    paths:
+      - 'docs/**'
+      - 'README*.md'
       - 'scripts/build-docs.sh'
       - 'scripts/translate-docs.py'
       - 'mkdocs.yml'
       - '.github/workflows/docs.yml'
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  deploy:
+  build:
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install docs dependencies
+        run: pip install mkdocs-material deep-translator
+
+      - name: Build bilingual site
+        run: bash scripts/build-docs.sh
+
+  deploy:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
 
