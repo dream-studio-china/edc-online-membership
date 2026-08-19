@@ -1,16 +1,19 @@
 # CRUD Skeleton
 
-一個面向生產實踐的 Symfony 8.1 API 骨架，內建可復用的服務層抽象、模組化架構、JWT 鑑權、動態查詢引擎以及可插拔的業務模組。
+一個面向模組化 CRUD 與高交易量 API 的 Symfony 8.1 後端基礎。它將可重用的 API 慣例、可組合的業務模組與營運保障相結合，而不要求每個應用都採用全部模組。
 
 > English: [README.md](README.md) · Chinese (Simplified): [README.zh-cn.md](README.zh-cn.md) · Japanese: [README.ja.md](README.ja.md)
 
-> 文件站點: [GitHub Pages](https://immane.github.io/crud-skeleton) | 設計契約: [docs/design/](docs/design/)
+> 文件站點: [GitHub Pages](https://immane.github.io/crud-skeleton) | 開發手冊: [docs/manual/index.md](docs/manual/index.md) | 架構: [docs/design/system-architecture.md](docs/design/system-architecture.md)
 
 ## 架構
+
+應用是分層 Symfony API：控制器基於 trait 組合的檢視 mixin 呼叫 `BaseService`（CRUD + 動態查詢），服務承載業務規則，Doctrine ORM 持久化到 MySQL。它是一個模組化單體，各模組在同一個 Symfony 應用內透過顯式的服務與事件邊界協作。
 
 ```mermaid
 flowchart TB
     Core["<b>Core 框架</b><br/>BaseService · View Mixins · Expression→DQL"]
+
     Identity["Identity<br/>鑑權 · JWT · OTP · User"]
     Common["Common<br/>CMS（7 實體）"]
     Storage["Storage<br/>媒體驅動"]
@@ -45,43 +48,120 @@ flowchart TB
     Exchange -. "design" .-> Core
 ```
 
+業務操作遵循一致的「請求到交易」邊界。例如，錢包支付在服務層解析其 provider，並在一次資料庫交易中記錄其效果：
+
+```mermaid
+sequenceDiagram
+    participant C as 用戶端
+    participant Ctrl as 控制器
+    participant S as 服務
+    participant P as Provider
+    participant DB as Doctrine ORM / MySQL
+
+    C->>Ctrl: POST /api/v1/...（JSON body）
+    Ctrl->>S: 呼叫服務（校驗後的載荷）
+    S->>P: 解析 provider + 校驗權限
+    S->>DB: 交易：帳本 + 審計寫入
+    S-->>Ctrl: 結果 / 實體
+    Ctrl-->>C: 統一回應信封
+```
+
+### 電商編排
+
+訂單履約會跨越同步交易邊界與非同步事件投遞。結算在圖中被刻意獨立展示：它由外部確認的資金啟動，而不是由尚未實作的 Payment-to-Settlement 事件觸發。
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant T as Trade
+    participant TO as Trade Outbox
+    participant S as Store
+    participant SO as Store Outbox
+    participant I as Inventory
+    participant IO as Inventory Outbox
+    participant P as Payment
+    participant W as Wallet
+    participant Se as Settlement
+
+    T->>T: 建立門店訂單（交易）<br/>store_submit
+    T->>TO: 同一交易：訂單建立事件
+    TO-->>S: 非同步投遞與處理
+
+    alt 門店不可用
+        S->>SO: 同一交易：訂單拒絕事件
+    else 庫存功能關閉
+        S->>SO: 同一交易：訂單接受事件
+    else 庫存功能啟用
+        S->>SO: 同一交易：庫存預留請求
+        SO-->>I: 非同步投遞與處理
+        alt 預留被拒絕
+            I->>IO: 同一交易：預留拒絕事件
+        else 預留已確認
+            I->>IO: 同一交易：預留確認事件
+        end
+        IO-->>S: 非同步投遞與處理
+        S->>SO: 同一交易：訂單接受或拒絕
+    end
+    SO-->>T: 非同步投遞與處理
+    T->>T: store_accept 或 store_reject
+
+    Note over T,P: 支付要求 store_accept，隨後顯式確認
+    T->>P: 建立並支付發票（同步）
+    opt 提供 walletAmount
+        P->>W: 立即錢包扣款 / 轉帳
+    end
+    alt 錢包支付或抵扣覆蓋全額
+        P->>P: 將發票標記為已支付
+    else 外部網關
+        P->>P: 發票保持支付中，直至回呼
+    end
+    P->>T: InvoicePaidEvent 同步更新訂單
+
+    Note over P,Se: 尚未實作 Payment-to-Settlement 事件
+    Se->>Se: 外部資金確認（非同步）
+    Se->>Se: 建立計畫、分帳與審計快照（交易）
+    Se->>Se: 結算 outbox 非同步發布分帳
+    Se->>W: 透過 Wallet port 進行憑證入帳
+```
+
 ## 目錄
 
 - [架構](#架構)
-- [功能特性](#功能特性)
-- [技術棧](#技術棧)
-- [項目結構](#項目結構)
+- [快速上手指南](#快速上手指南)
+- [為什麼使用這個專案](#為什麼使用這個專案)
+- [內建能力](#內建能力)
 - [模組概覽](#模組概覽)
+- [如何建立自己的 CRUD 模組](#如何建立自己的-crud-模組)
+- [文件說明](#文件說明)
 - [測試](#測試)
 - [Docker 部署](#docker-部署)
-- [國際化（i18n）](#國際化i18n)
+- [貢獻指南](#貢獻指南)
 - [許可證](#許可證)
 
-## 功能特性
+## 快速上手指南
 
-- **CRUD 服務抽象**：`new()`、`get()`、`list()`、`update()`、`remove()`
-- **動態查詢系統**：透過請求參數控制篩選/排序/分組/欄位選擇，表達式編譯為 DQL
-- **Trait 組合式控制器**：9 個 mixin trait（List、Detail、Create、Update、Delete、Workflow、Singleton、Transform）可按需組合
-- **模組化架構**：Core 框架 + Common（CMS）+ Promotion（DSL 驅動促銷引擎）+ Trade（電商）+ Store（門店交易發件箱）+ Inventory（物料、庫存、配方、預留）+ Payment（支付）+ Wallet（錢包）+ Settlement（分帳與終態）+ Wechat（微信登入+支付）+ Storage（檔案儲存驅動）+ Identity（鑑權）
-- **JWT 鑑權**：RS256 存取令牌，HMAC-SHA256 Refresh Token 輪換，含重用檢測
-- **OTP 登入**：基於手機驗證碼的簡訊登入，含頻率限制（阿里雲）
-- **訂單狀態機**：Symfony Workflow（草稿 → 完成），含完整工作流 API
-- **價格計算管道**：可插拔的價格計算器，按優先級排序執行
-- **支付抵扣提供方**：支付前鉤子（如錢包抵扣）在網關處理前減少發票金額 — 網關僅接收顯式金額
-- **原子錢包轉帳**：死鎖預防（統一鎖定順序）、悲觀鎖（`SELECT … FOR UPDATE`）、引用 ID 冪等
-- **憑證存款與取款**：以追加式 `wallet_voucher` 審計（邊界帳本）為背書的單邊入帳/出帳。voucher 類型權限由 provider 自行裁定（`manual` 需 `ROLE_ADMIN`；CLI/佇列視為可信呼叫），並發重複 `referenceId` 冪等返回
-- **錢包帳務**：餘額校驗（`SUM(餘額) == SUM(貸方憑證) − SUM(借方憑證)`）與逐錢包對帳
-- **錢包餘額抵扣**：錢包擁有的抵扣生命週期，透過 Payment 抵扣提供方模式接入 — Payment 編排，Wallet 實現
-- **匯率域（設計）**：資金池背書的點數經濟設計（`docs/design/bundles/exchange.md`）——生效期匯率、bcmath 換算、質押/發行/兌換/贖回
-- **可插拔檔案儲存**：`MediaStorageInterface`，本地與七牛 Kodo 驅動 — tagged iterator 自動發現
-- **OpenAPI 文件**：NelmioApiDocBundle + `#[OA\*]` 屬性，`/api/doc` 提供 Swagger UI
-- **系統自省**：實體元資料和路由匯出介面（`/system/*`）
-- **促銷 DSL 引擎**：自訂詞法/語法/求值器，支援 7 種促銷類型（滿減、折扣、贈品、第 N 件折扣、階梯、免運費、會員折扣）。作為標籤定價計算器（優先級 60）運行在 Trade 價格管道彙總小計之後。支援會員定向 SKU 折扣、多門店路由、全平台活動，以及 `best_price` 衝突模式（模擬候選活動並選擇最低總價）。
-- **Profile 實體**：用戶註冊時透過 Doctrine 監聽器自動建立。包含等級（青銅→鑽石）、暱稱、頭像、元資料。積分委託給 Wallet（currency=POINTS）。
-- **健康檢查**：`/health/live`（存活）與 `/health/ready`（DB + 可選 Redis 就緒）公開探針，供 Docker healthcheck 使用
-- **速率限制**：登入/註冊/OTP/微信登入/支付端點按用戶端 IP 滑動窗口限流（429 + `Retry-After`）
-- **Prometheus 指標**：`/metrics` 文本格式——每 worker HTTP 計數器/耗時直方圖 + 即時 DB 指標（outbox 積壓、失敗訊息佇列）
-- **Docker Compose**：MySQL 8 + Mailpit 開發環境
+如果你希望快速跑通本機登入與鑑權（JWT 金鑰、資料庫遷移、管理員使用者、登入/鑑權測試），請直接看 [QUICKSTART.md](QUICKSTART.md)。
+
+在 macOS 下建議優先使用 Homebrew PHP（`/opt/homebrew/bin/php`），避免與系統預設 PHP 版本衝突。
+
+## 為什麼使用這個專案
+
+CRUD Skeleton 面向那些需要超越生成式 CRUD、但暫時不需要分散式系統的應用。它讓例行 API 工作保持一致，同時為領域特定行為提供清晰的擴充點。
+
+- **可重用的 API 基礎**：共享服務、控制器 mixin、校驗、序列化與表達式驅動查詢，減少重複的端點程式碼。
+- **可組合的業務領域**：電商、庫存、支付、錢包、結算、身份、儲存與促銷圍繞顯式的服務與事件邊界組織。
+- **開箱即用的營運預設值**：Docker Compose、非同步 worker、outbox 處理、健康檢查、指標、限流與 CI 品質門禁均已內建，而非留作整合工作。
+
+## 內建能力
+
+- **一致的 CRUD API**：共享服務行為、控制器組合，以及動態篩選、排序、投影與展開。
+- **交易性電商工作流**：訂單、庫存預留、發票、支付網關、錢包抵扣與結算分帳。
+- **財務可審計性**：冪等轉帳、憑證背書的存款與取款、內部餘額校驗與對帳，以及版本化結算規則。
+- **可擴充的整合**：JWT 與 OTP 鑑權、微信登入與支付、本機或七牛媒體儲存，以及促銷規則 DSL。
+- **存取控制與審計**：角色保護的管理端點、特權動態查詢的防護，以及變更請求的有界審計日誌。
+- **可靠的非同步處理**：Messenger worker 與跨模組事件的 outbox/inbox 模式。
+- **生產診斷**：OpenAPI 文件、就緒與存活探針、Prometheus 指標與端點限流。
+- **強制的品質檢查**：PHPUnit、PHPStan Level 8、Rector 型別規則，以及 CI 中 90% 的行覆蓋率門檻。
 
 ## 技術棧
 
@@ -90,190 +170,159 @@ flowchart TB
 | 語言 | PHP `>= 8.4` |
 | 框架 | Symfony `8.1.*` |
 | ORM | Doctrine ORM `^3.6` |
-| 資料庫 | MySQL 8（Docker/生產）/ SQLite（測試） |
+| 資料庫 | MySQL 8（Docker/生產）/ SQLite（本機測試）/ PostgreSQL 16（CI 測試） |
 | 鑑權 | JWT (RS256) + OTP (簡訊) |
 | API 文件 | NelmioApiDocBundle (OpenAPI 3) |
 | 測試 | PHPUnit `^12.5`（支援 paratest 並行） |
+| 靜態分析 | PHPStan Level 8 + Rector 型別規則 |
 | 前端 | [crud-admin](https://github.com/immane/crud-admin) — 配置驅動的管理後台 |
 | 文件 | MkDocs Material (GitHub Pages) |
 
-## 項目結構
+完整依賴請查看 `composer.json`。
 
-```text
-.
-├── src/
-│   ├── Core/                     # 框架核心
-│   ├── Common/                   # CMS 模組（7 實體）
-│   ├── Trade/                    # 電商模組
-│   ├── Wallet/                   # 錢包模組
-│   ├── Payment/                  # 支付模組
-│   ├── Wechat/                   # 微信模組
-│   ├── Storage/                  # 儲存模組
-│   ├── Promotion/                # 促銷模組（DSL 引擎）
-│   ├── Store/                     # 門店模組
-│   ├── Inventory/                 # 庫存模組（物料、庫存、配方、預留）
-│   ├── Settlement/                # 分帳模組（計畫、規則、入帳）
-│   └── Identity/                 # 鑑權模組
-├── config/                       # Symfony 配置
-├── migrations/                   # Doctrine 遷移（20 個版本）
-├── tests/                        # 預設套件 2224 tests，按層組織：
-│   ├── UnitTest/                 #   純單元測試（無 kernel/DB）
-│   ├── Integration/              #   kernel + DB + HTTP 測試及共享 helper
-│   └── LowValue/                 #   棄用/低價值測試，預設運行排除
-├── translations/                 # 多語言翻譯檔案
-└── compose.yaml                  # Docker Compose
-```
+## 專案結構
+
+倉庫是一個模組化單體：`src/` 存放應用程式碼（Core 框架以及 Common、Identity、Trade、Payment、Wallet、Storage 等業務模組），旁邊是 `config/`、`migrations/`、`tests/`、`docs/` 以及 Docker/Compose 檔案。
+
+完整的詳細目錄樹（到每個模組的控制器、服務、實體、倉庫層級），請參閱
+**[專案結構 — 開發手冊](docs/manual/project-structure.md)**。
+
+## 快速開始
+
+本機與 Docker 安裝方式、JWT 配置、首次執行驗證與故障排除，請參閱 **[快速開始 — 開發手冊](docs/manual/getting-started.md)**。
+
+Docker 開發環境無需建立 env 檔案即可啟動。本機 PHP/Symfony 執行時，請在 `.env.local` 中覆蓋本機配置（見 [配置說明](#配置說明)）。
+
+## 配置說明
+
+完整的環境變數參考——檔案職責、全部變數、完整的 `.env.local` / `.env.prod.local` 範例、金鑰產生——請參閱 **[部署 — 開發手冊](docs/manual/deployment.md)**。
+
+環境變數檔案職責一覽：
+
+| 檔案 | 用途 | 是否提交 |
+|------|------|----------|
+| `.env` | 已提交的 Symfony 預設值，不放金鑰 | 是 |
+| `.env.dev`、`.env.test` | 已提交的開發/測試預設值 | 是 |
+| `.env.local`、`.env.*.local` | 本機覆蓋值與金鑰 | 否 |
+| `.env.example` | 本機開發變數參考 | 是 |
+| `.env.prod.example` | 生產 Docker 範本 | 是 |
+| `.env.prod.local` | 真實生產 Docker 配置 | 否 |
+
+生產環境請不要在倉庫中提交明文金鑰。使用真實系統環境變數，或使用本機生產 env 檔案。
+
+### 媒體儲存與七牛
+
+媒體上傳透過統一的媒體儲存介面支援多種儲存驅動（`local` 內建，`qiniu` 可選）。預設驅動透過環境變數設定，上傳時可透過 multipart 表單欄位 `storage` 覆蓋。
+
+完整參考——安裝七牛 SDK、配置七牛憑證、啟用驅動——請參閱
+**[媒體儲存與七牛 — 開發手冊](docs/manual/storage.md)**。
+
+## 本機執行
+
+完整的安裝步驟（Docker 與本機 PHP、JWT 金鑰、驗證、故障排除）請參閱 **[快速開始 — 開發手冊](docs/manual/getting-started.md)**。
+
+你可以用 PHP/Symfony 本機執行，或用 Docker Compose（app、nginx、MySQL、Redis、Mailpit）執行。應用執行在配置的本機連接埠上。
 
 ## 模組概覽
 
-| 模組 | 命名空間 | 用途 | 核心特性 |
-|------|---------|------|---------|
-| **Core** | `App\Core` | 框架基礎 | RestController、BaseService、View mixin、表達式解析器 |
-| **Common** | `App\Common` | CMS | 分類（樹）、標籤、內容、評論、頁面、媒體、設定 |
-| **Trade** | `App\Trade` | 電商 | 產品 + 規格、訂單（狀態機）、價格計算管道 |
-| **Inventory** | `App\Inventory` | 庫存管理 | 門店物料庫存 + 規格配方 + 預留（原子庫存鎖）+ 庫存台帳審計 + 負庫存策略 |
-| **Wallet** | `App\Wallet` | 錢包與抵扣 | 餘額（分）、原子轉帳、憑證存款與取款（provider 權限）、冪等、對帳 |
-| **Payment** | `App\Payment` | 支付編排 | 發票（分+工作流）、網關抽象、支付抵扣提供方契約 |
-| **Wechat** | `App\Wechat` | 微信整合 | 小程式/公眾號登入、微信支付 V3 |
-| **Storage** | `App\Storage` | 檔案儲存驅動 | LocalStorage、QiniuStorage |
-| **Promotion** | `App\Promotion` | DSL 驅動促銷 | 自訂 DSL 詞法/語法/求值器、7 種策略類型、作為 `trade.price_calculator`（優先級 60）、會員定向 SKU 折扣、多門店路由、`best_price` 衝突模式 |
-| **Identity** | `App\Identity` | 鑑權 | JWT (RS256)、OTP (簡訊)、Refresh Token 輪換、Profile 實體（自動建立、等級、積分委託給 Wallet） |
-| **Settlement** | `App\Settlement` | 分帳與終態 | 已確認資金 → 不可變上下文 → 版本化規則 → 可審計計畫/分帳 → 透過 Wallet 端口入帳；18 位精確金額、最大餘數捨入、原憑證沖正、SQL outbox/inbox、後台規則配置 |
-| **Exchange** | `App\ExchangeBundle` *(設計)* | 資金池背書的點數經濟 | 生效期匯率、bcmath 換算、質押/發行/兌換/贖回、造市商資金池 —— 僅設計，尚未實現 |
+| 模組 | 用途 | 核心特性 |
+|------|------|---------|
+| **Core** | API 基礎 | REST 控制器支援、共享服務行為、檢視 mixin、表達式查詢 |
+| **Common** | CMS 與設定 | 分類、標籤、內容、媒體、頁面、評論與鍵值設定 |
+| **Trade** | 電商 | 產品、規格、訂單工作流與價格計算 |
+| **Store** | 多門店營運 | 門店會員與可靠的訂單事件交接 |
+| **Inventory** | 庫存控制 | 門店庫存、預留、配方與庫存台帳策略 |
+| **Payment** | 發票編排 | 發票生命週期、網關抽象、支付抵扣、Webhook |
+| **Wallet** | 餘額操作 | 轉帳、存款、取款、憑證與對帳 |
+| **Settlement** | 分帳與終態 | 版本化規則、可審計分帳與錢包入帳 |
+| **Promotion** | 定價規則 | 促銷 DSL、計算策略與活動路由 |
+| **Identity** | 鑑權 | JWT、OTP、註冊、使用者資料與管理 |
+| **Storage** | 媒體上傳 | 本機與七牛 Kodo 儲存驅動 |
+| **Wechat** | 微信整合 | 登入與微信支付 V3 |
+| **Exchange** *(設計)* | 點數經濟 | 匯率與流動性池設計；尚未實作 |
+
+應用 API 端點回傳統一的 JSON 信封。健康檢查、指標與 Swagger/OpenAPI 端點使用各自格式。請求/回應格式、鑑權、分頁與錯誤處理，請參閱
+**[API 契約 — 開發手冊](docs/manual/api-contracts.md)**。
+
+## 服務層設計說明
+
+`BaseService` 組合了聚焦的 trait，提供基礎設施存取、交易、帶動態查詢引擎的讀/列表行為，以及變更行為（`new()`/`update()`/`remove()`），並透過 `BaseServiceInterface` 保持公共相容性。
+
+深入講解請參閱 **[核心框架 — 開發手冊](docs/manual/core-framework.md)**
+與 **[核心用法 — 開發手冊](docs/manual/core-usage.md)**。
+
+## 動態查詢系統
+
+`list()` 方法支援分頁以及表達式驅動的篩選、排序、排序、欄位選擇與展開參數（編譯為 DQL，並具備記憶體回退）。完整參考請參閱 **[查詢系統 — 開發手冊](docs/manual/query-system.md)**。
+
+## 如何建立自己的 CRUD 模組
+
+簡要步驟：建立 Doctrine 實體、繼承 `BaseService` 的服務、倉庫、使用 API mixin 的 App/Manage 控制器、註冊路由，並新增遷移。
+
+最小控制器透過服務介面組合 API 檢視 mixin：
+
+```php
+namespace App\Common\Controller\App;
+
+use App\Common\Service\ContentServiceInterface;
+use App\Core\Controller\RestController;
+use App\Core\View\ApiView;
+use App\Core\View\DetailApiViewMixin;
+use App\Core\View\ListApiViewMixin;
+
+class ContentController extends RestController
+{
+    use ApiView, DetailApiViewMixin, ListApiViewMixin;
+
+    public function __construct(
+        protected readonly ContentServiceInterface $service
+    ) {}
+}
+```
+
+完整規範請參閱 **[模組設計契約](docs/design/module-design.md)**，實用配方請參閱 **[核心用法 — 開發手冊](docs/manual/core-usage.md)**。
+
+## 文件說明
+
+- **[快速開始](QUICKSTART.md)** — 最小本機安裝、首次遷移與鑑權檢查
+- **[開發手冊](docs/manual/index.md)** — 面向任務的安裝、架構、框架用法、測試與部署指南
+- **[架構與設計契約](docs/design/system-architecture.md)** — 模組邊界、API、資料模型與擴充契約
+- **[資料庫與遷移](docs/manual/database-and-migrations.md)** — Doctrine 慣例與可移植遷移工作流
+- **[整合事件](docs/manual/integration-events.md)** — 交易性 outbox/inbox、冪等消費者、重試與排程器操作
+- **[Bundle 設計文件](docs/design/bundles/)** — 已實作與設計階段模組的設計說明
+- **[Runbooks 營運手冊](docs/runbooks/)** — 各模組的操作流程
+- **[測試與生產驗證](docs/testing/crud-skeleton-production/README.md)** — 按變更類型要求的驗證證據
+- **[OpenAPI 規範](docs/openapi/endpoints.yaml)** 與 **[訂單與支付流程](docs/openapi/order-payment-flow.md)** — API 參考與消費方工作流
+- **執行時 Swagger UI**：應用執行時存取 `http://localhost:8080/api/doc`
+- **[安全強化](docs/design/security-hardening.md)** 與 **[安全策略](SECURITY.md)** — 安全控制與負責任揭露
 
 ## 測試
 
-**預設套件 2224 tests · 7951 assertions**（另有 477 低價值測試預設排除）。
+測試套件涵蓋單元、整合、低價值與冒煙層。CI 執行主套件並帶覆蓋率，強制 90% 的行覆蓋率門檻，同時執行 PHPStan Level 8 與 Rector 型別規則檢查。
 
-串行執行所有測試：
-
-```bash
-./vendor/bin/phpunit
-```
-
-並行執行（約 2-3 倍加速）：
-
-```bash
-PARATEST=1 ./vendor/bin/paratest --processes 8 --runner WrapperRunner
-```
-
-顯式執行被排除的低價值測試：
-
-```bash
-./vendor/bin/phpunit --group low-value
-```
-
-含覆蓋率報告（CI 門檻 90%）：
-
-```bash
-XDEBUG_MODE=coverage ./vendor/bin/phpunit --coverage-text
-```
-
-生成 HTML 覆蓋率報告：
-```bash
-XDEBUG_MODE=coverage ./vendor/bin/phpunit --coverage-html var/coverage
-```
-
-### 靜態分析
-
-專案需要 PHP 8.4 或更新版本。執行與 CI 相同的靜態檢查：
-
-```bash
-composer phpstan
-composer rector:types:check
-```
-
-PHPStan 以 Level 8 檢查設定的 `src/` 範圍。CI 的 Rector 僅檢查 Doctrine Collection/Repository PHPDoc 型別規則；`composer rector` 是範圍較廣的選用重構命令，套用前應先審查變更。
-
-### 測試分組
-
-| 分組 | 數量 | 覆蓋範圍 |
-|------|------|----------|
-| Common | 69+ | CMS 實體、媒體上傳/刪除、批次更新 |
-| Trade | 171+ | 訂單、定價管道、工作流 |
-| Wallet | 105+ | 轉帳、錢包服務、支付網關、餘額審計 |
-| Payment | 60+ | 網關、註冊表、調整、發票、多網關整合 |
-| Identity | 116+ | 認證、OTP、令牌、UserService、Profile 實體/控制器 |
-| Promotion | 197+ | 實體、DSL 詞法/語法/求值器、策略、引擎、計算器、控制器 |
-| Wechat | 59+ | 認證、服務、支付網關、控制器、儲存庫 |
-| Core | 70+ | BaseService、RestController、表達式解析器、序列化器、系統控制器 |
-| Integration | 20+ | 跨模組整合測試 |
+完整的測試結構、helper、執行方式（串行/並行/覆蓋率）與 CI 覆蓋率細節，請參閱 **[測試 — 開發手冊](docs/manual/testing.md)**。
 
 ## Docker 部署
 
-### 架構
+完整的部署參考——每個服務、全部環境變數、`.env` / `.env.prod.local` 配置、JWT 金鑰、健康檢查、排程命令與升級——請參閱 **[部署 — 開發手冊](docs/manual/deployment.md)**。
 
-```mermaid
-flowchart LR
-    Client[用戶端 / 瀏覽器] -->|:8080| Nginx[nginx:alpine]
-    Nginx -->|/api/*| Fpm["PHP-FPM 8.4<br/>(app, Symfony)"]
-    Nginx -->|/api/doc| Swagger[Swagger UI<br/>NelmioApiDoc]
-    Fpm --> MySQL[(MySQL 8)]
-    Fpm --> Redis[(Redis 7<br/>OTP / 快取)]
-    Fpm --> Mailpit[Mailpit<br/>郵件開發]
-    Fpm --> Worker[Messenger worker<br/>handler / outbox]
-    Fpm --> Scheduler[Scheduler<br/>outbox 發布]
-```
+技術棧在 nginx（反向代理）之後執行 PHP-FPM，由 MySQL 與 Redis 支撐，並帶有 Messenger worker 與 outbox 排程器。開發與生產覆蓋透過 Compose 檔案提供。
 
-### 開發環境
+## 常見問題
 
-```bash
-docker compose up -d --build
-docker compose exec app php bin/console doctrine:migrations:migrate --no-interaction
-docker compose exec app php bin/console app:identity:user:create admin@example.com admin 'P@ssw0rd' --admin
-```
+常見問題包括 PHP 版本不匹配、資料庫連線錯誤、序列化問題與鑑權失敗。完整的故障排除請參閱 **[快速開始 — 開發手冊](docs/manual/getting-started.md)**。
 
-Compose 也會自動啟動 Messenger `worker` 與 Trade/Store Outbox `scheduler`。可使用 `docker compose logs -f worker scheduler` 檢視非同步處理日誌。
+## 貢獻指南
 
-### 生產環境
-
-```bash
-cp .env.prod.example .env.prod.local
-# 編輯 .env.prod.local 填入 APP_SECRET、REFRESH_TOKEN_SECRET、MYSQL_PASSWORD 等
-openssl genpkey -algorithm RSA -out var/jwt/jwt_private.pem -pkeyopt rsa_keygen_bits:2048
-openssl rsa -pubout -in var/jwt/jwt_private.pem -out var/jwt/jwt_public.pem
-docker compose -f compose.yaml -f compose.prod.yaml --env-file .env.prod.local up -d --build
-docker compose -f compose.yaml -f compose.prod.yaml --env-file .env.prod.local exec app php bin/console doctrine:migrations:migrate --no-interaction
-```
+請遵循 **[貢獻指南](CONTRIBUTING.md)** 了解分支、程式碼風格、測試、提交慣例與 PR 期望。保持 PR 小而聚焦，行為變化請補充或更新測試。發現漏洞請透過 **[安全策略](SECURITY.md)** 報告，而非公開 issue。
 
 ## 國際化（i18n）
 
-項目透過 Symfony Translation 元件支援國際化。翻譯檔案儲存在 `translations/` 目錄。
+專案透過 Symfony Translation 元件支援 `en`、`zh`、`zh_Hant` 與 `ja`。語言根據請求、`Accept-Language` 請求頭或預設值自動偵測。
 
-### 支援的語言
+完整的 i18n 參考（新增鍵、語言偵測、文件翻譯流程）請參閱 **[國際化 — 開發手冊](docs/manual/i18n.md)**。
 
-| 語言代碼 | 檔案 | 語言 |
-|----------|------|------|
-| `en` | `translations/messages.en.yaml` | 英語（預設） |
-| `zh` | `translations/messages.zh.yaml` | 簡體中文 |
-| `zh_Hant` | `translations/messages.zh_Hant.yaml` | 繁體中文 |
-| `ja` | `translations/messages.ja.yaml` | 日語 |
-
-### 工作原理
-
-1. **異常訊息** — API 路由上未捕獲的異常會經過 `ExceptionInterceptor`，呼叫 `$this->translator->trans($exception->getMessage())`，異常訊息原文作為翻譯鍵。
-2. **控制器錯誤響應** — `RestController::warning()`、`AuthController::error()`、`OtpController::error()`、`LoginController::error()` 均經由翻譯器處理。
-3. **JWT 認證失敗** — `JwtAuthenticator::onAuthenticationFailure()` 在回傳 JSON 響應前翻譯錯誤訊息。
-4. **實體欄位名稱** — `/system/entities/{entityName}` 端點會翻譯欄位名稱（如 `createdAt` → `Created at` → `建立時間`）。
-
-### 語言偵測
-
-`LocaleListener`（`src/Core/EventListener/LocaleListener.php`）自動偵測使用者語言：
-
-1. **查詢參數** — `?_locale=zh_Hant` 優先級最高
-2. **Accept-Language 請求頭** — 讀取瀏覽器 `Accept-Language` 頭並對應到支援的語言：
-   - `zh-CN`、`zh-Hans` → `zh`（簡體）
-   - `zh-TW`、`zh-HK`、`zh-Hant` → `zh_Hant`（繁體）
-   - `ja-JP` → `ja`（日語）
-3. **回退** — 不支援的語言自動回退到 `en`（設定的 `default_locale`）。
-
-### 多語言文件
-
-| 語言 | 檔案 |
-|------|------|
-| English | [README.md](README.md) |
-| Chinese (Simplified) | [README.zh-cn.md](README.zh-cn.md) |
-| Japanese | [README.ja.md](README.ja.md) |
+翻譯版 README：[README.zh-cn.md](README.zh-cn.md) · [README.ja.md](README.ja.md)
 
 ## 許可證
 
