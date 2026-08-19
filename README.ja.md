@@ -1,16 +1,19 @@
 # CRUD Skeleton
 
-Symfony 8.1 ベースのプロダクション向け API スケルトン。再利用可能なサービス層の抽象化、モジュラーアーキテクチャ、JWT 認証、動的クエリエンジン、プラグイン可能なビジネスモジュールを提供します。
+モジュラー CRUD と高トランザクション API のための Symfony 8.1 バックエンド基盤。再利用可能な API 規約、組み合わせ可能なビジネスモジュール、運用上の安全装置を備えていますが、すべてのアプリケーションがすべてのモジュールを採用する必要はありません。
 
 > English: [README.md](README.md) · Chinese (Simplified): [README.zh-cn.md](README.zh-cn.md) · Chinese (Traditional): [README.zh-hant.md](README.zh-hant.md)
 
-> ドキュメントサイト: [GitHub Pages](https://immane.github.io/crud-skeleton) | 設計契約: [docs/design/](docs/design/)
+> ドキュメントサイト: [GitHub Pages](https://immane.github.io/crud-skeleton) | 開発マニュアル: [docs/manual/index.md](docs/manual/index.md) | アーキテクチャ: [docs/design/system-architecture.md](docs/design/system-architecture.md)
 
 ## アーキテクチャ
+
+アプリケーションは階層型 Symfony API です。コントローラは trait ベースのビューミックスインを `BaseService`（CRUD + 動的クエリ）の上に組み合わせ、サービスがビジネスルールを担い、Doctrine ORM が MySQL に永続化します。これはモジュラーモノリスであり、各モジュールは単一の Symfony アプリケーション内で明示的なサービス・イベント境界を通じて連携します。
 
 ```mermaid
 flowchart TB
     Core["<b>Core フレームワーク</b><br/>BaseService · View Mixins · Expression→DQL"]
+
     Identity["Identity<br/>認証 · JWT · OTP · User"]
     Common["Common<br/>CMS（7 エンティティ）"]
     Storage["Storage<br/>メディアドライバ"]
@@ -45,40 +48,120 @@ flowchart TB
     Exchange -. "design" .-> Core
 ```
 
+ビジネス操作は一貫した「リクエストからトランザクションまで」の境界に従います。たとえばウォレット決済は、サービス層でプロバイダを解決し、その効果を単一のデータベーストランザクションで記録します。
+
+```mermaid
+sequenceDiagram
+    participant C as クライアント
+    participant Ctrl as コントローラ
+    participant S as サービス
+    participant P as Provider
+    participant DB as Doctrine ORM / MySQL
+
+    C->>Ctrl: POST /api/v1/...（JSON body）
+    Ctrl->>S: サービス呼び出し（検証済みペイロード）
+    S->>P: プロバイダ解決 + 権限検証
+    S->>DB: トランザクション：台帳 + 監査書き込み
+    S-->>Ctrl: 結果 / エンティティ
+    Ctrl-->>C: 統一レスポンスエンベロープ
+```
+
+### コマースオーケストレーション
+
+注文の履行は、同期トランザクション境界と非同期イベント配信をまたぎます。決済分配は意図的に別に示しています。外部で確認された資金から開始され、未実装の Payment-to-Settlement イベントからは開始されません。
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant T as Trade
+    participant TO as Trade Outbox
+    participant S as Store
+    participant SO as Store Outbox
+    participant I as Inventory
+    participant IO as Inventory Outbox
+    participant P as Payment
+    participant W as Wallet
+    participant Se as Settlement
+
+    T->>T: ストア注文を作成（トランザクション）<br/>store_submit
+    T->>TO: 同一トランザクション：注文作成イベント
+    TO-->>S: 非同期リレーとハンドラ
+
+    alt ストアが利用不可
+        S->>SO: 同一トランザクション：注文拒否イベント
+    else 在庫機能が無効
+        S->>SO: 同一トランザクション：注文受付イベント
+    else 在庫機能が有効
+        S->>SO: 同一トランザクション：在庫予約リクエスト
+        SO-->>I: 非同期リレーとハンドラ
+        alt 予約が拒否された
+            I->>IO: 同一トランザクション：予約拒否イベント
+        else 予約が確認された
+            I->>IO: 同一トランザクション：予約確認イベント
+        end
+        IO-->>S: 非同期リレーとハンドラ
+        S->>SO: 同一トランザクション：注文を受付または拒否
+    end
+    SO-->>T: 非同期リレーとハンドラ
+    T->>T: store_accept または store_reject
+
+    Note over T,P: 決済には store_accept と明示的な確認が必要
+    T->>P: 請求書を作成して決済（同期）
+    opt walletAmount が指定された場合
+        P->>W: 即時のウォレット控除 / 振替
+    end
+    alt ウォレットまたは調整で全額を充当
+        P->>P: 請求書を支払済みにする
+    else 外部ゲートウェイ
+        P->>P: コールバックまで請求書は支払い中
+    end
+    P->>T: InvoicePaidEvent が注文を同期更新
+
+    Note over P,Se: Payment-to-Settlement イベントは未実装
+    Se->>Se: 外部資金確認（非同期）
+    Se->>Se: プラン、分配、監査スナップショットを作成（トランザクション）
+    Se->>Se: Settlement outbox が分配を非同期で発行
+    Se->>W: Wallet port 経由でバウチャーを入金
+```
+
 ## 目次
 
 - [アーキテクチャ](#アーキテクチャ)
-- [機能](#機能)
-- [技術スタック](#技術スタック)
-- [プロジェクト構成](#プロジェクト構成)
+- [クイックスタートガイド](#クイックスタートガイド)
+- [このプロジェクトの目的](#このプロジェクトの目的)
+- [含まれる機能](#含まれる機能)
 - [モジュール概要](#モジュール概要)
+- [独自の CRUD モジュールを作成する](#独自の-crud-モジュールを作成する)
+- [ドキュメント](#ドキュメント)
 - [テスト](#テスト)
 - [Docker デプロイ](#docker-デプロイ)
-- [国際化（i18n）](#国際化i18n)
+- [コントリビューション](#コントリビューション)
 - [ライセンス](#ライセンス)
 
-## 機能
+## クイックスタートガイド
 
-- **CRUD サービス抽象化**: `new()`、`get()`、`list()`、`update()`、`remove()`
-- **動的クエリシステム**: リクエストパラメータによるフィルタリング、ソート、グループ化を DQL にコンパイル
-- **Trait ベースのコントローラ構成**: 9 つの mixin trait（List、Detail、Create、Update、Delete、Workflow、Singleton、Transform）を組み合わせて利用
-- **モジュラーアーキテクチャ**: Core フレームワーク + Common（CMS）+ Promotion（DSL駆動プロモーション）+ Trade（EC）+ Store（ストア送信ボックス）+ Inventory（マテリアル、在庫、レシピ、予約）+ Payment（決済）+ Wallet（ウォレット）+ Settlement（分配と最終性）+ Wechat（微信）+ Storage（ストレージ）+ Identity（認証）
-- **JWT 認証**: RS256 アクセストークン、HMAC-SHA256 リフレッシュトークンのローテーション
-- **OTP ログイン**: 電話番号ベースのワンタイムパスワード（SMS）
-- **注文ステートマシン**: Symfony Workflow（下書き → 完了）、完全なワークフロー API
-- **価格計算パイプライン**: プラグイン可能な価格計算機、優先順位順に実行
-- **原子ウォレット転送**: デッドロック防止（一貫したロック順序）、悲観的ロック（`SELECT … FOR UPDATE`）、referenceId による冪等性
-- **バウチャー入金・出金**: 追加専用の `wallet_voucher` 監査（境界台帳）を裏付けとする単側貸方/借方。バウチャータイプの権限は provider が判定（`manual` は `ROLE_ADMIN` 必須、CLI/キューは信頼された呼び出し）、並行する重複 `referenceId` は一意索引エラーではなく冪等に解決
-- **ウォレット会計**: 残高検証（`SUM(残高) == SUM(貸方バウチャー) − SUM(借方バウチャー)`）とウォレット単位の照合
-- **ファイルストレージ**: ローカルおよび Qiniu Kodo ドライバのプラグイン可能なアーキテクチャ
-- **為替ドメイン（設計）**: プール担保のポイント経済設計（`docs/design/bundles/exchange.md`）— 有効期間付き為替レート、bcmath 換算、担保/発行/交換/償還
-- **OpenAPI ドキュメント**: NelmioApiDocBundle + Swagger UI（`/api/doc`）
-- **プロモーション DSL エンジン**: カスタム lexer/parser/evaluator による人間可読なプロモーションルール。7 種類のプロモーション（full_reduction、discount、gift、nth_discount、tiered、free_shipping、member_discount）。タグ付き価格計算機（優先度 60）として Trade 価格パイプラインの小計集計後に実行。会員向け SKU 割引、マルチストアルーティング、グローバルキャンペーン、`best_price` コンフリクトモード（候補をシミュレーションして最低金額を選択）をサポート。
-- **Profile エンティティ**: ユーザー登録時に Doctrine リスナーにより自動生成。レベル（bronze→diamond）、ニックネーム、アバター、メタデータを保持。ポイントは Wallet（currency=POINTS）に委譲。
-- **Health Checks**: `/health/live`（生存確認）と `/health/ready`（DB + 任意 Redis の準備確認）— 公開プローブ。Docker healthcheck で使用。
-- **Rate Limiting**: ログイン/登録/OTP/WeChat ログイン/決済エンドポイントへのクライアント IP 単位のスライディングウィンドウ制限（429 + `Retry-After`）。
-- **Prometheus Metrics**: `/metrics` テキスト形式 — worker ごとの HTTP カウンター/所要時間ヒストグラム + リアルタイム DB ゲージ（outbox 滞留、失敗メッセージキュー）。
-- **Docker Compose**: MySQL 8 + Redis + Mailpit による開発環境
+ローカルでのログインと認証を素早く試すには（JWT キー、DB マイグレーション、管理者ユーザー、ログイン/認証テスト）、[QUICKSTART.md](QUICKSTART.md) を参照してください。
+
+macOS では、CLI のバージョン不一致を避けるため、クイックスタートのコマンドは Homebrew PHP（`/opt/homebrew/bin/php`）を優先します。
+
+## このプロジェクトの目的
+
+CRUD Skeleton は、生成された CRUD 以上のものを必要とするが、初日から分散システムを必要としないアプリケーション向けです。日常的な API 作業を一貫させつつ、ドメイン固有の振る舞いのための明確な拡張ポイントを提供します。
+
+- **再利用可能な API 基盤**: 共有サービス、コントローラミックスイン、バリデーション、シリアライゼーション、式駆動クエリにより、反復的なエンドポイントコードを削減します。
+- **組み合わせ可能なビジネスドメイン**: コマース、在庫、決済、ウォレット、決済分配、アイデンティティ、ストレージ、プロモーションが、明示的なサービス・イベント境界の周りに整理されています。
+- **運用準備済みのデフォルト**: Docker Compose、非同期ワーカー、outbox 処理、ヘルスチェック、メトリクス、レート制限、CI 品質ゲートが統合作業として残されるのではなく、含まれています。
+
+## 含まれる機能
+
+- **一貫した CRUD API**: 共有サービス動作、コントローラ構成、動的なフィルタリング・ソート・プロジェクション・展開。
+- **トランザクション型コマースワークフロー**: 注文、在庫予約、請求書、決済ゲートウェイ、ウォレット調整、決済分配。
+- **財務の監査可能性**: 冪等な転送、バウチャー裏付けの入金・出金、内部残高検証と照合、バージョン付き決済ルール。
+- **拡張可能な統合**: JWT と OTP 認証、WeChat ログインと決済、ローカルまたは Qiniu メディアストレージ、プロモーションルール DSL。
+- **アクセス制御と監査**: ロール保護された管理エンドポイント、特権動的クエリの保護、変更リクエストの有界監査ログ。
+- **信頼性の高い非同期処理**: Messenger ワーカーと、モジュール間イベントのための outbox/inbox パターン。
+- **本番診断**: OpenAPI ドキュメント、準備・生存プローブ、Prometheus メトリクス、エンドポイントレート制限。
+- **強制される品質チェック**: PHPUnit、PHPStan Level 8、Rector 型ルール、CI での 90% 行カバレッジ閾値。
 
 ## 技術スタック
 
@@ -87,209 +170,166 @@ flowchart TB
 | 言語 | PHP `>= 8.4` |
 | フレームワーク | Symfony `8.1.*` |
 | ORM | Doctrine ORM `^3.6` |
-| データベース | MySQL 8（Docker/本番）/ SQLite（テスト） |
+| データベース | MySQL 8（Docker/本番）/ SQLite（ローカルテスト）/ PostgreSQL 16（CI テスト） |
 | 認証 | JWT（RS256）+ OTP（SMS） |
 | API ドキュメント | NelmioApiDocBundle（OpenAPI 3） |
 | テスト | PHPUnit `^12.5`（paratest による並列実行対応） |
+| 静的解析 | PHPStan Level 8 + Rector 型ルール |
 | フロントエンド | [crud-admin](https://github.com/immane/crud-admin) — 設定駆動の管理画面 |
 | ドキュメント | MkDocs Material（GitHub Pages） |
 
+完全な依存関係リストは `composer.json` を参照してください。
+
 ## プロジェクト構成
 
-```text
-.
-├── src/
-│   ├── Core/                     # フレームワークコア
-│   ├── Common/                   # CMS モジュール（7 エンティティ）
-│   ├── Trade/                    # EC モジュール
-│   ├── Wallet/                   # ウォレットモジュール
-│   ├── Payment/                  # 決済モジュール
-│   ├── Wechat/                   # 微信モジュール
-│   ├── Storage/                  # ストレージモジュール
-│   ├── Promotion/                # プロモーションモジュール（DSL エンジン）
-│   ├── Store/                     # ストアモジュール
-│   ├── Inventory/                 # 在庫モジュール（マテリアル、在庫、レシピ、予約）
-│   ├── Settlement/                # 分配モジュール（プラン、ルール、入金）
-│   └── Identity/                 # 認証モジュール
-├── config/                       # Symfony 設定
-├── migrations/                   # Doctrine マイグレーション（20 バージョン）
-├── tests/                        # デフォルトスイート 2224 tests、レイヤー別に編成:
-│   ├── UnitTest/                 #   純ユニットテスト（kernel/DB なし）
-│   ├── Integration/              #   kernel + DB + HTTP テストおよび共有ヘルパー
-│   └── LowValue/                 #   廃止/低価値テスト（デフォルト実行から除外）
-├── translations/                 # 多言語翻訳ファイル
-└── compose.yaml                  # Docker Compose
-```
+リポジトリはモジュラーモノリスです。`src/` にアプリケーションコード（Core フレームワークと、Common、Identity、Trade、Payment、Wallet、Storage などのビジネスモジュール）が置かれ、その隣に `config/`、`migrations/`、`tests/`、`docs/`、Docker/Compose ファイルがあります。
+
+完全な詳細ディレクトリツリー（各モジュールのコントローラ、サービス、エンティティ、リポジトリまで）は、
+**[プロジェクト構成 — 開発マニュアル](docs/manual/project-structure.md)** を参照してください。
+
+## はじめに
+
+ネイティブと Docker のセットアップ方法、JWT 設定、初回実行の検証、トラブルシューティングは、
+**[はじめに — 開発マニュアル](docs/manual/getting-started.md)** を参照してください。
+
+Docker 開発は env ファイルを作成せずに動作します。ネイティブ PHP/Symfony の場合は、`.env.local` にローカルオーバーライドを作成してください（[設定](#設定) を参照）。
+
+## 設定
+
+環境ファイルの完全なリファレンス（ファイルの役割、すべての変数、完全な `.env.local` / `.env.prod.local` の例、シークレット生成）は、
+**[デプロイ — 開発マニュアル](docs/manual/deployment.md)** を参照してください。
+
+環境ファイルの役割の概要：
+
+| ファイル | 用途 | コミット? |
+|----------|------|-----------|
+| `.env` | コミット済みの Symfony デフォルト、シークレットなし | はい |
+| `.env.dev`、`.env.test` | コミット済みの dev/test デフォルト | はい |
+| `.env.local`、`.env.*.local` | マシンローカルのオーバーライドとシークレット | いいえ |
+| `.env.example` | ローカル開発変数のリファレンス | はい |
+| `.env.prod.example` | 本番 Docker テンプレート | はい |
+| `.env.prod.local` | 実際の本番 Docker 値 | いいえ |
+
+本番では、シークレットをコミット済みファイルに保存しないでください。実際の環境変数またはローカルの本番 env ファイルを使用してください。
+
+### メディアストレージと Qiniu
+
+メディアアップロードは、統一されたメディアストレージインターフェースを通じて複数のストレージドライバをサポートします（`local` は組み込み、`qiniu` はオプション）。デフォルトドライバは環境変数で設定され、アップロードごとに `storage` という multipart フォームフィールドで上書きできます。
+
+完全なリファレンス（Qiniu SDK のインストール、Qiniu 認証情報の設定、ドライバの有効化）は、
+**[メディアストレージと Qiniu — 開発マニュアル](docs/manual/storage.md)** を参照してください。
+
+## ローカルでの実行
+
+完全なセットアップ手順（Docker とネイティブ PHP、JWT キー、検証、トラブルシューティング）は、
+**[はじめに — 開発マニュアル](docs/manual/getting-started.md)** を参照してください。
+
+PHP/Symfony でネイティブに実行するか、Docker Compose（app、nginx、MySQL、Redis、Mailpit）で実行できます。アプリは設定されたローカルポートで実行されます。
 
 ## モジュール概要
 
-| モジュール | 名前空間 | 用途 | 主な機能 |
-|-----------|---------|------|---------|
-| **Core** | `App\Core` | フレームワーク基盤 | RestController、BaseService、View mixin、式パーサー |
-| **Common** | `App\Common` | CMS | カテゴリ、タグ、コンテンツ、コメント、ページ、メディア、設定 |
-| **Trade** | `App\Trade` | EC | 商品 + 仕様、注文（ステートマシン）、価格計算パイプライン |
-| **Inventory** | `App\Inventory` | 在庫管理 | 店舗別マテリアル在庫 + 仕様レシピ + 予約（アトミック在庫ロック）+ 在庫台帳監査 + マイナス在庫ポリシー |
-| **Wallet** | `App\Wallet` | ウォレット | 残高（セント）、原子転送、バウチャー入金・出金（provider 権限）、冪等性、調整 |
-| **Payment** | `App\Payment` | 決済管理 | 請求書（セント+ワークフロー）、ゲートウェイ抽象化 |
-| **Wechat** | `App\Wechat` | 微信連携 | ミニプログラム/公式アカウントログイン、微信 Pay V3 |
-| **Storage** | `App\Storage` | ファイルストレージ | LocalStorage、QiniuStorage |
-| **Promotion** | `App\Promotion` | DSL駆動プロモーション | カスタム DSL lexer/parser/evaluator、7 種類の戦略、`trade.price_calculator`（優先度 60）、会員向け SKU 割引、マルチストアルーティング、`best_price` コンフリクトモード |
-| **Identity** | `App\Identity` | 認証 | JWT（RS256）、OTP（SMS）、リフレッシュトークンローテーション、Profile エンティティ（自動生成、レベル、ポイントは Wallet に委譲） |
-| **Settlement** | `App\Settlement` | 分配と最終性 | 確定資金 → 不変コンテキスト → バージョン付きルール → 監査可能なプラン/分配 → Wallet ポート経由で入金；18 桁の正確な金額、最大剰余丸め、元バウチャー取消、SQL outbox/inbox、管理ルール設定 |
-| **Exchange** | `App\ExchangeBundle` *(設計)* | プール担保のポイント経済 | 有効期間付き為替レート、bcmath 換算、担保/発行/交換/償還、マーケットメーカープール — 設計のみ、未実装 |
+| モジュール | 用途 | 主な機能 |
+|-----------|------|---------|
+| **Core** | API 基盤 | REST コントローラサポート、共有サービス動作、ビューミックスイン、式クエリ |
+| **Common** | CMS と設定 | カテゴリ、タグ、コンテンツ、メディア、ページ、コメント、キーバリュー設定 |
+| **Trade** | コマース | 商品、仕様、注文ワークフロー、価格計算 |
+| **Store** | マルチストア運用 | ストアメンバーシップと信頼性の高い注文イベント引き継ぎ |
+| **Inventory** | 在庫管理 | ストア別在庫、予約、レシピ、在庫台帳ポリシー |
+| **Payment** | 請求書オーケストレーション | 請求書ライフサイクル、ゲートウェイ抽象化、決済調整、Webhook |
+| **Wallet** | 残高操作 | 転送、入金、出金、バウチャー、照合 |
+| **Settlement** | 分配と最終性 | バージョン付きルール、監査可能な分配、ウォレット入金 |
+| **Promotion** | 価格ルール | プロモーション DSL、計算戦略、キャンペーンルーティング |
+| **Identity** | 認証 | JWT、OTP、登録、ユーザープロフィール、管理 |
+| **Storage** | メディアアップロード | ローカルと Qiniu Kodo ストレージドライバ |
+| **Wechat** | WeChat 連携 | ログインと WeChat Pay V3 |
+| **Exchange** *(設計)* | ポイント経済 | 為替レートと流動性プールの設計；未実装 |
+
+アプリケーション API エンドポイントは統一された JSON エンベロープを返します。ヘルスチェック、メトリクス、Swagger/OpenAPI エンドポイントはそれぞれの形式を使用します。リクエスト/レスポンス形式、認証、ページネーション、エラーハンドリングは、
+**[API 契約 — 開発マニュアル](docs/manual/api-contracts.md)** を参照してください。
+
+## サービス層の仕組み
+
+`BaseService` は、インフラストラクチャアクセス、トランザクション、動的クエリエンジンを備えた読み取り/リスト動作、変更動作（`new()`/`update()`/`remove()`）を提供する焦点を絞ったトレイトを組み合わせ、`BaseServiceInterface` を通じて公開互換性を維持します。
+
+詳細は、**[コアフレームワーク — 開発マニュアル](docs/manual/core-framework.md)**
+と **[コアの使い方 — 開発マニュアル](docs/manual/core-usage.md)** を参照してください。
+
+## 動的クエリシステム
+
+`list()` メソッドは、ページネーションに加えて、式駆動のフィルタリング・ソート・順序・フィールド選択・展開パラメータをサポートします（DQL にコンパイルされ、インメモリフォールバックを備えます）。完全なリファレンスは **[クエリシステム — 開発マニュアル](docs/manual/query-system.md)** を参照してください。
+
+## 独自の CRUD モジュールを作成する
+
+手順の概要：Doctrine エンティティ、`BaseService` を継承するサービス、リポジトリ、API ミックスインを使用する App/Manage コントローラを作成し、ルートを登録してマイグレーションを追加します。
+
+最小限のコントローラは、サービスインターフェースの上に API ビューミックスインを組み合わせます：
+
+```php
+namespace App\Common\Controller\App;
+
+use App\Common\Service\ContentServiceInterface;
+use App\Core\Controller\RestController;
+use App\Core\View\ApiView;
+use App\Core\View\DetailApiViewMixin;
+use App\Core\View\ListApiViewMixin;
+
+class ContentController extends RestController
+{
+    use ApiView, DetailApiViewMixin, ListApiViewMixin;
+
+    public function __construct(
+        protected readonly ContentServiceInterface $service
+    ) {}
+}
+```
+
+完全な仕様は **[モジュール設計契約](docs/design/module-design.md)**、実用的なレシピは **[コアの使い方 — 開発マニュアル](docs/manual/core-usage.md)** を参照してください。
+
+## ドキュメント
+
+- **[クイックスタート](QUICKSTART.md)** — 最小限のローカルセットアップ、初回マイグレーション、認証チェック
+- **[開発マニュアル](docs/manual/index.md)** — セットアップ、アーキテクチャ、フレームワークの使い方、テスト、デプロイのタスク指向ガイド
+- **[アーキテクチャと設計契約](docs/design/system-architecture.md)** — モジュール境界、API、データモデル、拡張契約
+- **[データベースとマイグレーション](docs/manual/database-and-migrations.md)** — Doctrine の慣例と移植可能なマイグレーションワークフロー
+- **[統合イベント](docs/manual/integration-events.md)** — トランザクション outbox/inbox、冪等コンシューマ、リトライ、スケジューラ操作
+- **[バンドル設計ドキュメント](docs/design/bundles/)** — 実装済みおよび設計段階のモジュールの設計ノート
+- **[Runbooks](docs/runbooks/)** — モジュール別の運用手順
+- **[テストと本番検証](docs/testing/crud-skeleton-production/README.md)** — 変更タイプ別に必要な検証エビデンス
+- **[OpenAPI 仕様](docs/openapi/endpoints.yaml)** と **[注文と決済フロー](docs/openapi/order-payment-flow.md)** — API リファレンスとコンシューマワークフロー
+- **実行時 Swagger UI**: アプリケーション実行中は `http://localhost:8080/api/doc`
+- **[セキュリティ強化](docs/design/security-hardening.md)** と **[セキュリティポリシー](SECURITY.md)** — セキュリティ制御と責任ある開示
 
 ## テスト
 
-**デフォルトスイート 2224 tests · 7951 assertions**（低価値テスト 477 はデフォルト実行から除外）。テストは `tests/` 配下でレイヤー別に整理されています：
+テストスイートは、ユニット、統合、低価値、スモークの各レイヤーをカバーします。CI はカバレッジ付きでメインスイートを実行し、90% の行カバレッジ閾値を強制し、PHPStan Level 8 と Rector 型ルールチェックも実行します。
 
-- `tests/UnitTest/` — 純ユニットテスト（kernel/DB なし）、名前空間 `App\Tests\UnitTest\...`
-- `tests/Integration/` — kernel + DB + HTTP テストおよび共有ヘルパー（`DatabaseBootstrapTrait`、`IntegrationWebTestCase`）、名前空間 `App\Tests\Integration\...`
-- `tests/LowValue/` — テスト監査によりフラグ付けされた廃止/低価値テスト。デフォルト実行から除外され、`--group low-value` で実行
-
-全テストを直列で実行：
-
-```bash
-./vendor/bin/phpunit
-```
-
-並列実行（約2-3倍高速、worker ごとの SQLite 分離は組み込み）：
-
-```bash
-PARATEST=1 ./vendor/bin/paratest --processes 8 --runner WrapperRunner
-```
-
-単一のテストファイルを実行：
-
-```bash
-./vendor/bin/phpunit tests/UnitTest/Core/Service/BaseServiceInfrastructureTraitTest.php
-```
-
-除外された低価値テストを明示的に実行：
-
-```bash
-./vendor/bin/phpunit --group low-value
-```
-
-カバレッジレポート付きで実行（CI は 90% 閾値を強制）：
-
-```bash
-XDEBUG_MODE=coverage ./vendor/bin/phpunit --coverage-text
-```
-
-HTML カバレッジレポートの生成：
-
-```bash
-XDEBUG_MODE=coverage ./vendor/bin/phpunit --coverage-html var/coverage
-```
-
-その後ブラウザで `var/coverage/index.html` を開いてください。
-
-### 静的解析
-
-PHP 8.4 以上が必要です。CI と同じ静的チェックを実行します。
-
-```bash
-composer phpstan
-composer rector:types:check
-```
-
-PHPStan は設定済みの `src/` を Level 8 で検査します。CI の Rector は Doctrine Collection/Repository の PHPDoc 型ルールのみを検査します。`composer rector` はより広範な任意のリファクタリングコマンドであり、適用前に差分を確認してください。
-
-### テストグループ
-
-| グループ | 数 | カバー範囲 |
-|----------|-----|-----------|
-| Common | 69+ | CMS エンティティ、メディアアップロード/削除、バッチ更新 |
-| Trade | 171+ | 注文、価格設定パイプライン、ワークフロー |
-| Wallet | 105+ | 転送、ウォレットサービス、決済ゲートウェイ、残高監査 |
-| Payment | 60+ | ゲートウェイ、レジストリ、調整、請求書、マルチゲートウェイ統合 |
-| Identity | 116+ | 認証、OTP、トークン、UserService、Profile エンティティ/コントローラ |
-| Promotion | 320+ | エンティティ、DSL lexer/parser/evaluator、戦略、エンジン、計算機、コントローラ、実際の SQLite 見積パイプライン統合 |
-| Wechat | 59+ | 認証、サービス、決済ゲートウェイ、コントローラ、リポジトリ |
-| Core | 70+ | BaseService、RestController、式パーサー、シリアライザ、システムコントローラ |
-| Integration | 20+ | モジュール間結合テスト |
+完全なテスト構造、ヘルパー、実行方法（直列/並列/カバレッジ）、CI カバレッジの詳細は、
+**[テスト — 開発マニュアル](docs/manual/testing.md)** を参照してください。
 
 ## Docker デプロイ
 
-### アーキテクチャ
+完全なデプロイリファレンス（すべてのサービス、すべての環境変数、`.env` / `.env.prod.local` のセットアップ、JWT キー、ヘルスチェック、スケジューラコマンド、アップグレード）は、
+**[デプロイ — 開発マニュアル](docs/manual/deployment.md)** を参照してください。
 
-```mermaid
-flowchart LR
-    Client[クライアント / ブラウザ] -->|:8080| Nginx[nginx:alpine]
-    Nginx -->|/api/*| Fpm["PHP-FPM 8.4<br/>(app, Symfony)"]
-    Nginx -->|/api/doc| Swagger[Swagger UI<br/>NelmioApiDoc]
-    Fpm --> MySQL[(MySQL 8)]
-    Fpm --> Redis[(Redis 7<br/>OTP / キャッシュ)]
-    Fpm --> Mailpit[Mailpit<br/>メール開発]
-    Fpm --> Worker[Messenger worker<br/>handler / outbox]
-    Fpm --> Scheduler[Scheduler<br/>outbox 発行]
-```
+スタックは nginx（リバースプロキシ）の背後で PHP-FPM を実行し、MySQL と Redis で支えられ、Messenger ワーカーと outbox スケジューラを備えています。開発用と本番用のオーバーレイは Compose ファイルで提供されます。
 
-### 開発環境
+## トラブルシューティング
 
-```bash
-docker compose up -d --build
-docker compose exec app php bin/console doctrine:migrations:migrate --no-interaction
-docker compose exec app php bin/console app:identity:user:create admin@example.com admin 'P@ssw0rd' --admin
-```
+一般的な問題には、PHP バージョンの不一致、データベース接続エラー、シリアライゼーションの問題、認証失敗があります。完全なトラブルシューティング手順は、
+**[はじめに — 開発マニュアル](docs/manual/getting-started.md)** を参照してください。
 
-Compose は Messenger `worker` と Trade/Store Outbox `scheduler` も自動起動します。非同期処理のログは `docker compose logs -f worker scheduler` で確認できます。
+## コントリビューション
 
-### 本番環境
-
-```bash
-cp .env.prod.example .env.prod.local
-# .env.prod.local に APP_SECRET、REFRESH_TOKEN_SECRET、MYSQL_PASSWORD 等を記入
-openssl genpkey -algorithm RSA -out var/jwt/jwt_private.pem -pkeyopt rsa_keygen_bits:2048
-openssl rsa -pubout -in var/jwt/jwt_private.pem -out var/jwt/jwt_public.pem
-docker compose -f compose.yaml -f compose.prod.yaml --env-file .env.prod.local up -d --build
-docker compose -f compose.yaml -f compose.prod.yaml --env-file .env.prod.local exec app php bin/console doctrine:migrations:migrate --no-interaction
-```
+ブランチ、コードスタイル、テスト、コミット規約、PR の期待事項については、**[コントリビューションガイド](CONTRIBUTING.md)** に従ってください。PR は焦点を絞り、動作変更にはテストを追加または更新してください。脆弱性は公開 issue ではなく **[セキュリティポリシー](SECURITY.md)** を通じて報告してください。
 
 ## 国際化（i18n）
 
-このプロジェクトは Symfony Translation コンポーネントによる国際化をサポートしています。翻訳ファイルは `translations/` ディレクトリに YAML 形式で保存されています。
+このプロジェクトは Symfony Translation コンポーネントを通じて `en`、`zh`、`zh_Hant`、`ja` をサポートしています。ロケールはリクエスト、`Accept-Language` ヘッダー、またはデフォルトから自動的に検出されます。
 
-### サポートされているロケール
+完全な i18n リファレンス（キーの追加、ロケール検出、ドキュメント翻訳フロー）は、
+**[国際化 — 開発マニュアル](docs/manual/i18n.md)** を参照してください。
 
-| ロケールコード | ファイル | 言語 |
-|--------------|---------|------|
-| `en` | `translations/messages.en.yaml` | 英語（デフォルト） |
-| `zh` | `translations/messages.zh.yaml` | 中国語（簡体字） |
-| `zh_Hant` | `translations/messages.zh_Hant.yaml` | 中国語（繁体字） |
-| `ja` | `translations/messages.ja.yaml` | 日本語 |
-
-### 動作仕組み
-
-1. **例外メッセージ** — API ルートでキャッチされなかった例外は `ExceptionInterceptor` によって処理され、`$this->translator->trans($exception->getMessage())` が呼び出されます。例外メッセージが翻訳キーとして使用されます。
-2. **コントローラのエラーレスポンス** — `RestController::warning()`、`AuthController::error()`、`OtpController::error()`、`LoginController::error()` はすべて翻訳処理を経由します。
-3. **JWT 認証失敗** — `JwtAuthenticator::onAuthenticationFailure()` は JSON レスポンスを返す前にエラーメッセージを翻訳します。
-4. **エンティティフィールド名** — `/system/entities/{entityName}` エンドポイントはフィールド名を翻訳します（例：`createdAt` → `Created at` → `作成日時`）。
-
-### 言語検出
-
-`LocaleListener`（`src/Core/EventListener/LocaleListener.php`）が自動的にユーザーの言語を検出します：
-
-1. **クエリパラメータ** — `?_locale=ja` が最優先
-2. **Accept-Language ヘッダー** — ブラウザの `Accept-Language` ヘッダーを読み取り、サポート言語にマッピング：
-   - `zh-CN`、`zh-Hans` → `zh`（簡体字）
-   - `zh-TW`、`zh-HK`、`zh-Hant` → `zh_Hant`（繁体字）
-   - `ja-JP` → `ja`（日本語）
-3. **フォールバック** — 未サポートの言語は `en`（設定された `default_locale`）にフォールバック。
-
-### 新しい言語の追加
-
-1. 翻訳ファイルを作成：`translations/messages.{locale}.yaml`
-2. `src/Core/EventListener/LocaleListener.php` の `SUPPORTED_LOCALES` と `LOCALE_MAP` にロケールコードを追加
-3. Symfony は `translations/` ディレクトリ内のファイルを自動検出するため、追加設定は不要。
-
-### 多言語ドキュメント
-
-| 言語 | ファイル |
-|------|---------|
-| English | [README.md](README.md) |
-| Chinese (Simplified) | [README.zh-cn.md](README.zh-cn.md) |
-| Chinese (Traditional) | [README.zh-hant.md](README.zh-hant.md) |
+翻訳版 README：[README.zh-cn.md](README.zh-cn.md) · [README.zh-hant.md](README.zh-hant.md)
 
 ## ライセンス
 

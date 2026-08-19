@@ -48,6 +48,7 @@ live next to it under `docs/design`, `docs/runbooks`, and `docs/testing`.
 | Document | Purpose |
 |----------|---------|
 | [Deployment](deployment.md) | Docker Compose services, environment variables, JWT keys, production migrations |
+| [Media Storage & Qiniu](storage.md) | Storage drivers, default driver selection, enabling the Qiniu Kodo driver |
 | [Extracting a Service](extracting-a-service.md) | How to carve a module out of the modular monolith into an independent app |
 | [Internationalization](i18n.md) | Runtime API translations and the bilingual docs pipeline |
 
