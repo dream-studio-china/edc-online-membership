@@ -202,36 +202,23 @@ sequenceDiagram
 
 ## 快速开始
 
-### 1) 克隆仓库
+5–10 分钟的安装指南请参阅 **[QUICKSTART.md](QUICKSTART.md)**。
+
+快速克隆并安装：
 
 ```bash
 git clone https://github.com/immane/crud-skeleton.git
 cd crud-skeleton
-```
-
-### 2) 安装依赖
-
-```bash
 composer install
 ```
 
-### 3) 为本机 PHP 准备环境变量
-
-Docker 开发环境无需创建 env 文件即可启动，并会自动启动 Messenger `worker` 和 Trade/Store Outbox `scheduler`。可通过 `docker compose logs -f worker scheduler` 查看异步处理。本机 PHP/Symfony 运行时，建议在 `.env.local` 中覆盖本地配置：
-
-```dotenv
-APP_ENV=dev
-APP_SECRET=change-me
-DATABASE_URL="mysql://app:!ChangeMe!@127.0.0.1:3306/app?serverVersion=8.0&charset=utf8mb4"
-JWT_PRIVATE_KEY_PATH=var/jwt_dev_private.pem
-JWT_PUBLIC_KEY_PATH=var/jwt_dev_public.pem
-JWT_PASSPHRASE=
-REFRESH_TOKEN_SECRET=change-this-secret
-```
+Docker 开发环境无需创建 env 文件即可启动。本机 PHP/Symfony 运行时，请在 `.env.local` 中覆盖本地配置（见 [配置说明](#配置说明)）。
 
 ## 配置说明
 
-环境变量文件职责：
+完整的环境变量参考——文件职责、全部变量、完整的 `.env.local` / `.env.prod.local` 示例、密钥生成——请参阅 **[部署 — 开发手册](docs/manual/deployment.md)**。
+
+环境变量文件职责一览：
 
 | 文件 | 用途 | 是否提交 |
 |------|------|----------|
@@ -241,19 +228,6 @@ REFRESH_TOKEN_SECRET=change-this-secret
 | `.env.example` | 本地开发变量参考 | 是 |
 | `.env.prod.example` | 生产 Docker 模板 | 是 |
 | `.env.prod.local` | 真实生产 Docker 配置 | 否 |
-
-关键环境变量：
-
-| 变量 | 用途 |
-|------|------|
-| `APP_ENV` | 运行环境（`dev`/`prod`/`test`） |
-| `APP_SECRET` | Symfony 应用密钥 |
-| `DATABASE_URL` | MySQL 连接字符串 |
-| `JWT_PRIVATE_KEY_PATH` | RS256 私钥路径 |
-| `JWT_PUBLIC_KEY_PATH` | RS256 公钥路径 |
-| `JWT_PASSPHRASE` | 密钥密码 |
-| `REFRESH_TOKEN_SECRET` | HMAC-SHA256 密钥 |
-| `MAILER_DSN` | 邮件发送器 |
 
 生产环境请不要在仓库中提交明文密钥。使用真实系统环境变量，或通过 `docker compose --env-file .env.prod.local` 提供。
 
@@ -348,6 +322,8 @@ curl -X POST http://localhost:8080/api/v1/manage/settings \
 
 ## 本地运行
 
+完整的安装步骤（Docker 与本机 PHP、JWT 密钥、验证、故障排查）请参阅 **[快速开始 — 开发手册](docs/manual/getting-started.md)**。
+
 ### 方式 A：本机运行 Symfony
 
 ```bash
@@ -418,6 +394,8 @@ curl -X POST "http://127.0.0.1:8000/api/v1/manage/contents" \
 
 ## 服务层设计说明
 
+关于 `BaseService`、View mixin 与表达式引擎的深入讲解，请参阅 **[核心框架 — 开发手册](docs/manual/core-framework.md)** 与 **[核心用法 — 开发手册](docs/manual/core-usage.md)**。
+
 `BaseService` 已按职责拆分为 `src/Core/Service/Concern` 下的 trait：
 
 - **`BaseServiceInfrastructureTrait`**
@@ -439,6 +417,8 @@ curl -X POST "http://127.0.0.1:8000/api/v1/manage/contents" \
 
 ## 动态查询系统
 
+每个查询参数与运算符的完整参考请参阅 **[查询系统 — 开发手册](docs/manual/query-system.md)**。
+
 `list()` 方法支持以下查询参数：
 
 | 参数 | 说明 | 示例 |
@@ -457,7 +437,7 @@ curl -X POST "http://127.0.0.1:8000/api/v1/manage/contents" \
 
 ## 如何创建自己的 CRUD 模块
 
-详见 **[模块设计契约](docs/design/module-design.md)**。
+完整规范请参阅 **[模块设计契约](docs/design/module-design.md)**，实用配方（控制器、服务、自定义动作、错误处理、事务）请参阅 **[核心用法 — 开发手册](docs/manual/core-usage.md)**。
 
 简要步骤：
 
@@ -502,6 +482,8 @@ class ContentController extends RestController
 - **[QUICKSTART.zh-cn.md](QUICKSTART.zh-cn.md)** — 5-10 分钟快速上手
 
 ## 测试
+
+完整的测试结构、helper 与 CI 覆盖率细节请参阅 **[测试 — 开发手册](docs/manual/testing.md)**。
 
 **默认套件 2224 个测试 · 7951 个断言**（另有 **477 个低价值测试** 默认排除）。测试按层组织在 `tests/` 下：
 
@@ -570,6 +552,8 @@ PHPStan 以 Level 8 检查其配置的 `src/` 范围。CI 中的 Rector 仅检�
 
 ## Docker 部署
 
+完整的部署参考——每个服务、全部环境变量、`.env` / `.env.prod.local` 配置、JWT 密钥、健康检查、调度命令与升级——请参阅 **[部署 — 开发手册](docs/manual/deployment.md)**。
+
 ### 架构
 
 ```mermaid
@@ -598,169 +582,22 @@ flowchart LR
 # 一键启动。本地 Docker 开发不需要创建 env 文件。
 docker compose up -d --build
 
-# 首次运行：数据库迁移 + 创建管理员
+# 首次运行：迁移数据库并创建管理员
 docker compose exec app php bin/console doctrine:migrations:migrate --no-interaction
 docker compose exec app php bin/console app:identity:user:create admin@example.com admin 'P@ssw0rd' --admin
 
 # 应用 → http://localhost:8080   Swagger → http://localhost:8080/api/doc
 ```
 
-启动时自动完成：
-- `docker/app/entrypoint.sh` 会在挂载的 `./var/jwt` 目录下生成一次开发 JWT 密钥，后续启动复用
-- `compose.override.yaml` 自动加载开发配置（`APP_ENV=dev`、`APP_DEBUG=1`）
-- `compose.yaml` 提供安全的开发默认密钥
-- 所有可选功能（微信、短信）默认禁用 — 如需启用可使用 `.env` 或 `--env-file`
-
-如果需要定制 Docker 端口、数据库密码或可选集成，建议显式传入 Docker env 文件：
-
-```bash
-cp .env.example .env.docker.local
-docker compose --env-file .env.docker.local up -d --build
-```
-
-不要把生产密钥写入已提交的 `.env` 文件。
-
 ### 生产环境
-
-#### 第一步：准备生产 env 文件
 
 ```bash
 cp .env.prod.example .env.prod.local
-```
-
-编辑 `.env.prod.local`，至少设置：
-
-```dotenv
-APP_SECRET=你的64字符随机密钥
-REFRESH_TOKEN_SECRET=你的32字节随机密钥
-MYSQL_PASSWORD=你的数据库密码
-MYSQL_ROOT_PASSWORD=你的 root 数据库密码
-DEFAULT_URI=https://api.example.com
-```
-
-可选集成可以留空。微信、短信变量留空时，对应功能自动禁用。
-
-#### 第二步：在主机上生成 JWT 密钥
-
-密钥通过 `./var` 绑定挂载持久化在容器外：
-
-```bash
-mkdir -p var/jwt
-openssl genpkey -algorithm RSA -out var/jwt/jwt_private.pem -pkeyopt rsa_keygen_bits:2048
-openssl rsa -pubout -in var/jwt/jwt_private.pem -out var/jwt/jwt_public.pem
-chmod 600 var/jwt/jwt_private.pem
-```
-
-> 如果私钥有密码，在 `.env.prod.local` 中设置 `JWT_PASSPHRASE`。
-
-#### 第三步：启动
-
-```bash
+# 编辑 .env.prod.local：APP_SECRET、REFRESH_TOKEN_SECRET、MYSQL_PASSWORD、MYSQL_ROOT_PASSWORD、DEFAULT_URI
+# 在宿主机生成 JWT 密钥（见部署手册），然后：
 docker compose -f compose.yaml -f compose.prod.yaml --env-file .env.prod.local up -d --build
-```
-
-#### 第四步：初始化
-
-```bash
 docker compose -f compose.yaml -f compose.prod.yaml --env-file .env.prod.local exec app php bin/console doctrine:migrations:migrate --no-interaction
 docker compose -f compose.yaml -f compose.prod.yaml --env-file .env.prod.local exec app php bin/console app:identity:user:create admin@example.com admin 'P@ssw0rd' --admin
-```
-
-#### 第五步：验证
-
-```bash
-curl -s http://localhost:8080/api/auth/login \
-  -H 'Content-Type: application/json' \
-  -d '{"identifier":"admin@example.com","password":"P@ssw0rd"}'
-```
-
-### 环境变量参考
-
-**生产必填**：
-
-| 变量 | 用途 |
-|------|------|
-| `APP_SECRET` | Symfony 应用密钥 |
-| `REFRESH_TOKEN_SECRET` | Refresh Token 的 HMAC-SHA256 密钥 |
-| `MYSQL_PASSWORD` | MySQL 应用用户密码 |
-| `MYSQL_ROOT_PASSWORD` | MySQL root 密码 |
-
-**compose.yaml 已提供**（开发默认值，生产环境按需覆盖）：
-
-| 变量 | Docker 默认值 |
-|------|---------------|
-| `DATABASE_URL` | `mysql://app:...@database:3306/app` |
-| `MAILER_DSN` | `smtp://mailer:1025` |
-| `OTP_REDIS_DSN` | `redis://redis:6379/0` |
-| `JWT_PRIVATE_KEY_PATH` | `/var/www/html/var/jwt/jwt_private.pem` |
-| `JWT_PUBLIC_KEY_PATH` | `/var/www/html/var/jwt/jwt_public.pem` |
-
-**可选功能**（留空表示禁用）：
-
-| 功能 | 需要的变量（完整列表见 `.env.example` 或 `.env`） |
-|------|---------------------------------------------------|
-| 阿里云短信 | `ALIYUN_ACCESS_KEY_ID`、`ALIYUN_ACCESS_KEY_SECRET` 等 |
-| 微信小程序 | `WECHAT_MINIAPP_APP_ID`、`WECHAT_MINIAPP_SECRET` |
-| 微信公众号 | `WECHAT_OFFICIAL_APP_ID`、`WECHAT_OFFICIAL_SECRET` 等 |
-| 微信支付 V3 | `WECHAT_PAY_MCH_ID`、`WECHAT_PAY_SECRET_KEY` 等 |
-
-### 常用命令
-
-下面命令用于 Docker 开发环境。生产环境请在 `docker compose` 后追加 `-f compose.yaml -f compose.prod.yaml --env-file .env.prod.local`。
-
-```bash
-# 查看日志
-docker compose logs -f app
-
-# 运行 Symfony 命令
-docker compose exec app php bin/console about
-
-# 进入 app 容器
-docker compose exec app bash
-
-# 清除缓存
-docker compose exec app php bin/console cache:clear
-
-# 查看待执行的迁移
-docker compose exec app php bin/console doctrine:migrations:status
-
-# 停止所有服务
-docker compose down
-
-# 重置并重启（警告：删除所有数据）
-docker compose down -v && docker compose up -d --build
-```
-
-### 自定义 nginx 配置
-
-修改 `docker/nginx/default.conf` 文件。常见定制：
-- 添加 TLS/SSL 证书并监听 443 端口
-- 将 `server_name` 改为你的域名
-- 添加速率限制或 IP 白名单
-
-修改后重建：
-```bash
-docker compose up -d --build nginx
-```
-
-### 升级
-
-开发环境：
-
-```bash
-git pull
-docker compose up -d --build
-docker compose exec app php bin/console doctrine:migrations:migrate --no-interaction
-docker compose exec app php bin/console cache:clear
-```
-
-生产环境：
-
-```bash
-git pull
-docker compose -f compose.yaml -f compose.prod.yaml --env-file .env.prod.local up -d --build
-docker compose -f compose.yaml -f compose.prod.yaml --env-file .env.prod.local exec app php bin/console doctrine:migrations:migrate --no-interaction
-docker compose -f compose.yaml -f compose.prod.yaml --env-file .env.prod.local exec app php bin/console cache:clear
 ```
 
 ## 常见问题

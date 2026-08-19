@@ -207,36 +207,26 @@ repositories for every module), see
 
 ## Getting Started
 
-### 1) Clone
+For a 5–10 minute setup guide, see **[QUICKSTART.md](QUICKSTART.md)**.
+
+Quick clone and install:
 
 ```bash
 git clone https://github.com/immane/crud-skeleton.git
 cd crud-skeleton
-```
-
-### 2) Install dependencies
-
-```bash
 composer install
 ```
 
-### 3) Prepare environment for native PHP
-
-Docker development works without creating an env file. For native PHP/Symfony, create local overrides in `.env.local`:
-
-```dotenv
-APP_ENV=dev
-APP_SECRET=change-me
-DATABASE_URL="mysql://app:!ChangeMe!@127.0.0.1:3306/app?serverVersion=8.0&charset=utf8mb4"
-JWT_PRIVATE_KEY_PATH=var/jwt_dev_private.pem
-JWT_PUBLIC_KEY_PATH=var/jwt_dev_public.pem
-JWT_PASSPHRASE=
-REFRESH_TOKEN_SECRET=change-this-secret
-```
+Docker development works without creating an env file. For native PHP/Symfony, create
+local overrides in `.env.local` (see [Configuration](#configuration)).
 
 ## Configuration
 
-Environment file roles:
+For the full environment file reference — file roles, every variable, complete
+`.env.local` / `.env.prod.local` examples, and secret generation — see
+**[Deployment — Development Manual](docs/manual/deployment.md)**.
+
+Environment file roles at a glance:
 
 | File | Purpose | Commit? |
 |------|---------|---------|
@@ -246,19 +236,6 @@ Environment file roles:
 | `.env.example` | Local development variable reference | Yes |
 | `.env.prod.example` | Production Docker template | Yes |
 | `.env.prod.local` | Real production Docker values | No |
-
-Important variables:
-
-| Variable | Purpose |
-|----------|---------|
-| `APP_ENV` | Environment (`dev`/`prod`/`test`) |
-| `APP_SECRET` | Symfony application secret |
-| `DATABASE_URL` | MySQL connection string |
-| `JWT_PRIVATE_KEY_PATH` | RS256 private key |
-| `JWT_PUBLIC_KEY_PATH` | RS256 public key |
-| `JWT_PASSPHRASE` | Key passphrase |
-| `REFRESH_TOKEN_SECRET` | HMAC-SHA256 secret |
-| `MAILER_DSN` | Mailer transport |
 
 For production, do not store secrets in committed files. Use real environment variables or `docker compose --env-file .env.prod.local`.
 
@@ -353,6 +330,9 @@ If `storage=qiniu` is used without the SDK installed, the API returns a clear ru
 
 ## Run Locally
 
+For the full setup walkthrough (Docker and native PHP, JWT keys, verification,
+troubleshooting), see **[Getting Started — Development Manual](docs/manual/getting-started.md)**.
+
 ### Option A: Native PHP/Symfony
 
 ```bash
@@ -423,6 +403,10 @@ All endpoints return a unified JSON envelope:
 
 ## How the Service Layer Works
 
+For the deep dive into `BaseService`, the View mixins, and the Expression engine, see
+**[Core Framework — Development Manual](docs/manual/core-framework.md)** and
+**[Core Usage — Development Manual](docs/manual/core-usage.md)**.
+
 `BaseService` composes focused traits under `src/Core/Service/Concern`:
 
 - **`BaseServiceInfrastructureTrait`**
@@ -444,6 +428,9 @@ Public interface compatibility is preserved through `BaseServiceInterface`.
 
 ## Dynamic Query System
 
+For the complete reference of every query parameter and operator, see
+**[Query System — Development Manual](docs/manual/query-system.md)**.
+
 The `list()` method supports these query parameters:
 
 | Parameter | Description | Example |
@@ -462,7 +449,9 @@ Filter expressions support: `==`, `!=`, `>`, `<`, `>=`, `<=`, `&&`, `||`, `!`, `
 
 ## Create Your Own CRUD Module
 
-See **[Module Design Contract](docs/design/module-design.md)** for the full specification.
+See **[Module Design Contract](docs/design/module-design.md)** for the full specification,
+and **[Core Usage — Development Manual](docs/manual/core-usage.md)** for practical recipes
+(controllers, services, custom actions, error handling, transactions).
 
 Quick steps:
 
@@ -507,6 +496,9 @@ Note on controller construction: Controllers extending `RestController` receive 
 - **[QUICKSTART.md](QUICKSTART.md)** — 5-10 minute setup guide
 
 ## Testing
+
+For the full test structure, helpers, and CI coverage details, see
+**[Testing — Development Manual](docs/manual/testing.md)**.
 
 **2224 tests · 7951 assertions** in the default suite (plus **477 low-value tests** excluded by default). Tests are organized by layer under `tests/`:
 
@@ -579,6 +571,10 @@ See [docs/testing/crud-skeleton-production/](docs/testing/crud-skeleton-producti
 
 ## Docker Deployment
 
+For the complete deployment reference — every service, all environment variables,
+`.env` / `.env.prod.local` setup, JWT keys, health checks, scheduler commands, and
+upgrading — see **[Deployment — Development Manual](docs/manual/deployment.md)**.
+
 ### Architecture
 
 ```mermaid
@@ -614,162 +610,15 @@ docker compose exec app php bin/console app:identity:user:create admin@example.c
 # App → http://localhost:8080   Swagger → http://localhost:8080/api/doc
 ```
 
-What happens under the hood:
-- `docker/app/entrypoint.sh` creates development JWT keys once under the mounted `./var/jwt` directory, then reuses them
-- `compose.override.yaml` auto-loads with dev settings (`APP_ENV=dev`, `APP_DEBUG=1`)
-- `compose.yaml` supplies safe development defaults for required secrets
-- All optional features (WeChat, SMS) are disabled by default — enable them with `.env` or `--env-file`
-
-If you need to customize Docker ports, database credentials, or optional integrations, create a Docker env file and pass it explicitly:
-
-```bash
-cp .env.example .env.docker.local
-docker compose --env-file .env.docker.local up -d --build
-```
-
-Do not put production secrets in the committed `.env` file.
-
 ### Production
-
-#### Step 1: Prepare production env file
 
 ```bash
 cp .env.prod.example .env.prod.local
-```
-
-Edit `.env.prod.local` and set at least:
-
-```dotenv
-APP_SECRET=your-64-char-random-secret
-REFRESH_TOKEN_SECRET=your-32-byte-random-secret
-MYSQL_PASSWORD=your-database-password
-MYSQL_ROOT_PASSWORD=your-root-database-password
-DEFAULT_URI=https://api.example.com
-```
-
-Optional integrations can stay empty. Empty WeChat/SMS variables disable those features.
-
-#### Step 2: Generate JWT keys on host
-
-Keys are persisted outside the container via the `./var` bind mount:
-
-```bash
-mkdir -p var/jwt
-openssl genpkey -algorithm RSA -out var/jwt/jwt_private.pem -pkeyopt rsa_keygen_bits:2048
-openssl rsa -pubout -in var/jwt/jwt_private.pem -out var/jwt/jwt_public.pem
-chmod 600 var/jwt/jwt_private.pem
-```
-
-> If your private key has a passphrase, set `JWT_PASSPHRASE` in `.env.prod.local`.
-
-#### Step 3: Start
-
-```bash
+# Edit .env.prod.local: APP_SECRET, REFRESH_TOKEN_SECRET, MYSQL_PASSWORD, MYSQL_ROOT_PASSWORD, DEFAULT_URI
+# Generate JWT keys on the host (see the Deployment manual), then:
 docker compose -f compose.yaml -f compose.prod.yaml --env-file .env.prod.local up -d --build
-```
-
-#### Step 4: Initialize
-
-```bash
 docker compose -f compose.yaml -f compose.prod.yaml --env-file .env.prod.local exec app php bin/console doctrine:migrations:migrate --no-interaction
 docker compose -f compose.yaml -f compose.prod.yaml --env-file .env.prod.local exec app php bin/console app:identity:user:create admin@example.com admin 'P@ssw0rd' --admin
-```
-
-#### Step 5: Verify
-
-```bash
-curl -s http://localhost:8080/api/auth/login \
-  -H 'Content-Type: application/json' \
-  -d '{"identifier":"admin@example.com","password":"P@ssw0rd"}'
-```
-
-### Environment Variables Reference
-
-**Required for production**:
-
-| Variable | Purpose |
-|----------|---------|
-| `APP_SECRET` | Symfony application secret |
-| `REFRESH_TOKEN_SECRET` | HMAC-SHA256 key for refresh tokens |
-| `MYSQL_PASSWORD` | MySQL application user password |
-| `MYSQL_ROOT_PASSWORD` | MySQL root password |
-
-**Provided by compose.yaml** (development defaults, override for production as needed):
-
-| Variable | Docker default |
-|----------|----------------|
-| `DATABASE_URL` | `mysql://app:...@database:3306/app` |
-| `MAILER_DSN` | `smtp://mailer:1025` |
-| `OTP_REDIS_DSN` | `redis://redis:6379/0` |
-| `JWT_PRIVATE_KEY_PATH` | `/var/www/html/var/jwt/jwt_private.pem` |
-| `JWT_PUBLIC_KEY_PATH` | `/var/www/html/var/jwt/jwt_public.pem` |
-
-**Optional** (leave empty to disable the feature):
-
-| Feature | Variables (see `.env.example` or `.env` for full list) |
-|---------|----------------------------------------------------------|
-| Aliyun SMS | `ALIYUN_ACCESS_KEY_ID`, `ALIYUN_ACCESS_KEY_SECRET`, ... |
-| WeChat Mini Program | `WECHAT_MINIAPP_APP_ID`, `WECHAT_MINIAPP_SECRET` |
-| WeChat Official Account | `WECHAT_OFFICIAL_APP_ID`, `WECHAT_OFFICIAL_SECRET`, ... |
-| WeChat Pay V3 | `WECHAT_PAY_MCH_ID`, `WECHAT_PAY_SECRET_KEY`, ... |
-
-### Useful Commands
-
-The commands below are for Docker development. For production, add `-f compose.yaml -f compose.prod.yaml --env-file .env.prod.local` after `docker compose`.
-
-```bash
-# View logs
-docker compose logs -f app
-
-# Run a Symfony command
-docker compose exec app php bin/console about
-
-# Open a shell in the app container
-docker compose exec app bash
-
-# Clear Symfony cache
-docker compose exec app php bin/console cache:clear
-
-# Check which migrations are pending
-docker compose exec app php bin/console doctrine:migrations:status
-
-# Stop everything
-docker compose down
-
-# Reset and restart (WARNING: deletes all data)
-docker compose down -v && docker compose up -d --build
-```
-
-### Custom nginx Configuration
-
-Replace `docker/nginx/default.conf` with your own config. Common changes:
-- Add TLS/SSL certificates and listen on 443
-- Change `server_name` to your domain
-- Add rate limiting or IP whitelisting
-
-Then rebuild:
-```bash
-docker compose up -d --build nginx
-```
-
-### Upgrading
-
-Development:
-
-```bash
-git pull
-docker compose up -d --build
-docker compose exec app php bin/console doctrine:migrations:migrate --no-interaction
-docker compose exec app php bin/console cache:clear
-```
-
-Production:
-
-```bash
-git pull
-docker compose -f compose.yaml -f compose.prod.yaml --env-file .env.prod.local up -d --build
-docker compose -f compose.yaml -f compose.prod.yaml --env-file .env.prod.local exec app php bin/console doctrine:migrations:migrate --no-interaction
-docker compose -f compose.yaml -f compose.prod.yaml --env-file .env.prod.local exec app php bin/console cache:clear
 ```
 
 ## Troubleshooting
