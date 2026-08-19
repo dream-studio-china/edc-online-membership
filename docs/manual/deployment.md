@@ -168,6 +168,141 @@ WeChat Pay V3: `WECHAT_PAY_MCH_ID`, `WECHAT_PAY_SECRET_KEY`,
 | `APP_PORT`                   | `8080`                         | Host port for nginx                            |
 | `MAILPIT_UI_PORT`            | `8025`                         | Host port for Mailpit UI                       |
 
+## Environment file setup
+
+Symfony and Docker Compose read environment variables from different files. The
+table below shows which file is loaded in each scenario:
+
+| Scenario | File read | Notes |
+|----------|-----------|-------|
+| Native PHP (local) | `.env` then `.env.local` | `.env.local` overrides `.env`; never commit it |
+| Docker Compose (dev) | `.env` (or `--env-file`) | `compose.yaml` has safe dev defaults, so no file is required |
+| Docker Compose (prod) | `.env.prod.local` via `--env-file` | Copy from `.env.prod.example` |
+
+### Development `.env.local`
+
+For native PHP development, copy the variables you need from `.env.example` into
+`.env.local`. A complete example:
+
+```ini
+### Symfony
+APP_ENV=dev
+APP_DEBUG=1
+APP_SECRET=dev-secret-do-not-use-in-production
+
+### Database (native PHP)
+DATABASE_URL=mysql://app:!ChangeMe!@127.0.0.1:3306/app?serverVersion=8.0&charset=utf8mb4
+
+### JWT / Auth
+JWT_PRIVATE_KEY_PATH=var/jwt_dev_private.pem
+JWT_PUBLIC_KEY_PATH=var/jwt_dev_public.pem
+JWT_PASSPHRASE=
+ACCESS_TOKEN_TTL=7200
+REFRESH_TOKEN_TTL=31536000
+REFRESH_TOKEN_SECRET=dev-refresh-secret-do-not-use-in-production
+
+### OTP / Redis
+OTP_TTL=300
+OTP_REDIS_DSN=redis://127.0.0.1:6379/0
+
+### Aliyun SMS (leave empty to disable)
+ALIYUN_ACCESS_KEY_ID=
+ALIYUN_ACCESS_KEY_SECRET=
+ALIYUN_SMS_REGION=cn-hangzhou
+ALIYUN_SMS_SIGN_NAME=
+ALIYUN_SMS_TEMPLATE_LOGIN_OTP=
+ALIYUN_SMS_TEMPLATE_VERIFY_PHONE=
+ALIYUN_SMS_DRY_RUN=true
+
+### WeChat (optional — leave empty to disable)
+WECHAT_MINIAPP_APP_ID=
+WECHAT_MINIAPP_SECRET=
+WECHAT_OFFICIAL_APP_ID=
+WECHAT_OFFICIAL_SECRET=
+WECHAT_OFFICIAL_TOKEN=
+WECHAT_OFFICIAL_AES_KEY=
+WECHAT_PAY_MCH_ID=
+WECHAT_PAY_SECRET_KEY=
+WECHAT_PAY_PRIVATE_KEY=
+WECHAT_PAY_CERTIFICATE=
+WECHAT_PAY_NOTIFY_URL=
+```
+
+### Production `.env.prod.local`
+
+Copy `.env.prod.example` to `.env.prod.local` and fill in real values. The
+`compose.prod.yaml` overlay uses `:?required` for `APP_SECRET`,
+`REFRESH_TOKEN_SECRET`, `MYSQL_PASSWORD`, and `MYSQL_ROOT_PASSWORD` — the stack
+refuses to start without them.
+
+```ini
+APP_ENV=prod
+APP_SECRET=<generate-a-long-random-string>
+REFRESH_TOKEN_SECRET=<generate-a-long-random-string>
+
+# Public ports
+APP_PORT=8080
+MAILPIT_UI_PORT=8025
+
+# MySQL container
+MYSQL_DATABASE=app
+MYSQL_USER=app
+MYSQL_PASSWORD=<strong-db-password>
+MYSQL_ROOT_PASSWORD=<strong-root-password>
+MYSQL_VERSION=8.4
+
+# JWT keys are expected at ./var/jwt on the host and mounted into the app volume.
+JWT_PRIVATE_KEY_PATH=/var/www/html/var/jwt/jwt_private.pem
+JWT_PUBLIC_KEY_PATH=/var/www/html/var/jwt/jwt_public.pem
+JWT_PASSPHRASE=
+ACCESS_TOKEN_TTL=7200
+REFRESH_TOKEN_TTL=31536000
+
+# Infrastructure
+MAILER_DSN=smtp://mailer:1025
+MESSENGER_TRANSPORT_DSN=doctrine://default?auto_setup=0
+OUTBOX_PUBLISH_INTERVAL=5
+OTP_REDIS_DSN=redis://redis:6379/0
+DEFAULT_URI=https://example.com
+
+# Optional: leave empty to disable.
+ALIYUN_ACCESS_KEY_ID=
+ALIYUN_ACCESS_KEY_SECRET=
+ALIYUN_SMS_REGION=cn-hangzhou
+ALIYUN_SMS_SIGN_NAME=
+ALIYUN_SMS_TEMPLATE_LOGIN_OTP=
+ALIYUN_SMS_TEMPLATE_VERIFY_PHONE=
+ALIYUN_SMS_DRY_RUN=false
+
+WECHAT_MINIAPP_APP_ID=
+WECHAT_MINIAPP_SECRET=
+WECHAT_OFFICIAL_APP_ID=
+WECHAT_OFFICIAL_SECRET=
+WECHAT_OFFICIAL_TOKEN=
+WECHAT_OFFICIAL_AES_KEY=
+WECHAT_PAY_MCH_ID=
+WECHAT_PAY_SECRET_KEY=
+WECHAT_PAY_PRIVATE_KEY=
+WECHAT_PAY_CERTIFICATE=
+WECHAT_PAY_NOTIFY_URL=
+WECHAT_PAY_PLATFORM_CERT=
+WECHAT_PAY_PUB_KEY_ID=
+WECHAT_PAY_PUB_KEY_PATH=
+```
+
+### Generating secrets
+
+```bash
+# APP_SECRET / REFRESH_TOKEN_SECRET (32+ random bytes)
+openssl rand -hex 32
+
+# Strong DB passwords
+openssl rand -base64 24
+```
+
+Never commit `.env.local` or `.env.prod.local`. Keep production secrets out of
+the committed `.env` file.
+
 ## JWT keys
 
 The container entrypoint `docker/app/entrypoint.sh` manages the key pair:
