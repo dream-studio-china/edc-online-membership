@@ -738,6 +738,7 @@ Note on controller construction: Controllers extending `RestController` receive 
 
 - **[Design Contracts](docs/design/)** — System architecture, API design, data model, module design, controller contract, cross-cutting contracts
 - **[Bundle Design Docs](docs/design/bundles/)** — Per-module design documents (Core, Common, Trade, Wallet, Identity, Promotion, Settlement)
+- **[Runbooks](docs/runbooks/)** — Step-by-step operational guides (Promotion, Settlement)
 - **[AI Context](docs/ai/context.md)** — Full codebase snapshot for AI-assisted development
 - **[API Docs](/api/doc)** — Interactive Swagger UI (when running locally)
 - **[QUICKSTART.md](QUICKSTART.md)** — 5-10 minute setup guide

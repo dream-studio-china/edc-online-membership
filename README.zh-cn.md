@@ -737,6 +737,7 @@ class ContentController extends RestController
 
 - **[设计契约](docs/design/)** — 系统架构、API 设计、数据模型、模块设计、控制器契约、跨切面契约
 - **[Bundle 设计文档](docs/design/bundles/)** — 各模块设计文档（Core、Common、Trade、Wallet、Identity、Promotion、Settlement）
+- **[Runbooks 运维手册](docs/runbooks/)** — 分步操作指南（Promotion、Settlement）
 - **[AI 上下文](docs/ai/context.md)** — 为 AI 辅助编程准备的完整代码库快照
 - **[API 文档](/api/doc)** — 交互式 Swagger UI（本地运行时可用）
 - **[QUICKSTART.zh-cn.md](QUICKSTART.zh-cn.md)** — 5-10 分钟快速上手
