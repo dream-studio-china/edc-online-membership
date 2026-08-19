@@ -59,6 +59,7 @@ jobs:
       REFRESH_TOKEN_SECRET: test_refresh_secret_key_32bytes
       OTP_TTL: "300"
       OTP_REDIS_DSN: redis://localhost:6379/0
+      PARATEST_DATABASE_URL_TEMPLATE: "postgresql://app:app_secret@127.0.0.1:5432/app_test_{token}?serverVersion=16&charset=utf8"
       ALIYUN_ACCESS_KEY_ID: test_key
       ALIYUN_ACCESS_KEY_SECRET: test_secret
       ALIYUN_SMS_REGION: cn-hangzhou
@@ -111,15 +112,19 @@ jobs:
 
       - name: Setup test database
         run: |
-          php bin/console doctrine:database:create --env=test --quiet --if-not-exists || true
-          php bin/console doctrine:schema:update --env=test --force --quiet
+          for token in 1 2 3 4; do
+            PGPASSWORD=app_secret psql --host=127.0.0.1 --username=app --dbname=app_test \
+              --command="CREATE DATABASE app_test_${token};" || true
+          done
 
       - name: Run tests with coverage
         run: |
           set -eo pipefail
-          PCOV_ENABLED=1 php bin/phpunit \
-            --coverage-text \
+          PCOV_ENABLED=1 PARATEST=1 php vendor/bin/paratest \
+            --processes=4 \
+            --coverage-text=/tmp/coverage.txt \
             --display-deprecations \
+          cat /tmp/coverage.txt \
             | tee /dev/stderr \
             | grep -i "Lines:" > /tmp/coverage_line.txt
           cat /tmp/coverage_line.txt
