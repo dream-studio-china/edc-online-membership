@@ -167,110 +167,43 @@ See `composer.json` for the full dependency list.
 
 ```text
 .
-├── src/
-│   ├── Core/                     # Framework core
-│   │   ├── Controller/           #   RestController (base API controller)
-│   │   ├── Service/              #   BaseService, ExpressionService, QueryBuilderFactory
-│   │   ├── Service/Concern/      #   Traits: Infrastructure, ReadList, Mutation
-│   │   ├── View/                 #   9 controller mixin traits
-│   │   ├── Parser/               #   Expression → DQL compiler
-│   │   ├── Serializer/           #   FlatNormalizer, CircularReferenceHandler
-│   │   ├── EventListener/        #   ExceptionInterceptor, ControllerListener
-│   │   └── Utils/                #   UUID, Math, RSA, ArrayCommon, etc.
-│   ├── Common/                   # CMS module (7 entities)
-│   │   ├── Controller/App/       #   Public read-only endpoints
-│   │   ├── Controller/Manage/    #   Admin CRUD endpoints
-│   │   ├── Entity/               #   Category, Tag, Content, Comment, Page, Media, Setting
-│   │   ├── Repository/
-│   │   └── Service/
-│   ├── Trade/                    # E-Commerce module
-│   │   ├── Controller/App/       #   Product, Order, Specification listings
-│   │   ├── Controller/Manage/    #   Product, Specification, Order (CRUD + workflow)
-│   │   ├── Entity/               #   Product, Specification, Order, OrderItem
-│   │   ├── Service/              #   OrderService, price calculation pipeline
-│   │   └── Service/Pricing/      #   PriceCalculatorInterface + 3 implementations
-│   ├── Store/                     # Store module
-│   │   ├── Controller/Manage/    #   Store CRUD
-│   │   ├── Entity/               #   Store
-│   │   ├── Repository/
-│   │   ├── Service/              #   StoreService
-│   │   └── MessageHandler/       #   Create/accept/reject/cancel outcome consumers
-│   ├── Wallet/                    # Wallet module
-│   │   ├── Controller/App/       #   Wallet, Transaction, Voucher (self-service)
-│   │   ├── Controller/Manage/    #   Wallet, Transaction, Voucher (deposit/withdraw/reverse)
-│   │   ├── DTO/                  #   PaymentDeductionRequest
-│   │   ├── Entity/               #   Wallet, Transaction, Voucher, VoucherComment, PaymentDeduction
-│   │   ├── Repository/           #   Wallet, Transaction, Voucher, VoucherComment, PaymentDeduction
-│   │   └── Service/              #   TransferService, WalletService, VoucherService
-│   │       ├── Deposit/          #   DepositService + provider registry (voucher-backed credit)
-│   │       ├── Withdraw/         #   WithdrawService + provider registry (voucher-backed debit)
-│   │       └── Payment/          #   WalletGateway, WalletBalanceAdjustmentProvider, PaymentDeductionService
-│   ├── Payment/                  # Payment module
-│   │   ├── Controller/App/       #   Invoice list/detail/pay
-│   │   ├── Controller/Manage/    #   Invoice create/cancel/refund/transitions
-│   │   ├── Controller/Webhook/   #   Provider payment notification
-│   │   ├── DTO/                  #   CreateInvoiceRequest, PaymentResult, PaymentAdjustmentContext/Result, etc.
-│   │   ├── Entity/               #   Invoice (cents, workflow, gateway)
-│   │   ├── Event/                #   InvoicePaid, Refunded, Cancelled, Failed
-│   │   ├── Exception/            #   GatewayNotFound, Verification, Transition
-│   │   ├── Repository/
-│   │   └── Service/              #   InvoiceService, PaymentGatewayRegistry
-│   │       ├── Adjustment/       #   PaymentAdjustmentProviderInterface, PaymentAdjustmentRegistry
-│   │       └── Gateway/          #   MockGateway
-│   ├── Wechat/                   # WeChat module
-│   │   ├── Controller/           #   LoginController (Mini Program + OAuth)
-│   │   ├── Controller/App/       #   WechatUser CRUD (user-scoped)
-│   │   ├── Controller/Manage/    #   WechatUser CRUD (admin)
-│   │   ├── Entity/               #   WechatUser (OneToOne→User)
-│   │   ├── Repository/
-│   │   └── Service/              #   WechatService, WechatAuthService, WechatUserService
-│   │       └── Payment/          #   WechatPayGateway
-│   ├── Storage/                  # Storage module (pluggable file upload drivers)
-│   │   ├── Service/              #   MediaStorageInterface, MediaStorageRegistry
-│   │   │   ├── LocalStorage.php       # Local filesystem (public/uploads/)
-│   │   │   └── QiniuStorage.php       # Qiniu Kodo CDN
-│   │   └── Resources/config/     #   services_storage.yaml
-│   ├── Promotion/                # Promotion module (DSL engine)
-│   │   ├── Controller/App/       #   Read-only promotion endpoints
-│   │   ├── Controller/Manage/    #   Admin promotion CRUD
-│   │   ├── Entity/               #   PromotionTemplate, Promotion
-│   │   ├── Repository/
-│   │   ├── Service/              #   PromotionService, PromotionTemplateService, PromotionCalculator
-│   │   │   └── Dsl/              #   DSL lexer/parser/evaluator
-│   │   ├── Strategy/             #   7 promotion strategies
-│   │   └── Exception/
-│   ├── Inventory/                # Inventory module (material, stock, recipes, reservations)
-│   │   ├── Controller/Manage/    #   Material, Stock, Recipe management
-│   │   ├── Entity/               #   Material, Stock, SpecificationRecipe, Reservation, etc.
-│   │   ├── Repository/
-│   │   ├── Service/              #   InventoryService (reserve/release/adjust)
-│   │   ├── MessageHandler/       #   Reservation request/release handlers
-│   │   └── Command/              #   PublishOutboxCommand, ReleaseExpiredReservationsCommand
-│   └── Identity/                 # Authentication module
-│       ├── Controller/           #   AuthController, OtpController
-│       ├── Controller/App/       #   UserController (profile, change-password), ProfileController
-│       ├── Controller/Manage/    #   UserController (admin CRUD), ProfileController
-│       ├── Command/              #   CreateUserCommand (CLI)
-│       ├── Entity/               #   User, RefreshToken, Profile
-│       ├── Security/             #   JwtAuthenticator, TokenManager
-│       └── Service/              #   UserService (register, password management), OtpService, SMS providers
-├── config/                       # Symfony configuration
-│   └── packages/                 #   Doctrine, Security, Workflow, Serializer, RateLimiter, etc.
-├── migrations/                   # Doctrine migrations (20 versions)
-├── tests/                        # 2224 PHPUnit tests in the default suite, organized by layer:
-│   ├── UnitTest/                 #   Pure unit tests (no kernel/DB)
-│   ├── Integration/              #   Kernel + DB + HTTP tests and shared helpers
-│   └── LowValue/                 #   Deprecated/low-value tests, excluded from default runs
-├── docs/                         # Project documentation
-│   ├── design/                   #   Design contracts (system, API, data, module, controller)
-│   │   └── bundles/              #   Per-module design documents
-│   ├── testing/                  #   Test-quality contract (strategy, matrix, invariants)
-│   ├── issues/                   #   Audit and coverage reports
-│   └── ai/                       #   AI context snapshot
-├── compose.yaml                  # App, nginx, MySQL 8, Redis, Mailpit (+ worker, scheduler)
-├── compose.override.yaml         # Port mapping + Mailpit
-└── mkdocs.yml                    # MkDocs Material configuration
+├── src/                          # Application code (PSR-4 namespace App\)
+│   ├── Core/                     #   Framework core (RestController, BaseService, View mixins, Expression engine)
+│   ├── Common/                   #   CMS module (Category, Tag, Content, Comment, Page, Media, Setting)
+│   ├── Identity/                 #   Authentication & accounts (JWT, OTP, User, Profile)
+│   ├── Trade/                    #   E-Commerce (Product, Specification, Order, pricing pipeline)
+│   ├── Store/                    #   Multi-store operations (Store, Membership, StoreOrder)
+│   ├── Inventory/                #   Stock & reservations (Material, Stock, Recipe, Reservation)
+│   ├── Payment/                  #   Invoice lifecycle & gateways (Invoice, webhooks, events)
+│   ├── Wallet/                   #   Balances & transfers (Wallet, Transaction, Voucher)
+│   ├── Promotion/                #   Promotions & pricing effects (DSL engine, strategies)
+│   ├── Settlement/               #   Rule-driven allocation & finality (plans, rules, allocations)
+│   ├── Storage/                  #   Media storage abstraction (LocalStorage, QiniuStorage)
+│   └── Wechat/                   #   WeChat login + Pay (Mini Program, Official Account, Pay V3)
+├── config/                       # Symfony + module routing & service configuration
+├── migrations/                   # Doctrine versioned migrations
+├── tests/                        # PHPUnit tests (UnitTest, Integration, LowValue, Smoke)
+├── docs/                         # Documentation site (MkDocs) + archives
+├── scripts/                      # Build, translation, and smoke/stress tooling
+├── public/                       # Web root (index.php, assets)
+├── var/                          # Cache, logs, JWT keys, test DBs (git-ignored)
+├── translations/                 # Symfony translation catalogues
+├── templates/                    # Twig templates (dev/profiler pages)
+├── assets/                       # Asset-map sources (js/css imports)
+├── docker/                       # Container files: entrypoint.sh, nginx config
+├── compose.yaml                  # Base service stack (app, worker, scheduler, nginx, database, redis, mailer)
+├── compose.override.yaml         # Development overlay (dev flags, source bind, ports)
+├── compose.prod.yaml             # Production overlay
+├── Dockerfile                    # PHP-FPM image for app/worker/scheduler
+├── mkdocs.yml                    # Docs site navigation (English)
+├── phpunit.dist.xml              # PHPUnit configuration
+├── phpstan.neon                  # Static analysis configuration (Level 8)
+└── rector.php / rector-types.php # Rector rulesets
 ```
+
+For the full, detailed directory tree (down to controllers, services, entities, and
+repositories for every module), see
+**[Project Structure — Development Manual](docs/manual/project-structure.md)**.
 
 ## Getting Started
 

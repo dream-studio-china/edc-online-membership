@@ -163,117 +163,42 @@ sequenceDiagram
 
 ```text
 .
-├── src/
-│   ├── Core/                     # 框架核心
-│   │   ├── Controller/           #   RestController（API 控制器基类）
-│   │   ├── Service/              #   BaseService、ExpressionService、QueryBuilderFactory
-│   │   ├── Service/Concern/      #   Traits: Infrastructure、ReadList、Mutation
-│   │   ├── View/                 #   9 个控制器 mixin trait
-│   │   ├── Parser/               #   表达式 → DQL 编译器
-│   │   ├── Serializer/           #   FlatNormalizer、CircularReferenceHandler
-│   │   ├── EventListener/        #   ExceptionInterceptor、ControllerListener
-│   │   └── Utils/                #   UUID、Math、RSA、ArrayCommon 等
-│   ├── Common/                   # CMS 模块（7 实体）
-│   │   ├── Controller/App/       #   公开只读接口
-│   │   ├── Controller/Manage/    #   管理端 CRUD 接口
-│   │   ├── Entity/               #   Category、Tag、Content、Comment、Page、Media、Setting
-│   │   ├── Repository/
-│   │   └── Service/
-│   ├── Trade/                    # 电商模块
-│   │   ├── Controller/App/       #   Product、Order、Specification 列表
-│   │   ├── Controller/Manage/    #   Product、Specification、Order（CRUD + 工作流）
-│   │   ├── Entity/               #   Product、Specification、Order、OrderItem
-│   │   ├── Service/              #   OrderService、价格计算管道
-│   │   └── Service/Pricing/      #   PriceCalculatorInterface + 3 个实现
-│   ├── Store/                     # 门店模块
-│   │   ├── Controller/Manage/    #   门店 CRUD
-│   │   ├── Entity/               #   Store
-│   │   ├── Repository/
-│   │   ├── Service/              #   StoreService
-│   │   └── MessageHandler/       #   创建/接受/拒绝/取消 出站消费者
-│   ├── Wallet/                    # 钱包模块
-│   │   ├── Controller/App/       #   钱包、交易、凭证（自助服务）
-│   │   ├── Controller/Manage/    #   钱包、交易、凭证（存款/取款/反冲）
-│   │   ├── DTO/                  #   PaymentDeductionRequest
-│   │   ├── Entity/               #   Wallet, Transaction, Voucher, VoucherComment, PaymentDeduction
-│   │   ├── Repository/           #   Wallet, Transaction, Voucher, VoucherComment, PaymentDeduction
-│   │   └── Service/              #   TransferService, WalletService, VoucherService
-│   │       ├── Deposit/          #   DepositService + provider 注册表（凭证入账）
-│   │       ├── Withdraw/         #   WithdrawService + provider 注册表（凭证出账）
-│   │       └── Payment/          #   WalletGateway, WalletBalanceAdjustmentProvider, PaymentDeductionService
-│   ├── Payment/                  # 支付模块
-│   │   ├── Controller/App/       #   发票列表/详情/支付
-│   │   ├── Controller/Manage/    #   发票创建/取消/退款/转换
-│   │   ├── Controller/Webhook/   #   提供方支付回调
-│   │   ├── DTO/                  #   CreateInvoiceRequest, PaymentResult, PaymentAdjustmentContext/Result 等
-│   │   ├── Entity/               #   Invoice（分、工作流、网关）
-│   │   ├── Event/                #   InvoicePaid, Refunded, Cancelled, Failed
-│   │   ├── Exception/            #   GatewayNotFound, Verification, Transition
-│   │   ├── Repository/
-│   │   └── Service/              #   InvoiceService, PaymentGatewayRegistry
-│   │       ├── Adjustment/       #   PaymentAdjustmentProviderInterface, PaymentAdjustmentRegistry
-│   │       └── Gateway/          #   MockGateway
-│   ├── Wechat/                   # 微信模块
-│   │   ├── Controller/           #   LoginController（小程序 + 公众号）
-│   │   ├── Controller/App/       #   WechatUser CRUD（用户范围）
-│   │   ├── Controller/Manage/    #   WechatUser CRUD（管理员）
-│   │   ├── Entity/               #   WechatUser（OneToOne→User）
-│   │   ├── Repository/
-│   │   └── Service/              #   WechatService, WechatAuthService, WechatUserService
-│   │       └── Payment/          #   WechatPayGateway
-│   ├── Storage/                  # 存储模块（可插拔文件上传驱动）
-│   │   ├── Service/              #   MediaStorageInterface, MediaStorageRegistry
-│   │   │   ├── LocalStorage.php       # 本地文件系统（public/uploads/）
-│   │   │   └── QiniuStorage.php       # 七牛 Kodo CDN
-│   │   └── Resources/config/     #   services_storage.yaml
-│   ├── Promotion/                # 促销模块（DSL 引擎）
-│   │   ├── Controller/App/       #   只读促销接口
-│   │   ├── Controller/Manage/    #   管理端促销 CRUD
-│   │   ├── Entity/               #   PromotionTemplate、Promotion
-│   │   ├── Repository/
-│   │   ├── Service/              #   PromotionService、PromotionTemplateService、PromotionCalculator
-│   │   │   └── Dsl/              #   DSL 词法/语法/求值器
-│   │   ├── Strategy/             #   7 种促销策略
-│   │   └── Exception/
-│   ├── Inventory/                # 库存模块（物料、库存、配方、预留）
-│   │   ├── Controller/Manage/    #   物料、库存、配方管理
-│   │   ├── Entity/               #   Material、Stock、SpecificationRecipe、Reservation 等
-│   │   ├── Repository/
-│   │   ├── Service/              #   InventoryService（预留/释放/调整）
-│   │   ├── MessageHandler/       #   预留请求/释放处理器
-│   │   └── Command/              #   PublishOutboxCommand、ReleaseExpiredReservationsCommand
-│   ├── Settlement/                # 分账模块（计划、规则、入账）
-│   │   ├── Controller/Manage/     #   计划、规则、规则版本、审计视图
-│   │   ├── Entity/                #   SettlementPlan、SettlementAllocation、SettlementRule 等
-│   │   ├── Repository/
-│   │   ├── Service/               #   SettlementService、SettlementRuleEngine、Money
-│   │   ├── MessageHandler/        #   资金确认、入账处理器
-│   │   └── Command/               #   PublishOutboxCommand、RequeueDuePostingCommand
-│   └── Identity/                 # 鉴权模块
-│       ├── Controller/App/       #   UserController (个人信息、改密码)、ProfileController
-│       ├── Controller/Manage/    #   UserController (管理员 CRUD)、ProfileController
-│       ├── Command/              #   CreateUserCommand (CLI)
-│       ├── Controller/           #   AuthController、OtpController
-│       ├── Entity/               #   User、RefreshToken、Profile
-│       ├── Security/             #   JwtAuthenticator、TokenManager
-│       └── Service/              #   OtpService、短信供应商
-├── config/                       # Symfony 配置
-│   └── packages/                 #   Doctrine、Security、Workflow、Serializer 等
-├── migrations/                   # Doctrine 迁移（20 个版本）
-├── tests/                        # 默认套件 2224 个 PHPUnit 测试，按层组织：
-│   ├── UnitTest/                 #   纯单元测试（无 kernel/DB）
-│   ├── Integration/              #   kernel + DB + HTTP 测试及共享 helper
-│   └── LowValue/                 #   弃用/低价值测试，默认运行排除
-├── docs/                         # 项目文档
-│   ├── design/                   #   设计契约（系统、API、数据、模块、控制器）
-│   │   │   └── bundles/              #   各模块设计文档（含 Promotion）
-│   ├── testing/                  #   测试质量契约（策略、矩阵、不变量）
-│   ├── issues/                   #   审计与覆盖率报告
-│   └── ai/                       #   AI 上下文快照
-├── compose.yaml                  # MySQL 8
-├── compose.override.yaml         # 端口映射 + Mailpit
-└── mkdocs.yml                    # MkDocs Material 配置
+├── src/                          # 应用代码（PSR-4 命名空间 App\）
+│   ├── Core/                     #   框架核心（RestController、BaseService、View mixins、表达式引擎）
+│   ├── Common/                   #   CMS 模块（Category、Tag、Content、Comment、Page、Media、Setting）
+│   ├── Identity/                 #   鉴权与账户（JWT、OTP、User、Profile）
+│   ├── Trade/                    #   电商（Product、Specification、Order、价格计算管道）
+│   ├── Store/                    #   多门店运营（Store、Membership、StoreOrder）
+│   ├── Inventory/                #   库存与预留（Material、Stock、Recipe、Reservation）
+│   ├── Payment/                  #   发票生命周期与网关（Invoice、webhook、事件）
+│   ├── Wallet/                   #   余额与转账（Wallet、Transaction、Voucher）
+│   ├── Promotion/                #   促销与定价效果（DSL 引擎、策略）
+│   ├── Settlement/               #   规则驱动的分账与终态（计划、规则、入账）
+│   ├── Storage/                  #   媒体存储抽象（LocalStorage、QiniuStorage）
+│   └── Wechat/                   #   微信登录 + 支付（小程序、公众号、支付 V3）
+├── config/                       # Symfony + 模块路由与服务配置
+├── migrations/                   # Doctrine 版本化迁移
+├── tests/                        # PHPUnit 测试（UnitTest、Integration、LowValue、Smoke）
+├── docs/                         # 文档站点（MkDocs）+ 归档
+├── scripts/                      # 构建、翻译、冒烟/压测工具
+├── public/                       # Web 根目录（index.php、assets）
+├── var/                          # 缓存、日志、JWT 密钥、测试数据库（git 忽略）
+├── translations/                 # Symfony 翻译目录
+├── templates/                    # Twig 模板（dev/profiler 页面）
+├── assets/                       # Asset-map 源码（js/css 导入）
+├── docker/                       # 容器文件：entrypoint.sh、nginx 配置
+├── compose.yaml                  # 基础服务栈（app、worker、scheduler、nginx、database、redis、mailer）
+├── compose.override.yaml         # 开发覆盖（dev 标志、源码挂载、端口）
+├── compose.prod.yaml             # 生产覆盖
+├── Dockerfile                    # app/worker/scheduler 的 PHP-FPM 镜像
+├── mkdocs.yml                    # 文档站点导航（英文）
+├── phpunit.dist.xml              # PHPUnit 配置
+├── phpstan.neon                  # 静态分析配置（Level 8）
+└── rector.php / rector-types.php # Rector 规则集
 ```
+
+完整的详细目录树（到每个模块的控制器、服务、实体、仓库层级），请参阅
+**[项目结构 — 开发手册](docs/manual/project-structure.md)**。
 
 ## 快速开始
 
