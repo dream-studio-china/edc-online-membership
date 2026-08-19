@@ -123,7 +123,7 @@ jobs:
           PCOV_ENABLED=1 PARATEST=1 php vendor/bin/paratest \
             --processes=4 \
             --coverage-text=/tmp/coverage.txt \
-            --display-deprecations \
+            --display-deprecations
           cat /tmp/coverage.txt \
             | tee /dev/stderr \
             | grep -i "Lines:" > /tmp/coverage_line.txt
