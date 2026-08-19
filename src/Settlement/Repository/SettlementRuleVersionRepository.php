@@ -55,18 +55,23 @@ class SettlementRuleVersionRepository extends ServiceEntityRepository
 
     public function hasOverlappingPublishedVersion(SettlementRuleVersion $candidate): bool
     {
-        return (int) $this->createQueryBuilder('v')
+        $query = $this->createQueryBuilder('v')
             ->select('COUNT(v.id)')
             ->andWhere('v.ruleUuid = :ruleUuid')
             ->andWhere('v.uuid != :uuid')
             ->andWhere('v.status = :status')
-            ->andWhere('(:candidateTo IS NULL OR v.effectiveFrom < :candidateTo)')
             ->andWhere('(v.effectiveTo IS NULL OR v.effectiveTo > :candidateFrom)')
             ->setParameter('ruleUuid', $candidate->getRuleUuid())
             ->setParameter('uuid', $candidate->getUuid())
             ->setParameter('status', SettlementRuleVersion::STATUS_PUBLISHED)
-            ->setParameter('candidateFrom', $candidate->getEffectiveFrom())
-            ->setParameter('candidateTo', $candidate->getEffectiveTo())
-            ->getQuery()->getSingleScalarResult() > 0;
+            ->setParameter('candidateFrom', $candidate->getEffectiveFrom());
+
+        if ($candidate->getEffectiveTo() !== null) {
+            $query
+                ->andWhere('v.effectiveFrom < :candidateTo')
+                ->setParameter('candidateTo', $candidate->getEffectiveTo());
+        }
+
+        return (int) $query->getQuery()->getSingleScalarResult() > 0;
     }
 }
