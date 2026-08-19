@@ -2,9 +2,39 @@ name: CI
 
 on:
   push:
-    branches: [main, master, develop]
+    branches: [main, master, dev]
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - 'config/**'
+      - 'migrations/**'
+      - 'bin/**'
+      - 'composer.json'
+      - 'composer.lock'
+      - 'symfony.lock'
+      - 'phpunit.dist.xml'
+      - 'phpstan.neon'
+      - 'phpstan-bootstrap.php'
+      - 'rector*.php'
+      - '.env.test'
+      - '.github/workflows/ci.yml'
   pull_request:
-    branches: [main, master]
+    branches: [main, master, dev]
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - 'config/**'
+      - 'migrations/**'
+      - 'bin/**'
+      - 'composer.json'
+      - 'composer.lock'
+      - 'symfony.lock'
+      - 'phpunit.dist.xml'
+      - 'phpstan.neon'
+      - 'phpstan-bootstrap.php'
+      - 'rector*.php'
+      - '.env.test'
+      - '.github/workflows/ci.yml'
 
 # A newer push supersedes all checks for the same PR or branch.
 concurrency:

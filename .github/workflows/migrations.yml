@@ -2,7 +2,25 @@ name: Migrations
 
 on:
   push:
+    branches: [main, master, dev]
+    paths:
+      - 'migrations/**'
+      - 'config/**'
+      - 'bin/**'
+      - 'composer.json'
+      - 'composer.lock'
+      - 'symfony.lock'
+      - '.github/workflows/migrations.yml'
   pull_request:
+    branches: [main, master, dev]
+    paths:
+      - 'migrations/**'
+      - 'config/**'
+      - 'bin/**'
+      - 'composer.json'
+      - 'composer.lock'
+      - 'symfony.lock'
+      - '.github/workflows/migrations.yml'
 
 jobs:
   mysql-migration-chain:
