@@ -91,6 +91,8 @@ services:
           php bin/console app:store:outbox:publish --no-interaction
           php bin/console app:inventory:outbox:publish --no-interaction
           php bin/console app:inventory:reservations:release-expired --no-interaction
+          php bin/console app:settlement:allocations:requeue-due --no-interaction
+          php bin/console app:settlement:outbox:publish --no-interaction
           sleep "${OUTBOX_PUBLISH_INTERVAL:-5}"
         done
     depends_on:

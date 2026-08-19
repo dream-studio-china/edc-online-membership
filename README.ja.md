@@ -21,6 +21,7 @@ flowchart TB
     Store["Store<br/>マルチストア Outbox"]
     Inventory["Inventory<br/>在庫 · 予約"]
     Promotion["Promotion<br/>DSL エンジン"]
+    Settlement["Settlement<br/>分配 · 最終性"]
     Exchange["Exchange（設計）<br/>為替 · プール · 発行"]
 
     Identity --> Core
@@ -39,6 +40,8 @@ flowchart TB
     Trade --> Inventory
     Promotion --> Core
     Promotion --> Trade
+    Settlement --> Core
+    Settlement --> Wallet
     Exchange -. "design" .-> Core
 ```
 
@@ -59,7 +62,7 @@ flowchart TB
 - **CRUD サービス抽象化**: `new()`、`get()`、`list()`、`update()`、`remove()`
 - **動的クエリシステム**: リクエストパラメータによるフィルタリング、ソート、グループ化を DQL にコンパイル
 - **Trait ベースのコントローラ構成**: 9 つの mixin trait（List、Detail、Create、Update、Delete、Workflow、Singleton、Transform）を組み合わせて利用
-- **モジュラーアーキテクチャ**: Core フレームワーク + Common（CMS）+ Promotion（DSL駆動プロモーション）+ Trade（EC）+ Store（ストア送信ボックス）+ Inventory（マテリアル、在庫、レシピ、予約）+ Payment（決済）+ Wallet（ウォレット）+ Wechat（微信）+ Storage（ストレージ）+ Identity（認証）
+- **モジュラーアーキテクチャ**: Core フレームワーク + Common（CMS）+ Promotion（DSL駆動プロモーション）+ Trade（EC）+ Store（ストア送信ボックス）+ Inventory（マテリアル、在庫、レシピ、予約）+ Payment（決済）+ Wallet（ウォレット）+ Settlement（分配と最終性）+ Wechat（微信）+ Storage（ストレージ）+ Identity（認証）
 - **JWT 認証**: RS256 アクセストークン、HMAC-SHA256 リフレッシュトークンのローテーション
 - **OTP ログイン**: 電話番号ベースのワンタイムパスワード（SMS）
 - **注文ステートマシン**: Symfony Workflow（下書き → 完了）、完全なワークフロー API
@@ -106,6 +109,7 @@ flowchart TB
 │   ├── Promotion/                # プロモーションモジュール（DSL エンジン）
 │   ├── Store/                     # ストアモジュール
 │   ├── Inventory/                 # 在庫モジュール（マテリアル、在庫、レシピ、予約）
+│   ├── Settlement/                # 分配モジュール（プラン、ルール、入金）
 │   └── Identity/                 # 認証モジュール
 ├── config/                       # Symfony 設定
 ├── migrations/                   # Doctrine マイグレーション（20 バージョン）
@@ -131,6 +135,7 @@ flowchart TB
 | **Storage** | `App\Storage` | ファイルストレージ | LocalStorage、QiniuStorage |
 | **Promotion** | `App\Promotion` | DSL駆動プロモーション | カスタム DSL lexer/parser/evaluator、7 種類の戦略、`trade.price_calculator`（優先度 60）、会員向け SKU 割引、マルチストアルーティング、`best_price` コンフリクトモード |
 | **Identity** | `App\Identity` | 認証 | JWT（RS256）、OTP（SMS）、リフレッシュトークンローテーション、Profile エンティティ（自動生成、レベル、ポイントは Wallet に委譲） |
+| **Settlement** | `App\Settlement` | 分配と最終性 | 確定資金 → 不変コンテキスト → バージョン付きルール → 監査可能なプラン/分配 → Wallet ポート経由で入金；18 桁の正確な金額、最大剰余丸め、元バウチャー取消、SQL outbox/inbox、管理ルール設定 |
 | **Exchange** | `App\ExchangeBundle` *(設計)* | プール担保のポイント経済 | 有効期間付き為替レート、bcmath 換算、担保/発行/交換/償還、マーケットメーカープール — 設計のみ、未実装 |
 
 ## テスト

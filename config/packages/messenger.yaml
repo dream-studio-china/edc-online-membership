@@ -34,5 +34,8 @@ framework:
             App\Inventory\Message\ReservationRejectedMessage: async
             App\Inventory\Message\ReservationReleasedMessage: async
 
+            App\Settlement\Message\SettlementFundingConfirmedMessage: async
+            App\Settlement\Message\SettlementAllocationPostingMessage: async
+
             # Route your messages to the transports
             # 'App\Message\YourMessage': async
