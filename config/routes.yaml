@@ -96,3 +96,10 @@ api_inventory:
         path: ../src/Inventory/Controller/
         namespace: App\Inventory\Controller
     type: attribute
+
+api_settlement:
+    prefix: /api/v1
+    resource:
+        path: ../src/Settlement/Controller/
+        namespace: App\Settlement\Controller
+    type: attribute

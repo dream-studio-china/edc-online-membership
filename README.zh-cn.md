@@ -24,6 +24,7 @@ flowchart TB
     Store["Store<br/>多门店 Outbox"]
     Inventory["Inventory<br/>库存 · 预留"]
     Promotion["Promotion<br/>DSL 引擎"]
+    Settlement["Settlement<br/>分账 · 终态"]
     Exchange["Exchange（设计）<br/>汇率 · 资金池 · 发行"]
 
     Identity --> Core
@@ -42,6 +43,8 @@ flowchart TB
     Trade --> Inventory
     Promotion --> Core
     Promotion --> Trade
+    Settlement --> Core
+    Settlement --> Wallet
     Exchange -. "design" .-> Core
 ```
 
@@ -128,6 +131,7 @@ sequenceDiagram
 - **钱包账务**：余额校验（`SUM(余额) == SUM(贷方凭证) − SUM(借方凭证)`）与逐钱包对账，覆盖存款、取款、转账与冻结。
 - **钱包余额抵扣**：钱包拥有的抵扣生命周期，通过 Payment 抵扣提供方模式接入 — Payment 编排，Wallet 实现。
 - **汇率域（设计）**：资金池背书的点数经济设计（`docs/design/bundles/exchange.md`）——生效期汇率、bcmath 换算引擎、质押/发行/兑换/赎回，围绕造市商监管的资金池。
+- **分账与终态**：已确认资金 → 不可变上下文 → 版本化规则 → 可审计的计划/分账 → 通过 Wallet 端口入账。18 位精确金额（brick/math）、确定性最大余数舍入、原凭证冲正、SQL outbox/inbox 保证跨模块可靠交接。
 - **可插拔文件存储**：`MediaStorageInterface`，本地与七牛 Kodo 驱动 — tagged iterator 自动发现。
 - **OpenAPI 文档**：NelmioApiDocBundle + `#[OA\*]` 属性，`/api/doc` 提供 Swagger UI。
 - **系统自省**：实体元数据和路由导出接口（`/system/*`）。
@@ -238,6 +242,13 @@ sequenceDiagram
 │   │   ├── Service/              #   InventoryService（预留/释放/调整）
 │   │   ├── MessageHandler/       #   预留请求/释放处理器
 │   │   └── Command/              #   PublishOutboxCommand、ReleaseExpiredReservationsCommand
+│   ├── Settlement/                # 分账模块（计划、规则、入账）
+│   │   ├── Controller/Manage/     #   计划、规则、规则版本、审计视图
+│   │   ├── Entity/                #   SettlementPlan、SettlementAllocation、SettlementRule 等
+│   │   ├── Repository/
+│   │   ├── Service/               #   SettlementService、SettlementRuleEngine、Money
+│   │   ├── MessageHandler/        #   资金确认、入账处理器
+│   │   └── Command/               #   PublishOutboxCommand、RequeueDuePostingCommand
 │   └── Identity/                 # 鉴权模块
 │       ├── Controller/App/       #   UserController (个人信息、改密码)、ProfileController
 │       ├── Controller/Manage/    #   UserController (管理员 CRUD)、ProfileController
@@ -450,6 +461,7 @@ docker compose exec app php bin/console app:identity:user:create admin@example.c
 | **Storage** | `App\Storage` | 文件存储驱动 | `MediaStorageInterface`、LocalStorage、QiniuStorage、tagged iterator 自动发现 |
 | **Promotion** | `App\Promotion` | DSL 驱动促销 | 自定义 DSL 词法/语法/求值器、7 种策略类型、作为 `trade.price_calculator`（优先级 60）、会员定向 SKU 折扣、多门店路由、`best_price` 冲突模式 |
 | **Identity** | `App\Identity` | 鉴权 | JWT (RS256)、OTP (短信)、Refresh Token 轮换、Profile 实体（自动创建、等级、积分委托给 Wallet） |
+| **Settlement** | `App\Settlement` | 分账与终态 | 已确认资金 → 不可变上下文 → 版本化规则 → 可审计的计划/分账 → 通过 Wallet 端口入账；18 位精确金额、最大余数舍入、原凭证冲正、SQL outbox/inbox、后台规则配置 |
 | **Exchange** | `App\ExchangeBundle` *(设计)* | 资金池背书的点数经济 | 生效期汇率（混合：锚定 + 直接对）、bcmath 换算、质押/发行/兑换/赎回、造市商资金池 —— 仅设计文档，尚未实现 |
 
 ## API 路由
@@ -577,6 +589,32 @@ deposit/withdraw 的 `voucherType` 为请求参数：`Manage` 默认 `manual`（
 | GET/POST/PUT/DELETE | `/api/v1/manage/promotions[/{id}]` | 管理端促销 CRUD |
 | GET/POST/PUT/DELETE | `/api/v1/manage/promotion-templates[/{id}]` | 管理端促销模板 CRUD（DSL 编辑） |
 
+### Settlement（管理端，ROLE_ADMIN）
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| GET | `/api/v1/manage/settlement-plans` | 分账计划列表 |
+| GET | `/api/v1/manage/settlement-plans/{id}` | 计划详情（含分账明细） |
+| POST | `/api/v1/manage/settlement-plans/{uuid}/allocations/{allocationUuid}/post` | 将分账入账到 Wallet |
+| POST | `/api/v1/manage/settlement-plans/{uuid}/allocations/{allocationUuid}/reverse` | 冲正已入账的分账 |
+| GET | `/api/v1/manage/settlement-allocations` | 分账明细列表 |
+| GET | `/api/v1/manage/settlement-allocations/{id}` | 分账明细详情 |
+| GET | `/api/v1/manage/settlement-rules` | 规则列表 |
+| GET | `/api/v1/manage/settlement-rules/{id}` | 规则详情 |
+| POST | `/api/v1/manage/settlement-rules` | 创建规则草稿（`code`、`name`） |
+| GET | `/api/v1/manage/settlement-rules/configuration` | 可接受的规则配置 schema |
+| GET | `/api/v1/manage/settlement-rule-versions` | 规则版本列表 |
+| GET | `/api/v1/manage/settlement-rule-versions/{id}` | 规则版本详情 |
+| POST | `/api/v1/manage/settlement-rule-versions` | 创建草稿版本（`ruleUuid`、`definition`、`priority`、`effectiveFrom`） |
+| PUT | `/api/v1/manage/settlement-rule-versions/{id}` | 更新草稿版本配置 |
+| POST | `/api/v1/manage/settlement-rule-versions/{uuid}/publish` | 发布草稿版本 |
+| GET | `/api/v1/manage/settlement-outbox-messages` | outbox 消息列表 |
+| GET | `/api/v1/manage/settlement-outbox-messages/{id}` | outbox 消息详情 |
+| GET | `/api/v1/manage/settlement-consumed-events` | 已消费资金事件列表 |
+| GET | `/api/v1/manage/settlement-consumed-events/{id}` | 已消费事件详情 |
+
+Settlement 通过版本化规则将已确认的资金分配给收款方，再通过 `SettlementVoucherPort` 边界将每条分账入账到 Wallet。收款方配置为 `{"type":"wallet","id":"<wallet-id>"}`。入账命令通过 Settlement outbox 异步投递（`app:settlement:outbox:publish`），可重试失败由 `app:settlement:allocations:requeue-due` 重新入队。
+
 ### 系统自省 (`/system`)
 
 | 方法 | 路径 | 说明 |
@@ -698,7 +736,7 @@ class ContentController extends RestController
 ## 文档说明
 
 - **[设计契约](docs/design/)** — 系统架构、API 设计、数据模型、模块设计、控制器契约、跨切面契约
-- **[Bundle 设计文档](docs/design/bundles/)** — 各模块设计文档（Core、Common、Trade、Wallet、Identity、Promotion）
+- **[Bundle 设计文档](docs/design/bundles/)** — 各模块设计文档（Core、Common、Trade、Wallet、Identity、Promotion、Settlement）
 - **[AI 上下文](docs/ai/context.md)** — 为 AI 辅助编程准备的完整代码库快照
 - **[API 文档](/api/doc)** — 交互式 Swagger UI（本地运行时可用）
 - **[QUICKSTART.zh-cn.md](QUICKSTART.zh-cn.md)** — 5-10 分钟快速上手

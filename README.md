@@ -24,6 +24,7 @@ flowchart TB
     Store["Store<br/>Multi-store Outbox"]
     Inventory["Inventory<br/>Stock · Reservation"]
     Promotion["Promotion<br/>DSL engine"]
+    Settlement["Settlement<br/>Allocation · Finality"]
     Exchange["Exchange (design)<br/>Rates · Pool · Mint"]
 
     Identity --> Core
@@ -42,6 +43,8 @@ flowchart TB
     Trade --> Inventory
     Promotion --> Core
     Promotion --> Trade
+    Settlement --> Core
+    Settlement --> Wallet
     Exchange -. "design" .-> Core
 ```
 
@@ -131,6 +134,7 @@ Compared with plain generated boilerplate, it provides:
 - **Wallet Accounting**: Balance verification (`SUM(balance) == SUM(credit vouchers) − SUM(debit vouchers)`) and per-wallet reconciliation across deposits, withdrawals, transfers, and holds.
 - **Wallet Balance Deduction**: Wallet-owned deduction lifecycle with Payment adjustment provider pattern — Payment orchestrates, Wallet implements.
 - **Exchange Rate Domain (design)**: Pool-backed points economy design (`docs/design/bundles/exchange.md`) — effective-dated exchange rates, bcmath conversion engine, and pledge/mint/exchange/redemption around a market-maker-supervised pool.
+- **Settlement & Finality**: Confirmed funding → immutable context → versioned rules → auditable plan/allocations → voucher posting through a Wallet-owned port. Exact 18-decimal money (brick/math), deterministic largest-remainder rounding, original-voucher reversal, and a SQL outbox/inbox for reliable cross-module handoff.
 - **Pluggable File Storage**: `MediaStorageInterface` with local and Qiniu Kodo drivers — tagged iterator auto-discovery.
 - **OpenAPI Documentation**: NelmioApiDocBundle with `#[OA\*]` attributes, Swagger UI at `/api/doc`.
 - **System Introspection**: Entity metadata and route export endpoints (`/system/*`).
@@ -454,6 +458,7 @@ The app runs at `http://localhost:${APP_PORT:-8080}`.
 | **Storage** | `App\Storage` | File upload drivers | `MediaStorageInterface`, LocalStorage, QiniuStorage, tagged iterator auto-discovery |
 | **Promotion** | `App\Promotion` | DSL-driven promotions | Custom DSL lexer/parser/evaluator, 7 strategy types, tagged `trade.price_calculator` (priority 60), member-targeted SKU discounts, multi-store routing, `best_price` conflict mode |
 | **Identity** | `App\Identity` | Authentication | JWT (RS256), OTP (SMS), Refresh token rotation, Password registration, User profile/CRUD, Profile entity (auto-created, level, points delegated to Wallet) |
+| **Settlement** | `App\Settlement` | Allocation & finality | Confirmed funding → immutable context → versioned rules → auditable plan/allocations → voucher posting via Wallet port; exact 18-decimal money, largest-remainder rounding, original-voucher reversal, SQL outbox/inbox, admin rule configuration |
 | **Exchange** | `App\ExchangeBundle` *(design)* | Pool-backed points economy | Effective-dated exchange rates (hybrid: anchor + direct pairs), bcmath conversion, pledge/mint/exchange/redemption, market-maker pool — design doc only, not yet implemented |
 
 ## API Endpoints
@@ -585,6 +590,32 @@ Resources: `categories`, `contents`, `tags`, `comments`, `pages`, `media`, `sett
 | GET/POST/PUT/DELETE | `/api/v1/manage/promotions[/{id}]` | Admin promotion CRUD |
 | GET/POST/PUT/DELETE | `/api/v1/manage/promotion-templates[/{id}]` | Admin promotion template CRUD (DSL authoring) |
 
+### Settlement (admin, ROLE_ADMIN)
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/v1/manage/settlement-plans` | List settlement plans |
+| GET | `/api/v1/manage/settlement-plans/{id}` | Plan detail (with allocations) |
+| POST | `/api/v1/manage/settlement-plans/{uuid}/allocations/{allocationUuid}/post` | Post an allocation to Wallet |
+| POST | `/api/v1/manage/settlement-plans/{uuid}/allocations/{allocationUuid}/reverse` | Reverse a posted allocation |
+| GET | `/api/v1/manage/settlement-allocations` | List allocations |
+| GET | `/api/v1/manage/settlement-allocations/{id}` | Allocation detail |
+| GET | `/api/v1/manage/settlement-rules` | List rules |
+| GET | `/api/v1/manage/settlement-rules/{id}` | Rule detail |
+| POST | `/api/v1/manage/settlement-rules` | Create rule draft (`code`, `name`) |
+| GET | `/api/v1/manage/settlement-rules/configuration` | Accepted rule configuration schema |
+| GET | `/api/v1/manage/settlement-rule-versions` | List rule versions |
+| GET | `/api/v1/manage/settlement-rule-versions/{id}` | Rule version detail |
+| POST | `/api/v1/manage/settlement-rule-versions` | Create draft version (`ruleUuid`, `definition`, `priority`, `effectiveFrom`) |
+| PUT | `/api/v1/manage/settlement-rule-versions/{id}` | Update draft version configuration |
+| POST | `/api/v1/manage/settlement-rule-versions/{uuid}/publish` | Publish a draft version |
+| GET | `/api/v1/manage/settlement-outbox-messages` | List outbox messages |
+| GET | `/api/v1/manage/settlement-outbox-messages/{id}` | Outbox message detail |
+| GET | `/api/v1/manage/settlement-consumed-events` | List consumed funding events |
+| GET | `/api/v1/manage/settlement-consumed-events/{id}` | Consumed event detail |
+
+Settlement allocates a confirmed funding amount to recipients via versioned rules, then posts each allocation to a Wallet through the `SettlementVoucherPort` boundary. Recipients are configured as `{"type":"wallet","id":"<wallet-id>"}`. Posting commands are relayed asynchronously through the Settlement outbox (`app:settlement:outbox:publish`), with retryable failures requeued by `app:settlement:allocations:requeue-due`.
+
 ### System Introspection (`/system`)
 
 | Method | Path | Description |
@@ -706,7 +737,7 @@ Note on controller construction: Controllers extending `RestController` receive 
 ## Documentation
 
 - **[Design Contracts](docs/design/)** — System architecture, API design, data model, module design, controller contract, cross-cutting contracts
-- **[Bundle Design Docs](docs/design/bundles/)** — Per-module design documents (Core, Common, Trade, Wallet, Identity, Promotion)
+- **[Bundle Design Docs](docs/design/bundles/)** — Per-module design documents (Core, Common, Trade, Wallet, Identity, Promotion, Settlement)
 - **[AI Context](docs/ai/context.md)** — Full codebase snapshot for AI-assisted development
 - **[API Docs](/api/doc)** — Interactive Swagger UI (when running locally)
 - **[QUICKSTART.md](QUICKSTART.md)** — 5-10 minute setup guide

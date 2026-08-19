@@ -21,6 +21,7 @@ flowchart TB
     Store["Store<br/>多門店 Outbox"]
     Inventory["Inventory<br/>庫存 · 預留"]
     Promotion["Promotion<br/>DSL 引擎"]
+    Settlement["Settlement<br/>分帳 · 終態"]
     Exchange["Exchange（設計）<br/>匯率 · 資金池 · 發行"]
 
     Identity --> Core
@@ -39,6 +40,8 @@ flowchart TB
     Trade --> Inventory
     Promotion --> Core
     Promotion --> Trade
+    Settlement --> Core
+    Settlement --> Wallet
     Exchange -. "design" .-> Core
 ```
 
@@ -59,7 +62,7 @@ flowchart TB
 - **CRUD 服務抽象**：`new()`、`get()`、`list()`、`update()`、`remove()`
 - **動態查詢系統**：透過請求參數控制篩選/排序/分組/欄位選擇，表達式編譯為 DQL
 - **Trait 組合式控制器**：9 個 mixin trait（List、Detail、Create、Update、Delete、Workflow、Singleton、Transform）可按需組合
-- **模組化架構**：Core 框架 + Common（CMS）+ Promotion（DSL 驅動促銷引擎）+ Trade（電商）+ Store（門店交易發件箱）+ Inventory（物料、庫存、配方、預留）+ Payment（支付）+ Wallet（錢包）+ Wechat（微信登入+支付）+ Storage（檔案儲存驅動）+ Identity（鑑權）
+- **模組化架構**：Core 框架 + Common（CMS）+ Promotion（DSL 驅動促銷引擎）+ Trade（電商）+ Store（門店交易發件箱）+ Inventory（物料、庫存、配方、預留）+ Payment（支付）+ Wallet（錢包）+ Settlement（分帳與終態）+ Wechat（微信登入+支付）+ Storage（檔案儲存驅動）+ Identity（鑑權）
 - **JWT 鑑權**：RS256 存取令牌，HMAC-SHA256 Refresh Token 輪換，含重用檢測
 - **OTP 登入**：基於手機驗證碼的簡訊登入，含頻率限制（阿里雲）
 - **訂單狀態機**：Symfony Workflow（草稿 → 完成），含完整工作流 API
@@ -109,6 +112,7 @@ flowchart TB
 │   ├── Promotion/                # 促銷模組（DSL 引擎）
 │   ├── Store/                     # 門店模組
 │   ├── Inventory/                 # 庫存模組（物料、庫存、配方、預留）
+│   ├── Settlement/                # 分帳模組（計畫、規則、入帳）
 │   └── Identity/                 # 鑑權模組
 ├── config/                       # Symfony 配置
 ├── migrations/                   # Doctrine 遷移（20 個版本）
@@ -134,6 +138,7 @@ flowchart TB
 | **Storage** | `App\Storage` | 檔案儲存驅動 | LocalStorage、QiniuStorage |
 | **Promotion** | `App\Promotion` | DSL 驅動促銷 | 自訂 DSL 詞法/語法/求值器、7 種策略類型、作為 `trade.price_calculator`（優先級 60）、會員定向 SKU 折扣、多門店路由、`best_price` 衝突模式 |
 | **Identity** | `App\Identity` | 鑑權 | JWT (RS256)、OTP (簡訊)、Refresh Token 輪換、Profile 實體（自動建立、等級、積分委託給 Wallet） |
+| **Settlement** | `App\Settlement` | 分帳與終態 | 已確認資金 → 不可變上下文 → 版本化規則 → 可審計計畫/分帳 → 透過 Wallet 端口入帳；18 位精確金額、最大餘數捨入、原憑證沖正、SQL outbox/inbox、後台規則配置 |
 | **Exchange** | `App\ExchangeBundle` *(設計)* | 資金池背書的點數經濟 | 生效期匯率、bcmath 換算、質押/發行/兌換/贖回、造市商資金池 —— 僅設計，尚未實現 |
 
 ## 測試
