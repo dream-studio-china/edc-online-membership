@@ -44,7 +44,6 @@ parameters:
         # --- Lifecycle callbacks support BaseService::new() bypassing constructors ---
         -
             message: '#Property .+::\$createdAt in isset\(\) is not nullable nor uninitialized#'
-            path: src/
 
 includes:
     - vendor/phpstan/phpstan-symfony/extension.neon
