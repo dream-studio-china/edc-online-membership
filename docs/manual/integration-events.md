@@ -13,12 +13,25 @@ The pattern protects against two failure modes:
 - **Duplicate delivery** — consumers record a consumed-event row in the *same transaction*
   as the business effect, keyed by `eventId` (idempotent inbox).
 
-```
-┌────────────┐  outbox table   ┌──────────────┐  Messenger "async"  ┌────────────┐  inbox (consumed event) ┌───────────┐
-│ Business   │  (persisted in  │ publish cmd  │  (Doctrine transport)│ worker     │  (persisted in same     │ Consumer  │
-│ operation  │──> same txn) ──>│ app:*:outbox │────────────────────>│ (handlers) └─> transform as txn with  │  (module) │
-│ (module A) │                 │ :publish     │                    │ module B   │  the business effect)    │           │
-└────────────┘                 └──────────────┘                    └────────────┘                          └───────────┘
+```mermaid
+flowchart LR
+    subgraph Producer["Producer (module A)"]
+        A[Business operation]
+        O[Outbox table<br/>*_outbox_message]
+        P[Publish command<br/>app:*:outbox:publish]
+    end
+
+    subgraph Consumer["Consumer (module B)"]
+        H[Worker / handlers]
+        I[Inbox table<br/>*_consumed_event]
+        B[Business effect]
+    end
+
+    A -- "same DB transaction" --> O
+    O -- "poll + claim" --> P
+    P -- "Messenger 'async'<br/>(Doctrine transport)" --> H
+    H -- "same DB transaction" --> I
+    H -- "apply" --> B
 ```
 
 - **Producer side (outbox):** `*OutboxService::record(topic, aggregateType, aggregateId, payload)`
@@ -306,61 +319,70 @@ Handlers validate their envelopes defensively before touching the database:
 
 ### 6.1 Trade order → Store → Inventory reservation
 
-```
-Trade OrderService::createOrder()
-  └─ (same txn) workflow store_submit
-  └─ (same txn) TRADE outbox += trade.order.created.v1
-        {orderUuid, store:{...}, customerUserUuid, currency, totalAmount(cents),
-         items:[{lineId,catalogReference,quantity,unitPrice,lineAmount,snapshot}],
-         delivery, placedAt}
-  └─ app:trade:outbox:publish → TradeOrderCreatedMessage → async
-        └─ Store TradeOrderCreatedHandler
-              (txn) STORE inbox += {eventId, 'trade.order.created.v1', payload_hash}
-              store inactive? → STORE outbox += store.order.rejected.v1 ('STORE_UNAVAILABLE')
-              INVENTORY_ENABLED=0? → accept immediately
-              else → STORE outbox += inventory.reservation.requested.v1
-                     {reservationId (new UUID), storeUuid, tradeOrderUuid, storeOrderUuid,
-                      items (quantity as 'N.000000'), expiresAt (+30 min), requestedAt}
-        └─ app:store:outbox:publish → ReservationRequestedMessage → async
-              └─ Inventory ReservationRequestedHandler
-                    (txn) INVENTORY inbox += inventory.reservation.requested.v1
-                    InventoryService::reserve(): build Reservation(request_hash),
-                      resolve recipes→materials, lock stocks FOR UPDATE,
-                      on shortfall → reject('OUT_OF_STOCK'|'SPECIFICATION_NOT_STOCKABLE'|…)
-                      → INVENTORY outbox += inventory.reservation.rejected.v1
-                      else reserve stock + ledger, confirm()
-                      → INVENTORY outbox += inventory.reservation.confirmed.v1
-        └─ app:inventory:outbox:publish → ReservationConfirmed/Rejected → async
-              └─ Store ReservationConfirmedHandler
-                    (txn) STORE inbox += …confirmed; storeOrder accept(reservationId)
-                 Store ReservationRejectedHandler
-                    (txn) STORE inbox += …rejected; storeOrder reject(reasonCode, reason)
-                    → STORE outbox += store.order.rejected.v1
-        └─ app:store:outbox:publish → StoreOrderRejectedMessage → async
-              └─ Trade StoreOrderRejectedHandler: workflow store_reject
-              (StoreOrderAcceptedHandler symmetrically applies store_accept)
+```mermaid
+sequenceDiagram
+    autonumber
+    participant T as Trade
+    participant TO as Trade Outbox
+    participant S as Store
+    participant SO as Store Outbox
+    participant I as Inventory
+    participant IO as Inventory Outbox
+
+    T->>T: OrderService::createOrder()<br/>(txn) workflow store_submit
+    T->>TO: (txn) += trade.order.created.v1
+    TO->>S: app:trade:outbox:publish → TradeOrderCreatedMessage
+    S->>S: (txn) inbox += trade.order.created.v1
+    alt store inactive
+        S->>SO: (txn) += store.order.rejected.v1 (STORE_UNAVAILABLE)
+    else INVENTORY_ENABLED=0
+        S->>S: accept immediately
+    else reserve
+        S->>SO: (txn) += inventory.reservation.requested.v1
+        SO->>I: app:store:outbox:publish → ReservationRequestedMessage
+        I->>I: (txn) inbox += requested; InventoryService::reserve()
+        alt shortfall
+            I->>IO: (txn) += inventory.reservation.rejected.v1
+        else success
+            I->>IO: (txn) += inventory.reservation.confirmed.v1
+        end
+        IO->>S: app:inventory:outbox:publish → ReservationConfirmed/Rejected
+        S->>S: (txn) inbox += outcome; accept/reject storeOrder
+        S->>SO: (txn) += store.order.rejected.v1 (if rejected)
+        SO->>T: app:store:outbox:publish → StoreOrderRejectedMessage
+        T->>T: workflow store_reject / store_accept
+    end
 ```
 
 ### 6.2 Order cancellation → Store → Inventory release
 
-```
-OrderWorkflowListener (workflow.order.transition 'cancel')
-  └─ (same txn) if order has _store metadata:
-        TRADE outbox += trade.order.cancelled.v1 {orderUuid, storeUuid, cancelledAt}
-  └─ app:trade:outbox:publish → TradeOrderCancelledMessage → async
-        └─ Store TradeOrderCancelledHandler
-              (txn) STORE inbox += trade.order.cancelled.v1
-              store order exists?  → cancel it; if reservation_id → STORE outbox +=
-                  inventory.reservation.release.requested.v1 {reservationId, reason:'trade_order_cancelled', …}
-              store order missing? → persist StoreTradeOrderCancellation (applied later
-                  when the order arrives; conflicting store_uuid throws LogicException)
-        └─ app:store:outbox:publish → ReservationReleaseRequestedMessage → async
-              └─ Inventory ReservationReleaseRequestedHandler
-                    (txn) INVENTORY inbox += inventory.reservation.release.requested.v1
-                    correlation check vs reservation, then InventoryService::release()
-                    → stock released + ledger, INVENTORY outbox += inventory.reservation.released.v1
-        └─ app:inventory:outbox:publish → ReservationReleasedMessage → async
-              └─ Store ReservationReleasedHandler: inbox dedup only
+```mermaid
+sequenceDiagram
+    autonumber
+    participant T as Trade
+    participant TO as Trade Outbox
+    participant S as Store
+    participant SO as Store Outbox
+    participant I as Inventory
+    participant IO as Inventory Outbox
+
+    T->>T: OrderWorkflowListener (transition 'cancel')
+    alt order has store metadata
+        T->>TO: (txn) += trade.order.cancelled.v1
+        TO->>S: app:trade:outbox:publish → TradeOrderCancelledMessage
+        S->>S: (txn) inbox += trade.order.cancelled.v1
+        alt store order exists
+            S->>S: cancel it
+            S->>SO: (txn) += inventory.reservation.release.requested.v1
+            SO->>I: app:store:outbox:publish → ReservationReleaseRequestedMessage
+            I->>I: (txn) inbox += release.requested; InventoryService::release()
+            I->>IO: (txn) += inventory.reservation.released.v1
+            IO->>S: app:inventory:outbox:publish → ReservationReleasedMessage
+            S->>S: inbox dedup only
+        else store order missing
+            S->>S: persist StoreTradeOrderCancellation (applied later)
+        end
+    end
 ```
 
 ### 6.3 Expired reservations
@@ -375,28 +397,34 @@ standard `inventory.reservation.released.v1` outbox flow above.
 Settlement is an **inbox-first** module: funding confirmations arrive from outside as
 explicit-field messages.
 
-```
-external producer → SettlementFundingConfirmedMessage → async
-  └─ SettlementFundingConfirmedHandler
-        dedup exists(eventId)
-        (txn) SettlementService::createPlanFromFunding()
-            build SettlementPlan + SettlementAllocation rows (brick/math BigInteger totals)
-            SETTLEMENT outbox += settlement.allocation.post.requested.v1
-                {allocationUuid, planUuid}  (one per allocation, same txn)
-            persist SettlementConsumedEvent(eventId, 'settlement.funding.confirmed.v1',
-                source_aggregate_type=sourceType, source_aggregate_id=sourceId, payload_hash)
-  └─ app:settlement:outbox:publish → SettlementAllocationPostingMessage(allocationUuid, planUuid) → async
-        └─ SettlementAllocationPostingHandler → postAllocation($allocationUuid)
-              mark posting_requested (flush first: durable idempotency claim)
-              voucherPort->post() with posting_idempotency_key
-                  ('settlement-credit:<planUuid>:<allocationKey>')
-              success → markPosted(reference) | retryable → markRetryableFailure(next +60s)
-                        | fatal → markFailed
-              reconcilePlanState()
-  └─ app:settlement:allocations:requeue-due
-        findRetryableDue() (status=retryable_failure AND next_attempt_at <= now)
-        claimRetryDue() (status→planned, next_attempt_at→NULL)
-        Record settlement.allocation.post.requested.v1 again → repeats the posting loop
+```mermaid
+sequenceDiagram
+    autonumber
+    participant P as External producer
+    participant H as SettlementFundingConfirmedHandler
+    participant S as SettlementService
+    participant SO as Settlement Outbox
+    participant A as SettlementAllocationPostingHandler
+    participant V as Wallet voucher port
+
+    P->>H: SettlementFundingConfirmedMessage (async)
+    H->>H: dedup exists(eventId)
+    H->>S: (txn) createPlanFromFunding()
+    S->>S: build SettlementPlan + SettlementAllocation rows
+    S->>SO: (txn) += settlement.allocation.post.requested.v1 (per allocation)
+    H->>H: (txn) persist SettlementConsumedEvent
+    SO->>A: app:settlement:outbox:publish → SettlementAllocationPostingMessage
+    A->>A: mark posting_requested (flush first)
+    A->>V: voucherPort->post() (posting_idempotency_key)
+    alt success
+        V-->>A: markPosted(reference)
+    else retryable
+        V-->>A: markRetryableFailure (next +60s)
+    else fatal
+        V-->>A: markFailed
+    end
+    A->>A: reconcilePlanState()
+    Note over SO: app:settlement:allocations:requeue-due<br/>re-queues retryable_failure rows
 ```
 
 Statuses used by the settlement retry loop: allocation `planned → posting_requested →
