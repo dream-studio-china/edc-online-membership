@@ -13,7 +13,7 @@
 - Modular architecture: **Core** (framework), **Common** (CMS), **Promotion** (DSL-driven promotions), **Identity** (auth), **Trade** (commercial orders), **Store** (multi-store operations), **Payment** (invoices), **Wallet** (balances), **Inventory** (stock & reservation), **Wechat** (login + pay), **Storage** (file upload drivers)
 - EasyWeChat 6.x integration (Mini Program, Official Account OAuth, WeChat Pay V3)
 - NelmioApiDoc (Swagger at `/api/doc`), PHPUnit 12.5, Docker Compose (7 services: app, worker, scheduler, nginx, MySQL, Redis, Mailpit)
-- MkDocs Material + GitHub Pages documentation
+- MkDocs Material + GitHub Pages documentation (**mermaid diagram rendering enabled** via CDN + `pymdownx.superfences` custom fence)
 - **i18n**: Symfony Translation with en, zh, zh_Hant, ja — all user-facing messages, entity/field names, and status values translated
 - **Wallet ledger**: voucher-backed single-sided deposits/withdrawals (`wallet_voucher` boundary ledger) with provider-owned voucher-type permissions; **Exchange** bundle design (pool-backed points economy) at `docs/design/bundles/exchange.md`
 
@@ -730,7 +730,7 @@ Enriches all endpoints (90+):
 | `docs/issues/coverage-2026-08-09/` | 24-agent coverage campaign: 96 new test files → 99.46% lines; documents 74 bugs (2 CRITICAL, 8 HIGH, 30 MEDIUM, 34 LOW) with file:line + proposed fixes |
 | `docs/issues/test-audit-2026-08-09/` | 14-agent test audit: 412 redundant-test candidates (190 HIGH) for later deletion; baseline run + timing analysis |
 | `docs/ai/context.md` | This file — AI context snapshot |
-| `mkdocs.yml` | MkDocs Material site config |
+| `mkdocs.yml` | MkDocs Material site config (mermaid rendering: `pymdownx.superfences` custom fence + mermaid@11 CDN + `javascripts/mermaid-init.js`) |
 | `scripts/tests/simulate-trade.php` | Generates 100 orders across all 8 statuses into `var/test.db` |
 | `scripts/tests/demo-trade-workflow.php` | E2E workflow demo (all transitions + guards) |
 
