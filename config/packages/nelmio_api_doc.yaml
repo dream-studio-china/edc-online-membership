@@ -38,7 +38,14 @@ nelmio_api_doc:
             - { name: Pages, description: 'Standalone page management' }
             - { name: Media, description: 'File metadata management' }
             - { name: Settings, description: 'Key-value configuration storage' }
+            - { name: Pictures, description: 'Picture management with category binding' }
             - { name: Wallet, description: 'Wallet balance, transactions, and atomic transfers' }
+            - { name: Payment, description: 'Payment invoices, gateways, refunds, and provider callbacks' }
+            - { name: Store, description: 'Multi-store operations, membership, and store orders' }
+            - { name: Inventory, description: 'Materials, stock, recipes, reservations, and ledger' }
+            - { name: Promotions, description: 'Promotion DSL and order discounts' }
+            - { name: PromotionTemplates, description: 'Promotion template CRUD, validation, and dry-run' }
+            - { name: Settlement, description: 'Settlement rules, plans, allocations, and outbox' }
             - { name: System, description: 'System introspection: entity metadata export and route listing' }
             - { name: Wechat, description: 'WeChat login, OAuth, and payment' }
 
@@ -503,6 +510,266 @@ nelmio_api_doc:
                         id: { type: integer }
                         email: { type: string }
                         username: { type: string }
+
+                User:
+                    type: object
+                    properties:
+                        id: { type: integer }
+                        uuid: { type: string }
+                        email: { type: string, example: 'user@example.com' }
+                        username: { type: string, example: 'newuser' }
+                        phone: { type: string, nullable: true, example: '13800138000' }
+                        phoneVerified: { type: boolean }
+                        roles: { type: array, items: { type: string }, example: ['ROLE_USER'] }
+                        createdAt: { type: string, format: date-time }
+
+                Profile:
+                    type: object
+                    properties:
+                        id: { type: integer }
+                        level: { type: integer, example: 1 }
+                        nickname: { type: string, nullable: true, example: 'Alice' }
+                        avatar: { type: string, nullable: true }
+                        metadata: { type: object, nullable: true }
+                        user: { $ref: '#/components/schemas/UserRef' }
+                        createdAt: { type: string, format: date-time }
+
+                # ---- Common: Picture ----
+                Picture:
+                    type: object
+                    properties:
+                        id: { type: integer }
+                        title: { type: string, nullable: true }
+                        image: { type: string, example: '/uploads/202508/picture.jpg' }
+                        metadata: { type: object, nullable: true }
+                        category: { $ref: '#/components/schemas/CategoryRef' }
+                        user: { $ref: '#/components/schemas/UserRef' }
+                        createdAt: { type: string, format: date-time }
+
+                # ---- Payment: Invoice ----
+                Invoice:
+                    type: object
+                    properties:
+                        id: { type: integer }
+                        uuid: { type: string, example: '550e8400-e29b-41d4-a716-446655440000' }
+                        outTradeNo: { type: string, example: 'PAY202508150000ABCD' }
+                        transactionId: { type: string, nullable: true }
+                        sourceType: { type: string, example: 'trade_order' }
+                        sourceId: { type: string, example: '42' }
+                        scene: { type: string, enum: [order, deposit, wallet_topup], example: 'order' }
+                        payment: { type: string, nullable: true, enum: [mock, wallet, wechat], example: 'wallet' }
+                        status: { type: string, enum: [pending, paying, paid, failed, cancelled, partial_refunded, refunded], example: 'pending' }
+                        amount: { type: integer, description: 'Gross amount in cents', example: 19900 }
+                        refundedAmount: { type: integer, example: 0 }
+                        currency: { type: string, example: 'CNY' }
+                        payer: { $ref: '#/components/schemas/UserRef' }
+                        subject: { type: string, nullable: true }
+                        createdAt: { type: string, format: date-time }
+                        paidAt: { type: string, format: date-time, nullable: true }
+                        cancelledAt: { type: string, format: date-time, nullable: true }
+                        refundedAt: { type: string, format: date-time, nullable: true }
+
+                InvoiceCreate:
+                    type: object
+                    required: [sourceType, sourceId, amount]
+                    properties:
+                        sourceType: { type: string, example: 'trade_order' }
+                        sourceId: { type: string, example: '42' }
+                        scene: { type: string, enum: [order, deposit, wallet_topup], example: 'order' }
+                        amount: { type: integer, description: 'Gross payable in cents', example: 19900 }
+                        currency: { type: string, example: 'CNY' }
+                        payer: { type: integer, description: 'Payer user id' }
+                        subject: { type: string }
+                        description: { type: string }
+
+                InvoicePayRequest:
+                    type: object
+                    properties:
+                        walletId: { type: integer, description: 'Wallet id for wallet_balance deduction', example: 1 }
+                        amount: { type: integer, description: 'Optional explicit deduction amount in cents' }
+
+                InvoiceRefundRequest:
+                    type: object
+                    properties:
+                        amount: { type: integer, description: 'Refund amount in cents (partial)', example: 5000 }
+                        reason: { type: string, example: 'Customer request' }
+
+                # ---- Wallet extended ----
+                Voucher:
+                    type: object
+                    properties:
+                        id: { type: integer }
+                        uuid: { type: string }
+                        direction: { type: string, enum: [credit, debit], example: 'credit' }
+                        fundSource: { type: string, enum: [external, internal], example: 'external' }
+                        voucherType: { type: string, example: 'manual' }
+                        voucherId: { type: string, example: 'MAN-001' }
+                        amount: { type: integer, example: 10000 }
+                        currency: { type: string, example: 'CNY' }
+                        status: { type: string, enum: [pending, applied, reversed, failed], example: 'applied' }
+                        referenceId: { type: string }
+                        wallet: { $ref: '#/components/schemas/WalletRef' }
+                        reason: { type: string, nullable: true }
+                        createdAt: { type: string, format: date-time }
+                        appliedAt: { type: string, format: date-time, nullable: true }
+                        reversedAt: { type: string, format: date-time, nullable: true }
+
+                VoucherDepositRequest:
+                    type: object
+                    required: [walletId, amount]
+                    properties:
+                        walletId: { type: integer, example: 1 }
+                        amount: { type: integer, minimum: 1, example: 10000 }
+                        voucherType: { type: string, example: 'manual', description: 'Provider-permissioned type' }
+                        voucherId: { type: string, example: 'DEP-001' }
+                        referenceId: { type: string, example: 'ref-20250815-001' }
+                        reason: { type: string }
+                        metadata: { type: object }
+
+                VoucherWithdrawRequest:
+                    type: object
+                    required: [walletId, amount]
+                    properties:
+                        walletId: { type: integer, example: 1 }
+                        amount: { type: integer, minimum: 1, example: 5000 }
+                        voucherType: { type: string, example: 'manual' }
+                        voucherId: { type: string, example: 'WD-001' }
+                        referenceId: { type: string, example: 'ref-20250815-002' }
+                        reason: { type: string }
+
+                VoucherComment:
+                    type: object
+                    properties:
+                        id: { type: integer }
+                        actor: { type: string, example: 'admin' }
+                        text: { type: string, example: 'Approved' }
+                        voucher: { $ref: '#/components/schemas/Voucher' }
+                        createdAt: { type: string, format: date-time }
+
+                # ---- Store ----
+                Store:
+                    type: object
+                    properties:
+                        id: { type: integer }
+                        uuid: { type: string }
+                        code: { type: string, example: 'STORE001' }
+                        name: { type: string, example: 'Flagship Store' }
+                        status: { type: string, enum: [active, suspended, closed], example: 'active' }
+                        timezone: { type: string, example: 'UTC' }
+                        contact: { type: object, nullable: true }
+                        address: { type: object, nullable: true }
+                        settings: { type: object, nullable: true }
+                        createdAt: { type: string, format: date-time }
+
+                StoreOrder:
+                    type: object
+                    properties:
+                        id: { type: integer }
+                        uuid: { type: string }
+                        tradeOrderUuid: { type: string }
+                        store: { $ref: '#/components/schemas/Store' }
+                        status: { type: string, enum: [pending, accepted, rejected, fulfilled], example: 'pending' }
+                        createdAt: { type: string, format: date-time }
+
+                # ---- Inventory ----
+                Material:
+                    type: object
+                    properties:
+                        id: { type: integer }
+                        uuid: { type: string }
+                        code: { type: string, example: 'MAT-STEEL-001' }
+                        name: { type: string, example: 'Steel Plate' }
+                        kind: { type: string, enum: [raw, finished], example: 'raw' }
+                        unit: { type: string, example: 'kg' }
+                        status: { type: string, enum: [active, inactive], example: 'active' }
+                        metadata: { type: object, nullable: true }
+                        createdAt: { type: string, format: date-time }
+
+                Stock:
+                    type: object
+                    properties:
+                        storeUuid: { type: string }
+                        materialUuid: { type: string }
+                        onHandQuantity: { type: string, example: '100.000' }
+                        reservedQuantity: { type: string, example: '10.000' }
+                        allowNegativeStock: { type: boolean, example: false }
+                        updatedAt: { type: string, format: date-time, nullable: true }
+
+                Recipe:
+                    type: object
+                    properties:
+                        id: { type: integer }
+                        specificationUuid: { type: string }
+                        lines:
+                            type: array
+                            items:
+                                type: object
+                                properties:
+                                    materialUuid: { type: string }
+                                    quantityPerUnit: { type: string, example: '2.500' }
+                                    sort: { type: integer }
+                        createdAt: { type: string, format: date-time }
+
+                # ---- Promotion ----
+                PromotionTemplate:
+                    type: object
+                    properties:
+                        id: { type: integer }
+                        code: { type: string, example: 'FULL100-10' }
+                        name: { type: string, example: 'Full 100 minus 10' }
+                        dsl: { type: string, example: 'if order.total >= 10000 then discount 1000' }
+                        ast: { type: object, nullable: true }
+                        status: { type: string, enum: [active, inactive], example: 'active' }
+                        createdAt: { type: string, format: date-time }
+
+                Promotion:
+                    type: object
+                    properties:
+                        id: { type: integer }
+                        template: { $ref: '#/components/schemas/PromotionTemplate' }
+                        storeCode: { type: string, nullable: true }
+                        config: { type: object, nullable: true }
+                        activeFrom: { type: string, format: date-time, nullable: true }
+                        activeUntil: { type: string, format: date-time, nullable: true }
+                        createdAt: { type: string, format: date-time }
+
+                # ---- Settlement ----
+                SettlementRule:
+                    type: object
+                    properties:
+                        id: { type: integer }
+                        uuid: { type: string }
+                        code: { type: string, example: 'SETTLE-001' }
+                        name: { type: string }
+                        status: { type: string, example: 'draft' }
+                        createdAt: { type: string, format: date-time }
+
+                SettlementRuleVersion:
+                    type: object
+                    properties:
+                        uuid: { type: string }
+                        rule: { $ref: '#/components/schemas/SettlementRule' }
+                        version: { type: integer, example: 1 }
+                        status: { type: string, enum: [draft, published], example: 'draft' }
+                        config: { type: object }
+                        createdAt: { type: string, format: date-time }
+
+                SettlementPlan:
+                    type: object
+                    properties:
+                        id: { type: integer }
+                        uuid: { type: string }
+                        status: { type: string }
+                        createdAt: { type: string, format: date-time }
+
+                SettlementAllocation:
+                    type: object
+                    properties:
+                        uuid: { type: string }
+                        plan: { $ref: '#/components/schemas/SettlementPlan' }
+                        amount: { type: integer, example: 50000 }
+                        status: { type: string }
+                        createdAt: { type: string, format: date-time }
 
             # ============================================================
             # EXAMPLES

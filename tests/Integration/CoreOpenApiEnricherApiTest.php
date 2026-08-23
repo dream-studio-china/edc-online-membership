@@ -51,7 +51,7 @@ final class CoreOpenApiEnricherApiTest extends IntegrationWebTestCase
         $doc = $this->fetchSpec();
         $tagNames = array_column($doc['tags'] ?? [], 'name');
 
-        foreach (['Auth', 'Products', 'Orders', 'System', 'Wallet', 'Categories', 'Media', 'Payment', 'Wechat'] as $expected) {
+        foreach (['Auth', 'Products', 'Orders', 'System', 'Wallet', 'Categories', 'Media', 'Payment', 'Wechat', 'Store', 'Inventory', 'Promotions', 'PromotionTemplates', 'Settlement', 'Pictures'] as $expected) {
             self::assertContains($expected, $tagNames, "missing tag $expected");
         }
     }
@@ -84,18 +84,19 @@ final class CoreOpenApiEnricherApiTest extends IntegrationWebTestCase
 
     public function testStoreOrderEndpointsAreLeftUntaggedCurrently(): void
     {
-        // BUG-7: operationIds are HTTP-method prefixed (get_store-orders-list), so
-        // detectTag()'s str_starts_with($opId, 'store-') never matches and Store
-        // endpoints without an explicit OA tag get no module tag.
+        // Fixed: Store endpoints are now correctly tagged via OA attributes + detectTag str_contains fix.
         $doc = $this->fetchSpec();
-        foreach (['/api/v1/store/stores/{scopeId}/orders', '/api/v1/store/stores/{scopeId}/orders/{orderUuid}/accept'] as $path) {
-            self::assertEmpty($doc['paths'][$path]['get']['tags'] ?? [], "expected no tags on $path currently");
+        foreach (['/api/v1/store/stores/{scopeId}/orders' => 'get', '/api/v1/store/stores/{scopeId}/orders/{orderUuid}/accept' => 'post'] as $path => $method) {
+            self::assertSame(['Store'], $doc['paths'][$path][$method]['tags'] ?? [], "expected Store tag on $path $method");
         }
     }
 
     public function testStoreOrderEndpointsShouldBeTaggedStore(): void
     {
-        self::markTestSkipped('BUG-7: OpenApiEnricherListener::detectTag() prefix checks miss method-prefixed operationIds; Store endpoints stay untagged. See docs/issues/coverage-2026-08-09/core-integration-extra.md#bug-7.');
+        $doc = $this->fetchSpec();
+        foreach (['/api/v1/store/stores/{scopeId}/orders' => 'get', '/api/v1/store/stores/{scopeId}/orders/{orderUuid}/accept' => 'post', '/api/v1/store/stores/{scopeId}/orders/{orderUuid}/reject' => 'post', '/api/v1/store/stores/{scopeId}/orders/{orderUuid}/fulfill' => 'post'] as $path => $method) {
+            self::assertSame(['Store'], $doc['paths'][$path][$method]['tags'] ?? [], "expected Store tag on $path $method");
+        }
     }
 
     public function testSystemEndpointsTaggedSystem(): void
