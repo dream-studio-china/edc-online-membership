@@ -1,0 +1,4739 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Symfony 8.1 API backend skeleton with modular architecture">
+      
+      
+      
+        <link rel="canonical" href="https://immane.github.io/crud-skeleton/design/bundles/wechat/">
+      
+      
+        <link rel="prev" href="../identity/">
+      
+      
+        <link rel="next" href="../../../runbooks/common/">
+      
+      
+        
+          <link rel="alternate" href="/crud-skeleton/" hreflang="en">
+        
+          <link rel="alternate" href="/crud-skeleton/zh/" hreflang="zh">
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Wechat (Login + Pay) - CRUD Skeleton</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#wechat-bundle-design" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="CRUD Skeleton" class="md-header__button md-logo" aria-label="CRUD Skeleton" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            CRUD Skeleton
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Wechat (Login + Pay)
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Select language">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="/crud-skeleton/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="/crud-skeleton/zh/" hreflang="zh" class="md-select__link">
+              中文
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/immane/crud-skeleton" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="CRUD Skeleton" class="md-nav__button md-logo" aria-label="CRUD Skeleton" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    CRUD Skeleton
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/immane/crud-skeleton" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Development Manual
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Development Manual
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../manual/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Manual Index
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../manual/getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../manual/architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../manual/project-structure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project Structure
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../manual/core-framework/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core Framework
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../manual/core-usage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core Usage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../manual/query-system/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Query System
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../manual/development-workflow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Development Workflow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../manual/testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../manual/api-contracts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Contracts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../manual/development-contracts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Development Contracts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../manual/integration-events/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Integration Events
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../manual/database-and-migrations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Database & Migrations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../manual/deployment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../manual/extracting-a-service/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Extracting a Service
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../manual/i18n/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Internationalization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Design Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Design Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../system-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    System Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api-design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../data-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../module-design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Module Design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../controller-design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Controller Design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api-documentation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Documentation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../system-contracts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    System Contracts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../naming-convention/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Naming Convention
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bundles
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Bundles
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../core/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core Framework
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../common/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Common (CMS)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../trade/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Trade (E-Commerce)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../store/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Store (Multi-Store Operations)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../inventory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Inventory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../payment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Payment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../wallet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Wallet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../settlement/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Settlement (Allocation + Finality)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../exchange/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Exchange (Pool-backed Economy)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../identity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Identity (Auth)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Wechat (Login + Pay)
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Wechat (Login + Pay)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#directory-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Directory Structure
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Directory Structure">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tests
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#component-contracts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Component Contracts
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Component Contracts">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#dependency-graph" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dependency Graph
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#impact-on-the-existing-system" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Impact on the Existing System
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#entity-wechatuser" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Entity: WechatUser
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Entity: WechatUser">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#table-wechat_user" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Table: wechat_user
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#relationship" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Relationship
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mapping" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mapping
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#service-wechatservice" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Service: WechatService
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Service: WechatService">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#constructor-signature" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Constructor Signature
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#method-contract" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Method Contract
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#apptype-constants" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AppType Constants
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#service-wechatauthservice" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Service: WechatAuthService
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Service: WechatAuthService">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#constructor-signature_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Constructor Signature
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#method-contract_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Method Contract
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#login-orchestration-internal" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Login Orchestration (internal)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#controller-logincontroller" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Controller: LoginController
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Controller: LoginController">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#class-declaration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Class Declaration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#constructor-signature_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Constructor Signature
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#endpoints" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Endpoints
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Endpoints">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#post-apiwechatminiapplogin-mini-program-login-public_access" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        POST /api/wechat/miniapp/login — Mini Program login (PUBLIC_ACCESS)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#post-apiwechatminiappphone-bind-phone-number-is_authenticated_fully" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        POST /api/wechat/miniapp/phone — Bind phone number (IS_AUTHENTICATED_FULLY)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get-apiwechatoauthurl-get-official-account-oauth-redirect-url-public_access" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GET /api/wechat/oauth/url — Get Official Account OAuth redirect URL (PUBLIC_ACCESS)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#post-apiwechatoauthcallback-official-account-oauth-callback-public_access" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        POST /api/wechat/oauth/callback — Official Account OAuth callback (PUBLIC_ACCESS)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#private-helpers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Private helpers
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#gateway-wechatpaygateway" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Gateway: WechatPayGateway
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Gateway: WechatPayGateway">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#contract-implements-paymentgatewayinterface" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Contract: implements PaymentGatewayInterface
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#constructor-signature_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Constructor Signature
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#method-implementations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Method Implementations
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Method Implementations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#payinvoice-invoice-array-options-paymentresult" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        pay(Invoice $invoice, array $options = []): PaymentResult
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#notifyrequest-request-paymentnotifyresult" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        notify(Request $request): PaymentNotifyResult
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#refundinvoice-invoice-int-amount-string-reason-array-options-paymentrefundresult" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        refund(Invoice $invoice, int $amount, string $reason, array $options = []): PaymentRefundResult
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#getnotifysuccessresponsepaymentnotifyresult-result-response" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        getNotifySuccessResponse(PaymentNotifyResult $result): Response
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#automatic-registration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Automatic Registration
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#api-endpoint-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        API Endpoint Summary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#existing-files-to-modify" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Existing Files to Modify
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Existing Files to Modify">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-composerjson" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. composer.json
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-configservicesyaml" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. config/services.yaml
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-configroutesyaml" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. config/routes.yaml
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-configpackagessecurityyaml" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. config/packages/security.yaml
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-srcpaymententityinvoicephp" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. src/Payment/Entity/Invoice.php
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-env" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. .env
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#services-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Services Configuration
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Services Configuration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#services_wechatyaml" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        services_wechat.yaml
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gateway-auto-registration-no-extra-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Gateway Auto-Registration (No Extra Configuration)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#repository-wechatuserrepository" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Repository: WechatUserRepository
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#openapi-tags-documentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OpenAPI Tags &amp; Documentation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="OpenAPI Tags &amp; Documentation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#nelmioapidoc-configuration-update" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        NelmioApiDoc Configuration Update
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#login-flow-diagrams" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Login Flow Diagrams
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Login Flow Diagrams">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mini-program-login" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mini Program Login
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#official-account-oauth" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Official Account OAuth
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#implementation-order" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Implementation Order
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#test-coverage-targets" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Test Coverage Targets
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Runbooks
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Runbooks
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../runbooks/common/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Common
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../runbooks/core/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../runbooks/exchange/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Exchange
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../runbooks/identity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Identity
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../runbooks/inventory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Inventory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../runbooks/payment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Payment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../runbooks/promotion/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Promotion
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../runbooks/settlement/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Settlement
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../runbooks/storage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Storage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../runbooks/store/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Store
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../runbooks/trade/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Trade
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../runbooks/wallet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Wallet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../runbooks/wechat/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    WeChat
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Research
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Research
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../research/easywechat-6.x-usage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    EasyWeChat 6.x Usage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../research/huifu-payment-api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Huifu Payment API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Issues
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Issues
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../issues/architecture-review-2026-06-26/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture Review 2026-06-26
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Testing
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../testing/crud-skeleton-production/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Production Validation Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../testing/crud-skeleton-production/TEST_STRATEGY/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Test Strategy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../testing/crud-skeleton-production/SYSTEM_WALKTHROUGH/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    System Walkthrough And Test Seams
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../testing/crud-skeleton-production/TEST_MATRIX/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Test Matrix
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../testing/crud-skeleton-production/BUSINESS_INVARIANTS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Business Invariants
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../testing/crud-skeleton-production/ARCHITECTURE_TEST_MAPPING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture Test Mapping
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../testing/crud-skeleton-production/FAILURE_MODES/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Failure Modes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../testing/crud-skeleton-production/PRODUCTION_VALIDATION/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Release Validation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../testing/crud-skeleton-production/AI_DEVELOPMENT_PROCESS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI Development Process
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../ai/context/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI Context
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../openapi/endpoints.yaml" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#directory-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Directory Structure
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Directory Structure">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tests
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#component-contracts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Component Contracts
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Component Contracts">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#dependency-graph" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dependency Graph
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#impact-on-the-existing-system" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Impact on the Existing System
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#entity-wechatuser" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Entity: WechatUser
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Entity: WechatUser">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#table-wechat_user" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Table: wechat_user
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#relationship" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Relationship
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mapping" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mapping
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#service-wechatservice" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Service: WechatService
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Service: WechatService">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#constructor-signature" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Constructor Signature
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#method-contract" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Method Contract
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#apptype-constants" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AppType Constants
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#service-wechatauthservice" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Service: WechatAuthService
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Service: WechatAuthService">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#constructor-signature_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Constructor Signature
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#method-contract_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Method Contract
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#login-orchestration-internal" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Login Orchestration (internal)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#controller-logincontroller" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Controller: LoginController
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Controller: LoginController">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#class-declaration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Class Declaration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#constructor-signature_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Constructor Signature
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#endpoints" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Endpoints
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Endpoints">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#post-apiwechatminiapplogin-mini-program-login-public_access" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        POST /api/wechat/miniapp/login — Mini Program login (PUBLIC_ACCESS)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#post-apiwechatminiappphone-bind-phone-number-is_authenticated_fully" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        POST /api/wechat/miniapp/phone — Bind phone number (IS_AUTHENTICATED_FULLY)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get-apiwechatoauthurl-get-official-account-oauth-redirect-url-public_access" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        GET /api/wechat/oauth/url — Get Official Account OAuth redirect URL (PUBLIC_ACCESS)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#post-apiwechatoauthcallback-official-account-oauth-callback-public_access" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        POST /api/wechat/oauth/callback — Official Account OAuth callback (PUBLIC_ACCESS)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#private-helpers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Private helpers
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#gateway-wechatpaygateway" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Gateway: WechatPayGateway
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Gateway: WechatPayGateway">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#contract-implements-paymentgatewayinterface" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Contract: implements PaymentGatewayInterface
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#constructor-signature_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Constructor Signature
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#method-implementations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Method Implementations
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Method Implementations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#payinvoice-invoice-array-options-paymentresult" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        pay(Invoice $invoice, array $options = []): PaymentResult
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#notifyrequest-request-paymentnotifyresult" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        notify(Request $request): PaymentNotifyResult
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#refundinvoice-invoice-int-amount-string-reason-array-options-paymentrefundresult" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        refund(Invoice $invoice, int $amount, string $reason, array $options = []): PaymentRefundResult
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#getnotifysuccessresponsepaymentnotifyresult-result-response" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        getNotifySuccessResponse(PaymentNotifyResult $result): Response
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#automatic-registration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Automatic Registration
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#api-endpoint-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        API Endpoint Summary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#existing-files-to-modify" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Existing Files to Modify
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Existing Files to Modify">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-composerjson" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. composer.json
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-configservicesyaml" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. config/services.yaml
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-configroutesyaml" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. config/routes.yaml
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-configpackagessecurityyaml" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. config/packages/security.yaml
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-srcpaymententityinvoicephp" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. src/Payment/Entity/Invoice.php
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-env" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. .env
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#services-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Services Configuration
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Services Configuration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#services_wechatyaml" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        services_wechat.yaml
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gateway-auto-registration-no-extra-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Gateway Auto-Registration (No Extra Configuration)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#repository-wechatuserrepository" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Repository: WechatUserRepository
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#openapi-tags-documentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OpenAPI Tags &amp; Documentation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="OpenAPI Tags &amp; Documentation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#nelmioapidoc-configuration-update" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        NelmioApiDoc Configuration Update
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#login-flow-diagrams" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Login Flow Diagrams
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Login Flow Diagrams">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mini-program-login" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mini Program Login
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#official-account-oauth" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Official Account OAuth
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#implementation-order" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Implementation Order
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#test-coverage-targets" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Test Coverage Targets
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="wechat-bundle-design">WeChat Bundle Design<a class="headerlink" href="#wechat-bundle-design" title="Permanent link">&para;</a></h1>
+<blockquote>
+<p>Created: 2026-06-25</p>
+</blockquote>
+<h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
+<p>A standalone module <code>src/Wechat/</code> implementing full WeChat Mini Program login, Official Account OAuth login, phone number binding, and WeChat Pay. It does not modify the <code>User</code> entity; user identity is extended via a OneToOne <code>WechatUser</code>.</p>
+<hr />
+<h2 id="directory-structure">Directory Structure<a class="headerlink" href="#directory-structure" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>src/Wechat/
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>├── Controller/
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>│   └── LoginController.php              # Route: /api/wechat
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>├── Entity/
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>│   └── WechatUser.php                   # OneToOne → User
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>├── Repository/
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>│   └── WechatUserRepository.php
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>├── Service/
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>│   ├── Payment/
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>│   │   └── WechatPayGateway.php         # implements PaymentGatewayInterface
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>│   ├── WechatAuthService.php            # login orchestration service
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>│   └── WechatService.php                # EasyWeChat three-in-one factory
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>├── Resources/config/
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>│   └── services_wechat.yaml
+</code></pre></div>
+<h3 id="tests">Tests<a class="headerlink" href="#tests" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>tests/Wechat/
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>├── Entity/
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>│   └── WechatUserTest.php
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>├── Service/
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>│   ├── WechatServiceTest.php
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>│   └── WechatAuthServiceTest.php
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>├── Controller/
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>│   └── LoginControllerTest.php
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>└── Service/Payment/
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>    └── WechatPayGatewayTest.php
+</code></pre></div>
+<hr />
+<h2 id="component-contracts">Component Contracts<a class="headerlink" href="#component-contracts" title="Permanent link">&para;</a></h2>
+<h3 id="dependency-graph">Dependency Graph<a class="headerlink" href="#dependency-graph" title="Permanent link">&para;</a></h3>
+<pre class="mermaid"><code>flowchart TD
+    easyWeChat["EasyWeChat SDK&lt;br/&gt;(w7corp/easywechat)"]
+    wechatService["WechatService&lt;br/&gt;- getMiniApp()&lt;br/&gt;- getOfficialAccount()&lt;br/&gt;- getPayApp()&lt;br/&gt;- code2Session()&lt;br/&gt;- getOAuthUser()&lt;br/&gt;- getPhoneNumber()"]
+    wechatAuthService["WechatAuthService&lt;br/&gt;authenticate()&lt;br/&gt;bindPhone()"]
+    loginController["LoginController&lt;br/&gt;POST /login&lt;br/&gt;POST /phone&lt;br/&gt;POST /oauth/url&lt;br/&gt;POST /oauth/cb"]
+    wechatPayGateway["WechatPayGateway&lt;br/&gt;pay()&lt;br/&gt;notify()&lt;br/&gt;refund()"]
+    wechatUserRepo["WechatUserRepo&lt;br/&gt;UserRepository&lt;br/&gt;EntityManager"]
+    tokenManager["TokenManager&lt;br/&gt;(signs JWT)&lt;br/&gt;← Identity"]
+    easyWeChat --&gt; wechatService
+    wechatService --&gt; wechatAuthService
+    wechatService --&gt; loginController
+    wechatService --&gt; wechatPayGateway
+    wechatAuthService --&gt; wechatUserRepo
+    loginController --&gt; tokenManager</code></pre>
+<h3 id="impact-on-the-existing-system">Impact on the Existing System<a class="headerlink" href="#impact-on-the-existing-system" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Change</th>
+<th>File Count</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>New files</td>
+<td>9</td>
+<td>All Wechat module code</td>
+</tr>
+<tr>
+<td>Modified existing files</td>
+<td>5</td>
+<td>composer.json, services.yaml, routes.yaml, security.yaml, Invoice.php</td>
+</tr>
+<tr>
+<td><strong>Unchanged</strong></td>
+<td><code>User.php</code></td>
+<td>WechatUser is linked via OneToOne; the existing User requires zero changes</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="entity-wechatuser">Entity: WechatUser<a class="headerlink" href="#entity-wechatuser" title="Permanent link">&para;</a></h2>
+<h3 id="table-wechat_user">Table: <code>wechat_user</code><a class="headerlink" href="#table-wechat_user" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Constraints</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>id</code></td>
+<td>int</td>
+<td>PK, auto</td>
+<td></td>
+</tr>
+<tr>
+<td><code>user_id</code></td>
+<td>int</td>
+<td>FK → users.id, ON DELETE CASCADE</td>
+<td>OneToOne association</td>
+</tr>
+<tr>
+<td><code>openid</code></td>
+<td>string(64)</td>
+<td>UNIQUE, NOT NULL</td>
+<td></td>
+</tr>
+<tr>
+<td><code>unionid</code></td>
+<td>string(64)</td>
+<td>nullable</td>
+<td>Cross-application unified ID</td>
+</tr>
+<tr>
+<td><code>session_key</code></td>
+<td>string(64)</td>
+<td>nullable</td>
+<td>Mini Program only</td>
+</tr>
+<tr>
+<td><code>nickname</code></td>
+<td>string(128)</td>
+<td>nullable</td>
+<td>Official Account OAuth only</td>
+</tr>
+<tr>
+<td><code>avatar</code></td>
+<td>string(512)</td>
+<td>nullable</td>
+<td>Official Account OAuth only</td>
+</tr>
+<tr>
+<td><code>sex</code></td>
+<td>int</td>
+<td>nullable</td>
+<td>Official Account OAuth only</td>
+</tr>
+<tr>
+<td><code>province</code></td>
+<td>string(64)</td>
+<td>nullable</td>
+<td>Official Account OAuth only</td>
+</tr>
+<tr>
+<td><code>city</code></td>
+<td>string(64)</td>
+<td>nullable</td>
+<td>Official Account OAuth only</td>
+</tr>
+<tr>
+<td><code>country</code></td>
+<td>string(64)</td>
+<td>nullable</td>
+<td>Official Account OAuth only</td>
+</tr>
+<tr>
+<td><code>app_type</code></td>
+<td>string(20)</td>
+<td>NOT NULL</td>
+<td><code>miniapp</code> / <code>official</code></td>
+</tr>
+<tr>
+<td><code>raw_data</code></td>
+<td>json</td>
+<td>nullable</td>
+<td>Raw WeChat API response</td>
+</tr>
+<tr>
+<td><code>last_login_at</code></td>
+<td>datetime_immutable</td>
+<td>NOT NULL</td>
+<td></td>
+</tr>
+<tr>
+<td><code>created_at</code></td>
+<td>datetime_immutable</td>
+<td>NOT NULL</td>
+<td></td>
+</tr>
+<tr>
+<td><code>updated_at</code></td>
+<td>datetime_immutable</td>
+<td>nullable</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3 id="relationship">Relationship<a class="headerlink" href="#relationship" title="Permanent link">&para;</a></h3>
+<pre class="mermaid"><code>flowchart LR
+    user["User (users.id)&lt;br/&gt;unchanged"]
+    wechatUser["WechatUser (wechat_user.user_id)&lt;br/&gt;new table"]
+    user &lt;--&gt;|"OneToOne"| wechatUser</code></pre>
+<h3 id="mapping">Mapping<a class="headerlink" href="#mapping" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="x">#[ORM\Entity(repositoryClass: WechatUserRepository::class)]</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="x">#[ORM\Table(name: 'wechat_user')]</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="x">#[ORM\UniqueConstraint(name: 'uniq_wechat_user_openid', columns: ['openid'])]</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="x">class WechatUser</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="x">{</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="x">    #[ORM\OneToOne(targetEntity: \App\Identity\Entity\User::class)]</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="x">    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="x">    private User $user;</span>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="x">    // getters / setters ...</span>
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="x">}</span>
+</code></pre></div>
+<hr />
+<h2 id="service-wechatservice">Service: WechatService<a class="headerlink" href="#service-wechatservice" title="Permanent link">&para;</a></h2>
+<p>EasyWeChat Application factory; the upper layers read the <code>%wechat.*%</code> configuration via Container parameters.</p>
+<h3 id="constructor-signature">Constructor Signature<a class="headerlink" href="#constructor-signature" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="x">public function __construct(</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="x">    // Mini Program</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="x">    private readonly string $miniappAppId,</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="x">    private readonly string $miniappSecret,</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="x">    // Official Account</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="x">    private readonly string $officialAppId,</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="x">    private readonly string $officialSecret,</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="x">    private readonly string $officialToken,</span>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="x">    private readonly string $officialAesKey,</span>
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>
+<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span class="x">    // WeChat Pay</span>
+<a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a><span class="x">    private readonly string $payMchId,</span>
+<a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a><span class="x">    private readonly string $paySecretKey,</span>
+<a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a><span class="x">    private readonly string $payPrivateKeyPath,</span>
+<a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a><span class="x">    private readonly string $payCertificatePath,</span>
+<a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a><span class="x">)</span>
+</code></pre></div>
+<h3 id="method-contract">Method Contract<a class="headerlink" href="#method-contract" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="x">/** Mini Program */</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="x">getMiniApp(): \EasyWeChat\MiniApp\Application    // singleton cache</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="x">code2Session(string $jsCode): array              // → {openid, unionid, session_key}</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="x">getPhoneNumber(string $code): array              // → {phoneNumber}</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="x">/** Official Account */</span>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="x">getOfficialAccount(): \EasyWeChat\OfficialAccount\Application  // singleton cache</span>
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="x">getOAuthRedirectUrl(string $callbackUrl): string // Generate snsapi_userinfo redirect URL</span>
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="x">getOAuthUser(string $code): array                // → {openid, nickname, avatar, sex, province, city, country}</span>
+<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a>
+<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="x">/** WeChat Pay */</span>
+<a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a><span class="x">getPayApp(): \EasyWeChat\Pay\Application          // singleton cache</span>
+</code></pre></div>
+<h3 id="apptype-constants">AppType Constants<a class="headerlink" href="#apptype-constants" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="x">public const APP_TYPE_MINIAPP = 'miniapp';</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="x">public const APP_TYPE_OFFICIAL = 'official';</span>
+</code></pre></div>
+<hr />
+<h2 id="service-wechatauthservice">Service: WechatAuthService<a class="headerlink" href="#service-wechatauthservice" title="Permanent link">&para;</a></h2>
+<h3 id="constructor-signature_1">Constructor Signature<a class="headerlink" href="#constructor-signature_1" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="x">public function __construct(</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="x">    private readonly WechatService $wechatService,</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="x">    private readonly WechatUserRepository $wechatUserRepository,</span>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="x">    private readonly UserRepository $userRepository,</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="x">    private readonly EntityManagerInterface $em,</span>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="x">)</span>
+</code></pre></div>
+<h3 id="method-contract_1">Method Contract<a class="headerlink" href="#method-contract_1" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="x">/** Mini Program login — js_code → User */</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="x">authenticateFromMiniApp(string $jsCode): User</span>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="x">/** Official Account login — oauth code → User */</span>
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="x">authenticateFromOfficialAccount(string $code): User</span>
+<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>
+<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="x">/** Bind phone number (logged-in user) */</span>
+<a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="x">bindPhone(User $user, string $code): void</span>
+</code></pre></div>
+<h3 id="login-orchestration-internal">Login Orchestration (internal)<a class="headerlink" href="#login-orchestration-internal" title="Permanent link">&para;</a></h3>
+<pre class="mermaid"><code>flowchart TD
+    S1["WechatService.code2Session(jsCode)&lt;br/&gt;WechatService.getOAuthUser(code)&lt;br/&gt;→ {openid, unionid, session_key, ...}"]
+    S2["WechatUserRepository.findByOpenid(openid)"]
+    S2 --&gt;|"Hit"| H["Update sessionKey/nickname/avatar/lastLoginAt&lt;br/&gt;→ Return the associated User"]
+    S2 --&gt;|"Miss"| M["new User()&lt;br/&gt;email: wx_{openid_suffix}@wechat.local&lt;br/&gt;username: wx_{openid_suffix}&lt;br/&gt;password: random_bytes(32) + bin2hex"]
+    M --&gt; M2["new WechatUser(user, openid, ...)&lt;br/&gt;em-&gt;persist(user), em-&gt;persist(wechatUser)"]
+    S1 --&gt; S2
+    H --&gt; FL["em-&gt;flush()"]
+    M2 --&gt; FL
+    FL --&gt; R["return User"]</code></pre>
+<p><strong>Design decision: random password for new Users</strong> — WeChat users don't need a password; a JWT is issued directly. A random password prevents privilege escalation through password-login vulnerabilities.</p>
+<hr />
+<h2 id="controller-logincontroller">Controller: LoginController<a class="headerlink" href="#controller-logincontroller" title="Permanent link">&para;</a></h2>
+<h3 id="class-declaration">Class Declaration<a class="headerlink" href="#class-declaration" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="x">#[Route('/api/wechat', name: 'wechat-')]</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="x">class LoginController</span>
+</code></pre></div>
+<p>Follows the <code>AuthController</code> pattern: does not extend <code>RestController</code>, manually returns <code>JsonResponse</code>, and has a private <code>error()</code> method.</p>
+<h3 id="constructor-signature_2">Constructor Signature<a class="headerlink" href="#constructor-signature_2" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="x">public function __construct(</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="x">    private readonly WechatAuthService $wechatAuthService,</span>
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="x">    private readonly TokenManager $tokenManager,</span>
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="x">    private readonly WechatService $wechatService,</span>
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="x">)</span>
+</code></pre></div>
+<h3 id="endpoints">Endpoints<a class="headerlink" href="#endpoints" title="Permanent link">&para;</a></h3>
+<h4 id="post-apiwechatminiapplogin-mini-program-login-public_access"><code>POST /api/wechat/miniapp/login</code> — Mini Program login (PUBLIC_ACCESS)<a class="headerlink" href="#post-apiwechatminiapplogin-mini-program-login-public_access" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="x">Request:  { "js_code": "081abc..." }</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="x">Response: { "access_token": "...", "expires_in": 7200, "refresh_token": "..." }</span>
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="x">Errors:</span>
+<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="x">  400 — js_code missing</span>
+<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span class="x">  401 — WeChat API returned error (invalid code)</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="x">#[Route('/miniapp/login', methods: ['POST'])]</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="x">public function miniappLogin(Request $request): JsonResponse</span>
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="x">{</span>
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="x">    $data = json_decode($request-&gt;getContent(), true);</span>
+<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="x">    $jsCode = trim((string) ($data['js_code'] ?? ''));</span>
+<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a><span class="x">    if ($jsCode === '') {</span>
+<a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a><span class="x">        return $this-&gt;error('js_code is required.', 400);</span>
+<a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a><span class="x">    }</span>
+<a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a><span class="x">    try {</span>
+<a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a><span class="x">        $user = $this-&gt;wechatAuthService-&gt;authenticateFromMiniApp($jsCode);</span>
+<a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a><span class="x">    } catch (\RuntimeException $e) {</span>
+<a id="__codelineno-11-12" name="__codelineno-11-12" href="#__codelineno-11-12"></a><span class="x">        return $this-&gt;error($e-&gt;getMessage(), 401);</span>
+<a id="__codelineno-11-13" name="__codelineno-11-13" href="#__codelineno-11-13"></a><span class="x">    }</span>
+<a id="__codelineno-11-14" name="__codelineno-11-14" href="#__codelineno-11-14"></a><span class="x">    return $this-&gt;tokenResponse($user);</span>
+<a id="__codelineno-11-15" name="__codelineno-11-15" href="#__codelineno-11-15"></a><span class="x">}</span>
+</code></pre></div>
+<h4 id="post-apiwechatminiappphone-bind-phone-number-is_authenticated_fully"><code>POST /api/wechat/miniapp/phone</code> — Bind phone number (IS_AUTHENTICATED_FULLY)<a class="headerlink" href="#post-apiwechatminiappphone-bind-phone-number-is_authenticated_fully" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="x">Request:  { "code": "xxx" }</span>
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="x">Response: 204 No Content</span>
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="x">Errors:</span>
+<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="x">  400 — code missing</span>
+<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a><span class="x">  401 — WeChat API error</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="x">#[Route('/miniapp/phone', methods: ['POST'])]</span>
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="x">public function miniappPhone(Request $request): JsonResponse</span>
+<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="x">{</span>
+<a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="x">    $data = json_decode($request-&gt;getContent(), true);</span>
+<a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a><span class="x">    $code = trim((string) ($data['code'] ?? ''));</span>
+<a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a><span class="x">    if ($code === '') {</span>
+<a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a><span class="x">        return $this-&gt;error('code is required.', 400);</span>
+<a id="__codelineno-13-8" name="__codelineno-13-8" href="#__codelineno-13-8"></a><span class="x">    }</span>
+<a id="__codelineno-13-9" name="__codelineno-13-9" href="#__codelineno-13-9"></a><span class="x">    try {</span>
+<a id="__codelineno-13-10" name="__codelineno-13-10" href="#__codelineno-13-10"></a><span class="x">        /** @var User $user */</span>
+<a id="__codelineno-13-11" name="__codelineno-13-11" href="#__codelineno-13-11"></a><span class="x">        $user = $this-&gt;getUser();</span>
+<a id="__codelineno-13-12" name="__codelineno-13-12" href="#__codelineno-13-12"></a><span class="x">        $this-&gt;wechatAuthService-&gt;bindPhone($user, $code);</span>
+<a id="__codelineno-13-13" name="__codelineno-13-13" href="#__codelineno-13-13"></a><span class="x">    } catch (\RuntimeException $e) {</span>
+<a id="__codelineno-13-14" name="__codelineno-13-14" href="#__codelineno-13-14"></a><span class="x">        return $this-&gt;error($e-&gt;getMessage(), 401);</span>
+<a id="__codelineno-13-15" name="__codelineno-13-15" href="#__codelineno-13-15"></a><span class="x">    }</span>
+<a id="__codelineno-13-16" name="__codelineno-13-16" href="#__codelineno-13-16"></a><span class="x">    return new JsonResponse(null, 204);</span>
+<a id="__codelineno-13-17" name="__codelineno-13-17" href="#__codelineno-13-17"></a><span class="x">}</span>
+</code></pre></div>
+<h4 id="get-apiwechatoauthurl-get-official-account-oauth-redirect-url-public_access"><code>GET /api/wechat/oauth/url</code> — Get Official Account OAuth redirect URL (PUBLIC_ACCESS)<a class="headerlink" href="#get-apiwechatoauthurl-get-official-account-oauth-redirect-url-public_access" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="x">Query:    ?redirect_uri=https://example.com/wechat/callback</span>
+<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="x">Response: { "url": "https://open.weixin.qq.com/..." }</span>
+<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>
+<a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="x">Errors:</span>
+<a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a><span class="x">  400 — redirect_uri missing</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="x">#[Route('/oauth/url', methods: ['GET'])]</span>
+<a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="x">public function oauthUrl(Request $request): JsonResponse</span>
+<a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="x">{</span>
+<a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="x">    $redirectUri = trim((string) $request-&gt;query-&gt;get('redirect_uri', ''));</span>
+<a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a><span class="x">    if ($redirectUri === '') {</span>
+<a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a><span class="x">        return $this-&gt;error('redirect_uri is required.', 400);</span>
+<a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a><span class="x">    }</span>
+<a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a><span class="x">    $url = $this-&gt;wechatService-&gt;getOAuthRedirectUrl($redirectUri);</span>
+<a id="__codelineno-15-9" name="__codelineno-15-9" href="#__codelineno-15-9"></a><span class="x">    return new JsonResponse(['url' =&gt; $url]);</span>
+<a id="__codelineno-15-10" name="__codelineno-15-10" href="#__codelineno-15-10"></a><span class="x">}</span>
+</code></pre></div>
+<h4 id="post-apiwechatoauthcallback-official-account-oauth-callback-public_access"><code>POST /api/wechat/oauth/callback</code> — Official Account OAuth callback (PUBLIC_ACCESS)<a class="headerlink" href="#post-apiwechatoauthcallback-official-account-oauth-callback-public_access" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="x">Request:  { "code": "081abc..." }</span>
+<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="x">Response: { "access_token": "...", "expires_in": 7200, "refresh_token": "..." }</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="x">#[Route('/oauth/callback', methods: ['POST'])]</span>
+<a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="x">public function oauthCallback(Request $request): JsonResponse</span>
+<a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a><span class="x">{</span>
+<a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a><span class="x">    $data = json_decode($request-&gt;getContent(), true);</span>
+<a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a><span class="x">    $code = trim((string) ($data['code'] ?? ''));</span>
+<a id="__codelineno-17-6" name="__codelineno-17-6" href="#__codelineno-17-6"></a><span class="x">    if ($code === '') {</span>
+<a id="__codelineno-17-7" name="__codelineno-17-7" href="#__codelineno-17-7"></a><span class="x">        return $this-&gt;error('code is required.', 400);</span>
+<a id="__codelineno-17-8" name="__codelineno-17-8" href="#__codelineno-17-8"></a><span class="x">    }</span>
+<a id="__codelineno-17-9" name="__codelineno-17-9" href="#__codelineno-17-9"></a><span class="x">    try {</span>
+<a id="__codelineno-17-10" name="__codelineno-17-10" href="#__codelineno-17-10"></a><span class="x">        $user = $this-&gt;wechatAuthService-&gt;authenticateFromOfficialAccount($code);</span>
+<a id="__codelineno-17-11" name="__codelineno-17-11" href="#__codelineno-17-11"></a><span class="x">    } catch (\RuntimeException $e) {</span>
+<a id="__codelineno-17-12" name="__codelineno-17-12" href="#__codelineno-17-12"></a><span class="x">        return $this-&gt;error($e-&gt;getMessage(), 401);</span>
+<a id="__codelineno-17-13" name="__codelineno-17-13" href="#__codelineno-17-13"></a><span class="x">    }</span>
+<a id="__codelineno-17-14" name="__codelineno-17-14" href="#__codelineno-17-14"></a><span class="x">    return $this-&gt;tokenResponse($user);</span>
+<a id="__codelineno-17-15" name="__codelineno-17-15" href="#__codelineno-17-15"></a><span class="x">}</span>
+</code></pre></div>
+<h4 id="private-helpers">Private helpers<a class="headerlink" href="#private-helpers" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="x">private function tokenResponse(User $user): JsonResponse</span>
+<a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a><span class="x">{</span>
+<a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a><span class="x">    return new JsonResponse([</span>
+<a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a><span class="x">        'access_token'  =&gt; $this-&gt;tokenManager-&gt;createAccessToken($user),</span>
+<a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a><span class="x">        'expires_in'    =&gt; $this-&gt;tokenManager-&gt;getAccessTtl(),</span>
+<a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a><span class="x">        'refresh_token' =&gt; $this-&gt;tokenManager-&gt;createRefreshToken($user),</span>
+<a id="__codelineno-18-7" name="__codelineno-18-7" href="#__codelineno-18-7"></a><span class="x">    ]);</span>
+<a id="__codelineno-18-8" name="__codelineno-18-8" href="#__codelineno-18-8"></a><span class="x">}</span>
+<a id="__codelineno-18-9" name="__codelineno-18-9" href="#__codelineno-18-9"></a>
+<a id="__codelineno-18-10" name="__codelineno-18-10" href="#__codelineno-18-10"></a><span class="x">private function error(string $message, int $status = 400): JsonResponse</span>
+<a id="__codelineno-18-11" name="__codelineno-18-11" href="#__codelineno-18-11"></a><span class="x">{</span>
+<a id="__codelineno-18-12" name="__codelineno-18-12" href="#__codelineno-18-12"></a><span class="x">    return new JsonResponse(['code' =&gt; $status, 'message' =&gt; $message], $status);</span>
+<a id="__codelineno-18-13" name="__codelineno-18-13" href="#__codelineno-18-13"></a><span class="x">}</span>
+</code></pre></div>
+<hr />
+<h2 id="gateway-wechatpaygateway">Gateway: WechatPayGateway<a class="headerlink" href="#gateway-wechatpaygateway" title="Permanent link">&para;</a></h2>
+<h3 id="contract-implements-paymentgatewayinterface">Contract: implements <code>PaymentGatewayInterface</code><a class="headerlink" href="#contract-implements-paymentgatewayinterface" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="x">getName() → 'wechat'</span>
+</code></pre></div>
+<p>Consistent with the <code>Invoice::PAYMENT_WECHAT = 'wechat'</code> constant.</p>
+<h3 id="constructor-signature_3">Constructor Signature<a class="headerlink" href="#constructor-signature_3" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="x">public function __construct(</span>
+<a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a><span class="x">    private readonly WechatService $wechatService,</span>
+<a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a><span class="x">    #[Autowire('%wechat.pay.notify_url%')]</span>
+<a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a><span class="x">    private readonly string $notifyUrl,</span>
+<a id="__codelineno-20-5" name="__codelineno-20-5" href="#__codelineno-20-5"></a><span class="x">)</span>
+</code></pre></div>
+<h3 id="method-implementations">Method Implementations<a class="headerlink" href="#method-implementations" title="Permanent link">&para;</a></h3>
+<h4 id="payinvoice-invoice-array-options-paymentresult"><code>pay(Invoice $invoice, array $options = []): PaymentResult</code><a class="headerlink" href="#payinvoice-invoice-array-options-paymentresult" title="Permanent link">&para;</a></h4>
+<p>Dispatches based on <code>$invoice-&gt;getTradeType()</code>:</p>
+<table>
+<thead>
+<tr>
+<th>tradeType</th>
+<th>WeChat API</th>
+<th>response</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>'jsapi'</code></td>
+<td><code>POST v3/pay/transactions/jsapi</code></td>
+<td><code>payload</code> = <code>buildMiniAppConfig(prepayId)</code></td>
+</tr>
+<tr>
+<td><code>'native'</code></td>
+<td><code>POST v3/pay/transactions/native</code></td>
+<td><code>payUrl</code> = <code>code_url</code></td>
+</tr>
+</tbody>
+</table>
+<p>JSAPI requires the payer's openid, obtained from <code>$invoice-&gt;getPayer()</code> via <code>WechatUserRepository</code>:
+<div class="highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span class="x">$wechatUser = $this-&gt;wechatUserRepository-&gt;findByUser($invoice-&gt;getPayer());</span>
+<a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a><span class="x">$openid = $wechatUser-&gt;getOpenid();</span>
+</code></pre></div></p>
+<h4 id="notifyrequest-request-paymentnotifyresult"><code>notify(Request $request): PaymentNotifyResult</code><a class="headerlink" href="#notifyrequest-request-paymentnotifyresult" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a><span class="x">1. EasyWeChat $payApp-&gt;getValidator()-&gt;validate($request)</span>
+<a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a><span class="x">2. $server = $app-&gt;getServer()</span>
+<a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a><span class="x">3. Parse callback body → out_trade_no, transaction_id, amount, status</span>
+<a id="__codelineno-22-4" name="__codelineno-22-4" href="#__codelineno-22-4"></a><span class="x">4. Return PaymentNotifyResult(outTradeNo, status, amount, transactionId, paidAt)</span>
+</code></pre></div>
+<h4 id="refundinvoice-invoice-int-amount-string-reason-array-options-paymentrefundresult"><code>refund(Invoice $invoice, int $amount, string $reason, array $options = []): PaymentRefundResult</code><a class="headerlink" href="#refundinvoice-invoice-int-amount-string-reason-array-options-paymentrefundresult" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a><span class="x">1. POST v3/refund/domestic/refunds</span>
+<a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a><span class="x">   { out_trade_no, out_refund_no, amount: { refund, total, currency } }</span>
+<a id="__codelineno-23-3" name="__codelineno-23-3" href="#__codelineno-23-3"></a><span class="x">2. Return PaymentRefundResult(refundId, status)</span>
+</code></pre></div>
+<h4 id="getnotifysuccessresponsepaymentnotifyresult-result-response"><code>getNotifySuccessResponse(PaymentNotifyResult $result): Response</code><a class="headerlink" href="#getnotifysuccessresponsepaymentnotifyresult-result-response" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a><span class="x">return new JsonResponse(['code' =&gt; 'SUCCESS', 'message' =&gt; 'Success']);</span>
+</code></pre></div>
+<h3 id="automatic-registration">Automatic Registration<a class="headerlink" href="#automatic-registration" title="Permanent link">&para;</a></h3>
+<p>Once <code>WechatPayGateway</code> implements <code>PaymentGatewayInterface</code>, no manual configuration is needed. The existing <code>_instanceof</code> rule in <code>config/services.yaml</code>:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a><span class="nt">_instanceof</span><span class="p">:</span>
+<a id="__codelineno-25-2" name="__codelineno-25-2" href="#__codelineno-25-2"></a><span class="w">    </span><span class="nt">App\Payment\Service\PaymentGatewayInterface</span><span class="p">:</span>
+<a id="__codelineno-25-3" name="__codelineno-25-3" href="#__codelineno-25-3"></a><span class="w">        </span><span class="nt">tags</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">'payment.gateway'</span><span class="p p-Indicator">]</span>
+</code></pre></div>
+<p><code>PaymentGatewayRegistry</code> auto-discovers it via <code>#[AutowireIterator('payment.gateway')]</code>.</p>
+<hr />
+<h2 id="api-endpoint-summary">API Endpoint Summary<a class="headerlink" href="#api-endpoint-summary" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Path</th>
+<th>Auth</th>
+<th>Controller Method</th>
+<th>Service Call</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>POST</td>
+<td><code>/api/wechat/miniapp/login</code></td>
+<td>PUBLIC</td>
+<td><code>miniappLogin()</code></td>
+<td><code>WechatAuthService::authenticateFromMiniApp()</code></td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/wechat/miniapp/phone</code></td>
+<td>FULLY_AUTH</td>
+<td><code>miniappPhone()</code></td>
+<td><code>WechatAuthService::bindPhone()</code></td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/wechat/oauth/url</code></td>
+<td>PUBLIC</td>
+<td><code>oauthUrl()</code></td>
+<td><code>WechatService::getOAuthRedirectUrl()</code></td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/wechat/oauth/callback</code></td>
+<td>PUBLIC</td>
+<td><code>oauthCallback()</code></td>
+<td><code>WechatAuthService::authenticateFromOfficialAccount()</code></td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/payment/notify/wechat</code></td>
+<td>PUBLIC</td>
+<td>(existing <code>PaymentNotifyController</code>)</td>
+<td><code>WechatPayGateway::notify()</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="existing-files-to-modify">Existing Files to Modify<a class="headerlink" href="#existing-files-to-modify" title="Permanent link">&para;</a></h2>
+<h3 id="1-composerjson">1. <code>composer.json</code><a class="headerlink" href="#1-composerjson" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a>composer<span class="w"> </span>require<span class="w"> </span>w7corp/easywechat
+</code></pre></div>
+<h3 id="2-configservicesyaml">2. <code>config/services.yaml</code><a class="headerlink" href="#2-configservicesyaml" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a><span class="nt">imports</span><span class="p">:</span>
+<a id="__codelineno-27-2" name="__codelineno-27-2" href="#__codelineno-27-2"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt"> resource</span><span class="p">:</span><span class="w"> </span><span class="s">'../src/Wechat/Resources/config/services_wechat.yaml'</span><span class="p p-Indicator">,</span><span class="nt"> ignore_errors</span><span class="p">:</span><span class="w"> </span><span class="nv">true</span><span class="w"> </span><span class="p p-Indicator">}</span>
+</code></pre></div>
+<h3 id="3-configroutesyaml">3. <code>config/routes.yaml</code><a class="headerlink" href="#3-configroutesyaml" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a><span class="nt">wechat</span><span class="p">:</span>
+<a id="__codelineno-28-2" name="__codelineno-28-2" href="#__codelineno-28-2"></a><span class="w">    </span><span class="nt">prefix</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/api/wechat</span>
+<a id="__codelineno-28-3" name="__codelineno-28-3" href="#__codelineno-28-3"></a><span class="w">    </span><span class="nt">resource</span><span class="p">:</span>
+<a id="__codelineno-28-4" name="__codelineno-28-4" href="#__codelineno-28-4"></a><span class="w">        </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">../src/Wechat/Controller/</span>
+<a id="__codelineno-28-5" name="__codelineno-28-5" href="#__codelineno-28-5"></a><span class="w">        </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">App\Wechat\Controller</span>
+<a id="__codelineno-28-6" name="__codelineno-28-6" href="#__codelineno-28-6"></a><span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">attribute</span>
+</code></pre></div>
+<h3 id="4-configpackagessecurityyaml">4. <code>config/packages/security.yaml</code><a class="headerlink" href="#4-configpackagessecurityyaml" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a><span class="nt">access_control</span><span class="p">:</span>
+<a id="__codelineno-29-2" name="__codelineno-29-2" href="#__codelineno-29-2"></a><span class="w">    </span><span class="c1"># Public WeChat login (before catch-all ^/api)</span>
+<a id="__codelineno-29-3" name="__codelineno-29-3" href="#__codelineno-29-3"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt"> path</span><span class="p">:</span><span class="w"> </span><span class="nv">^/api/wechat/miniapp/login$</span><span class="p p-Indicator">,</span><span class="nt"> roles</span><span class="p">:</span><span class="w"> </span><span class="nv">PUBLIC_ACCESS</span><span class="w"> </span><span class="p p-Indicator">}</span>
+<a id="__codelineno-29-4" name="__codelineno-29-4" href="#__codelineno-29-4"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt"> path</span><span class="p">:</span><span class="w"> </span><span class="nv">^/api/wechat/oauth/url$</span><span class="p p-Indicator">,</span><span class="nt"> roles</span><span class="p">:</span><span class="w"> </span><span class="nv">PUBLIC_ACCESS</span><span class="w"> </span><span class="p p-Indicator">}</span>
+<a id="__codelineno-29-5" name="__codelineno-29-5" href="#__codelineno-29-5"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt"> path</span><span class="p">:</span><span class="w"> </span><span class="nv">^/api/wechat/oauth/callback$</span><span class="p p-Indicator">,</span><span class="nt"> roles</span><span class="p">:</span><span class="w"> </span><span class="nv">PUBLIC_ACCESS</span><span class="w"> </span><span class="p p-Indicator">}</span>
+</code></pre></div>
+<h3 id="5-srcpaymententityinvoicephp">5. <code>src/Payment/Entity/Invoice.php</code><a class="headerlink" href="#5-srcpaymententityinvoicephp" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-30-1" name="__codelineno-30-1" href="#__codelineno-30-1"></a><span class="x">public const PAYMENT_WECHAT = 'wechat';</span>
+</code></pre></div>
+<h3 id="6-env">6. <code>.env</code><a class="headerlink" href="#6-env" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-31-1" name="__codelineno-31-1" href="#__codelineno-31-1"></a><span class="c1"># WeChat Mini Program</span>
+<a id="__codelineno-31-2" name="__codelineno-31-2" href="#__codelineno-31-2"></a><span class="na">WECHAT_MINIAPP_APP_ID</span><span class="o">=</span>
+<a id="__codelineno-31-3" name="__codelineno-31-3" href="#__codelineno-31-3"></a><span class="na">WECHAT_MINIAPP_SECRET</span><span class="o">=</span>
+<a id="__codelineno-31-4" name="__codelineno-31-4" href="#__codelineno-31-4"></a>
+<a id="__codelineno-31-5" name="__codelineno-31-5" href="#__codelineno-31-5"></a><span class="c1"># WeChat Official Account</span>
+<a id="__codelineno-31-6" name="__codelineno-31-6" href="#__codelineno-31-6"></a><span class="na">WECHAT_OFFICIAL_APP_ID</span><span class="o">=</span>
+<a id="__codelineno-31-7" name="__codelineno-31-7" href="#__codelineno-31-7"></a><span class="na">WECHAT_OFFICIAL_SECRET</span><span class="o">=</span>
+<a id="__codelineno-31-8" name="__codelineno-31-8" href="#__codelineno-31-8"></a><span class="na">WECHAT_OFFICIAL_TOKEN</span><span class="o">=</span>
+<a id="__codelineno-31-9" name="__codelineno-31-9" href="#__codelineno-31-9"></a><span class="na">WECHAT_OFFICIAL_AES_KEY</span><span class="o">=</span>
+<a id="__codelineno-31-10" name="__codelineno-31-10" href="#__codelineno-31-10"></a>
+<a id="__codelineno-31-11" name="__codelineno-31-11" href="#__codelineno-31-11"></a><span class="c1"># WeChat Pay</span>
+<a id="__codelineno-31-12" name="__codelineno-31-12" href="#__codelineno-31-12"></a><span class="na">WECHAT_PAY_MCH_ID</span><span class="o">=</span>
+<a id="__codelineno-31-13" name="__codelineno-31-13" href="#__codelineno-31-13"></a><span class="na">WECHAT_PAY_SECRET_KEY</span><span class="o">=</span>
+<a id="__codelineno-31-14" name="__codelineno-31-14" href="#__codelineno-31-14"></a><span class="na">WECHAT_PAY_PRIVATE_KEY</span><span class="o">=</span>
+<a id="__codelineno-31-15" name="__codelineno-31-15" href="#__codelineno-31-15"></a><span class="na">WECHAT_PAY_CERTIFICATE</span><span class="o">=</span>
+<a id="__codelineno-31-16" name="__codelineno-31-16" href="#__codelineno-31-16"></a><span class="na">WECHAT_PAY_NOTIFY_URL</span><span class="o">=</span>
+</code></pre></div>
+<hr />
+<h2 id="services-configuration">Services Configuration<a class="headerlink" href="#services-configuration" title="Permanent link">&para;</a></h2>
+<h3 id="services_wechatyaml"><code>services_wechat.yaml</code><a class="headerlink" href="#services_wechatyaml" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-32-1" name="__codelineno-32-1" href="#__codelineno-32-1"></a><span class="nt">services</span><span class="p">:</span>
+<a id="__codelineno-32-2" name="__codelineno-32-2" href="#__codelineno-32-2"></a><span class="w">    </span><span class="nt">_defaults</span><span class="p">:</span>
+<a id="__codelineno-32-3" name="__codelineno-32-3" href="#__codelineno-32-3"></a><span class="w">        </span><span class="nt">autowire</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<a id="__codelineno-32-4" name="__codelineno-32-4" href="#__codelineno-32-4"></a><span class="w">        </span><span class="nt">autoconfigure</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<a id="__codelineno-32-5" name="__codelineno-32-5" href="#__codelineno-32-5"></a>
+<a id="__codelineno-32-6" name="__codelineno-32-6" href="#__codelineno-32-6"></a><span class="w">    </span><span class="nt">App\Wechat\Service\WechatService</span><span class="p">:</span>
+<a id="__codelineno-32-7" name="__codelineno-32-7" href="#__codelineno-32-7"></a><span class="w">        </span><span class="nt">arguments</span><span class="p">:</span>
+<a id="__codelineno-32-8" name="__codelineno-32-8" href="#__codelineno-32-8"></a><span class="w">            </span><span class="nt">$miniappAppId</span><span class="p">:</span><span class="w"> </span><span class="s">'%env(WECHAT_MINIAPP_APP_ID)%'</span>
+<a id="__codelineno-32-9" name="__codelineno-32-9" href="#__codelineno-32-9"></a><span class="w">            </span><span class="nt">$miniappSecret</span><span class="p">:</span><span class="w"> </span><span class="s">'%env(WECHAT_MINIAPP_SECRET)%'</span>
+<a id="__codelineno-32-10" name="__codelineno-32-10" href="#__codelineno-32-10"></a><span class="w">            </span><span class="nt">$officialAppId</span><span class="p">:</span><span class="w"> </span><span class="s">'%env(WECHAT_OFFICIAL_APP_ID)%'</span>
+<a id="__codelineno-32-11" name="__codelineno-32-11" href="#__codelineno-32-11"></a><span class="w">            </span><span class="nt">$officialSecret</span><span class="p">:</span><span class="w"> </span><span class="s">'%env(WECHAT_OFFICIAL_SECRET)%'</span>
+<a id="__codelineno-32-12" name="__codelineno-32-12" href="#__codelineno-32-12"></a><span class="w">            </span><span class="nt">$officialToken</span><span class="p">:</span><span class="w"> </span><span class="s">'%env(WECHAT_OFFICIAL_TOKEN)%'</span>
+<a id="__codelineno-32-13" name="__codelineno-32-13" href="#__codelineno-32-13"></a><span class="w">            </span><span class="nt">$officialAesKey</span><span class="p">:</span><span class="w"> </span><span class="s">'%env(WECHAT_OFFICIAL_AES_KEY)%'</span>
+<a id="__codelineno-32-14" name="__codelineno-32-14" href="#__codelineno-32-14"></a><span class="w">            </span><span class="nt">$payMchId</span><span class="p">:</span><span class="w"> </span><span class="s">'%env(WECHAT_PAY_MCH_ID)%'</span>
+<a id="__codelineno-32-15" name="__codelineno-32-15" href="#__codelineno-32-15"></a><span class="w">            </span><span class="nt">$paySecretKey</span><span class="p">:</span><span class="w"> </span><span class="s">'%env(WECHAT_PAY_SECRET_KEY)%'</span>
+<a id="__codelineno-32-16" name="__codelineno-32-16" href="#__codelineno-32-16"></a><span class="w">            </span><span class="nt">$payPrivateKeyPath</span><span class="p">:</span><span class="w"> </span><span class="s">'%env(WECHAT_PAY_PRIVATE_KEY)%'</span>
+<a id="__codelineno-32-17" name="__codelineno-32-17" href="#__codelineno-32-17"></a><span class="w">            </span><span class="nt">$payCertificatePath</span><span class="p">:</span><span class="w"> </span><span class="s">'%env(WECHAT_PAY_CERTIFICATE)%'</span>
+<a id="__codelineno-32-18" name="__codelineno-32-18" href="#__codelineno-32-18"></a>
+<a id="__codelineno-32-19" name="__codelineno-32-19" href="#__codelineno-32-19"></a><span class="w">    </span><span class="nt">App\Wechat\Service\Payment\WechatPayGateway</span><span class="p">:</span>
+<a id="__codelineno-32-20" name="__codelineno-32-20" href="#__codelineno-32-20"></a><span class="w">        </span><span class="nt">arguments</span><span class="p">:</span>
+<a id="__codelineno-32-21" name="__codelineno-32-21" href="#__codelineno-32-21"></a><span class="w">            </span><span class="nt">$notifyUrl</span><span class="p">:</span><span class="w"> </span><span class="s">'%env(WECHAT_PAY_NOTIFY_URL)%'</span>
+</code></pre></div>
+<h3 id="gateway-auto-registration-no-extra-configuration">Gateway Auto-Registration (No Extra Configuration)<a class="headerlink" href="#gateway-auto-registration-no-extra-configuration" title="Permanent link">&para;</a></h3>
+<p>Handled automatically by the <code>_instanceof</code> rule in <code>config/services.yaml</code>:
+<div class="highlight"><pre><span></span><code><a id="__codelineno-33-1" name="__codelineno-33-1" href="#__codelineno-33-1"></a><span class="nt">_instanceof</span><span class="p">:</span>
+<a id="__codelineno-33-2" name="__codelineno-33-2" href="#__codelineno-33-2"></a><span class="w">    </span><span class="nt">App\Payment\Service\PaymentGatewayInterface</span><span class="p">:</span>
+<a id="__codelineno-33-3" name="__codelineno-33-3" href="#__codelineno-33-3"></a><span class="w">        </span><span class="nt">tags</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">'payment.gateway'</span><span class="p p-Indicator">]</span>
+</code></pre></div></p>
+<p><code>PaymentGatewayRegistry</code> auto-discovers all implementations via <code>#[AutowireIterator('payment.gateway')]</code>.</p>
+<hr />
+<h2 id="repository-wechatuserrepository">Repository: WechatUserRepository<a class="headerlink" href="#repository-wechatuserrepository" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-34-1" name="__codelineno-34-1" href="#__codelineno-34-1"></a><span class="x">class WechatUserRepository extends ServiceEntityRepository</span>
+<a id="__codelineno-34-2" name="__codelineno-34-2" href="#__codelineno-34-2"></a><span class="x">{</span>
+<a id="__codelineno-34-3" name="__codelineno-34-3" href="#__codelineno-34-3"></a><span class="x">    public function __construct(ManagerRegistry $registry)</span>
+<a id="__codelineno-34-4" name="__codelineno-34-4" href="#__codelineno-34-4"></a><span class="x">    {</span>
+<a id="__codelineno-34-5" name="__codelineno-34-5" href="#__codelineno-34-5"></a><span class="x">        parent::__construct($registry, WechatUser::class);</span>
+<a id="__codelineno-34-6" name="__codelineno-34-6" href="#__codelineno-34-6"></a><span class="x">    }</span>
+<a id="__codelineno-34-7" name="__codelineno-34-7" href="#__codelineno-34-7"></a>
+<a id="__codelineno-34-8" name="__codelineno-34-8" href="#__codelineno-34-8"></a><span class="x">    public function findByOpenid(string $openid): ?WechatUser</span>
+<a id="__codelineno-34-9" name="__codelineno-34-9" href="#__codelineno-34-9"></a><span class="x">    {</span>
+<a id="__codelineno-34-10" name="__codelineno-34-10" href="#__codelineno-34-10"></a><span class="x">        return $this-&gt;findOneBy(['openid' =&gt; $openid]);</span>
+<a id="__codelineno-34-11" name="__codelineno-34-11" href="#__codelineno-34-11"></a><span class="x">    }</span>
+<a id="__codelineno-34-12" name="__codelineno-34-12" href="#__codelineno-34-12"></a>
+<a id="__codelineno-34-13" name="__codelineno-34-13" href="#__codelineno-34-13"></a><span class="x">    public function findByUser(User $user): ?WechatUser</span>
+<a id="__codelineno-34-14" name="__codelineno-34-14" href="#__codelineno-34-14"></a><span class="x">    {</span>
+<a id="__codelineno-34-15" name="__codelineno-34-15" href="#__codelineno-34-15"></a><span class="x">        return $this-&gt;findOneBy(['user' =&gt; $user]);</span>
+<a id="__codelineno-34-16" name="__codelineno-34-16" href="#__codelineno-34-16"></a><span class="x">    }</span>
+<a id="__codelineno-34-17" name="__codelineno-34-17" href="#__codelineno-34-17"></a><span class="x">}</span>
+</code></pre></div>
+<hr />
+<h2 id="openapi-tags-documentation">OpenAPI Tags &amp; Documentation<a class="headerlink" href="#openapi-tags-documentation" title="Permanent link">&para;</a></h2>
+<p>Following the AuthController pattern, each <code>LoginController</code> endpoint is annotated with <code>#[OA\*]</code> attributes, using the tag <code>Wechat</code>.</p>
+<h3 id="nelmioapidoc-configuration-update">NelmioApiDoc Configuration Update<a class="headerlink" href="#nelmioapidoc-configuration-update" title="Permanent link">&para;</a></h3>
+<p>Add to <code>config/packages/nelmio_api_doc.yaml</code>:
+<div class="highlight"><pre><span></span><code><a id="__codelineno-35-1" name="__codelineno-35-1" href="#__codelineno-35-1"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt"> name</span><span class="p">:</span><span class="w"> </span><span class="nv">Wechat</span><span class="p p-Indicator">,</span><span class="nt"> description</span><span class="p">:</span><span class="w"> </span><span class="s">'WeChat</span><span class="nv"> </span><span class="s">login,</span><span class="nv"> </span><span class="s">OAuth,</span><span class="nv"> </span><span class="s">and</span><span class="nv"> </span><span class="s">payment'</span><span class="w"> </span><span class="p p-Indicator">}</span>
+</code></pre></div></p>
+<p>Add tag matching to <code>OpenApiEnricherListener</code>:
+<div class="highlight"><pre><span></span><code><a id="__codelineno-36-1" name="__codelineno-36-1" href="#__codelineno-36-1"></a><span class="x">if (str_starts_with($opId, 'wechat-')) return 'Wechat';</span>
+</code></pre></div></p>
+<hr />
+<h2 id="login-flow-diagrams">Login Flow Diagrams<a class="headerlink" href="#login-flow-diagrams" title="Permanent link">&para;</a></h2>
+<h3 id="mini-program-login">Mini Program Login<a class="headerlink" href="#mini-program-login" title="Permanent link">&para;</a></h3>
+<pre class="mermaid"><code>sequenceDiagram
+    participant MP as Mini Program
+    participant BE as Backend
+    participant API as WeChat API
+    MP-&gt;&gt;BE: wx.login() → js_code → POST /miniapp/login {js_code}
+    BE-&gt;&gt;API: WechatService.code2Session()
+    API--&gt;&gt;BE: {openid, unionid, session_key}
+    Note over BE: WechatAuthService.authenticateFromMiniApp()&lt;br/&gt;findOrCreateUser:&lt;br/&gt;- findByOpenid: hit → update / miss → create&lt;br/&gt;- em-&gt;flush()
+    BE-&gt;&gt;BE: TokenManager.createTokens()
+    BE--&gt;&gt;MP: {access_token, refresh_token, expires_in}</code></pre>
+<h3 id="official-account-oauth">Official Account OAuth<a class="headerlink" href="#official-account-oauth" title="Permanent link">&para;</a></h3>
+<pre class="mermaid"><code>sequenceDiagram
+    participant B as Browser
+    participant BE as Backend
+    participant W as WeChat
+    B-&gt;&gt;BE: GET /oauth/url?redirect_uri=...
+    BE--&gt;&gt;B: {url: "https://open.weixin.qq.com/..."}
+    B-&gt;&gt;W: Redirect to open.weixin... (user authorization)
+    W--&gt;&gt;B: Redirects to redirect_uri?code=xxx
+    B-&gt;&gt;BE: POST /oauth/callback {code}
+    BE-&gt;&gt;W: WechatService.getOAuthUser(code)
+    W--&gt;&gt;BE: {openid, nickname, ...}
+    Note over BE: WechatAuthService.authenticateFromOfficialAccount()
+    BE--&gt;&gt;B: {access_token, ...}</code></pre>
+<hr />
+<h2 id="implementation-order">Implementation Order<a class="headerlink" href="#implementation-order" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Step</th>
+<th>Files</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>WechatUser.php</code> + <code>WechatUserRepository.php</code></td>
+<td>Entity + Repository</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>WechatService.php</code></td>
+<td>EasyWeChat three-in-one factory</td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>WechatAuthService.php</code></td>
+<td>Login orchestration</td>
+</tr>
+<tr>
+<td>4</td>
+<td><code>LoginController.php</code></td>
+<td>4 endpoints</td>
+</tr>
+<tr>
+<td>5</td>
+<td><code>services_wechat.yaml</code></td>
+<td>DI configuration</td>
+</tr>
+<tr>
+<td>6</td>
+<td><code>WechatPayGateway.php</code></td>
+<td>Payment gateway</td>
+</tr>
+<tr>
+<td>7</td>
+<td>config edits</td>
+<td>composer, services, routes, security, Invoice, .env</td>
+</tr>
+<tr>
+<td>8</td>
+<td>tests</td>
+<td>Full coverage of Entity, Service, Controller, Gateway</td>
+</tr>
+<tr>
+<td>9</td>
+<td>API docs</td>
+<td>Update <code>#[OA\*]</code> + Nelmio + Enricher</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="test-coverage-targets">Test Coverage Targets<a class="headerlink" href="#test-coverage-targets" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Class</th>
+<th>Coverage Target</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>WechatUser</code></td>
+<td>100% — basic getter/setter assertions</td>
+</tr>
+<tr>
+<td><code>WechatUserRepository</code></td>
+<td>100% — findByOpenid / findByUser</td>
+</tr>
+<tr>
+<td><code>WechatService</code></td>
+<td>100% — the three Application factories, code2Session, getOAuthUser, getPhoneNumber</td>
+</tr>
+<tr>
+<td><code>WechatAuthService</code></td>
+<td>100% — both login flows, bindPhone, new/reused User logic</td>
+</tr>
+<tr>
+<td><code>LoginController</code></td>
+<td>100% — 4 endpoints, error handling</td>
+</tr>
+<tr>
+<td><code>WechatPayGateway</code></td>
+<td>100% — pay (jsapi/native), notify, refund, signature verification</td>
+</tr>
+</tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+      
+        <script src="../../../javascripts/mermaid-init.js"></script>
+      
+    
+  </body>
+</html>

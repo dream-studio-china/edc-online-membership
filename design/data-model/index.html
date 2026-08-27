@@ -1,0 +1,4016 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Symfony 8.1 API backend skeleton with modular architecture">
+      
+      
+      
+        <link rel="canonical" href="https://immane.github.io/crud-skeleton/design/data-model/">
+      
+      
+        <link rel="prev" href="../api-design/">
+      
+      
+        <link rel="next" href="../module-design/">
+      
+      
+        
+          <link rel="alternate" href="/crud-skeleton/" hreflang="en">
+        
+          <link rel="alternate" href="/crud-skeleton/zh/" hreflang="zh">
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Data Model - CRUD Skeleton</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#data-model-design-contract" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="CRUD Skeleton" class="md-header__button md-logo" aria-label="CRUD Skeleton" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            CRUD Skeleton
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Data Model
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Select language">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="/crud-skeleton/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="/crud-skeleton/zh/" hreflang="zh" class="md-select__link">
+              中文
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/immane/crud-skeleton" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="CRUD Skeleton" class="md-nav__button md-logo" aria-label="CRUD Skeleton" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    CRUD Skeleton
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/immane/crud-skeleton" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Development Manual
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Development Manual
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manual/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Manual Index
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manual/getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manual/architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manual/project-structure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project Structure
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manual/core-framework/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core Framework
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manual/core-usage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core Usage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manual/query-system/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Query System
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manual/development-workflow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Development Workflow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manual/testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manual/api-contracts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Contracts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manual/development-contracts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Development Contracts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manual/integration-events/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Integration Events
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manual/database-and-migrations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Database & Migrations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manual/deployment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manual/extracting-a-service/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Extracting a Service
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manual/i18n/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Internationalization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Design Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Design Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../system-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    System Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api-design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Model
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-entity-base-contract" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Entity Base Contract
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-naming-conventions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Naming Conventions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Naming Conventions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-table-names" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 Table Names
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-column-names" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 Column Names
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23-property-naming-in-php" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3 Property Naming in PHP
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-field-type-mapping" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Field Type Mapping
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Field Type Mapping">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-scalar-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 Scalar Types
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-datetime-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 DateTime Types
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33-monolithic-amounts-cents-contract" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3 Monolithic Amounts (Cents Contract)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-relationship-contract" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Relationship Contract
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Relationship Contract">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-attribute-requirements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 Attribute Requirements
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-relationship-cardinality" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2 Relationship Cardinality
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43-self-referencing-relationships" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.3 Self-Referencing Relationships
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-index-constraint-contract" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Index &amp; Constraint Contract
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Index &amp; Constraint Contract">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51-mandatory" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1 Mandatory
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52-optional-performance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.2 Optional (Performance)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-lifecycle-contract" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Lifecycle Contract
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. Lifecycle Contract">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#61-required-lifecycle-callbacks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.1 Required Lifecycle Callbacks
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#62-optional-lifecycle-callbacks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.2 Optional Lifecycle Callbacks
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-special-patterns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Special Patterns
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Special Patterns">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#71-uuid-for-external-and-cross-boundary-identity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.1 UUID for External And Cross-Boundary Identity
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#711-uuid-version-policy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.1.1 UUID Version Policy
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#72-soft-delete" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.2 Soft Delete
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#73-value-snapshot" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.3 Value Snapshot
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#74-optimistic-locking" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.4 Optimistic Locking
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#75-polymorphic-association" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.5 Polymorphic Association
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#76-json-metadata-extra-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.6 JSON Metadata / Extra Data
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-repository-contract" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Repository Contract
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. Repository Contract">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#81-custom-query-methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.1 Custom Query Methods
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#82-phpdoc-for-ide-support" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.2 PHPDoc for IDE Support
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-validation-contract" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Validation Contract
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-anti-patterns-forbidden" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Anti-Patterns (Forbidden)
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../module-design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Module Design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../controller-design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Controller Design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api-documentation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Documentation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../system-contracts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    System Contracts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../naming-convention/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Naming Convention
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bundles
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Bundles
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bundles/core/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core Framework
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bundles/common/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Common (CMS)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bundles/trade/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Trade (E-Commerce)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bundles/store/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Store (Multi-Store Operations)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bundles/inventory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Inventory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bundles/payment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Payment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bundles/wallet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Wallet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bundles/settlement/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Settlement (Allocation + Finality)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bundles/exchange/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Exchange (Pool-backed Economy)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bundles/identity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Identity (Auth)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bundles/wechat/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Wechat (Login + Pay)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Runbooks
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Runbooks
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/common/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Common
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/core/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/exchange/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Exchange
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/identity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Identity
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/inventory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Inventory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/payment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Payment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/promotion/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Promotion
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/settlement/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Settlement
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/storage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Storage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/store/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Store
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/trade/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Trade
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/wallet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Wallet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/wechat/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    WeChat
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Research
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Research
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../research/easywechat-6.x-usage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    EasyWeChat 6.x Usage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../research/huifu-payment-api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Huifu Payment API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Issues
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Issues
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../issues/architecture-review-2026-06-26/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture Review 2026-06-26
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Testing
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../testing/crud-skeleton-production/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Production Validation Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../testing/crud-skeleton-production/TEST_STRATEGY/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Test Strategy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../testing/crud-skeleton-production/SYSTEM_WALKTHROUGH/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    System Walkthrough And Test Seams
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../testing/crud-skeleton-production/TEST_MATRIX/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Test Matrix
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../testing/crud-skeleton-production/BUSINESS_INVARIANTS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Business Invariants
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../testing/crud-skeleton-production/ARCHITECTURE_TEST_MAPPING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture Test Mapping
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../testing/crud-skeleton-production/FAILURE_MODES/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Failure Modes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../testing/crud-skeleton-production/PRODUCTION_VALIDATION/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Release Validation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../testing/crud-skeleton-production/AI_DEVELOPMENT_PROCESS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI Development Process
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ai/context/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI Context
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../openapi/endpoints.yaml" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-entity-base-contract" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Entity Base Contract
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-naming-conventions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Naming Conventions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Naming Conventions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-table-names" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 Table Names
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-column-names" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 Column Names
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23-property-naming-in-php" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3 Property Naming in PHP
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-field-type-mapping" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Field Type Mapping
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Field Type Mapping">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-scalar-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 Scalar Types
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-datetime-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 DateTime Types
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33-monolithic-amounts-cents-contract" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3 Monolithic Amounts (Cents Contract)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-relationship-contract" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Relationship Contract
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Relationship Contract">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-attribute-requirements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 Attribute Requirements
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-relationship-cardinality" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2 Relationship Cardinality
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43-self-referencing-relationships" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.3 Self-Referencing Relationships
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-index-constraint-contract" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Index &amp; Constraint Contract
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Index &amp; Constraint Contract">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51-mandatory" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1 Mandatory
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52-optional-performance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.2 Optional (Performance)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-lifecycle-contract" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Lifecycle Contract
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. Lifecycle Contract">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#61-required-lifecycle-callbacks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.1 Required Lifecycle Callbacks
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#62-optional-lifecycle-callbacks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.2 Optional Lifecycle Callbacks
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-special-patterns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Special Patterns
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Special Patterns">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#71-uuid-for-external-and-cross-boundary-identity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.1 UUID for External And Cross-Boundary Identity
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#711-uuid-version-policy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.1.1 UUID Version Policy
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#72-soft-delete" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.2 Soft Delete
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#73-value-snapshot" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.3 Value Snapshot
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#74-optimistic-locking" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.4 Optimistic Locking
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#75-polymorphic-association" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.5 Polymorphic Association
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#76-json-metadata-extra-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.6 JSON Metadata / Extra Data
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-repository-contract" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Repository Contract
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. Repository Contract">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#81-custom-query-methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.1 Custom Query Methods
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#82-phpdoc-for-ide-support" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.2 PHPDoc for IDE Support
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-validation-contract" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Validation Contract
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-anti-patterns-forbidden" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Anti-Patterns (Forbidden)
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="data-model-design-contract">Data Model Design Contract<a class="headerlink" href="#data-model-design-contract" title="Permanent link">&para;</a></h1>
+<blockquote>
+<p>Abstract entity conventions, attribute requirements, relationship patterns, lifecycle hooks, and field rules.
+<strong>Every Doctrine entity MUST conform to this contract.</strong></p>
+</blockquote>
+<hr />
+<h2 id="1-entity-base-contract">1. Entity Base Contract<a class="headerlink" href="#1-entity-base-contract" title="Permanent link">&para;</a></h2>
+<p>Every entity MUST have:</p>
+<table>
+<thead>
+<tr>
+<th>Element</th>
+<th>Requirement</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Namespace</td>
+<td><code>App\{Module}\Entity</code></td>
+</tr>
+<tr>
+<td>PHP 8 attributes</td>
+<td><code>#[ORM\Entity]</code>, <code>#[ORM\Table]</code>, <code>#[ORM\HasLifecycleCallbacks]</code></td>
+</tr>
+<tr>
+<td>Primary key</td>
+<td><code>$id</code> (int, auto-increment)</td>
+</tr>
+<tr>
+<td>Created timestamp</td>
+<td><code>$createdAt</code> (DateTimeImmutable)</td>
+</tr>
+<tr>
+<td>Updated timestamp</td>
+<td><code>$updatedAt</code> (DateTimeImmutable)</td>
+</tr>
+<tr>
+<td><code>__toString()</code> method</td>
+<td>Returns human-readable identifier</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="x">#[ORM\Entity(repositoryClass: XxxRepository::class)]</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="x">#[ORM\Table(name: 'module_table_name')]</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="x">#[ORM\HasLifecycleCallbacks]</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="x">class Xxx</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="x">{</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="x">    #[ORM\Id]</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="x">    #[ORM\GeneratedValue]</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="x">    #[ORM\Column]</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="x">    private ?int $id = null;</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="x">    #[ORM\Column]</span>
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="x">    private ?\DateTimeImmutable $createdAt = null;</span>
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="x">    #[ORM\Column]</span>
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="x">    private ?\DateTimeImmutable $updatedAt = null;</span>
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a><span class="x">    public function __toString(): string { return (string)$this-&gt;id; }</span>
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a><span class="x">    #[ORM\PrePersist]</span>
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a><span class="x">    public function touch(): void</span>
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a><span class="x">    {</span>
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a><span class="x">        $this-&gt;createdAt = new \DateTimeImmutable();</span>
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a><span class="x">        $this-&gt;updatedAt = new \DateTimeImmutable();</span>
+<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a><span class="x">    }</span>
+<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a><span class="x">}</span>
+</code></pre></div>
+<hr />
+<h2 id="2-naming-conventions">2. Naming Conventions<a class="headerlink" href="#2-naming-conventions" title="Permanent link">&para;</a></h2>
+<h3 id="21-table-names">2.1 Table Names<a class="headerlink" href="#21-table-names" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Rule</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Lowercase, underscore-separated</td>
+<td><code>common_category</code></td>
+</tr>
+<tr>
+<td>Module prefix</td>
+<td><code>common_*</code>, <code>trade_*</code>, <code>payment_*</code>, <code>wallet_*</code>, <code>identity_*</code></td>
+</tr>
+<tr>
+<td>Singular noun</td>
+<td><code>wallet</code> not <code>wallets</code></td>
+</tr>
+<tr>
+<td>Join tables</td>
+<td><code>{left}_{right}</code> (e.g., <code>common_content_tag</code>)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="22-column-names">2.2 Column Names<a class="headerlink" href="#22-column-names" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Rule</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>camelCase in PHP</td>
+<td><code>sortOrder</code>, <code>createdAt</code></td>
+</tr>
+<tr>
+<td>snake_case in DB</td>
+<td><code>sort_order</code>, <code>created_at</code></td>
+</tr>
+<tr>
+<td>Foreign key columns</td>
+<td><code>{entity}_id</code> (e.g., <code>category_id</code>)</td>
+</tr>
+<tr>
+<td>Boolean columns</td>
+<td>Verb or adjective (e.g., <code>is_deleted</code>, <code>enabled</code>)</td>
+</tr>
+<tr>
+<td>Status columns</td>
+<td>Noun (e.g., <code>status</code>)</td>
+</tr>
+<tr>
+<td>Timestamp columns</td>
+<td><code>*_at</code> suffix (e.g., <code>expires_at</code>, <code>completed_at</code>)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="23-property-naming-in-php">2.3 Property Naming in PHP<a class="headerlink" href="#23-property-naming-in-php" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Rule</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>camelCase</td>
+<td><code>$createdAt</code>, <code>$sortOrder</code></td>
+</tr>
+<tr>
+<td>Boolean getters</td>
+<td><code>isEnabled()</code>, <code>isDeleted()</code></td>
+</tr>
+<tr>
+<td>Collection properties</td>
+<td>Plural noun (e.g., <code>$tags</code>, <code>$items</code>)</td>
+</tr>
+<tr>
+<td>Relation properties</td>
+<td>Singular for M:1/O:O (<code>$category</code>), plural for 1:M/M:M (<code>$items</code>)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="3-field-type-mapping">3. Field Type Mapping<a class="headerlink" href="#3-field-type-mapping" title="Permanent link">&para;</a></h2>
+<h3 id="31-scalar-types">3.1 Scalar Types<a class="headerlink" href="#31-scalar-types" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>PHP Type</th>
+<th>Doctrine Type</th>
+<th>DB Type</th>
+<th>Use Case</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>?int</code></td>
+<td><code>integer</code></td>
+<td>INT</td>
+<td>IDs, counters, sort order</td>
+</tr>
+<tr>
+<td><code>int</code></td>
+<td><code>bigint</code></td>
+<td>BIGINT</td>
+<td>Monetary amounts (cents)</td>
+</tr>
+<tr>
+<td><code>?string</code></td>
+<td><code>string</code></td>
+<td>VARCHAR(n)</td>
+<td>Names, titles, emails</td>
+</tr>
+<tr>
+<td><code>string</code></td>
+<td><code>text</code></td>
+<td>TEXT</td>
+<td>Body content, descriptions</td>
+</tr>
+<tr>
+<td><code>bool</code></td>
+<td><code>boolean</code></td>
+<td>TINYINT(1)</td>
+<td>Flags, status toggles</td>
+</tr>
+<tr>
+<td><code>?float</code></td>
+<td><code>decimal</code></td>
+<td>DECIMAL(p,s)</td>
+<td>If decimal money needed</td>
+</tr>
+<tr>
+<td><code>array</code></td>
+<td><code>json</code></td>
+<td>JSON</td>
+<td>Metadata, config, snapshots</td>
+</tr>
+</tbody>
+</table>
+<h3 id="32-datetime-types">3.2 DateTime Types<a class="headerlink" href="#32-datetime-types" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>PHP Type</th>
+<th>Doctrine Type</th>
+<th>DB Type</th>
+<th>Use Case</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>?\DateTimeImmutable</code></td>
+<td><code>datetime_immutable</code></td>
+<td>DATETIME</td>
+<td>All timestamps</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Rule</strong>: Always use <code>DateTimeImmutable</code>, never <code>DateTime</code>.</p>
+<h3 id="33-monolithic-amounts-cents-contract">3.3 Monolithic Amounts (Cents Contract)<a class="headerlink" href="#33-monolithic-amounts-cents-contract" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Rule</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Storage type</td>
+<td><code>bigint</code> (integer cents)</td>
+</tr>
+<tr>
+<td>PHP property type</td>
+<td><code>int</code></td>
+</tr>
+<tr>
+<td>External API</td>
+<td>Decimal (e.g., <code>20.00</code>)</td>
+</tr>
+<tr>
+<td>Conversion on write</td>
+<td><code>* 100</code></td>
+</tr>
+<tr>
+<td>Conversion on read</td>
+<td><code>/ 100</code></td>
+</tr>
+<tr>
+<td>Conversion mechanism</td>
+<td><code>@transform</code> expression or service method</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="4-relationship-contract">4. Relationship Contract<a class="headerlink" href="#4-relationship-contract" title="Permanent link">&para;</a></h2>
+<h3 id="41-attribute-requirements">4.1 Attribute Requirements<a class="headerlink" href="#41-attribute-requirements" title="Permanent link">&para;</a></h3>
+<p>Every relationship MUST declare:
+- <code>targetEntity</code> (FQCN)
+- <code>inversedBy</code> / <code>mappedBy</code> (bidirectional)
+- <code>cascade</code> strategy (explicit)
+- <code>fetch</code> strategy (explicit, default LAZY acceptable)</p>
+<h3 id="42-relationship-cardinality">4.2 Relationship Cardinality<a class="headerlink" href="#42-relationship-cardinality" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>PHP Attribute</th>
+<th>Owning Side</th>
+<th>DB Column</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ManyToOne</td>
+<td><code>#[ORM\ManyToOne]</code></td>
+<td>Current entity (FK here)</td>
+<td>FK column</td>
+</tr>
+<tr>
+<td>OneToMany</td>
+<td><code>#[ORM\OneToMany]</code></td>
+<td>Opposite side</td>
+<td>No column (mappedBy)</td>
+</tr>
+<tr>
+<td>ManyToMany</td>
+<td><code>#[ORM\ManyToMany]</code></td>
+<td>Either side</td>
+<td>Join table</td>
+</tr>
+<tr>
+<td>OneToOne</td>
+<td><code>#[ORM\OneToOne]</code></td>
+<td>Current entity (FK here)</td>
+<td>FK + UNIQUE</td>
+</tr>
+</tbody>
+</table>
+<h3 id="43-self-referencing-relationships">4.3 Self-Referencing Relationships<a class="headerlink" href="#43-self-referencing-relationships" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Pattern</th>
+<th>Example</th>
+<th>Attributes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Tree/Parent</td>
+<td>Category -&gt; parent/children</td>
+<td><code>ManyToOne(targetEntity: self::class)</code>, <code>OneToMany(mappedBy: 'parent')</code></td>
+</tr>
+<tr>
+<td>Adjacency</td>
+<td>Comment -&gt; parent/replies</td>
+<td><code>ManyToOne(targetEntity: self::class)</code>, <code>OneToMany(mappedBy: 'parent')</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="5-index-constraint-contract">5. Index &amp; Constraint Contract<a class="headerlink" href="#5-index-constraint-contract" title="Permanent link">&para;</a></h2>
+<h3 id="51-mandatory">5.1 Mandatory<a class="headerlink" href="#51-mandatory" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Element</th>
+<th>Requirement</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Primary key</td>
+<td>Single auto-increment integer <code>id</code></td>
+</tr>
+<tr>
+<td>Foreign keys</td>
+<td>All FK columns MUST have explicit index</td>
+</tr>
+<tr>
+<td>Unique constraints</td>
+<td>On natural keys (slug, email, phone, username, referenceId)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="52-optional-performance">5.2 Optional (Performance)<a class="headerlink" href="#52-optional-performance" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Pattern</th>
+<th>When to Add</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Composite index</td>
+<td>Frequent queries filtering on <code>(entity_id, status)</code></td>
+</tr>
+<tr>
+<td>Fulltext index</td>
+<td>Content search on <code>body</code>/<code>title</code></td>
+</tr>
+<tr>
+<td>Index on status</td>
+<td>Frequent <code>WHERE status = ?</code> queries</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="6-lifecycle-contract">6. Lifecycle Contract<a class="headerlink" href="#6-lifecycle-contract" title="Permanent link">&para;</a></h2>
+<h3 id="61-required-lifecycle-callbacks">6.1 Required Lifecycle Callbacks<a class="headerlink" href="#61-required-lifecycle-callbacks" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Callback</th>
+<th>Method</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>#[ORM\PrePersist]</code></td>
+<td><code>touch()</code></td>
+<td>Set <code>createdAt</code> and <code>updatedAt</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="62-optional-lifecycle-callbacks">6.2 Optional Lifecycle Callbacks<a class="headerlink" href="#62-optional-lifecycle-callbacks" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Callback</th>
+<th>Use Case</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>#[ORM\PreUpdate]</code></td>
+<td>Update <code>updatedAt</code> on modification</td>
+</tr>
+<tr>
+<td><code>#[ORM\PrePersist]</code></td>
+<td>Calculate derived fields (e.g., <code>price = unitPrice * quantity</code>)</td>
+</tr>
+<tr>
+<td><code>#[ORM\PrePersist]</code></td>
+<td>Save entity snapshots (e.g., <code>productSnapshot</code>)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="7-special-patterns">7. Special Patterns<a class="headerlink" href="#7-special-patterns" title="Permanent link">&para;</a></h2>
+<h3 id="71-uuid-for-external-and-cross-boundary-identity">7.1 UUID for External And Cross-Boundary Identity<a class="headerlink" href="#71-uuid-for-external-and-cross-boundary-identity" title="Permanent link">&para;</a></h3>
+<p>Entities retain an integer auto-increment <code>id</code> for local Doctrine relations, joins, and
+storage efficiency. A UUID is a separate, stable identity for an entity that leaves its
+bounded context.</p>
+<p>An entity MUST have a UUID when it is any of the following:</p>
+<ul>
+<li>Addressable through a public API, URL, webhook, or third-party integration.</li>
+<li>Included in a cross-module or cross-service event payload.</li>
+<li>A domain aggregate that may later move to its own database/service.</li>
+<li>Referenced by an idempotency, audit, payment, inventory, or external correlation flow.</li>
+</ul>
+<p>Purely internal implementation records do not need a separate entity UUID. Examples
+include a private join table or an Inbox record already uniquely identified by its
+incoming <code>eventId</code>. An independently managed relation exposed through an API should
+still receive a UUID.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>Local database key / Doctrine relation: integer id
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>Public API path and response identity: uuid
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>Cross-module/service reference: uuid or immutable business key
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>Event aggregateId, sourceId, correlationId: uuid
+</code></pre></div>
+<p>New cross-boundary entities use a canonical UUID string alongside the integer <code>id</code>:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="x">#[ORM\Column(type: 'string', length: 36, unique: true)]</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="x">private string $uuid;</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="x">public function __construct() {</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="x">    $this-&gt;uuid = UUID::v4();</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="x">}</span>
+</code></pre></div>
+<p>UUIDs are not an authorization mechanism. Every lookup still requires row-level
+authorization and ownership checks.</p>
+<h3 id="711-uuid-version-policy">7.1.1 UUID Version Policy<a class="headerlink" href="#711-uuid-version-policy" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Existing entities using UUID v4 retain their current identifiers; migrations MUST NOT
+  rewrite identifiers merely for version uniformity.</li>
+<li>New cross-service aggregates SHOULD use UUID v7 once the shared UUID utility supports
+  it, because time ordering improves index locality.</li>
+<li>Until UUID v7 is available, UUID v4 is acceptable for new entities and events.</li>
+<li>UUID format and version are implementation details behind the external UUID string
+  contract. Consumers must not infer business meaning from UUID bytes.</li>
+</ul>
+<h3 id="72-soft-delete">7.2 Soft Delete<a class="headerlink" href="#72-soft-delete" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="x">#[ORM\Column]</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="x">private bool $isDeleted = false;</span>
+</code></pre></div>
+<p><strong>Use when</strong>: Entities should never be hard-deleted (audit trail, legal requirements).</p>
+<p><strong>Consequence</strong>: All queries MUST filter <code>isDeleted = false</code> (via <code>commonFilter()</code> in controller).</p>
+<h3 id="73-value-snapshot">7.3 Value Snapshot<a class="headerlink" href="#73-value-snapshot" title="Permanent link">&para;</a></h3>
+<p>When an entity captures a point-in-time copy of another entity's state:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="x">#[ORM\Column(type: 'json', nullable: true)]</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="x">private ?array $snapshot = null;</span>
+</code></pre></div>
+<p><strong>Populated at creation</strong> (in <code>#[ORM\PrePersist]</code> or service method), never updated.</p>
+<h3 id="74-optimistic-locking">7.4 Optimistic Locking<a class="headerlink" href="#74-optimistic-locking" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="x">#[ORM\Version]</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="x">#[ORM\Column]</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="x">private int $version = 1;</span>
+</code></pre></div>
+<p><strong>Use when</strong>: Concurrent updates to the same record risk data corruption (e.g., wallet balances).</p>
+<h3 id="75-polymorphic-association">7.5 Polymorphic Association<a class="headerlink" href="#75-polymorphic-association" title="Permanent link">&para;</a></h3>
+<p>For comments/reactions referencing different entity types:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="x">#[ORM\Column(length: 100)]</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="x">private string $entityType;  // e.g., 'App\Common\Entity\Content'</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="x">#[ORM\Column]</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="x">private int $entityId;</span>
+</code></pre></div>
+<p><strong>No FK constraint</strong> (resolved in application layer).</p>
+<h3 id="76-json-metadata-extra-data">7.6 JSON Metadata / Extra Data<a class="headerlink" href="#76-json-metadata-extra-data" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="x">#[ORM\Column(type: 'json', nullable: true)]</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="x">private ?array $metadata = null;</span>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="x">#[ORM\Column(type: 'json', nullable: true)]</span>
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="x">private ?array $extraData = null;</span>
+</code></pre></div>
+<p><strong>Use when</strong>: Extensible fields that don't warrant dedicated columns.</p>
+<hr />
+<h2 id="8-repository-contract">8. Repository Contract<a class="headerlink" href="#8-repository-contract" title="Permanent link">&para;</a></h2>
+<p>Every entity MUST have a dedicated repository:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="x">namespace App\{Module}\Repository;</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="x">use App\{Module}\Entity\Xxx;</span>
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="x">use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;</span>
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="x">use Doctrine\Persistence\ManagerRegistry;</span>
+<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>
+<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="x">class XxxRepository extends ServiceEntityRepository</span>
+<a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a><span class="x">{</span>
+<a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a><span class="x">    public function __construct(ManagerRegistry $registry)</span>
+<a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a><span class="x">    {</span>
+<a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a><span class="x">        parent::__construct($registry, Xxx::class);</span>
+<a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a><span class="x">    }</span>
+<a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a><span class="x">}</span>
+</code></pre></div>
+<h3 id="81-custom-query-methods">8.1 Custom Query Methods<a class="headerlink" href="#81-custom-query-methods" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Repository MAY add custom query methods beyond the base <code>ServiceEntityRepository</code></li>
+<li>Custom methods return entities, arrays, or scalar values -- NEVER QueryBuilder (that's the service layer's responsibility to compose)</li>
+<li>Interface MAY be created for repository if cross-module consumption is needed (e.g., <code>ContentRepositoryInterface</code>)</li>
+</ul>
+<h3 id="82-phpdoc-for-ide-support">8.2 PHPDoc for IDE Support<a class="headerlink" href="#82-phpdoc-for-ide-support" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Add <code>@method Xxx|null find($id)</code> and <code>@method Xxx[] findAll()</code> docblocks</li>
+</ul>
+<hr />
+<h2 id="9-validation-contract">9. Validation Contract<a class="headerlink" href="#9-validation-contract" title="Permanent link">&para;</a></h2>
+<p>Entities define validation rules via attributes or annotations:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="x">use Symfony\Component\Validator\Constraints as Assert;</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="x">#[Assert\NotBlank]</span>
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="x">private ?string $name = null;</span>
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>
+<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="x">#[Assert\Email]</span>
+<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="x">private ?string $email = null;</span>
+</code></pre></div>
+<p>Validation is invoked in <code>BaseService::update()</code> via Symfony Validator. Entities MUST declare constraints for:
+- Required fields (<code>NotBlank</code>)
+- Format constraints (<code>Email</code>, <code>Url</code>, <code>Regex</code>)
+- Length constraints (<code>Length</code>)
+- Range constraints (<code>Range</code>, <code>Positive</code>, <code>PositiveOrZero</code>)
+- Choice constraints (<code>Choice</code> for enums/statuses)</p>
+<hr />
+<h2 id="10-anti-patterns-forbidden">10. Anti-Patterns (Forbidden)<a class="headerlink" href="#10-anti-patterns-forbidden" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Anti-Pattern</th>
+<th>What to Do Instead</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Entity extending <code>RestController</code> or <code>BaseService</code></td>
+<td>Entities are pure data objects</td>
+</tr>
+<tr>
+<td>Business logic in Entity methods</td>
+<td>Move to Service layer</td>
+</tr>
+<tr>
+<td>Injecting services into Entity</td>
+<td>Entities MUST NOT use DI</td>
+</tr>
+<tr>
+<td>Direct <code>$em-&gt;persist()</code> in Entity</td>
+<td>Use Service layer</td>
+</tr>
+<tr>
+<td>Mutable <code>DateTime</code></td>
+<td>Use <code>DateTimeImmutable</code></td>
+</tr>
+<tr>
+<td>Exposing internal IDs as external identifiers</td>
+<td>Use UUID for external-facing references</td>
+</tr>
+<tr>
+<td>Storing money as float/decimal in code</td>
+<td>Store as int (cents), convert at API boundary</td>
+</tr>
+<tr>
+<td>Circular references in JSON without handling</td>
+<td>Use <code>CircularReferenceHandler</code> or serializer groups</td>
+</tr>
+</tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+      
+        <script src="../../javascripts/mermaid-init.js"></script>
+      
+    
+  </body>
+</html>

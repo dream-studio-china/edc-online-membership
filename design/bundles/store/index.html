@@ -1,0 +1,6032 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Symfony 8.1 API backend skeleton with modular architecture">
+      
+      
+      
+        <link rel="canonical" href="https://immane.github.io/crud-skeleton/design/bundles/store/">
+      
+      
+        <link rel="prev" href="../trade/">
+      
+      
+        <link rel="next" href="../inventory/">
+      
+      
+        
+          <link rel="alternate" href="/crud-skeleton/" hreflang="en">
+        
+          <link rel="alternate" href="/crud-skeleton/zh/" hreflang="zh">
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Store (Multi-Store Operations) - CRUD Skeleton</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#store-bundle-design" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="CRUD Skeleton" class="md-header__button md-logo" aria-label="CRUD Skeleton" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            CRUD Skeleton
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Store (Multi-Store Operations)
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Select language">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="/crud-skeleton/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="/crud-skeleton/zh/" hreflang="zh" class="md-select__link">
+              中文
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/immane/crud-skeleton" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="CRUD Skeleton" class="md-nav__button md-logo" aria-label="CRUD Skeleton" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    CRUD Skeleton
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/immane/crud-skeleton" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Development Manual
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Development Manual
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../manual/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Manual Index
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../manual/getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../manual/architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../manual/project-structure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project Structure
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../manual/core-framework/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core Framework
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../manual/core-usage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core Usage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../manual/query-system/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Query System
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../manual/development-workflow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Development Workflow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../manual/testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../manual/api-contracts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Contracts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../manual/development-contracts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Development Contracts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../manual/integration-events/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Integration Events
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../manual/database-and-migrations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Database & Migrations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../manual/deployment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../manual/extracting-a-service/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Extracting a Service
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../manual/i18n/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Internationalization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Design Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Design Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../system-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    System Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api-design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../data-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../module-design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Module Design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../controller-design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Controller Design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api-documentation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Documentation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../system-contracts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    System Contracts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../naming-convention/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Naming Convention
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bundles
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Bundles
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../core/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core Framework
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../common/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Common (CMS)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../trade/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Trade (E-Commerce)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Store (Multi-Store Operations)
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Store (Multi-Store Operations)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-goals-and-scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Goals And Scope
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. Goals And Scope">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#11-goal" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.1 Goal
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12-non-goals" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2 Non-Goals
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#13-ownership-matrix" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.3 Ownership Matrix
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-architectural-principles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Architectural Principles
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Architectural Principles">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-one-commercial-order" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 One Commercial Order
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-explicit-event-contracts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 Explicit Event Contracts
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23-local-transaction-eventual-cross-bundle-consistency" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3 Local Transaction, Eventual Cross-Bundle Consistency
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#24-runtime-workers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.4 Runtime Workers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#24-stable-scalar-references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.4 Stable Scalar References
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-existing-system-changes-required" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Existing System Changes Required
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Existing System Changes Required">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-store-context-at-the-trade-entry-point" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 Store Context At The Trade Entry Point
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-trade-metadata-snapshot" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 Trade Metadata Snapshot
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-module-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Module Structure
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-entity-design" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Entity Design
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Entity Design">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51-store" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1 Store
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52-membership" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.2 Membership
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#53-storeorder" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.3 StoreOrder
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#54-store-operational-statuses" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.4 Store Operational Statuses
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#55-outbox-and-inbox-entities" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.5 Outbox And Inbox Entities
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5.5 Outbox And Inbox Entities">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#storeoutboxmessage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        StoreOutboxMessage
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#storeconsumedevent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        StoreConsumedEvent
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-trade-order-state-machine-extension" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Trade Order State Machine Extension
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. Trade Order State Machine Extension">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#61-target-states" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.1 Target States
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#62-payment-gate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.2 Payment Gate
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#63-order-creation-response" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.3 Order Creation Response
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-integration-event-contracts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Integration Event Contracts
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Integration Event Contracts">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#71-envelope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.1 Envelope
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#72-tradeordercreatedv1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.2 trade.order.created.v1
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#73-storeorderacceptedv1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.3 store.order.accepted.v1
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#74-storeorderrejectedv1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.4 store.order.rejected.v1
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#75-future-events" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.5 Future Events
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-consumer-and-publisher-design" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Consumer And Publisher Design
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. Consumer And Publisher Design">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#81-trade-order-created-consumer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.1 Trade Order Created Consumer
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#82-outbox-publisher" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.2 Outbox Publisher
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#83-retry-classification" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.3 Retry Classification
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#84-ordering-and-concurrency" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.4 Ordering And Concurrency
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-store-apis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Store APIs
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="9. Store APIs">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#91-public-store-discovery" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.1 Public Store Discovery
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#92-customer-store-order-read-view" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.2 Customer Store Order Read View
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#93-platform-store-administration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.3 Platform Store Administration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#94-store-staff-operations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.4 Store Staff Operations
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-authorization-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Authorization Model
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10. Authorization Model">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#101-roles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.1 Roles
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#102-authorization-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.2 Authorization Rules
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-store-context-and-promotion-contract" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. Store Context And Promotion Contract
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12-inventory-boundary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12. Inventory Boundary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#13-timeout-and-compensation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13. Timeout And Compensation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="13. Timeout And Compensation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#131-acceptance-timeout" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13.1 Acceptance Timeout
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#132-late-events" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13.2 Late Events
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#133-no-distributed-rollback" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13.3 No Distributed Rollback
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#14-persistence-and-migration-plan" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        14. Persistence And Migration Plan
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="14. Persistence And Migration Plan">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#141-initial-store-migration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        14.1 Initial Store Migration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#142-trade-migration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        14.2 Trade Migration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#143-data-backfill" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        14.3 Data Backfill
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#15-failure-handling-and-observability" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15. Failure Handling And Observability
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="15. Failure Handling And Observability">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#151-error-categories" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.1 Error Categories
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#152-required-structured-log-fields" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.2 Required Structured Log Fields
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#153-operational-metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.3 Operational Metrics
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#16-testing-contract" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16. Testing Contract
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="16. Testing Contract">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#161-unit-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16.1 Unit Tests
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#162-integration-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16.2 Integration Tests
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#163-contract-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16.3 Contract Tests
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#17-implementation-phases" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        17. Implementation Phases
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="17. Implementation Phases">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#phase-1-store-foundation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 1: Store Foundation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-2-trade-orchestration-contract" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 2: Trade Orchestration Contract
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-3-store-consumer-and-decision-events" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 3: Store Consumer And Decision Events
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-4-fulfillment-and-inventory-integration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 4: Fulfillment And Inventory Integration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-5-service-extraction-readiness" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 5: Service Extraction Readiness
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#18-acceptance-criteria" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        18. Acceptance Criteria
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../inventory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Inventory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../payment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Payment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../wallet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Wallet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../settlement/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Settlement (Allocation + Finality)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../exchange/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Exchange (Pool-backed Economy)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../identity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Identity (Auth)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../wechat/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Wechat (Login + Pay)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Runbooks
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Runbooks
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../runbooks/common/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Common
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../runbooks/core/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../runbooks/exchange/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Exchange
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../runbooks/identity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Identity
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../runbooks/inventory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Inventory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../runbooks/payment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Payment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../runbooks/promotion/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Promotion
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../runbooks/settlement/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Settlement
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../runbooks/storage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Storage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../runbooks/store/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Store
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../runbooks/trade/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Trade
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../runbooks/wallet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Wallet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../runbooks/wechat/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    WeChat
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Research
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Research
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../research/easywechat-6.x-usage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    EasyWeChat 6.x Usage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../research/huifu-payment-api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Huifu Payment API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Issues
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Issues
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../issues/architecture-review-2026-06-26/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture Review 2026-06-26
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Testing
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../testing/crud-skeleton-production/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Production Validation Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../testing/crud-skeleton-production/TEST_STRATEGY/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Test Strategy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../testing/crud-skeleton-production/SYSTEM_WALKTHROUGH/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    System Walkthrough And Test Seams
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../testing/crud-skeleton-production/TEST_MATRIX/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Test Matrix
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../testing/crud-skeleton-production/BUSINESS_INVARIANTS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Business Invariants
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../testing/crud-skeleton-production/ARCHITECTURE_TEST_MAPPING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture Test Mapping
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../testing/crud-skeleton-production/FAILURE_MODES/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Failure Modes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../testing/crud-skeleton-production/PRODUCTION_VALIDATION/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Release Validation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../testing/crud-skeleton-production/AI_DEVELOPMENT_PROCESS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI Development Process
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../ai/context/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI Context
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../openapi/endpoints.yaml" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-goals-and-scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Goals And Scope
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. Goals And Scope">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#11-goal" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.1 Goal
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12-non-goals" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2 Non-Goals
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#13-ownership-matrix" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.3 Ownership Matrix
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-architectural-principles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Architectural Principles
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Architectural Principles">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-one-commercial-order" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 One Commercial Order
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-explicit-event-contracts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 Explicit Event Contracts
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23-local-transaction-eventual-cross-bundle-consistency" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3 Local Transaction, Eventual Cross-Bundle Consistency
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#24-runtime-workers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.4 Runtime Workers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#24-stable-scalar-references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.4 Stable Scalar References
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-existing-system-changes-required" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Existing System Changes Required
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Existing System Changes Required">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-store-context-at-the-trade-entry-point" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 Store Context At The Trade Entry Point
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-trade-metadata-snapshot" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 Trade Metadata Snapshot
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-module-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Module Structure
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-entity-design" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Entity Design
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Entity Design">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51-store" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1 Store
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52-membership" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.2 Membership
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#53-storeorder" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.3 StoreOrder
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#54-store-operational-statuses" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.4 Store Operational Statuses
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#55-outbox-and-inbox-entities" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.5 Outbox And Inbox Entities
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5.5 Outbox And Inbox Entities">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#storeoutboxmessage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        StoreOutboxMessage
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#storeconsumedevent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        StoreConsumedEvent
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-trade-order-state-machine-extension" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Trade Order State Machine Extension
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. Trade Order State Machine Extension">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#61-target-states" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.1 Target States
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#62-payment-gate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.2 Payment Gate
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#63-order-creation-response" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.3 Order Creation Response
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-integration-event-contracts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Integration Event Contracts
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Integration Event Contracts">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#71-envelope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.1 Envelope
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#72-tradeordercreatedv1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.2 trade.order.created.v1
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#73-storeorderacceptedv1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.3 store.order.accepted.v1
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#74-storeorderrejectedv1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.4 store.order.rejected.v1
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#75-future-events" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.5 Future Events
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-consumer-and-publisher-design" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Consumer And Publisher Design
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. Consumer And Publisher Design">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#81-trade-order-created-consumer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.1 Trade Order Created Consumer
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#82-outbox-publisher" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.2 Outbox Publisher
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#83-retry-classification" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.3 Retry Classification
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#84-ordering-and-concurrency" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.4 Ordering And Concurrency
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-store-apis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Store APIs
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="9. Store APIs">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#91-public-store-discovery" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.1 Public Store Discovery
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#92-customer-store-order-read-view" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.2 Customer Store Order Read View
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#93-platform-store-administration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.3 Platform Store Administration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#94-store-staff-operations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.4 Store Staff Operations
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-authorization-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Authorization Model
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10. Authorization Model">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#101-roles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.1 Roles
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#102-authorization-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.2 Authorization Rules
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-store-context-and-promotion-contract" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. Store Context And Promotion Contract
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12-inventory-boundary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12. Inventory Boundary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#13-timeout-and-compensation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13. Timeout And Compensation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="13. Timeout And Compensation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#131-acceptance-timeout" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13.1 Acceptance Timeout
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#132-late-events" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13.2 Late Events
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#133-no-distributed-rollback" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13.3 No Distributed Rollback
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#14-persistence-and-migration-plan" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        14. Persistence And Migration Plan
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="14. Persistence And Migration Plan">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#141-initial-store-migration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        14.1 Initial Store Migration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#142-trade-migration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        14.2 Trade Migration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#143-data-backfill" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        14.3 Data Backfill
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#15-failure-handling-and-observability" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15. Failure Handling And Observability
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="15. Failure Handling And Observability">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#151-error-categories" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.1 Error Categories
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#152-required-structured-log-fields" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.2 Required Structured Log Fields
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#153-operational-metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15.3 Operational Metrics
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#16-testing-contract" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16. Testing Contract
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="16. Testing Contract">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#161-unit-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16.1 Unit Tests
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#162-integration-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16.2 Integration Tests
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#163-contract-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16.3 Contract Tests
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#17-implementation-phases" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        17. Implementation Phases
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="17. Implementation Phases">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#phase-1-store-foundation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 1: Store Foundation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-2-trade-orchestration-contract" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 2: Trade Orchestration Contract
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-3-store-consumer-and-decision-events" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 3: Store Consumer And Decision Events
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-4-fulfillment-and-inventory-integration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 4: Fulfillment And Inventory Integration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phase-5-service-extraction-readiness" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase 5: Service Extraction Readiness
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#18-acceptance-criteria" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        18. Acceptance Criteria
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="store-bundle-design">Store Bundle Design<a class="headerlink" href="#store-bundle-design" title="Permanent link">&para;</a></h1>
+<blockquote>
+<p><strong>Status: phase 1-3 implemented in the modular monolith.</strong> Store, membership,
+StoreOrder, Trade/Store Outbox-Inbox, Messenger consumers, and Store acceptance are
+implemented. Inventory reservation remains an intentionally deferred boundary.
+The Store bundle (<code>src/Store/</code>) owns multi-store context, store operations, and the
+store-side order projection. Trade remains the single commercial order entry point
+and the source of truth for order amount, payment, refund, and customer order status.</p>
+</blockquote>
+<hr />
+<h2 id="1-goals-and-scope">1. Goals And Scope<a class="headerlink" href="#1-goals-and-scope" title="Permanent link">&para;</a></h2>
+<h3 id="11-goal">1.1 Goal<a class="headerlink" href="#11-goal" title="Permanent link">&para;</a></h3>
+<p>Provide a multi-store boundary that can begin as a Symfony module and later be
+extracted as a service without changing the ownership of commercial orders.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>Customer -&gt; Trade Order API -&gt; Trade Order + Trade Outbox
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>                                  |
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>                                  v
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>                         Store event consumer
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>                                  |
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>                                  v
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>                         StoreOrder + store decision
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>                                  |
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>                                  v
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>                         Store result event -&gt; Trade consumer
+</code></pre></div>
+<p>The bundle owns:</p>
+<ul>
+<li>Store identity, lifecycle, business configuration, and public store identity.</li>
+<li>Store membership and store-local operational authorization.</li>
+<li>Store request context resolution and validation.</li>
+<li>The <code>StoreOrder</code> projection/aggregate for store acceptance and fulfillment data.</li>
+<li>Idempotent consumption and publication of Store integration events.</li>
+<li>The contract by which a store accepts or rejects a Trade order.</li>
+</ul>
+<p>The bundle does not own:</p>
+<ul>
+<li>Customer order creation API.</li>
+<li>Commercial order amount, discounts, payment, refund, or customer cancellation.</li>
+<li>The canonical payment invoice.</li>
+<li>Global product/SKU master data.</li>
+<li>Inventory implementation. Inventory reservation is an integration boundary defined
+  here and designed in a later Inventory bundle.</li>
+</ul>
+<h3 id="12-non-goals">1.2 Non-Goals<a class="headerlink" href="#12-non-goals" title="Permanent link">&para;</a></h3>
+<p>The first Store phase MUST NOT:</p>
+<ul>
+<li>Create a second customer-facing order through <code>/stores/{id}/orders</code>.</li>
+<li>Maintain a writable copy of Trade payment, refund, or total amount state.</li>
+<li>Add Doctrine foreign keys to Trade, Payment, Identity, or future Inventory tables.</li>
+<li>Let a client-provided <code>storeId</code> or <code>storeCode</code> become an authorization fact.</li>
+<li>Treat <code>trade_order.metadata</code> as the authoritative store relation.</li>
+<li>Require distributed transactions or exactly-once broker delivery.</li>
+</ul>
+<h3 id="13-ownership-matrix">1.3 Ownership Matrix<a class="headerlink" href="#13-ownership-matrix" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Concern</th>
+<th>Owner</th>
+<th>Store Responsibility</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Order UUID, line-item amount, total, currency</td>
+<td>Trade</td>
+<td>Consume immutable snapshot only</td>
+</tr>
+<tr>
+<td>Customer payment and refund</td>
+<td>Trade + Payment</td>
+<td>React to resulting business events only</td>
+</tr>
+<tr>
+<td>Store identity and membership</td>
+<td>Store</td>
+<td>Authoritative</td>
+</tr>
+<tr>
+<td>Store acceptance/rejection</td>
+<td>Store</td>
+<td>Authoritative</td>
+</tr>
+<tr>
+<td>Store fulfillment operations</td>
+<td>Store</td>
+<td>Authoritative once introduced</td>
+</tr>
+<tr>
+<td>Store-specific item eligibility</td>
+<td>Store</td>
+<td>Validate during acceptance</td>
+</tr>
+<tr>
+<td>Inventory reservation</td>
+<td>Inventory, future</td>
+<td>Request and react; do not own stock ledger</td>
+</tr>
+<tr>
+<td>Promotion calculation</td>
+<td>Promotion + Trade</td>
+<td>Receive a server-resolved store code at quote/order time</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="2-architectural-principles">2. Architectural Principles<a class="headerlink" href="#2-architectural-principles" title="Permanent link">&para;</a></h2>
+<h3 id="21-one-commercial-order">2.1 One Commercial Order<a class="headerlink" href="#21-one-commercial-order" title="Permanent link">&para;</a></h3>
+<p><code>Trade\Entity\Order</code> is the only customer order aggregate. A client creates it through
+the existing Trade order endpoint. <code>StoreOrder</code> is created only as the result of a
+<code>trade.order.created.v1</code> event.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>Trade Order                         StoreOrder
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>-----------                         ----------
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>payment / refund                    store acceptance
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>commercial workflow                 operational workflow
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>customer-facing status              store-facing status
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>commercial amount                   copied amount snapshot for display only
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>invoice references                  fulfillment and reservation references
+</code></pre></div>
+<p><code>StoreOrder</code> MUST NOT expose an API that creates a standalone commercial order.</p>
+<h3 id="22-explicit-event-contracts">2.2 Explicit Event Contracts<a class="headerlink" href="#22-explicit-event-contracts" title="Permanent link">&para;</a></h3>
+<p>Trade and Store communicate through versioned, serializable integration events. They
+MUST NOT communicate by passing Doctrine entities, repositories, or service objects.</p>
+<p>The publisher does not know which consumers exist. A consumer knows only an event
+schema and its own local services.</p>
+<h3 id="23-local-transaction-eventual-cross-bundle-consistency">2.3 Local Transaction, Eventual Cross-Bundle Consistency<a class="headerlink" href="#23-local-transaction-eventual-cross-bundle-consistency" title="Permanent link">&para;</a></h3>
+<p>Every module writes its own business records and its own outbox event in one database
+transaction. A relay delivers events at least once. Consumers provide idempotency.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>local database transaction:
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>  business mutation + outbox insert
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>cross-module delivery:
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>  at least once + inbox deduplication + business unique keys
+</code></pre></div>
+<p>No component may assume an exactly-once message broker guarantee.</p>
+<h3 id="24-runtime-workers">2.4 Runtime Workers<a class="headerlink" href="#24-runtime-workers" title="Permanent link">&para;</a></h3>
+<p>The modular monolith starts asynchronous processing as Compose services, not inside the
+PHP-FPM request process:</p>
+<table>
+<thead>
+<tr>
+<th>Service</th>
+<th>Command</th>
+<th>Responsibility</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>worker</code></td>
+<td><code>messenger:consume async</code></td>
+<td>Consume Trade and Store integration messages with Messenger retry handling</td>
+</tr>
+<tr>
+<td><code>scheduler</code></td>
+<td>Trade/Store Outbox publisher loop</td>
+<td>Relay unpublished Outbox rows every <code>OUTBOX_PUBLISH_INTERVAL</code> seconds (default <code>5</code>)</td>
+</tr>
+</tbody>
+</table>
+<p>The scheduler and worker use the same application image and environment as <code>app</code>. This
+keeps the Outbox pattern durable in SQL while making the monolith operationally automatic.</p>
+<h3 id="24-stable-scalar-references">2.4 Stable Scalar References<a class="headerlink" href="#24-stable-scalar-references" title="Permanent link">&para;</a></h3>
+<p>Cross-boundary references are UUIDs and scalar snapshots, never Doctrine associations.</p>
+<p>Examples:</p>
+<ul>
+<li><code>StoreOrder.tradeOrderUuid</code>, not <code>ManyToOne Trade\Order</code>.</li>
+<li><code>Membership.userUuid</code>, not <code>ManyToOne Identity\User</code>.</li>
+<li>Future inventory reservation UUID, not an Inventory entity relation.</li>
+</ul>
+<p>This prevents cross-module schema coupling and permits separate databases later.</p>
+<hr />
+<h2 id="3-existing-system-changes-required">3. Existing System Changes Required<a class="headerlink" href="#3-existing-system-changes-required" title="Permanent link">&para;</a></h2>
+<p>This bundle cannot be implemented as a completely isolated source directory because
+Trade owns the only order entry point. The required changes are intentionally narrow
+and generic; Trade MUST NOT import Store entities, repositories, or services.</p>
+<table>
+<thead>
+<tr>
+<th>Area</th>
+<th>Required target change</th>
+<th>Reason</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Trade order workflow</td>
+<td>Add <code>awaiting_store_acceptance</code>, <code>store_accepted</code>, and <code>store_rejected</code> places/transitions</td>
+<td>Prevent payment before store acceptance</td>
+</tr>
+<tr>
+<td>Trade order creation</td>
+<td>Persist server-generated store snapshot and a <code>trade.order.created.v1</code> outbox event</td>
+<td>Start asynchronous Store processing</td>
+</tr>
+<tr>
+<td>Trade payment entry</td>
+<td>Permit payment only after <code>store_accepted</code></td>
+<td>Avoid payment for unavailable stock/store</td>
+</tr>
+<tr>
+<td>Trade outbox relay</td>
+<td>Publish versioned integration events</td>
+<td>Decouple publisher from Store consumer</td>
+</tr>
+<tr>
+<td>Identity User identity</td>
+<td>Add a unique User UUID before Store persists or publishes user references</td>
+<td>Prevent Store from depending on <code>users.id</code></td>
+</tr>
+<tr>
+<td>Root routing/DI</td>
+<td>Register Store controllers and Store service configuration</td>
+<td>Compose the new bundle</td>
+</tr>
+</tbody>
+</table>
+<p>The implemented Store-scoped workflow is <code>draft -&gt; awaiting_store_acceptance -&gt;
+store_accepted -&gt; confirmed -&gt; paid -&gt; fulfilled -&gt; completed</code>. Store rejection follows
+<code>awaiting_store_acceptance -&gt; store_rejected -&gt; cancelled</code>. Non-Store orders retain the
+existing Trade workflow.</p>
+<p>The current context transport is <code>X-Store-Code</code>, resolved only against an active Store
+by <code>StoreContextResolver</code>. A Store-scoped App order returns <code>202</code>. The Trade-order
+consumer currently auto-accepts eligible active Stores; Inventory reservation is the
+future decision boundary.</p>
+<h3 id="31-store-context-at-the-trade-entry-point">3.1 Store Context At The Trade Entry Point<a class="headerlink" href="#31-store-context-at-the-trade-entry-point" title="Permanent link">&para;</a></h3>
+<p>The Trade controller obtains a <code>StoreContext</code> before calculating a quote or creating
+an order. It MUST use a generic interface or DTO, never a Store entity type.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="x">final readonly class StoreContext</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="x">{</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="x">    public function __construct(</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="x">        public string $storeUuid,</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="x">        public string $storeCode,</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="x">        public string $storeName,</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="x">        public string $channel,</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="x">    ) {}</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="x">}</span>
+</code></pre></div>
+<p>The Store bundle implements the resolver. Trade consumes only the resolved scalar data.
+The exact location mechanism may be one of:</p>
+<table>
+<thead>
+<tr>
+<th>Mechanism</th>
+<th>Use</th>
+<th>Trust Rule</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Canonical host/subdomain</td>
+<td>Store-branded storefront</td>
+<td>Resolve from trusted request host mapping</td>
+</tr>
+<tr>
+<td>Gateway-injected header</td>
+<td>API gateway or mini-program gateway</td>
+<td>Accept only after gateway authentication/signature</td>
+</tr>
+<tr>
+<td>Explicit route selection</td>
+<td>A customer deliberately selects a store</td>
+<td>Validate availability server-side before use</td>
+</tr>
+</tbody>
+</table>
+<p>Raw request-body <code>storeId</code>, <code>storeUuid</code>, and <code>storeCode</code> are never authoritative. A
+client may provide a selection hint only when a Store resolver validates it and returns
+a concrete <code>StoreContext</code>.</p>
+<h3 id="32-trade-metadata-snapshot">3.2 Trade Metadata Snapshot<a class="headerlink" href="#32-trade-metadata-snapshot" title="Permanent link">&para;</a></h3>
+<p>Trade stores a historical display snapshot under a reserved metadata key:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="p">{</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span><span class="nt">"_store"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">    </span><span class="nt">"uuid"</span><span class="p">:</span><span class="w"> </span><span class="s2">"store-uuid"</span><span class="p">,</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">    </span><span class="nt">"code"</span><span class="p">:</span><span class="w"> </span><span class="s2">"shanghai-xuhui"</span><span class="p">,</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">    </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Xuhui Store"</span><span class="p">,</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="w">    </span><span class="nt">"channel"</span><span class="p">:</span><span class="w"> </span><span class="s2">"mini_program"</span>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="w">  </span><span class="p">}</span>
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="p">}</span>
+</code></pre></div>
+<p>The snapshot is written by trusted server code only. It is useful for audit and order
+display, but it is not a query, authorization, or integrity boundary. <code>StoreOrder</code> is
+the Store-side authoritative record, and the integration event carries the same
+immutable snapshot.</p>
+<hr />
+<h2 id="4-module-structure">4. Module Structure<a class="headerlink" href="#4-module-structure" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>src/Store/
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>|-- Controller/
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>|   |-- App/
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>|   |   |-- StoreController.php              # Discover/read stores
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>|   |   `-- StoreOrderController.php         # Customer read-only store order view
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>|   `-- Manage/
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>|       |-- StoreController.php              # Platform admin store CRUD
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>|       |-- MembershipController.php    # Membership administration
+<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>|       `-- StoreOrderController.php         # Store operational actions
+<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>|-- DTO/
+<a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a>|   |-- StoreContext.php
+<a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a>|   |-- IntegrationEvent.php
+<a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a>|   `-- StoreOrderDecision.php
+<a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a>|-- Entity/
+<a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a>|   |-- Store.php
+<a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a>|   |-- Membership.php
+<a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a>|   |-- StoreOrder.php
+<a id="__codelineno-5-18" name="__codelineno-5-18" href="#__codelineno-5-18"></a>|   |-- StoreOutboxMessage.php
+<a id="__codelineno-5-19" name="__codelineno-5-19" href="#__codelineno-5-19"></a>|   `-- StoreConsumedEvent.php
+<a id="__codelineno-5-20" name="__codelineno-5-20" href="#__codelineno-5-20"></a>|-- Event/
+<a id="__codelineno-5-21" name="__codelineno-5-21" href="#__codelineno-5-21"></a>|   |-- TradeOrderCreatedV1.php             # Deserialized integration contract
+<a id="__codelineno-5-22" name="__codelineno-5-22" href="#__codelineno-5-22"></a>|   |-- StoreOrderAcceptedV1.php
+<a id="__codelineno-5-23" name="__codelineno-5-23" href="#__codelineno-5-23"></a>|   `-- StoreOrderRejectedV1.php
+<a id="__codelineno-5-24" name="__codelineno-5-24" href="#__codelineno-5-24"></a>|-- EventListener/
+<a id="__codelineno-5-25" name="__codelineno-5-25" href="#__codelineno-5-25"></a>|   |-- TradeOrderCreatedConsumer.php
+<a id="__codelineno-5-26" name="__codelineno-5-26" href="#__codelineno-5-26"></a>|   `-- ReservationListener.php    # Future adapter boundary
+<a id="__codelineno-5-27" name="__codelineno-5-27" href="#__codelineno-5-27"></a>|-- Exception/
+<a id="__codelineno-5-28" name="__codelineno-5-28" href="#__codelineno-5-28"></a>|   |-- StoreContextNotFoundException.php
+<a id="__codelineno-5-29" name="__codelineno-5-29" href="#__codelineno-5-29"></a>|   |-- StoreOrderConflictException.php
+<a id="__codelineno-5-30" name="__codelineno-5-30" href="#__codelineno-5-30"></a>|   `-- StoreOrderNotOperableException.php
+<a id="__codelineno-5-31" name="__codelineno-5-31" href="#__codelineno-5-31"></a>|-- Repository/
+<a id="__codelineno-5-32" name="__codelineno-5-32" href="#__codelineno-5-32"></a>|   |-- StoreRepository.php
+<a id="__codelineno-5-33" name="__codelineno-5-33" href="#__codelineno-5-33"></a>|   |-- MembershipRepository.php
+<a id="__codelineno-5-34" name="__codelineno-5-34" href="#__codelineno-5-34"></a>|   |-- StoreOrderRepository.php
+<a id="__codelineno-5-35" name="__codelineno-5-35" href="#__codelineno-5-35"></a>|   |-- StoreOutboxMessageRepository.php
+<a id="__codelineno-5-36" name="__codelineno-5-36" href="#__codelineno-5-36"></a>|   `-- StoreConsumedEventRepository.php
+<a id="__codelineno-5-37" name="__codelineno-5-37" href="#__codelineno-5-37"></a>|-- Service/
+<a id="__codelineno-5-38" name="__codelineno-5-38" href="#__codelineno-5-38"></a>|   |-- StoreService.php
+<a id="__codelineno-5-39" name="__codelineno-5-39" href="#__codelineno-5-39"></a>|   |-- StoreServiceInterface.php
+<a id="__codelineno-5-40" name="__codelineno-5-40" href="#__codelineno-5-40"></a>|   |-- StoreContextResolverInterface.php
+<a id="__codelineno-5-41" name="__codelineno-5-41" href="#__codelineno-5-41"></a>|   |-- StoreContextResolver.php
+<a id="__codelineno-5-42" name="__codelineno-5-42" href="#__codelineno-5-42"></a>|   |-- MembershipService.php
+<a id="__codelineno-5-43" name="__codelineno-5-43" href="#__codelineno-5-43"></a>|   |-- MembershipServiceInterface.php
+<a id="__codelineno-5-44" name="__codelineno-5-44" href="#__codelineno-5-44"></a>|   |-- StoreOrderService.php
+<a id="__codelineno-5-45" name="__codelineno-5-45" href="#__codelineno-5-45"></a>|   |-- StoreOrderServiceInterface.php
+<a id="__codelineno-5-46" name="__codelineno-5-46" href="#__codelineno-5-46"></a>|   |-- StoreOrderDecisionService.php
+<a id="__codelineno-5-47" name="__codelineno-5-47" href="#__codelineno-5-47"></a>|   |-- Outbox/
+<a id="__codelineno-5-48" name="__codelineno-5-48" href="#__codelineno-5-48"></a>|   |   |-- OutboxPublisherInterface.php
+<a id="__codelineno-5-49" name="__codelineno-5-49" href="#__codelineno-5-49"></a>|   |   `-- StoreOutboxPublisher.php
+<a id="__codelineno-5-50" name="__codelineno-5-50" href="#__codelineno-5-50"></a>|   `-- Consumer/
+<a id="__codelineno-5-51" name="__codelineno-5-51" href="#__codelineno-5-51"></a>|       `-- TradeOrderCreatedConsumer.php
+<a id="__codelineno-5-52" name="__codelineno-5-52" href="#__codelineno-5-52"></a>`-- Resources/config/
+<a id="__codelineno-5-53" name="__codelineno-5-53" href="#__codelineno-5-53"></a>    `-- services_store.yaml
+</code></pre></div>
+<p>The names above describe the target module. Inventory-specific implementation classes
+are intentionally deferred until the inventory design is approved.</p>
+<hr />
+<h2 id="5-entity-design">5. Entity Design<a class="headerlink" href="#5-entity-design" title="Permanent link">&para;</a></h2>
+<h3 id="51-store">5.1 Store<a class="headerlink" href="#51-store" title="Permanent link">&para;</a></h3>
+<p><strong>Table:</strong> <code>store</code></p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th style="text-align: right;">Required</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>id</code></td>
+<td>int</td>
+<td style="text-align: right;">Yes</td>
+<td>Internal primary key</td>
+</tr>
+<tr>
+<td><code>uuid</code></td>
+<td>string(36), unique</td>
+<td style="text-align: right;">Yes</td>
+<td>Stable public/cross-service identifier</td>
+</tr>
+<tr>
+<td><code>code</code></td>
+<td>string(50), unique</td>
+<td style="text-align: right;">Yes</td>
+<td>Immutable machine-readable store code</td>
+</tr>
+<tr>
+<td><code>name</code></td>
+<td>string(255)</td>
+<td style="text-align: right;">Yes</td>
+<td>Current display name</td>
+</tr>
+<tr>
+<td><code>status</code></td>
+<td>string(30)</td>
+<td style="text-align: right;">Yes</td>
+<td><code>active</code>, <code>suspended</code>, <code>closed</code></td>
+</tr>
+<tr>
+<td><code>timezone</code></td>
+<td>string(64)</td>
+<td style="text-align: right;">Yes</td>
+<td>IANA zone, such as <code>Asia/Shanghai</code></td>
+</tr>
+<tr>
+<td><code>contact</code></td>
+<td>json nullable</td>
+<td style="text-align: right;">No</td>
+<td>Sanitized contact data</td>
+</tr>
+<tr>
+<td><code>address</code></td>
+<td>json nullable</td>
+<td style="text-align: right;">No</td>
+<td>Structured address/geolocation data</td>
+</tr>
+<tr>
+<td><code>settings</code></td>
+<td>json nullable</td>
+<td style="text-align: right;">No</td>
+<td>Store-local configuration, not secrets</td>
+</tr>
+<tr>
+<td><code>createdAt</code></td>
+<td>datetime_immutable</td>
+<td style="text-align: right;">Yes</td>
+<td>Creation time</td>
+</tr>
+<tr>
+<td><code>updatedAt</code></td>
+<td>datetime_immutable nullable</td>
+<td style="text-align: right;">No</td>
+<td>Last update</td>
+</tr>
+</tbody>
+</table>
+<p>Rules:</p>
+<ul>
+<li><code>uuid</code> is the only cross-service store identifier.</li>
+<li><code>code</code> is stable after activation because Promotion and external channels may use it.</li>
+<li><code>closed</code> stores cannot be selected for new orders.</li>
+<li>Historical orders use snapshots, so Store deletion is forbidden; closure is a status.</li>
+</ul>
+<h3 id="52-membership">5.2 Membership<a class="headerlink" href="#52-membership" title="Permanent link">&para;</a></h3>
+<p><strong>Table:</strong> <code>store_membership</code></p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th style="text-align: right;">Required</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>id</code></td>
+<td>int</td>
+<td style="text-align: right;">Yes</td>
+<td>Internal primary key</td>
+</tr>
+<tr>
+<td><code>store</code></td>
+<td>ManyToOne Store</td>
+<td style="text-align: right;">Yes</td>
+<td>Local Store relation</td>
+</tr>
+<tr>
+<td><code>userUuid</code></td>
+<td>string(36)</td>
+<td style="text-align: right;">Yes</td>
+<td>Identity User UUID scalar; no foreign key</td>
+</tr>
+<tr>
+<td><code>role</code></td>
+<td>string(30)</td>
+<td style="text-align: right;">Yes</td>
+<td><code>owner</code>, <code>manager</code>, <code>clerk</code>, <code>fulfillment</code></td>
+</tr>
+<tr>
+<td><code>status</code></td>
+<td>string(30)</td>
+<td style="text-align: right;">Yes</td>
+<td><code>active</code>, <code>suspended</code>, <code>revoked</code></td>
+</tr>
+<tr>
+<td><code>createdAt</code></td>
+<td>datetime_immutable</td>
+<td style="text-align: right;">Yes</td>
+<td>Grant time</td>
+</tr>
+<tr>
+<td><code>updatedAt</code></td>
+<td>datetime_immutable nullable</td>
+<td style="text-align: right;">No</td>
+<td>Last update</td>
+</tr>
+</tbody>
+</table>
+<p>Constraints and rules:</p>
+<ul>
+<li>Unique <code>(store_id, user_uuid)</code>.</li>
+<li>Index <code>(user_uuid, status)</code> for authorization lookup.</li>
+<li>A membership role is local to one Store and MUST NOT be written into <code>Identity\User.roles</code>.</li>
+<li><code>ROLE_ADMIN</code> remains a platform-wide override; Store membership supports store-scoped
+  operations only.</li>
+</ul>
+<h3 id="53-storeorder">5.3 StoreOrder<a class="headerlink" href="#53-storeorder" title="Permanent link">&para;</a></h3>
+<p><strong>Table:</strong> <code>store_order</code></p>
+<p><code>StoreOrder</code> is the Store-side aggregate created from one Trade order-created event.
+It is not a second commercial order.</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th style="text-align: right;">Required</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>id</code></td>
+<td>int</td>
+<td style="text-align: right;">Yes</td>
+<td>Internal primary key</td>
+</tr>
+<tr>
+<td><code>uuid</code></td>
+<td>string(36), unique</td>
+<td style="text-align: right;">Yes</td>
+<td>Store order public identifier</td>
+</tr>
+<tr>
+<td><code>tradeOrderUuid</code></td>
+<td>string(36), unique</td>
+<td style="text-align: right;">Yes</td>
+<td>Immutable Trade order reference</td>
+</tr>
+<tr>
+<td><code>store</code></td>
+<td>ManyToOne Store</td>
+<td style="text-align: right;">Yes</td>
+<td>Local Store relation</td>
+</tr>
+<tr>
+<td><code>storeCodeSnapshot</code></td>
+<td>string(50)</td>
+<td style="text-align: right;">Yes</td>
+<td>Code at placement time</td>
+</tr>
+<tr>
+<td><code>storeNameSnapshot</code></td>
+<td>string(255)</td>
+<td style="text-align: right;">Yes</td>
+<td>Name at placement time</td>
+</tr>
+<tr>
+<td><code>customerUserUuid</code></td>
+<td>string(36) nullable</td>
+<td style="text-align: right;">No</td>
+<td>Scalar customer Identity UUID reference</td>
+</tr>
+<tr>
+<td><code>currency</code></td>
+<td>string(10)</td>
+<td style="text-align: right;">Yes</td>
+<td>Copied for display/validation</td>
+</tr>
+<tr>
+<td><code>totalAmount</code></td>
+<td>bigint</td>
+<td style="text-align: right;">Yes</td>
+<td>Immutable copied commercial amount in cents</td>
+</tr>
+<tr>
+<td><code>orderSnapshot</code></td>
+<td>json</td>
+<td style="text-align: right;">Yes</td>
+<td>Immutable line and delivery snapshot from event</td>
+</tr>
+<tr>
+<td><code>operationalStatus</code></td>
+<td>string(40)</td>
+<td style="text-align: right;">Yes</td>
+<td>Store operational state machine</td>
+</tr>
+<tr>
+<td><code>rejectionCode</code></td>
+<td>string(50) nullable</td>
+<td style="text-align: right;">No</td>
+<td>Machine-readable rejection reason</td>
+</tr>
+<tr>
+<td><code>rejectionReason</code></td>
+<td>text nullable</td>
+<td style="text-align: right;">No</td>
+<td>Sanitized operator/customer reason</td>
+</tr>
+<tr>
+<td><code>acceptedAt</code></td>
+<td>datetime_immutable nullable</td>
+<td style="text-align: right;">No</td>
+<td>Store acceptance time</td>
+</tr>
+<tr>
+<td><code>rejectedAt</code></td>
+<td>datetime_immutable nullable</td>
+<td style="text-align: right;">No</td>
+<td>Store rejection time</td>
+</tr>
+<tr>
+<td><code>fulfillmentData</code></td>
+<td>json nullable</td>
+<td style="text-align: right;">No</td>
+<td>Pickup/delivery/assignment data, Store-owned</td>
+</tr>
+<tr>
+<td><code>reservationId</code></td>
+<td>string(64) nullable</td>
+<td style="text-align: right;">No</td>
+<td>Future inventory reservation reference</td>
+</tr>
+<tr>
+<td><code>createdAt</code></td>
+<td>datetime_immutable</td>
+<td style="text-align: right;">Yes</td>
+<td>Projection creation time</td>
+</tr>
+<tr>
+<td><code>updatedAt</code></td>
+<td>datetime_immutable nullable</td>
+<td style="text-align: right;">No</td>
+<td>Last update</td>
+</tr>
+</tbody>
+</table>
+<p>Indexes:</p>
+<table>
+<thead>
+<tr>
+<th>Index</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Unique <code>trade_order_uuid</code></td>
+<td>Business idempotency: one StoreOrder per Trade order</td>
+</tr>
+<tr>
+<td><code>(store_id, operational_status, created_at)</code></td>
+<td>Store work queue and reporting</td>
+</tr>
+<tr>
+<td><code>(customer_user_uuid, created_at)</code></td>
+<td>Customer read views</td>
+</tr>
+<tr>
+<td><code>(reservation_id)</code></td>
+<td>Future inventory reconciliation</td>
+</tr>
+</tbody>
+</table>
+<p><code>totalAmount</code>, <code>currency</code>, and <code>orderSnapshot</code> are copied facts for Store operations.
+Trade remains authoritative if they ever differ; a mismatch is an alert-worthy contract
+violation, not a Store-side repricing opportunity.</p>
+<h3 id="54-store-operational-statuses">5.4 Store Operational Statuses<a class="headerlink" href="#54-store-operational-statuses" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Status</th>
+<th>Meaning</th>
+<th>Owner</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>pending_validation</code></td>
+<td>Event received; Store checks eligibility</td>
+<td>Store</td>
+</tr>
+<tr>
+<td><code>awaiting_inventory</code></td>
+<td>Store validated; reservation pending</td>
+<td>Store/Inventory integration</td>
+</tr>
+<tr>
+<td><code>accepted</code></td>
+<td>Store can fulfill order; acceptance event emitted</td>
+<td>Store</td>
+</tr>
+<tr>
+<td><code>rejected</code></td>
+<td>Store cannot fulfill order; rejection event emitted</td>
+<td>Store</td>
+</tr>
+<tr>
+<td><code>fulfillment_pending</code></td>
+<td>Commercial payment complete; Store may prepare work</td>
+<td>Store</td>
+</tr>
+<tr>
+<td><code>fulfilling</code></td>
+<td>Store is actively preparing/dispatching</td>
+<td>Store</td>
+</tr>
+<tr>
+<td><code>fulfilled</code></td>
+<td>Store reports local fulfillment complete</td>
+<td>Store</td>
+</tr>
+<tr>
+<td><code>cancelled</code></td>
+<td>Store operation stopped after Trade cancellation</td>
+<td>Store</td>
+</tr>
+</tbody>
+</table>
+<p>The Store workflow MUST NOT use <code>paid</code>, <code>refunded</code>, or <code>completed</code> as its own state
+names. Those remain Trade commercial states.</p>
+<h3 id="55-outbox-and-inbox-entities">5.5 Outbox And Inbox Entities<a class="headerlink" href="#55-outbox-and-inbox-entities" title="Permanent link">&para;</a></h3>
+<h4 id="storeoutboxmessage">StoreOutboxMessage<a class="headerlink" href="#storeoutboxmessage" title="Permanent link">&para;</a></h4>
+<p><strong>Table:</strong> <code>store_outbox_message</code></p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>id</code></td>
+<td>bigint</td>
+<td>Internal sequence</td>
+</tr>
+<tr>
+<td><code>eventId</code></td>
+<td>string(36), unique</td>
+<td>Globally unique event identifier</td>
+</tr>
+<tr>
+<td><code>topic</code></td>
+<td>string(120)</td>
+<td>e.g. <code>store.order.accepted.v1</code></td>
+</tr>
+<tr>
+<td><code>aggregateType</code></td>
+<td>string(80)</td>
+<td><code>store_order</code></td>
+</tr>
+<tr>
+<td><code>aggregateId</code></td>
+<td>string(64)</td>
+<td>StoreOrder UUID</td>
+</tr>
+<tr>
+<td><code>payload</code></td>
+<td>json</td>
+<td>Event envelope/payload, safe to serialize</td>
+</tr>
+<tr>
+<td><code>occurredAt</code></td>
+<td>datetime_immutable</td>
+<td>Business event time</td>
+</tr>
+<tr>
+<td><code>availableAt</code></td>
+<td>datetime_immutable</td>
+<td>Retry scheduling time</td>
+</tr>
+<tr>
+<td><code>publishedAt</code></td>
+<td>datetime_immutable nullable</td>
+<td>Delivery acknowledgement time</td>
+</tr>
+<tr>
+<td><code>attempts</code></td>
+<td>int</td>
+<td>Relay attempt counter</td>
+</tr>
+<tr>
+<td><code>lastError</code></td>
+<td>text nullable</td>
+<td>Sanitized relay error</td>
+</tr>
+</tbody>
+</table>
+<h4 id="storeconsumedevent">StoreConsumedEvent<a class="headerlink" href="#storeconsumedevent" title="Permanent link">&para;</a></h4>
+<p><strong>Table:</strong> <code>store_consumed_event</code></p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>id</code></td>
+<td>bigint</td>
+<td>Internal sequence</td>
+</tr>
+<tr>
+<td><code>eventId</code></td>
+<td>string(36), unique</td>
+<td>Incoming integration event id</td>
+</tr>
+<tr>
+<td><code>topic</code></td>
+<td>string(120)</td>
+<td>Original topic</td>
+</tr>
+<tr>
+<td><code>aggregateId</code></td>
+<td>string(64)</td>
+<td>Source aggregate id</td>
+</tr>
+<tr>
+<td><code>processedAt</code></td>
+<td>datetime_immutable</td>
+<td>Successful local processing time</td>
+</tr>
+<tr>
+<td><code>payloadHash</code></td>
+<td>string(64)</td>
+<td>SHA-256 of canonical payload for diagnostics</td>
+</tr>
+</tbody>
+</table>
+<p>Inbox uniqueness prevents replayed broker messages from repeating Store decisions. The
+business unique key on <code>StoreOrder.tradeOrderUuid</code> remains mandatory defense in depth.</p>
+<hr />
+<h2 id="6-trade-order-state-machine-extension">6. Trade Order State Machine Extension<a class="headerlink" href="#6-trade-order-state-machine-extension" title="Permanent link">&para;</a></h2>
+<h3 id="61-target-states">6.1 Target States<a class="headerlink" href="#61-target-states" title="Permanent link">&para;</a></h3>
+<p>The target Trade workflow replaces the pre-payment path with Store confirmation.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>draft
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>  -&gt; awaiting_store_acceptance
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>  -&gt; store_accepted
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>  -&gt; confirmed
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>  -&gt; paid
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>  -&gt; fulfilled
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>  -&gt; completed
+<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>  -&gt; refunded
+<a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>
+<a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a>awaiting_store_acceptance -&gt; store_rejected -&gt; cancelled
+<a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a>awaiting_store_acceptance -&gt; cancelled (timeout or customer cancellation)
+<a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a>store_accepted -&gt; cancelled (before payment)
+<a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a>confirmed -&gt; cancelled (before payment)
+</code></pre></div>
+<p>The precise naming may be adjusted with the Trade workflow owner, but these invariants
+are required:</p>
+<ol>
+<li>Trade emits <code>trade.order.created.v1</code> only after it has an immutable order UUID and
+   Store snapshot.</li>
+<li>A payment invoice cannot be created or paid before Store acceptance.</li>
+<li>A Store rejection or acceptance timeout makes the commercial order terminally
+   cancelled before payment.</li>
+<li>Store acceptance/rejection consumers are idempotent.</li>
+</ol>
+<h3 id="62-payment-gate">6.2 Payment Gate<a class="headerlink" href="#62-payment-gate" title="Permanent link">&para;</a></h3>
+<p>The Trade payment service checks <code>order.status</code> is payment-eligible. Payment endpoints
+MUST return a conflict response while an order is awaiting Store acceptance. This is a
+business gate, not a UI convention.</p>
+<h3 id="63-order-creation-response">6.3 Order Creation Response<a class="headerlink" href="#63-order-creation-response" title="Permanent link">&para;</a></h3>
+<p>Because Store validation is asynchronous, a successful initial request returns <code>202</code>:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="p">{</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">  </span><span class="nt">"data"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">    </span><span class="nt">"orderUuid"</span><span class="p">:</span><span class="w"> </span><span class="s2">"trade-order-uuid"</span><span class="p">,</span>
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">    </span><span class="nt">"status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"awaiting_store_acceptance"</span><span class="p">,</span>
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="w">    </span><span class="nt">"store"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="w">      </span><span class="nt">"uuid"</span><span class="p">:</span><span class="w"> </span><span class="s2">"store-uuid"</span><span class="p">,</span>
+<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="w">      </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Xuhui Store"</span>
+<a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="w">    </span><span class="p">}</span>
+<a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="w">  </span><span class="p">},</span>
+<a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a><span class="w">  </span><span class="nt">"code"</span><span class="p">:</span><span class="w"> </span><span class="mi">202</span><span class="p">,</span>
+<a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a><span class="w">  </span><span class="nt">"message"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Order submitted for store acceptance"</span>
+<a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a><span class="p">}</span>
+</code></pre></div>
+<p>The client polls the existing order detail endpoint or consumes its own notification
+channel. It must not assume that a <code>202</code> response means the Store has stock.</p>
+<hr />
+<h2 id="7-integration-event-contracts">7. Integration Event Contracts<a class="headerlink" href="#7-integration-event-contracts" title="Permanent link">&para;</a></h2>
+<h3 id="71-envelope">7.1 Envelope<a class="headerlink" href="#71-envelope" title="Permanent link">&para;</a></h3>
+<p>All integration events use this envelope:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="p">{</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="w">  </span><span class="nt">"eventId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"uuid"</span><span class="p">,</span>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="w">  </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"trade.order.created"</span><span class="p">,</span>
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="w">  </span><span class="nt">"version"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="w">  </span><span class="nt">"occurredAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2026-07-24T12:00:00+00:00"</span><span class="p">,</span>
+<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="w">  </span><span class="nt">"aggregateType"</span><span class="p">:</span><span class="w"> </span><span class="s2">"trade_order"</span><span class="p">,</span>
+<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="w">  </span><span class="nt">"aggregateId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"trade-order-uuid"</span><span class="p">,</span>
+<a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a><span class="w">  </span><span class="nt">"correlationId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"trade-order-uuid"</span><span class="p">,</span>
+<a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a><span class="w">  </span><span class="nt">"causationId"</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
+<a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a><span class="w">  </span><span class="nt">"payload"</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span>
+<a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a><span class="p">}</span>
+</code></pre></div>
+<p>Rules:</p>
+<ul>
+<li><code>eventId</code> is immutable and globally unique.</li>
+<li><code>aggregateId</code> is the aggregate UUID, never an internal database id.</li>
+<li><code>correlationId</code> follows the business flow across services; for this flow it begins as
+  the Trade order UUID.</li>
+<li><code>causationId</code> is the triggering event id, or <code>null</code> for an initial HTTP command.</li>
+<li>A breaking payload change creates a new event version/topic; it never mutates v1.</li>
+<li>Payloads must contain only data safe for the receiving domain. Do not publish secrets,
+  payment credentials, raw provider callbacks, or unnecessary PII.</li>
+</ul>
+<h3 id="72-tradeordercreatedv1">7.2 <code>trade.order.created.v1</code><a class="headerlink" href="#72-tradeordercreatedv1" title="Permanent link">&para;</a></h3>
+<p><strong>Publisher:</strong> Trade outbox relay after order creation commits.</p>
+<p><strong>Consumer:</strong> Store <code>TradeOrderCreatedConsumer</code>.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="p">{</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">  </span><span class="nt">"orderUuid"</span><span class="p">:</span><span class="w"> </span><span class="s2">"trade-order-uuid"</span><span class="p">,</span>
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="w">  </span><span class="nt">"store"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="w">    </span><span class="nt">"uuid"</span><span class="p">:</span><span class="w"> </span><span class="s2">"store-uuid"</span><span class="p">,</span>
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="w">    </span><span class="nt">"code"</span><span class="p">:</span><span class="w"> </span><span class="s2">"shanghai-xuhui"</span><span class="p">,</span>
+<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="w">    </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Xuhui Store"</span><span class="p">,</span>
+<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="w">    </span><span class="nt">"channel"</span><span class="p">:</span><span class="w"> </span><span class="s2">"mini_program"</span>
+<a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a><span class="w">  </span><span class="p">},</span>
+<a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a><span class="w">  </span><span class="nt">"customerUserUuid"</span><span class="p">:</span><span class="w"> </span><span class="s2">"identity-user-uuid"</span><span class="p">,</span>
+<a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a><span class="w">  </span><span class="nt">"currency"</span><span class="p">:</span><span class="w"> </span><span class="s2">"CNY"</span><span class="p">,</span>
+<a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a><span class="w">  </span><span class="nt">"totalAmount"</span><span class="p">:</span><span class="w"> </span><span class="mi">12800</span><span class="p">,</span>
+<a id="__codelineno-9-12" name="__codelineno-9-12" href="#__codelineno-9-12"></a><span class="w">  </span><span class="nt">"items"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<a id="__codelineno-9-13" name="__codelineno-9-13" href="#__codelineno-9-13"></a><span class="w">    </span><span class="p">{</span>
+<a id="__codelineno-9-14" name="__codelineno-9-14" href="#__codelineno-9-14"></a><span class="w">      </span><span class="nt">"lineId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"trade-order-item-uuid"</span><span class="p">,</span>
+<a id="__codelineno-9-15" name="__codelineno-9-15" href="#__codelineno-9-15"></a><span class="w">      </span><span class="nt">"catalogReference"</span><span class="p">:</span><span class="w"> </span><span class="s2">"SKU-001"</span><span class="p">,</span>
+<a id="__codelineno-9-16" name="__codelineno-9-16" href="#__codelineno-9-16"></a><span class="w">      </span><span class="nt">"quantity"</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span>
+<a id="__codelineno-9-17" name="__codelineno-9-17" href="#__codelineno-9-17"></a><span class="w">      </span><span class="nt">"unitPrice"</span><span class="p">:</span><span class="w"> </span><span class="mi">6400</span><span class="p">,</span>
+<a id="__codelineno-9-18" name="__codelineno-9-18" href="#__codelineno-9-18"></a><span class="w">      </span><span class="nt">"lineAmount"</span><span class="p">:</span><span class="w"> </span><span class="mi">12800</span><span class="p">,</span>
+<a id="__codelineno-9-19" name="__codelineno-9-19" href="#__codelineno-9-19"></a><span class="w">      </span><span class="nt">"snapshot"</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span>
+<a id="__codelineno-9-20" name="__codelineno-9-20" href="#__codelineno-9-20"></a><span class="w">    </span><span class="p">}</span>
+<a id="__codelineno-9-21" name="__codelineno-9-21" href="#__codelineno-9-21"></a><span class="w">  </span><span class="p">],</span>
+<a id="__codelineno-9-22" name="__codelineno-9-22" href="#__codelineno-9-22"></a><span class="w">  </span><span class="nt">"delivery"</span><span class="p">:</span><span class="w"> </span><span class="p">{},</span>
+<a id="__codelineno-9-23" name="__codelineno-9-23" href="#__codelineno-9-23"></a><span class="w">  </span><span class="nt">"placedAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2026-07-24T12:00:00+00:00"</span>
+<a id="__codelineno-9-24" name="__codelineno-9-24" href="#__codelineno-9-24"></a><span class="p">}</span>
+</code></pre></div>
+<p>The event is a historical placement snapshot. Store does not re-read Trade tables to
+complete the payload.</p>
+<h3 id="73-storeorderacceptedv1">7.3 <code>store.order.accepted.v1</code><a class="headerlink" href="#73-storeorderacceptedv1" title="Permanent link">&para;</a></h3>
+<p><strong>Publisher:</strong> Store, after local validation and the future inventory reservation
+contract succeed.</p>
+<p><strong>Consumer:</strong> Trade order decision consumer.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="p">{</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="w">  </span><span class="nt">"orderUuid"</span><span class="p">:</span><span class="w"> </span><span class="s2">"trade-order-uuid"</span><span class="p">,</span>
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="w">  </span><span class="nt">"storeOrderUuid"</span><span class="p">:</span><span class="w"> </span><span class="s2">"store-order-uuid"</span><span class="p">,</span>
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="w">  </span><span class="nt">"storeUuid"</span><span class="p">:</span><span class="w"> </span><span class="s2">"store-uuid"</span><span class="p">,</span>
+<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="w">  </span><span class="nt">"acceptedAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2026-07-24T12:01:00+00:00"</span><span class="p">,</span>
+<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span class="w">  </span><span class="nt">"reservationId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"inventory-reservation-uuid"</span>
+<a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a><span class="p">}</span>
+</code></pre></div>
+<p>Trade applies the <code>store_accept</code> transition only when the event store UUID matches the
+server-written order snapshot and the order is awaiting Store acceptance. Duplicates
+are no-ops.</p>
+<h3 id="74-storeorderrejectedv1">7.4 <code>store.order.rejected.v1</code><a class="headerlink" href="#74-storeorderrejectedv1" title="Permanent link">&para;</a></h3>
+<p><strong>Publisher:</strong> Store, when validation or inventory reservation cannot succeed.</p>
+<p><strong>Consumer:</strong> Trade order decision consumer.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="p">{</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="w">  </span><span class="nt">"orderUuid"</span><span class="p">:</span><span class="w"> </span><span class="s2">"trade-order-uuid"</span><span class="p">,</span>
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="w">  </span><span class="nt">"storeOrderUuid"</span><span class="p">:</span><span class="w"> </span><span class="s2">"store-order-uuid"</span><span class="p">,</span>
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="w">  </span><span class="nt">"storeUuid"</span><span class="p">:</span><span class="w"> </span><span class="s2">"store-uuid"</span><span class="p">,</span>
+<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="w">  </span><span class="nt">"reasonCode"</span><span class="p">:</span><span class="w"> </span><span class="s2">"OUT_OF_STOCK"</span><span class="p">,</span>
+<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a><span class="w">  </span><span class="nt">"reason"</span><span class="p">:</span><span class="w"> </span><span class="s2">"One or more items are unavailable."</span><span class="p">,</span>
+<a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a><span class="w">  </span><span class="nt">"rejectedAt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2026-07-24T12:01:00+00:00"</span>
+<a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a><span class="p">}</span>
+</code></pre></div>
+<p>Allowed <code>reasonCode</code> values begin with:</p>
+<table>
+<thead>
+<tr>
+<th>Code</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>STORE_NOT_FOUND</code></td>
+<td>Resolved Store no longer exists; indicates configuration drift</td>
+</tr>
+<tr>
+<td><code>STORE_UNAVAILABLE</code></td>
+<td>Suspended, closed, or not accepting the channel</td>
+</tr>
+<tr>
+<td><code>ITEM_NOT_AVAILABLE</code></td>
+<td>Store cannot sell one or more requested items</td>
+</tr>
+<tr>
+<td><code>OUT_OF_STOCK</code></td>
+<td>Inventory reservation rejected</td>
+</tr>
+<tr>
+<td><code>DELIVERY_NOT_SUPPORTED</code></td>
+<td>Delivery method/address not serviceable</td>
+</tr>
+<tr>
+<td><code>ACCEPTANCE_TIMEOUT</code></td>
+<td>Store decision did not arrive before the Trade deadline</td>
+</tr>
+<tr>
+<td><code>SYSTEM_ERROR</code></td>
+<td>Retry budget exhausted; operator action required</td>
+</tr>
+</tbody>
+</table>
+<p>Trade transitions the unpaid order to cancellation and records a user-safe reason. It
+does not expose internal exception details.</p>
+<h3 id="75-future-events">7.5 Future Events<a class="headerlink" href="#75-future-events" title="Permanent link">&para;</a></h3>
+<p>The following are reserved, not part of the first Store implementation:</p>
+<table>
+<thead>
+<tr>
+<th>Event</th>
+<th>Publisher</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>trade.order.cancelled.v1</code></td>
+<td>Trade</td>
+<td>Stop Store work and release reservation</td>
+</tr>
+<tr>
+<td><code>trade.order.paid.v1</code></td>
+<td>Trade</td>
+<td>Allow Store to begin preparation/fulfillment</td>
+</tr>
+<tr>
+<td><code>trade.order.refunded.v1</code></td>
+<td>Trade</td>
+<td>Stop or reverse Store work where allowed</td>
+</tr>
+<tr>
+<td><code>store.order.fulfilled.v1</code></td>
+<td>Store</td>
+<td>Tell Trade fulfillment completed, if Trade retains its workflow transition</td>
+</tr>
+<tr>
+<td><code>inventory.reservation.confirmed.v1</code></td>
+<td>Inventory</td>
+<td>Confirm Store-requested reservation</td>
+</tr>
+<tr>
+<td><code>inventory.reservation.rejected.v1</code></td>
+<td>Inventory</td>
+<td>Reject Store-requested reservation</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="8-consumer-and-publisher-design">8. Consumer And Publisher Design<a class="headerlink" href="#8-consumer-and-publisher-design" title="Permanent link">&para;</a></h2>
+<h3 id="81-trade-order-created-consumer">8.1 Trade Order Created Consumer<a class="headerlink" href="#81-trade-order-created-consumer" title="Permanent link">&para;</a></h3>
+<p><code>TradeOrderCreatedConsumer</code> processes one message as follows:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>receive message
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>  -&gt; validate envelope and schema version
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>  -&gt; start Store local transaction
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>  -&gt; insert StoreConsumedEvent(eventId), or return if already present
+<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>  -&gt; find Store by payload.store.uuid
+<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>  -&gt; create/find StoreOrder by tradeOrderUuid
+<a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a>  -&gt; validate Store status, channel, local eligibility
+<a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a>  -&gt; request inventory reservation (future boundary)
+<a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a>  -&gt; set StoreOrder accepted or rejected
+<a id="__codelineno-12-10" name="__codelineno-12-10" href="#__codelineno-12-10"></a>  -&gt; insert StoreOutboxMessage for result event
+<a id="__codelineno-12-11" name="__codelineno-12-11" href="#__codelineno-12-11"></a>  -&gt; commit
+<a id="__codelineno-12-12" name="__codelineno-12-12" href="#__codelineno-12-12"></a>  -&gt; acknowledge broker message
+</code></pre></div>
+<p>The broker message is acknowledged only after the Store transaction commits. If the
+process crashes before acknowledgement, the event is delivered again and becomes an
+inbox/business-idempotent no-op.</p>
+<h3 id="82-outbox-publisher">8.2 Outbox Publisher<a class="headerlink" href="#82-outbox-publisher" title="Permanent link">&para;</a></h3>
+<p>The outbox publisher is a transport adapter, not business logic:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>poll unpublished outbox messages in created order
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>  -&gt; lock one batch
+<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>  -&gt; publish envelope to transport topic
+<a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a>  -&gt; mark publishedAt on broker acknowledgement
+<a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a>  -&gt; on transient error: increment attempts and retry later
+<a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a>  -&gt; on retry exhaustion: retain record and alert/DLQ
+</code></pre></div>
+<p>Initial deployment may use Symfony Messenger with Doctrine transport. The business
+contract must not depend on that choice. RabbitMQ, Kafka, SQS, or an HTTP event relay
+can replace the transport without changing StoreOrder business code.</p>
+<h3 id="83-retry-classification">8.3 Retry Classification<a class="headerlink" href="#83-retry-classification" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Failure</th>
+<th>Consumer action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Duplicate <code>eventId</code></td>
+<td>Acknowledge; no mutation</td>
+</tr>
+<tr>
+<td>Duplicate <code>tradeOrderUuid</code>, same snapshot</td>
+<td>Continue idempotently; ensure result event exists</td>
+</tr>
+<tr>
+<td>Duplicate <code>tradeOrderUuid</code>, different snapshot</td>
+<td>Do not overwrite; critical alert and DLQ</td>
+</tr>
+<tr>
+<td>Temporary database/broker failure</td>
+<td>Roll back and retry</td>
+</tr>
+<tr>
+<td>Invalid event schema/version</td>
+<td>DLQ; do not retry blindly</td>
+</tr>
+<tr>
+<td>Business rejection such as out of stock</td>
+<td>Commit rejected StoreOrder + rejection outbox event</td>
+</tr>
+<tr>
+<td>Unexpected domain exception</td>
+<td>Roll back; retry with bounded backoff, then DLQ</td>
+</tr>
+</tbody>
+</table>
+<h3 id="84-ordering-and-concurrency">8.4 Ordering And Concurrency<a class="headerlink" href="#84-ordering-and-concurrency" title="Permanent link">&para;</a></h3>
+<ul>
+<li>The Store consumer serializes concurrent decisions by <code>tradeOrderUuid</code> through the
+  unique StoreOrder key and transaction locking where necessary.</li>
+<li>An event topic should preserve ordering per aggregate key where the transport supports
+  it, but correctness must not rely on global ordering.</li>
+<li>Store acceptance after a terminal Trade cancellation is harmless: Trade ignores the
+  stale accept event and Store consumes <code>trade.order.cancelled.v1</code> to release work.</li>
+<li>All result handlers validate expected source state before applying transitions.</li>
+</ul>
+<hr />
+<h2 id="9-store-apis">9. Store APIs<a class="headerlink" href="#9-store-apis" title="Permanent link">&para;</a></h2>
+<h3 id="91-public-store-discovery">9.1 Public Store Discovery<a class="headerlink" href="#91-public-store-discovery" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Path</th>
+<th>Auth</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GET</td>
+<td><code>/api/v1/app/stores</code></td>
+<td>Optional/ROLE_USER by channel</td>
+<td>Discover selectable active stores</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/v1/app/stores/{uuid}</code></td>
+<td>Optional/ROLE_USER by channel</td>
+<td>Read store details and availability</td>
+</tr>
+</tbody>
+</table>
+<p>These endpoints do not create orders. The storefront uses the selected Store context
+when calling the existing Trade quote/order APIs.</p>
+<h3 id="92-customer-store-order-read-view">9.2 Customer Store Order Read View<a class="headerlink" href="#92-customer-store-order-read-view" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Path</th>
+<th>Auth</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GET</td>
+<td><code>/api/v1/app/store-orders/{uuid}</code></td>
+<td>ROLE_USER</td>
+<td>Read Store operational information for own commercial order</td>
+</tr>
+</tbody>
+</table>
+<p>The controller resolves ownership through the <code>customerUserUuid</code> stored in StoreOrder.
+It must not reveal operational notes, employee IDs, inventory internals, or internal
+rejection diagnostics.</p>
+<p>The API is a convenience read model; the customer still uses Trade order APIs for
+payment, cancellation, refunds, and canonical commercial status.</p>
+<h3 id="93-platform-store-administration">9.3 Platform Store Administration<a class="headerlink" href="#93-platform-store-administration" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Path</th>
+<th>Auth</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GET/POST/PUT</td>
+<td><code>/api/v1/manage/stores</code></td>
+<td>ROLE_ADMIN</td>
+<td>Store CRUD; closure instead of delete</td>
+</tr>
+<tr>
+<td>GET/POST/PUT</td>
+<td><code>/api/v1/manage/store-memberships</code></td>
+<td>ROLE_ADMIN</td>
+<td>Assign/revoke Store memberships</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/v1/manage/store-orders</code></td>
+<td>ROLE_ADMIN</td>
+<td>Cross-store operational reporting</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/v1/manage/store-orders/{uuid}</code></td>
+<td>ROLE_ADMIN</td>
+<td>Operational detail</td>
+</tr>
+</tbody>
+</table>
+<h3 id="94-store-staff-operations">9.4 Store Staff Operations<a class="headerlink" href="#94-store-staff-operations" title="Permanent link">&para;</a></h3>
+<p>Store staff must not use generic Trade <code>manage/orders</code> routes, which are platform-wide
+<code>ROLE_ADMIN</code> endpoints. Store provides scoped operational endpoints:</p>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Path</th>
+<th>Required membership</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GET</td>
+<td><code>/api/v1/store/manage/orders</code></td>
+<td>active member</td>
+<td>Current store work queue</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/v1/store/manage/orders/{uuid}</code></td>
+<td>active member</td>
+<td>StoreOrder operational detail</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/v1/store/manage/orders/{uuid}/accept</code></td>
+<td>owner/manager</td>
+<td>Manual acceptance when policy permits</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/v1/store/manage/orders/{uuid}/reject</code></td>
+<td>owner/manager</td>
+<td>Reject before payment with reason code</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/v1/store/manage/orders/{uuid}/fulfill</code></td>
+<td>fulfillment/manager</td>
+<td>Mark Store operation fulfilled</td>
+</tr>
+</tbody>
+</table>
+<p>The first asynchronous acceptance implementation may not expose manual actions until
+the timeout/escalation policy is ready. All actions check membership against the
+StoreOrder's local Store relation, not a request-supplied store identifier.</p>
+<hr />
+<h2 id="10-authorization-model">10. Authorization Model<a class="headerlink" href="#10-authorization-model" title="Permanent link">&para;</a></h2>
+<h3 id="101-roles">10.1 Roles<a class="headerlink" href="#101-roles" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Principal</th>
+<th>Scope</th>
+<th>Capabilities</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ROLE_ADMIN</code></td>
+<td>Platform</td>
+<td>All Store administration and reporting</td>
+</tr>
+<tr>
+<td>Store <code>owner</code></td>
+<td>One Store</td>
+<td>Membership, store settings, acceptance, fulfillment</td>
+</tr>
+<tr>
+<td>Store <code>manager</code></td>
+<td>One Store</td>
+<td>Acceptance, rejection, fulfillment, operational views</td>
+</tr>
+<tr>
+<td>Store <code>clerk</code></td>
+<td>One Store</td>
+<td>Read operational queue; limited configured actions</td>
+</tr>
+<tr>
+<td>Store <code>fulfillment</code></td>
+<td>One Store</td>
+<td>Fulfillment-only operational actions</td>
+</tr>
+<tr>
+<td>Customer</td>
+<td>Own orders</td>
+<td>Read customer-safe StoreOrder view only</td>
+</tr>
+</tbody>
+</table>
+<h3 id="102-authorization-rules">10.2 Authorization Rules<a class="headerlink" href="#102-authorization-rules" title="Permanent link">&para;</a></h3>
+<ol>
+<li>Platform roles live in Identity and retain their existing meaning.</li>
+<li>Store roles live only in <code>Membership</code>.</li>
+<li>A Store controller resolves the authenticated Identity user to a scalar <code>userUuid</code> and
+   queries Store membership locally.</li>
+<li><code>ROLE_ADMIN</code> bypasses membership checks only on explicitly administrative routes.</li>
+<li>Store staff cannot elevate a Trade order's commercial status directly.</li>
+<li>Store staff actions produce Store events; Trade applies commercial transitions only
+   through its own event consumers and workflow guards.</li>
+</ol>
+<hr />
+<h2 id="11-store-context-and-promotion-contract">11. Store Context And Promotion Contract<a class="headerlink" href="#11-store-context-and-promotion-contract" title="Permanent link">&para;</a></h2>
+<p>Promotion currently uses a <code>storeCode</code> within Trade's price calculation context. The
+Store bundle gives that value an authoritative source:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>request -&gt; StoreContextResolver -&gt; active Store -&gt; StoreContext.storeCode
+<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>        -&gt; Trade calculatePrices(..., storeCode, ...)
+<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>        -&gt; Promotion storeCode filtering
+</code></pre></div>
+<p>Rules:</p>
+<ul>
+<li>The client cannot select an arbitrary promotion store by posting <code>storeCode</code>.</li>
+<li>Trade passes the resolver-generated code to the pricing pipeline.</li>
+<li>A Store snapshot is persisted with the order-created event so the Store consumer can
+  validate that the order was priced for the intended Store.</li>
+<li>Promotion remains independent: it does not reference Store tables or entities.</li>
+<li>A global promotion remains represented by the existing empty store code convention;
+  Store selection must never accidentally turn an unknown store into global pricing.</li>
+</ul>
+<p>This design makes the existing <code>Promotion.storeCode</code> a routing input, not the Store
+domain model or authorization mechanism.</p>
+<hr />
+<h2 id="12-inventory-boundary">12. Inventory Boundary<a class="headerlink" href="#12-inventory-boundary" title="Permanent link">&para;</a></h2>
+<p>Inventory is deliberately excluded from the first Store data model. Store defines the
+command/result boundary it needs:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>Store validates order
+<a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>  -&gt; inventory.reservation.requested.v1
+<a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>  -&gt; Inventory reserves quantity idempotently
+<a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a>  -&gt; inventory.reservation.confirmed.v1
+<a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a>       or inventory.reservation.rejected.v1
+<a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a>  -&gt; Store accepts/rejects StoreOrder
+</code></pre></div>
+<p>The future request payload must include:</p>
+<ul>
+<li><code>reservationId</code>: Store-generated idempotency/reference UUID.</li>
+<li><code>storeUuid</code>.</li>
+<li><code>tradeOrderUuid</code> and <code>storeOrderUuid</code>.</li>
+<li>Item inventory keys, quantities, and immutable correlation IDs.</li>
+<li>Reservation expiry/deadline.</li>
+</ul>
+<p>Store owns the decision to request reservation and keeps the resulting <code>reservationId</code>.
+Inventory owns available quantity, reservation ledger, decrement/release, and stock
+reconciliation. Neither module accesses the other's database.</p>
+<hr />
+<h2 id="13-timeout-and-compensation">13. Timeout And Compensation<a class="headerlink" href="#13-timeout-and-compensation" title="Permanent link">&para;</a></h2>
+<h3 id="131-acceptance-timeout">13.1 Acceptance Timeout<a class="headerlink" href="#131-acceptance-timeout" title="Permanent link">&para;</a></h3>
+<p>Trade records a configurable acceptance deadline when it creates an order. A scheduled
+Trade job finds orders still awaiting Store acceptance after the deadline and:</p>
+<ol>
+<li>Applies the cancellation transition.</li>
+<li>Writes <code>trade.order.cancelled.v1</code> to Trade outbox with reason <code>ACCEPTANCE_TIMEOUT</code>.</li>
+<li>Store consumes cancellation, marks its pending operation cancelled, and asks future
+   Inventory to release any reservation.</li>
+</ol>
+<p>The job must be idempotent: terminal or already accepted orders are ignored.</p>
+<h3 id="132-late-events">13.2 Late Events<a class="headerlink" href="#132-late-events" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Late event</th>
+<th>Required behavior</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Store accept after Trade timeout cancellation</td>
+<td>Trade ignores it and logs correlation; Store releases work on cancellation event</td>
+</tr>
+<tr>
+<td>Store reject after Trade cancellation</td>
+<td>Trade ignores it; Store retains rejected audit record</td>
+</tr>
+<tr>
+<td>Trade cancellation while Store awaits Inventory</td>
+<td>Store marks cancellation pending and releases reservation when known</td>
+</tr>
+<tr>
+<td>Payment event before acceptance</td>
+<td>Trade rejects/flags as invariant breach; payment start must already be gated</td>
+</tr>
+</tbody>
+</table>
+<h3 id="133-no-distributed-rollback">13.3 No Distributed Rollback<a class="headerlink" href="#133-no-distributed-rollback" title="Permanent link">&para;</a></h3>
+<p>Once an event crosses an outbox boundary, a remote mutation cannot be rolled back.
+Compensation is expressed as a new business event and local state transition, never a
+cross-service database transaction.</p>
+<hr />
+<h2 id="14-persistence-and-migration-plan">14. Persistence And Migration Plan<a class="headerlink" href="#14-persistence-and-migration-plan" title="Permanent link">&para;</a></h2>
+<h3 id="141-initial-store-migration">14.1 Initial Store Migration<a class="headerlink" href="#141-initial-store-migration" title="Permanent link">&para;</a></h3>
+<p>A Store migration creates only Store-owned tables:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>store
+<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>store_membership
+<a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>store_order
+<a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a>store_outbox_message
+<a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a>store_consumed_event
+</code></pre></div>
+<p>It may include foreign keys from <code>store_membership.store_id</code> and <code>store_order.store_id</code>
+to the local <code>store</code> table. It MUST NOT add foreign keys to <code>users</code>, <code>trade_order</code>,
+<code>payment_invoice</code>, or future inventory tables.</p>
+<h3 id="142-trade-migration">14.2 Trade Migration<a class="headerlink" href="#142-trade-migration" title="Permanent link">&para;</a></h3>
+<p>A separate Trade migration adds only generic order orchestration data required by the
+new workflow, such as a Store snapshot in existing JSON metadata and any explicit
+acceptance deadline field. It must not add a foreign key to Store.</p>
+<h3 id="143-data-backfill">14.3 Data Backfill<a class="headerlink" href="#143-data-backfill" title="Permanent link">&para;</a></h3>
+<p>For existing orders without Store metadata:</p>
+<ul>
+<li>Treat them as legacy/global orders.</li>
+<li>Do not fabricate <code>StoreOrder</code> records unless a reliable external mapping exists.</li>
+<li>Existing payment/refund behavior remains unchanged.</li>
+<li>New Store acceptance workflow applies only to newly created Store-scoped orders.</li>
+</ul>
+<hr />
+<h2 id="15-failure-handling-and-observability">15. Failure Handling And Observability<a class="headerlink" href="#15-failure-handling-and-observability" title="Permanent link">&para;</a></h2>
+<h3 id="151-error-categories">15.1 Error Categories<a class="headerlink" href="#151-error-categories" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Category</th>
+<th>HTTP/Event behavior</th>
+<th>Logging</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Invalid Store context</td>
+<td>Reject before Trade creates order</td>
+<td>Warning with safe store hint</td>
+</tr>
+<tr>
+<td>Store business rejection</td>
+<td>Publish rejection event</td>
+<td>Info with reason code/correlation</td>
+</tr>
+<tr>
+<td>Event schema violation</td>
+<td>DLQ</td>
+<td>Error with event id/topic</td>
+</tr>
+<tr>
+<td>Consumer transient failure</td>
+<td>Retry</td>
+<td>Warning with attempt count</td>
+</tr>
+<tr>
+<td>Snapshot mismatch</td>
+<td>Do not mutate existing StoreOrder</td>
+<td>Critical alert</td>
+</tr>
+<tr>
+<td>Outbox publishing failure</td>
+<td>Retry/DLQ</td>
+<td>Error with aggregate/event id</td>
+</tr>
+</tbody>
+</table>
+<h3 id="152-required-structured-log-fields">15.2 Required Structured Log Fields<a class="headerlink" href="#152-required-structured-log-fields" title="Permanent link">&para;</a></h3>
+<p>All asynchronous paths include:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>eventId, topic, aggregateId, correlationId, causationId,
+<a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a>tradeOrderUuid, storeOrderUuid, storeUuid, attempt
+</code></pre></div>
+<p>Logs must not contain customer phone/address details, payment secrets, raw gateway
+payloads, or complete item snapshots unless explicitly redacted for secure diagnostics.</p>
+<h3 id="153-operational-metrics">15.3 Operational Metrics<a class="headerlink" href="#153-operational-metrics" title="Permanent link">&para;</a></h3>
+<p>The target deployment exports at least:</p>
+<ul>
+<li>Outbox backlog count and oldest unpublished age.</li>
+<li>Consumer lag by topic.</li>
+<li>Acceptance/rejection count by Store and reason code.</li>
+<li>Acceptance latency from Trade order creation to Store decision.</li>
+<li>Timeout cancellation count.</li>
+<li>Inbox duplicate count.</li>
+<li>DLQ count and oldest message age.</li>
+</ul>
+<hr />
+<h2 id="16-testing-contract">16. Testing Contract<a class="headerlink" href="#16-testing-contract" title="Permanent link">&para;</a></h2>
+<h3 id="161-unit-tests">16.1 Unit Tests<a class="headerlink" href="#161-unit-tests" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Suite</th>
+<th>Required cases</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>tests/Store/Entity/</code></td>
+<td>Store lifecycle, membership role/status, StoreOrder snapshots/statuses, outbox/inbox fields</td>
+</tr>
+<tr>
+<td><code>tests/Store/Service/</code></td>
+<td>Context resolution, membership authorization, Store acceptance/rejection rules</td>
+</tr>
+<tr>
+<td><code>tests/Store/Consumer/</code></td>
+<td>Valid event, duplicate event, duplicate business key, schema error, rejection event creation</td>
+</tr>
+<tr>
+<td><code>tests/Store/Outbox/</code></td>
+<td>Publish retry classification and event envelope serialization</td>
+</tr>
+</tbody>
+</table>
+<h3 id="162-integration-tests">16.2 Integration Tests<a class="headerlink" href="#162-integration-tests" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Scenario</th>
+<th>Expected result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Active Store receives valid Trade event</td>
+<td>One accepted StoreOrder and one accepted outbox event</td>
+</tr>
+<tr>
+<td>Store is closed</td>
+<td>Rejected StoreOrder and rejection outbox event</td>
+</tr>
+<tr>
+<td>Same <code>eventId</code> redelivered</td>
+<td>No second StoreOrder or result event</td>
+</tr>
+<tr>
+<td>Different event ids with same Trade UUID/same payload</td>
+<td>One StoreOrder; idempotent result behavior</td>
+</tr>
+<tr>
+<td>Same Trade UUID/different payload</td>
+<td>No overwrite; critical failure/DLQ</td>
+</tr>
+<tr>
+<td>Store staff reads another store order</td>
+<td>404/403 without information leak</td>
+</tr>
+<tr>
+<td>Customer reads another customer's StoreOrder</td>
+<td>404/403 without information leak</td>
+</tr>
+<tr>
+<td>Trade receives Store acceptance twice</td>
+<td>One legal workflow transition only</td>
+</tr>
+<tr>
+<td>Trade acceptance timeout races Store acceptance</td>
+<td>Exactly one terminal Trade outcome; stale event safely ignored</td>
+</tr>
+</tbody>
+</table>
+<h3 id="163-contract-tests">16.3 Contract Tests<a class="headerlink" href="#163-contract-tests" title="Permanent link">&para;</a></h3>
+<p>Event producers and consumers need contract fixtures stored independently of Doctrine
+serialization. Tests validate:</p>
+<ul>
+<li>Required fields and scalar types.</li>
+<li>v1 event compatibility.</li>
+<li>Unknown optional field tolerance.</li>
+<li>Forbidden sensitive fields absent from payload.</li>
+<li>Stable canonical payload hashing for inbox diagnostics.</li>
+</ul>
+<hr />
+<h2 id="17-implementation-phases">17. Implementation Phases<a class="headerlink" href="#17-implementation-phases" title="Permanent link">&para;</a></h2>
+<h3 id="phase-1-store-foundation">Phase 1: Store Foundation<a class="headerlink" href="#phase-1-store-foundation" title="Permanent link">&para;</a></h3>
+<ol>
+<li>Create Store, Membership, StoreOrder, Outbox, and Inbox entities/repositories.</li>
+<li>Add Store service interfaces and services.</li>
+<li>Implement platform Store administration and membership management.</li>
+<li>Implement StoreContext resolution for the selected channel.</li>
+<li>Add Store discovery endpoints and Store-staff authorization tests.</li>
+</ol>
+<h3 id="phase-2-trade-orchestration-contract">Phase 2: Trade Orchestration Contract<a class="headerlink" href="#phase-2-trade-orchestration-contract" title="Permanent link">&para;</a></h3>
+<ol>
+<li>Add target Trade workflow states/transitions and payment gate.</li>
+<li>Add server-generated Store snapshot to new Trade orders.</li>
+<li>Add a generic Trade integration-event outbox abstraction.</li>
+<li>Publish <code>trade.order.created.v1</code> only after the Trade transaction commits.</li>
+<li>Return <code>202</code> for Store-scoped order creation.</li>
+<li>Preserve legacy order behavior when no Store context is present, only if that legacy
+   mode remains a product requirement.</li>
+</ol>
+<h3 id="phase-3-store-consumer-and-decision-events">Phase 3: Store Consumer And Decision Events<a class="headerlink" href="#phase-3-store-consumer-and-decision-events" title="Permanent link">&para;</a></h3>
+<ol>
+<li>Implement <code>TradeOrderCreatedConsumer</code> with inbox and business idempotency.</li>
+<li>Create StoreOrder from immutable event snapshot.</li>
+<li>Implement Store eligibility checks and accepted/rejected decisions.</li>
+<li>Write <code>store.order.accepted.v1</code> / <code>store.order.rejected.v1</code> to Store outbox.</li>
+<li>Implement Trade consumers that apply guarded workflow transitions.</li>
+<li>Add timeout cancellation and late-event handling.</li>
+</ol>
+<h3 id="phase-4-fulfillment-and-inventory-integration">Phase 4: Fulfillment And Inventory Integration<a class="headerlink" href="#phase-4-fulfillment-and-inventory-integration" title="Permanent link">&para;</a></h3>
+<ol>
+<li>Define Inventory reservation event contracts.</li>
+<li>Gate Store acceptance on reservation confirmation.</li>
+<li>Add Store fulfillment operations and corresponding Trade event consumers where
+   commercial workflow transitions remain Trade-owned.</li>
+<li>Add cancellation/release compensation.</li>
+</ol>
+<h3 id="phase-5-service-extraction-readiness">Phase 5: Service Extraction Readiness<a class="headerlink" href="#phase-5-service-extraction-readiness" title="Permanent link">&para;</a></h3>
+<ol>
+<li>Move event schemas to a versioned contract package or JSON schema repository.</li>
+<li>Replace in-process transport with a broker while retaining Outbox/Inbox behavior.</li>
+<li>Move Store database and consumer independently.</li>
+<li>Run consumer-driven contract tests in CI.</li>
+<li>Add replay tooling and operational dashboards before enabling production extraction.</li>
+</ol>
+<hr />
+<h2 id="18-acceptance-criteria">18. Acceptance Criteria<a class="headerlink" href="#18-acceptance-criteria" title="Permanent link">&para;</a></h2>
+<p>The Store bundle design is implemented when:</p>
+<table>
+<thead>
+<tr>
+<th>Criterion</th>
+<th>Requirement</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Single order entry</td>
+<td>No Store endpoint creates a commercial order; Trade remains the entry point</td>
+</tr>
+<tr>
+<td>Store isolation</td>
+<td>Store has no Doctrine association/FK to Trade, Payment, Identity, or Inventory</td>
+</tr>
+<tr>
+<td>Context integrity</td>
+<td>Store identity comes from a server-resolved StoreContext, not client body fields</td>
+</tr>
+<tr>
+<td>Store projection</td>
+<td>Exactly one StoreOrder is created per Trade order UUID, idempotently</td>
+</tr>
+<tr>
+<td>Event isolation</td>
+<td>Integration event payloads are versioned scalar/JSON contracts, never Doctrine entities</td>
+</tr>
+<tr>
+<td>Reliable publication</td>
+<td>Business mutation and local outbox write share one transaction</td>
+</tr>
+<tr>
+<td>Reliable consumption</td>
+<td>Inbox event-id uniqueness and StoreOrder business uniqueness protect retries</td>
+</tr>
+<tr>
+<td>Payment gate</td>
+<td>A Store-scoped order cannot begin payment before Store acceptance</td>
+</tr>
+<tr>
+<td>Rejection/timeout</td>
+<td>Trade cancels unpaid orders on Store rejection or acceptance timeout</td>
+</tr>
+<tr>
+<td>Authorization</td>
+<td>Store membership scopes Store operations; platform admin retains explicit override</td>
+</tr>
+<tr>
+<td>Inventory boundary</td>
+<td>Store has reservation contract hooks but no embedded inventory ledger</td>
+</tr>
+<tr>
+<td>Extraction readiness</td>
+<td>Store can move to a separate database/consumer with no cross-schema joins or transactions</td>
+</tr>
+</tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+      
+        <script src="../../../javascripts/mermaid-init.js"></script>
+      
+    
+  </body>
+</html>

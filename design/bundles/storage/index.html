@@ -1,0 +1,3474 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Symfony 8.1 API backend skeleton with modular architecture">
+      
+      
+      
+        <link rel="canonical" href="https://immane.github.io/crud-skeleton/design/bundles/storage/">
+      
+      
+      
+      
+        
+          <link rel="alternate" href="/crud-skeleton/" hreflang="en">
+        
+          <link rel="alternate" href="/crud-skeleton/zh/" hreflang="zh">
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Storage Bundle Design - CRUD Skeleton</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#storage-bundle-design" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="CRUD Skeleton" class="md-header__button md-logo" aria-label="CRUD Skeleton" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            CRUD Skeleton
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Storage Bundle Design
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Select language">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="/crud-skeleton/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="/crud-skeleton/zh/" hreflang="zh" class="md-select__link">
+              中文
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/immane/crud-skeleton" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="CRUD Skeleton" class="md-nav__button md-logo" aria-label="CRUD Skeleton" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    CRUD Skeleton
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/immane/crud-skeleton" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Development Manual
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Development Manual
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../manual/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Manual Index
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../manual/getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../manual/architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../manual/project-structure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project Structure
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../manual/core-framework/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core Framework
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../manual/core-usage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core Usage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../manual/query-system/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Query System
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../manual/development-workflow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Development Workflow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../manual/testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../manual/api-contracts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Contracts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../manual/development-contracts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Development Contracts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../manual/integration-events/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Integration Events
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../manual/database-and-migrations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Database & Migrations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../manual/deployment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../manual/extracting-a-service/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Extracting a Service
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../manual/i18n/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Internationalization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Design Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Design Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../system-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    System Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api-design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../data-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../module-design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Module Design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../controller-design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Controller Design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api-documentation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Documentation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../system-contracts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    System Contracts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../naming-convention/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Naming Convention
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bundles
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Bundles
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../core/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core Framework
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../common/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Common (CMS)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../trade/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Trade (E-Commerce)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../store/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Store (Multi-Store Operations)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../inventory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Inventory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../payment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Payment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../wallet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Wallet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../settlement/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Settlement (Allocation + Finality)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../exchange/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Exchange (Pool-backed Economy)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../identity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Identity (Auth)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../wechat/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Wechat (Login + Pay)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Runbooks
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Runbooks
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../runbooks/common/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Common
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../runbooks/core/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../runbooks/exchange/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Exchange
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../runbooks/identity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Identity
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../runbooks/inventory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Inventory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../runbooks/payment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Payment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../runbooks/promotion/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Promotion
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../runbooks/settlement/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Settlement
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../runbooks/storage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Storage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../runbooks/store/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Store
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../runbooks/trade/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Trade
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../runbooks/wallet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Wallet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../runbooks/wechat/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    WeChat
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Research
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Research
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../research/easywechat-6.x-usage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    EasyWeChat 6.x Usage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../research/huifu-payment-api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Huifu Payment API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Issues
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Issues
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../issues/architecture-review-2026-06-26/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture Review 2026-06-26
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Testing
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../testing/crud-skeleton-production/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Production Validation Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../testing/crud-skeleton-production/TEST_STRATEGY/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Test Strategy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../testing/crud-skeleton-production/SYSTEM_WALKTHROUGH/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    System Walkthrough And Test Seams
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../testing/crud-skeleton-production/TEST_MATRIX/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Test Matrix
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../testing/crud-skeleton-production/BUSINESS_INVARIANTS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Business Invariants
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../testing/crud-skeleton-production/ARCHITECTURE_TEST_MAPPING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture Test Mapping
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../testing/crud-skeleton-production/FAILURE_MODES/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Failure Modes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../testing/crud-skeleton-production/PRODUCTION_VALIDATION/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Release Validation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../testing/crud-skeleton-production/AI_DEVELOPMENT_PROCESS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI Development Process
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../ai/context/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI Context
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../openapi/endpoints.yaml" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Scope
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. Scope">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#11-goal" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.1 Goal
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12-non-goals" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2 Non-Goals
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-module-boundary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Module Boundary
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Module Boundary">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-module-location" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 Module Location
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-dependency-direction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 Dependency Direction
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-driver-contract" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Driver Contract
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Driver Contract">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-mediastorageinterface" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 MediaStorageInterface
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-mediastorageregistry" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 MediaStorageRegistry
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-first-phase-drivers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. First-Phase Drivers
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. First-Phase Drivers">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-localstorage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 LocalStorage
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-qiniustorage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2 QiniuStorage
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-caller-contract-common-media" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Caller Contract (Common / Media)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Caller Contract (Common / Media)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51-media-entity-extension" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1 Media Entity Extension
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52-mediaservice-integration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.2 MediaService Integration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#53-controller-upload-action" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.3 Controller Upload Action
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Configuration
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-request-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Request Flow
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Request Flow">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#71-delete-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.1 Delete Flow
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-driver-auto-discovery" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Driver Auto-Discovery
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-testing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Testing
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="9. Testing">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#91-unit-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.1 Unit Tests
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#92-integration-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.2 Integration Tests
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-error-handling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Error Handling
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-file-validation-contract" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. File Validation Contract
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12-future-drivers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12. Future Drivers
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#13-open-questions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13. Open Questions
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="storage-bundle-design">Storage Bundle Design<a class="headerlink" href="#storage-bundle-design" title="Permanent link">&para;</a></h1>
+<blockquote>
+<p>The Storage bundle (<code>src/Storage/</code>) provides a pluggable file storage abstraction
+backed by tagged drivers. Common/CMS depends on the Storage interface but never
+touches a cloud SDK or filesystem directly.</p>
+</blockquote>
+<hr />
+<h2 id="1-scope">1. Scope<a class="headerlink" href="#1-scope" title="Permanent link">&para;</a></h2>
+<h3 id="11-goal">1.1 Goal<a class="headerlink" href="#11-goal" title="Permanent link">&para;</a></h3>
+<p>Storage is an infrastructure module, not a business module. It owns no domain entities
+and provides exactly one capability:</p>
+<table>
+<thead>
+<tr>
+<th>Capability</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>File storage driver</td>
+<td>Accept an <code>UploadedFile</code>, persist it to a named storage backend, and return a public URL</td>
+</tr>
+<tr>
+<td>File deletion</td>
+<td>Remove a previously stored file from its backend</td>
+</tr>
+<tr>
+<td>Driver registry</td>
+<td>Expose registered drivers by name so callers can choose <code>local</code> / <code>qiniu</code> / etc.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="12-non-goals">1.2 Non-Goals<a class="headerlink" href="#12-non-goals" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Excluded</th>
+<th>Reason</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Media entity ownership</td>
+<td>Media entity lives in Common/CMS</td>
+</tr>
+<tr>
+<td>Upload endpoint ownership</td>
+<td>Controllers live in Common/CMS and depend on the Storage abstraction</td>
+</tr>
+<tr>
+<td>Image processing / thumbnails</td>
+<td>Separate concern; may be added later as a decorator or pipeline step</td>
+</tr>
+<tr>
+<td>Multi-driver mirror / sync</td>
+<td>First phase uses one driver per upload; simultaneous multi-driver write is out of scope</td>
+</tr>
+<tr>
+<td>Account / bucket management</td>
+<td>Cloud console responsibility</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="2-module-boundary">2. Module Boundary<a class="headerlink" href="#2-module-boundary" title="Permanent link">&para;</a></h2>
+<h3 id="21-module-location">2.1 Module Location<a class="headerlink" href="#21-module-location" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>src/Storage/
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>|-- Service/
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>|   |-- MediaStorageInterface.php          # Driver contract
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>|   |-- MediaStorageRegistry.php           # Tagged iterator collection
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>|   |-- LocalStorage.php                   # Local filesystem (default)
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>|   |-- QiniuStorage.php                   # Qiniu Kodo cloud storage
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>|-- Resources/config/
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>|   |-- services_storage.yaml              # Explicit service wiring for drivers with env vars
+</code></pre></div>
+<h3 id="22-dependency-direction">2.2 Dependency Direction<a class="headerlink" href="#22-dependency-direction" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>From</th>
+<th>To</th>
+<th>Allowed</th>
+<th>Rule</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Storage</td>
+<td>Core</td>
+<td>Yes</td>
+<td>UUID, config parameters</td>
+</tr>
+<tr>
+<td>Storage</td>
+<td>Common</td>
+<td>No</td>
+<td>Storage MUST NOT import Media entity or CMS services</td>
+</tr>
+<tr>
+<td>Common</td>
+<td>Storage</td>
+<td>Yes</td>
+<td>Common depends on <code>MediaStorageInterface</code> and <code>MediaStorageRegistry</code></td>
+</tr>
+<tr>
+<td>Storage</td>
+<td>Qiniu SDK</td>
+<td>Yes</td>
+<td><code>QiniuStorage</code> is the only place where the Qiniu SDK is imported</td>
+</tr>
+</tbody>
+</table>
+<p>Storage is a leaf infrastructure module. It exports interfaces, not entities.</p>
+<hr />
+<h2 id="3-driver-contract">3. Driver Contract<a class="headerlink" href="#3-driver-contract" title="Permanent link">&para;</a></h2>
+<h3 id="31-mediastorageinterface">3.1 MediaStorageInterface<a class="headerlink" href="#31-mediastorageinterface" title="Permanent link">&para;</a></h3>
+<p><strong>File</strong>: <code>src/Storage/Service/MediaStorageInterface.php</code></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="x">interface MediaStorageInterface</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="x">{</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="x">    /** Driver name used in registry and the `storage` query parameter, e.g. "local", "qiniu". */</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="x">    public static function getName(): string;</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="x">    /**</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="x">     * Persist an uploaded file and return a publicly accessible URL.</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="x">     *</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="x">     * For local storage the URL is a root-relative path such as</span>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="x">     * `/uploads/202601/a1b2c3d4.jpg`.</span>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="x">     * For cloud storage the URL is a full CDN URL such as</span>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="x">     * `https://cdn.example.com/a1b2c3d4.jpg`.</span>
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="x">     */</span>
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="x">    public function store(UploadedFile $file, string $name): string;</span>
+<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>
+<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a><span class="x">    /** Remove a previously stored file. The `$path` parameter is the value returned by `store()`. */</span>
+<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a><span class="x">    public function delete(string $path): void;</span>
+<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a><span class="x">}</span>
+</code></pre></div>
+<p>Driver implementations MUST NOT throw domain exceptions from callers. They MAY throw
+<code>\RuntimeException</code> or driver-specific exceptions; callers should catch <code>\Throwable</code>.</p>
+<h3 id="32-mediastorageregistry">3.2 MediaStorageRegistry<a class="headerlink" href="#32-mediastorageregistry" title="Permanent link">&para;</a></h3>
+<p><strong>File</strong>: <code>src/Storage/Service/MediaStorageRegistry.php</code></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="x">final class MediaStorageRegistry</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="x">{</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="x">    /** @param iterable&lt;MediaStorageInterface&gt; $drivers */</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="x">    public function __construct(#[AutowireIterator('media.storage')] iterable $drivers) {}</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="x">    /** @throws \RuntimeException when driver name is unknown */</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="x">    public function get(string $name): MediaStorageInterface {}</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="x">    /** @return string[] */</span>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="x">    public function names(): array {}</span>
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="x">}</span>
+</code></pre></div>
+<p>All <code>MediaStorageInterface</code> implementations are auto-tagged <code>media.storage</code> via <code>_instanceof</code>.</p>
+<hr />
+<h2 id="4-first-phase-drivers">4. First-Phase Drivers<a class="headerlink" href="#4-first-phase-drivers" title="Permanent link">&para;</a></h2>
+<h3 id="41-localstorage">4.1 LocalStorage<a class="headerlink" href="#41-localstorage" title="Permanent link">&para;</a></h3>
+<p><strong>File</strong>: <code>src/Storage/Service/LocalStorage.php</code></p>
+<p>Stores files on the local filesystem under <code>public/uploads/</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Behaviour</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Directory layout</td>
+<td><code>{base_path}/{YYYYMM}/{uuid}.{ext}</code></td>
+</tr>
+<tr>
+<td>Public URL</td>
+<td>Root-relative path: <code>/uploads/202601/a1b2c3d4.jpg</code></td>
+</tr>
+<tr>
+<td>Delete</td>
+<td><code>unlink()</code> the physical file</td>
+</tr>
+<tr>
+<td>Configuration</td>
+<td><code>%media.local.upload_path%</code>, <code>%media.local.base_url%</code></td>
+</tr>
+<tr>
+<td>Dependencies</td>
+<td>None (pure PHP filesystem functions)</td>
+</tr>
+</tbody>
+</table>
+<p>LocalStorage is always enabled and is the default driver. It is useful for
+development, testing, and single-server production deployments without a CDN.</p>
+<h3 id="42-qiniustorage">4.2 QiniuStorage<a class="headerlink" href="#42-qiniustorage" title="Permanent link">&para;</a></h3>
+<p><strong>File</strong>: <code>src/Storage/Service/QiniuStorage.php</code></p>
+<p>Stores files on Qiniu Kodo (七牛云对象存储) and returns CDN URLs.</p>
+<table>
+<thead>
+<tr>
+<th>Behaviour</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Upload</td>
+<td>Qiniu SDK upload manager with upload token</td>
+</tr>
+<tr>
+<td>Public URL</td>
+<td><code>{domain}/{filename}</code> e.g. <code>https://cdn.example.com/a1b2c3d4.jpg</code></td>
+</tr>
+<tr>
+<td>Delete</td>
+<td>Qiniu bucket manager <code>delete()</code></td>
+</tr>
+<tr>
+<td>Configuration</td>
+<td><code>%env(QINIU_ACCESS_KEY)%</code>, <code>%env(QINIU_SECRET_KEY)%</code>, <code>%env(QINIU_BUCKET)%</code>, <code>%env(QINIU_DOMAIN)%</code></td>
+</tr>
+<tr>
+<td>Dependencies</td>
+<td><code>overtrue/qiniu-filesystem</code> or <code>qiniu/php-sdk</code></td>
+</tr>
+</tbody>
+</table>
+<p>QiniuStorage is optional and toggled by the caller at upload time by passing
+<code>storage=qiniu</code>. When Qiniu env vars are empty, the service definition should
+either be removed or its constructor should gracefully degrade (return <code>false</code>
+from <code>supports()</code> / throw only when <code>store()</code> is called with valid credentials).</p>
+<hr />
+<h2 id="5-caller-contract-common-media">5. Caller Contract (Common / Media)<a class="headerlink" href="#5-caller-contract-common-media" title="Permanent link">&para;</a></h2>
+<h3 id="51-media-entity-extension">5.1 Media Entity Extension<a class="headerlink" href="#51-media-entity-extension" title="Permanent link">&para;</a></h3>
+<p>The Common <code>Media</code> entity gains one additional scalar field:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>storage</code></td>
+<td>string(20)</td>
+<td>Driver name used at upload time: <code>local</code>, <code>qiniu</code>, etc.</td>
+</tr>
+</tbody>
+</table>
+<p>This allows <code>MediaService::remove()</code> to resolve the correct driver when deleting
+the physical file, without requiring the caller to remember which driver was used.</p>
+<h3 id="52-mediaservice-integration">5.2 MediaService Integration<a class="headerlink" href="#52-mediaservice-integration" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="x">class MediaService extends BaseService</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="x">{</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="x">    public function __construct(</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="x">        ContainerInterface $container,</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="x">        private readonly MediaStorageRegistry $storageRegistry,</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="x">    ) {}</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="x">}</span>
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Responsibility</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>createFromUpload(UploadedFile $file, string $storage, array $meta)</code></td>
+<td>Resolve driver → store file → persist Media entity with <code>storage</code> field</td>
+</tr>
+<tr>
+<td><code>remove(Media $media)</code></td>
+<td>Resolve driver from <code>media.storage</code> → delete physical file → remove entity</td>
+</tr>
+</tbody>
+</table>
+<p><code>MediaService</code> MUST NOT import any Storage driver class or cloud SDK. It only
+talks to <code>MediaStorageInterface</code> through the registry.</p>
+<h3 id="53-controller-upload-action">5.3 Controller Upload Action<a class="headerlink" href="#53-controller-upload-action" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="x">// App/MediaController</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="x">#[Route('/upload', name: 'upload', methods: ['POST'])]</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="x">public function uploadAction(Request $request): Response</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="x">{</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="x">    $file = $request-&gt;files-&gt;get('file');</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="x">    $storage = $request-&gt;request-&gt;get('storage', 'local');</span>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="x">    $media = $this-&gt;service-&gt;createFromUpload($file, $storage, $request-&gt;request-&gt;all());</span>
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="x">    return $this-&gt;success($media, 'Uploaded', 201);</span>
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="x">}</span>
+</code></pre></div>
+<p>The same action pattern is repeated in <code>Manage/MediaController</code>.</p>
+<hr />
+<h2 id="6-configuration">6. Configuration<a class="headerlink" href="#6-configuration" title="Permanent link">&para;</a></h2>
+<p><strong>File</strong>: <code>config/packages/media.yaml</code></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="nt">parameters</span><span class="p">:</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">    </span><span class="nt">media.storage.default</span><span class="p">:</span><span class="w"> </span><span class="s">'local'</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">    </span><span class="nt">media.local.upload_path</span><span class="p">:</span><span class="w"> </span><span class="s">'%kernel.project_dir%/public/uploads'</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="w">    </span><span class="nt">media.local.base_url</span><span class="p">:</span><span class="w"> </span><span class="s">'/uploads'</span>
+</code></pre></div>
+<p><strong>File</strong>: <code>.env</code></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="c1">### Storage ###</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="na">MEDIA_STORAGE_DEFAULT</span><span class="o">=</span><span class="s">local</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="c1">### Qiniu Kodo (optional — leave empty to disable) ###</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="na">QINIU_ACCESS_KEY</span><span class="o">=</span>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="na">QINIU_SECRET_KEY</span><span class="o">=</span>
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="na">QINIU_BUCKET</span><span class="o">=</span>
+<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="na">QINIU_DOMAIN</span><span class="o">=</span>
+</code></pre></div>
+<p><strong>File</strong>: <code>src/Storage/Resources/config/services_storage.yaml</code></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="nt">services</span><span class="p">:</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">    </span><span class="nt">_defaults</span><span class="p">:</span>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">        </span><span class="nt">autowire</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">        </span><span class="nt">autoconfigure</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>
+<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="w">    </span><span class="nt">App\Storage\Service\LocalStorage</span><span class="p">:</span>
+<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="w">        </span><span class="nt">arguments</span><span class="p">:</span>
+<a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="w">            </span><span class="nt">$basePath</span><span class="p">:</span><span class="w"> </span><span class="s">'%media.local.upload_path%'</span>
+<a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="w">            </span><span class="nt">$baseUrl</span><span class="p">:</span><span class="w"> </span><span class="s">'%media.local.base_url%'</span>
+<a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a>
+<a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a><span class="w">    </span><span class="nt">App\Storage\Service\QiniuStorage</span><span class="p">:</span>
+<a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a><span class="w">        </span><span class="nt">arguments</span><span class="p">:</span>
+<a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a><span class="w">            </span><span class="nt">$accessKey</span><span class="p">:</span><span class="w"> </span><span class="s">'%env(QINIU_ACCESS_KEY)%'</span>
+<a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a><span class="w">            </span><span class="nt">$secretKey</span><span class="p">:</span><span class="w"> </span><span class="s">'%env(QINIU_SECRET_KEY)%'</span>
+<a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a><span class="w">            </span><span class="nt">$bucket</span><span class="p">:</span><span class="w"> </span><span class="s">'%env(QINIU_BUCKET)%'</span>
+<a id="__codelineno-7-16" name="__codelineno-7-16" href="#__codelineno-7-16"></a><span class="w">            </span><span class="nt">$domain</span><span class="p">:</span><span class="w"> </span><span class="s">'%env(QINIU_DOMAIN)%'</span>
+</code></pre></div>
+<p><strong>File</strong>: <code>config/services.yaml</code> (addition)</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="nt">_instanceof</span><span class="p">:</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="w">    </span><span class="nt">App\Storage\Service\MediaStorageInterface</span><span class="p">:</span>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="w">        </span><span class="nt">tags</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">'media.storage'</span><span class="p p-Indicator">]</span>
+</code></pre></div>
+<hr />
+<h2 id="7-request-flow">7. Request Flow<a class="headerlink" href="#7-request-flow" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>POST /api/v1/app/media/upload
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>  Content-Type: multipart/form-data
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>  Body:
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>    file: &lt;binary&gt;
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>    storage: "qiniu"        (optional, defaults to "local")
+<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>    alt: "描述文字"           (optional)
+<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a>
+<a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a>Controller::uploadAction()
+<a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a>  → $request-&gt;files-&gt;get('file')
+<a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a>  → MediaService::createFromUpload(file, storage, meta)
+<a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a>      → MediaStorageRegistry::get('qiniu')
+<a id="__codelineno-9-12" name="__codelineno-9-12" href="#__codelineno-9-12"></a>      → QiniuStorage::store(file, uuid.ext) → "https://cdn.example.com/abc.jpg"
+<a id="__codelineno-9-13" name="__codelineno-9-13" href="#__codelineno-9-13"></a>      → persist Media { storage: "qiniu", path: "https://cdn.example.com/abc.jpg", ... }
+<a id="__codelineno-9-14" name="__codelineno-9-14" href="#__codelineno-9-14"></a>      → return Media JSON
+</code></pre></div>
+<h3 id="71-delete-flow">7.1 Delete Flow<a class="headerlink" href="#71-delete-flow" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>DELETE /api/v1/manage/media/{id}
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>Controller::deleteAction()
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>  → MediaService::get({ id })
+<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>  → MediaService::remove(media)
+<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>      → MediaStorageRegistry::get(media.storage)
+<a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a>      → QiniuStorage::delete(media.path)
+<a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a>      → remove entity
+</code></pre></div>
+<hr />
+<h2 id="8-driver-auto-discovery">8. Driver Auto-Discovery<a class="headerlink" href="#8-driver-auto-discovery" title="Permanent link">&para;</a></h2>
+<p>Drivers are collected by Symfony's tagged iterator, not by a hardcoded registry:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="c1"># config/services.yaml</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="nt">_instanceof</span><span class="p">:</span>
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="w">    </span><span class="nt">App\Storage\Service\MediaStorageInterface</span><span class="p">:</span>
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="w">        </span><span class="nt">tags</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">'media.storage'</span><span class="p p-Indicator">]</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="x">final class MediaStorageRegistry</span>
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="x">{</span>
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="x">    public function __construct(</span>
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="x">        #[AutowireIterator('media.storage')]</span>
+<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="x">        iterable $drivers,</span>
+<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a><span class="x">    ) {</span>
+<a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a><span class="x">        foreach ($drivers as $driver) {</span>
+<a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a><span class="x">            $this-&gt;drivers[$driver::getName()] = $driver;</span>
+<a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a><span class="x">        }</span>
+<a id="__codelineno-12-10" name="__codelineno-12-10" href="#__codelineno-12-10"></a><span class="x">    }</span>
+<a id="__codelineno-12-11" name="__codelineno-12-11" href="#__codelineno-12-11"></a><span class="x">}</span>
+</code></pre></div>
+<p>Adding a new driver (e.g., <code>S3Storage</code>) requires only:
+1. Create <code>src/Storage/Service/S3Storage.php</code> implementing <code>MediaStorageInterface</code>
+2. If it needs env vars, add a service definition in <code>services_storage.yaml</code></p>
+<p>No changes to <code>MediaStorageRegistry</code>, <code>MediaService</code>, or any controller.</p>
+<hr />
+<h2 id="9-testing">9. Testing<a class="headerlink" href="#9-testing" title="Permanent link">&para;</a></h2>
+<h3 id="91-unit-tests">9.1 Unit Tests<a class="headerlink" href="#91-unit-tests" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Test</th>
+<th>Coverage</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>LocalStorageTest</code></td>
+<td>store / delete / URL generation</td>
+</tr>
+<tr>
+<td><code>MediaStorageRegistryTest</code></td>
+<td>resolve by name / unknown driver exception / names list</td>
+</tr>
+</tbody>
+</table>
+<h3 id="92-integration-tests">9.2 Integration Tests<a class="headerlink" href="#92-integration-tests" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Test</th>
+<th>Coverage</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>MediaUploadIntegrationTest</code></td>
+<td>Full upload → Media entity → delete (local driver)</td>
+</tr>
+<tr>
+<td><code>MediaStorageSwitchingTest</code></td>
+<td>Upload with <code>storage=local</code> and <code>storage=qiniu</code> in same test</td>
+</tr>
+</tbody>
+</table>
+<p>Qiniu integration tests should be skipped when <code>QINIU_ACCESS_KEY</code> is empty
+(marked <code>@group qiniu</code> or guarded by an env-var check in <code>setUp()</code>).</p>
+<hr />
+<h2 id="10-error-handling">10. Error Handling<a class="headerlink" href="#10-error-handling" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Scenario</th>
+<th>Behaviour</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Unknown driver name</td>
+<td><code>\RuntimeException</code> from registry, caught by controller → <code>warning()</code></td>
+</tr>
+<tr>
+<td>Upload exceeds PHP <code>upload_max_filesize</code></td>
+<td>Symfony <code>UploadedFile</code> validation before driver call</td>
+</tr>
+<tr>
+<td>Driver store fails</td>
+<td>Exception propagates; Media entity is NOT persisted (no orphan records)</td>
+</tr>
+<tr>
+<td>Driver delete fails</td>
+<td>Logged but entity is still removed (best-effort cleanup)</td>
+</tr>
+</tbody>
+</table>
+<p>Controller MUST validate the uploaded file before calling the driver:</p>
+<table>
+<thead>
+<tr>
+<th>Check</th>
+<th>Rule</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>File present</td>
+<td><code>$request-&gt;files-&gt;get('file') !== null</code></td>
+</tr>
+<tr>
+<td>Size limit</td>
+<td>Configurable via <code>media.upload.max_size</code> (default 10M)</td>
+</tr>
+<tr>
+<td>MIME allowlist</td>
+<td>Configurable via <code>media.upload.allowed_mime_types</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="11-file-validation-contract">11. File Validation Contract<a class="headerlink" href="#11-file-validation-contract" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Constraint</th>
+<th>Default</th>
+<th>Configurable</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Max file size</td>
+<td>10 MB</td>
+<td><code>media.upload.max_size</code></td>
+</tr>
+<tr>
+<td>Allowed MIME types</td>
+<td><code>image/jpeg</code>, <code>image/png</code>, <code>image/gif</code>, <code>image/webp</code>, <code>application/pdf</code></td>
+<td><code>media.upload.allowed_mime_types</code></td>
+</tr>
+<tr>
+<td>Empty file</td>
+<td>Rejected</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<p>Validation happens in the controller or in <code>MediaService::createFromUpload()</code> before
+the driver is called, so invalid files never reach the storage backend.</p>
+<hr />
+<h2 id="12-future-drivers">12. Future Drivers<a class="headerlink" href="#12-future-drivers" title="Permanent link">&para;</a></h2>
+<p>The same interface supports any storage backend:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>src/Storage/Service/
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>|-- LocalStorage.php            # First phase (always enabled)
+<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>|-- QiniuStorage.php            # First phase (optional)
+<a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a>|-- S3Storage.php               # Future — AWS S3
+<a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a>|-- OssStorage.php              # Future — Alibaba Cloud OSS
+<a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a>|-- CosStorage.php              # Future — Tencent Cloud COS
+</code></pre></div>
+<p>Each is a single class implementing <code>MediaStorageInterface</code>. No registry or
+caller code changes required.</p>
+<hr />
+<h2 id="13-open-questions">13. Open Questions<a class="headerlink" href="#13-open-questions" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Question</th>
+<th>Default Decision</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Should Storage own the Media entity?</td>
+<td>No, Media stays in Common/CMS</td>
+</tr>
+<tr>
+<td>Should <code>public/uploads/</code> be gitignored?</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Should QiniuStorage be in a separate Qiniu bundle?</td>
+<td>Not in first phase; keep in Storage until Qiniu-specific complexity (account mgmt, callback handling) justifies a split</td>
+</tr>
+<tr>
+<td>Should delete be synchronous or queued?</td>
+<td>Synchronous for first phase</td>
+</tr>
+<tr>
+<td>Should there be a <code>serve</code> endpoint for private files?</td>
+<td>Out of scope; <code>public/uploads/</code> is directly served by nginx</td>
+</tr>
+</tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+      
+        <script src="../../../javascripts/mermaid-init.js"></script>
+      
+    
+  </body>
+</html>

@@ -1,0 +1,4402 @@
+
+<!doctype html>
+<html lang="zh" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Symfony 8.1 API backend skeleton with modular architecture">
+      
+      
+      
+        <link rel="canonical" href="https://immane.github.io/crud-skeleton/zh/research/huifu-payment-api/">
+      
+      
+        <link rel="prev" href="../easywechat-6.x-usage/">
+      
+      
+        <link rel="next" href="../../issues/architecture-review-2026-06-26/">
+      
+      
+        
+          <link rel="alternate" href="/crud-skeleton/" hreflang="en">
+        
+          <link rel="alternate" href="/crud-skeleton/zh/" hreflang="zh">
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>汇付支付 API - CRUD Skeleton</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#huifu-payment-api-research" class="md-skip">
+          跳转至
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="页眉">
+    <a href="../.." title="CRUD Skeleton" class="md-header__button md-logo" aria-label="CRUD Skeleton" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            CRUD Skeleton
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              汇付支付 API
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="选择当前语言">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="/crud-skeleton/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="/crud-skeleton/zh/" hreflang="zh" class="md-select__link">
+              中文
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="查找">
+        
+        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            正在初始化搜索引擎
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/immane/crud-skeleton" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="导航栏" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="CRUD Skeleton" class="md-nav__button md-logo" aria-label="CRUD Skeleton" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    CRUD Skeleton
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/immane/crud-skeleton" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    首页
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    开发手册
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    开发手册
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manual/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    手册索引
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manual/getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    入门
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manual/architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manual/project-structure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    项目结构
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manual/core-framework/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core 框架
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manual/core-usage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    核心用法
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manual/query-system/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    查询系统
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manual/development-workflow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    开发流程
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manual/testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manual/api-contracts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API合约
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manual/development-contracts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    开发合同
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manual/integration-events/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    整合活动
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manual/database-and-migrations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    数据库和迁移
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manual/deployment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manual/extracting-a-service/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    提取服务
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manual/i18n/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Internationalization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    设计契约
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    设计契约
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/system-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    系统架构
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/api-design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API 设计
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/data-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    数据模型
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/module-design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    模块设计
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/controller-design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    控制器设计
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/api-documentation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API 文档
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/system-contracts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    系统契约
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/naming-convention/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    命名约定
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    模块设计
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    模块设计
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/core/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core 框架
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/common/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Common (CMS)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/trade/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Trade (电商)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/store/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    商店（多商店运营）
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/inventory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Inventory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/payment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Payment (支付)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/wallet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Wallet (钱包)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/settlement/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    结算（分配+最终确定）
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/exchange/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    交易所（矿池支持经济）
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/identity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Identity (鉴权)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/wechat/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    微信（登录+支付）
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Runbooks
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Runbooks
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/common/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Common
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/core/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/exchange/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Exchange
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/identity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Identity
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/inventory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Inventory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/payment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Payment (支付)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/promotion/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Promotion
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/settlement/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Settlement
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/storage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Storage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/store/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Store
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/trade/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Trade
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/wallet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Wallet (钱包)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/wechat/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    WeChat
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    调研
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    调研
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../easywechat-6.x-usage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    EasyWeChat 6.x 用法
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    汇付支付 API
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    汇付支付 API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-environment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Environment
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-core-signing-rsa-sha256-from-official-sdk" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Core Signing — RSA-SHA256 (from official SDK)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Core Signing — RSA-SHA256 (from official SDK)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-request-signing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 Request signing
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-response-notify-verification" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 Response / notify verification
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23-sensitive-field-encryption" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3 Sensitive field encryption
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#24-request-envelope-builder-from-official-sdk" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.4 Request envelope builder (from official SDK)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#25-sdk-init-merconfig" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.5 SDK init / MerConfig
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-payment-apis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Payment APIs
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Payment APIs">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-unified-order-jsapiminiappnativeh5app" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 Unified Order (JSAPI/MiniApp/Native/H5/APP)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-scanpay-query" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 Scanpay Query
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33-close-order" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3 Close Order
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#34-refund" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.4 Refund
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-asynchronous-notification" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Asynchronous Notification
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Asynchronous Notification">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-format" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 Format
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-notification-payload-resp_data-json" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2 Notification payload (resp_data JSON)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43-status-codes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.3 Status codes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-legacy-paystrategy-implementation-farm-neighbor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Legacy PayStrategy Implementation (farm-neighbor)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Legacy PayStrategy Implementation (farm-neighbor)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51-paystrategy-interface" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1 PayStrategy interface
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52-huifupaystrategy-full-implementation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.2 HuifuPayStrategy — full implementation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#53-huifupospaystrategy-pos-variant" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.3 HuifuPosPayStrategy (POS variant)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#54-invoicelistener-close-order-on-cancel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.4 InvoiceListener — close order on cancel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#55-huifuaccountservice-transfer-and-withdraw" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.5 HuifuAccountService — transfer and withdraw
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-invoiceclose-event-close-unpaid-order" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. InvoiceClose Event (close unpaid order)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-configuration-shape" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Configuration Shape
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-integration-notes-for-crud-skeleton" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Integration Notes for crud-skeleton
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. Integration Notes for crud-skeleton">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#81-amount-conversion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.1 Amount conversion
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#82-status-mapping" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.2 Status mapping
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#83-gateway-interface-mapping" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.3 Gateway interface mapping
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#84-notification-response" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.4 Notification response
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#85-notification-body-parsing-critical" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.5 Notification body parsing (CRITICAL)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#86-key-idempotency-pattern" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.6 Key idempotency pattern
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#87-no-sdk-needed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.7 No SDK needed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#88-recommended-file-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.8 Recommended file structure
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-all-legacy-api-endpoints-for-reference" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. ALL Legacy API Endpoints (for reference)
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Issues
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Issues
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../issues/architecture-review-2026-06-26/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    架构回顾 2026-06-26
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Testing
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../testing/crud-skeleton-production/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    生产验证概述
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../testing/crud-skeleton-production/TEST_STRATEGY/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    测试策略
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../testing/crud-skeleton-production/SYSTEM_WALKTHROUGH/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    系统演练和测试接缝
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../testing/crud-skeleton-production/TEST_MATRIX/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    测试矩阵
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../testing/crud-skeleton-production/BUSINESS_INVARIANTS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    业务不变量
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../testing/crud-skeleton-production/ARCHITECTURE_TEST_MAPPING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    架构测试映射
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../testing/crud-skeleton-production/FAILURE_MODES/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    失效模式
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../testing/crud-skeleton-production/PRODUCTION_VALIDATION/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    发布验证
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../testing/crud-skeleton-production/AI_DEVELOPMENT_PROCESS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    人工智能开发流程
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../ai/context/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI 快照
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../openapi/endpoints.yaml" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API 参考
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-environment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Environment
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-core-signing-rsa-sha256-from-official-sdk" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Core Signing — RSA-SHA256 (from official SDK)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Core Signing — RSA-SHA256 (from official SDK)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-request-signing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 Request signing
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-response-notify-verification" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 Response / notify verification
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23-sensitive-field-encryption" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3 Sensitive field encryption
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#24-request-envelope-builder-from-official-sdk" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.4 Request envelope builder (from official SDK)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#25-sdk-init-merconfig" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.5 SDK init / MerConfig
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-payment-apis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Payment APIs
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Payment APIs">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-unified-order-jsapiminiappnativeh5app" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 Unified Order (JSAPI/MiniApp/Native/H5/APP)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-scanpay-query" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 Scanpay Query
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33-close-order" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3 Close Order
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#34-refund" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.4 Refund
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-asynchronous-notification" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Asynchronous Notification
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Asynchronous Notification">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-format" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 Format
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-notification-payload-resp_data-json" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2 Notification payload (resp_data JSON)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43-status-codes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.3 Status codes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-legacy-paystrategy-implementation-farm-neighbor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Legacy PayStrategy Implementation (farm-neighbor)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Legacy PayStrategy Implementation (farm-neighbor)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51-paystrategy-interface" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1 PayStrategy interface
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52-huifupaystrategy-full-implementation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.2 HuifuPayStrategy — full implementation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#53-huifupospaystrategy-pos-variant" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.3 HuifuPosPayStrategy (POS variant)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#54-invoicelistener-close-order-on-cancel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.4 InvoiceListener — close order on cancel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#55-huifuaccountservice-transfer-and-withdraw" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.5 HuifuAccountService — transfer and withdraw
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-invoiceclose-event-close-unpaid-order" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. InvoiceClose Event (close unpaid order)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-configuration-shape" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Configuration Shape
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-integration-notes-for-crud-skeleton" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Integration Notes for crud-skeleton
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. Integration Notes for crud-skeleton">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#81-amount-conversion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.1 Amount conversion
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#82-status-mapping" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.2 Status mapping
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#83-gateway-interface-mapping" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.3 Gateway interface mapping
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#84-notification-response" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.4 Notification response
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#85-notification-body-parsing-critical" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.5 Notification body parsing (CRITICAL)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#86-key-idempotency-pattern" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.6 Key idempotency pattern
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#87-no-sdk-needed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.7 No SDK needed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#88-recommended-file-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.8 Recommended file structure
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-all-legacy-api-endpoints-for-reference" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. ALL Legacy API Endpoints (for reference)
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="huifu-payment-api-research">Huifu (汇付斗拱) Payment API Research<a class="headerlink" href="#huifu-payment-api-research" title="Permanent link">&para;</a></h1>
+<blockquote>
+<p>From farm-neighbor legacy <code>HuifuBundle</code> + <code>PayStrategy</code> + official SDK (<code>huifurepo/dg-php-sdk</code> v2.0.11).
+API docs: https://paas.huifu.com/open/doc/api/</p>
+</blockquote>
+<h2 id="1-environment">1. Environment<a class="headerlink" href="#1-environment" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Environment</th>
+<th>Base URL</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Production</td>
+<td><code>https://api.huifu.com</code></td>
+</tr>
+<tr>
+<td>Sandbox/Test</td>
+<td><code>https://spin-test.cloudpnr.com</code></td>
+</tr>
+</tbody>
+</table>
+<p>Request envelope for all V2 APIs:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="p">{</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">    </span><span class="nt">"sys_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"6666000135263684"</span><span class="p">,</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">    </span><span class="nt">"product_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"YMFZS"</span><span class="p">,</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">    </span><span class="nt">"data"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="err">...</span><span class="w"> </span><span class="p">},</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">    </span><span class="nt">"sign"</span><span class="p">:</span><span class="w"> </span><span class="s2">"&lt;base64 RSA-SHA256&gt;"</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="p">}</span>
+</code></pre></div>
+<hr />
+<h2 id="2-core-signing-rsa-sha256-from-official-sdk">2. Core Signing — RSA-SHA256 (from official SDK)<a class="headerlink" href="#2-core-signing-rsa-sha256-from-official-sdk" title="Permanent link">&para;</a></h2>
+<p>These are the exact implementations from <code>BsPaySdk\core\BsPayTools.php</code> — the official Huifu PHP SDK.</p>
+<h3 id="21-request-signing">2.1 Request signing<a class="headerlink" href="#21-request-signing" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="x">// File: BsPaySdk/core/BsPayTools.php (official SDK v2.0.11)</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="x">public static function sha_with_rsa_sign($data, $rsaPrivateKey, $alg=OPENSSL_ALGO_SHA256){</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="x">    $key = "-----BEGIN PRIVATE KEY-----\n"</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="x">        . wordwrap($rsaPrivateKey, 64, "\n", true)</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="x">        . "\n-----END PRIVATE KEY-----";</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="x">    $signature= '';</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="x">    try {</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="x">        openssl_sign($data, $signature, $key, $alg);</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="x">    } catch (\Exception $e) {</span>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="x">        echo $e-&gt;getMessage();</span>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="x">    }</span>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="x">    return base64_encode($signature);</span>
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="x">}</span>
+</code></pre></div>
+<p><strong>Usage:</strong>
+1. Build request <code>data</code> as associative array.
+2. <code>ksort($data)</code>
+3. <code>json_encode($data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)</code>
+4. <code>sha_with_rsa_sign($json, $rsaPrivateKey)</code> → base64 signature
+5. Wrap into <code>{sys_id, product_id, data, sign}</code> envelope</p>
+<h3 id="22-response-notify-verification">2.2 Response / notify verification<a class="headerlink" href="#22-response-notify-verification" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="x">// File: BsPaySdk/core/BsPayTools.php (official SDK)</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="x">// Simple verify (raw string)</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="x">public static function verifySign($signature, $data, $rsaPublicKey, $alg=OPENSSL_ALGO_SHA256){</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="x">    $key = "-----BEGIN PUBLIC KEY-----\n"</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="x">        . wordwrap($rsaPublicKey, 64, "\n", true)</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="x">        . "\n-----END PUBLIC KEY-----";</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="x">    return openssl_verify($data, base64_decode($signature), $key, $alg);</span>
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="x">}</span>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="x">// Verify with ksort (for API response data arrays)</span>
+<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="x">public static function verifySign_sort($signature, $data, $rsaPublicKey, $alg=OPENSSL_ALGO_SHA256){</span>
+<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="x">    $key = "-----BEGIN PUBLIC KEY-----\n"</span>
+<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a><span class="x">        . wordwrap($rsaPublicKey, 64, "\n", true)</span>
+<a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a><span class="x">        . "\n-----END PUBLIC KEY-----";</span>
+<a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a><span class="x">    ksort($data);</span>
+<a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a><span class="x">    $data = json_encode($data, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);</span>
+<a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a><span class="x">    $data = str_replace("\n","\\n",$data);</span>
+<a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a><span class="x">    $data = str_replace('"enter_fee":0,','"enter_fee":0.00,',$data);</span>
+<a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a><span class="x">    return openssl_verify($data, base64_decode($signature), $key, $alg);</span>
+<a id="__codelineno-2-21" name="__codelineno-2-21" href="#__codelineno-2-21"></a><span class="x">}</span>
+</code></pre></div>
+<p><strong>Note:</strong> <code>verifySign_sort()</code> has a hardcoded workaround for <code>enter_fee</code> field format bug. New implementations should be aware of this.</p>
+<h3 id="23-sensitive-field-encryption">2.3 Sensitive field encryption<a class="headerlink" href="#23-sensitive-field-encryption" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="x">// File: BsPaySdk/core/BsPayTools.php (official SDK)</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="x">public static function encrypt_with_rsa_pubkey($data, $rsaPublicKey, $padding=OPENSSL_PKCS1_PADDING){</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="x">    $key = "-----BEGIN PUBLIC KEY-----\n"</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="x">        . wordwrap($rsaPublicKey, 64, "\n", true)</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="x">        . "\n-----END PUBLIC KEY-----";</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="x">    $encryptResult= '';</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="x">    try {</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="x">        openssl_public_encrypt($data, $encryptResult, $key, $padding);</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="x">    } catch (\Exception $e) {</span>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="x">        echo $e-&gt;getMessage();</span>
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="x">    }</span>
+<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span class="x">    return base64_encode($encryptResult);</span>
+<a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a><span class="x">}</span>
+</code></pre></div>
+<h3 id="24-request-envelope-builder-from-official-sdk">2.4 Request envelope builder (from official SDK)<a class="headerlink" href="#24-request-envelope-builder-from-official-sdk" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="x">// File: BsPaySdk/core/BsPayRequestV2.php — createBody()</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="x">private function createBody(MerConfig $merChantConfig, $post_data, $file = null){</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="x">    $body = array();</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="x">    $body['sys_id'] = $merChantConfig-&gt;sys_id;</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="x">    $body['product_id'] = $merChantConfig-&gt;product_id;</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="x">    ksort($post_data);</span>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="x">    $body['data'] = $post_data;</span>
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="x">    $sign = BsPayTools::sha_with_rsa_sign(</span>
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="x">        json_encode($post_data, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE),</span>
+<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="x">        $merChantConfig-&gt;rsa_merch_private_key);</span>
+<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="x">    $body['sign'] = $sign;</span>
+<a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a><span class="x">    if(!empty($file)){</span>
+<a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a><span class="x">        $body['file'] = $file;</span>
+<a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a><span class="x">        $body['data'] = json_encode($post_data, JSON_UNESCAPED_UNICODE);</span>
+<a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a><span class="x">    }</span>
+<a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a><span class="x">    return $body;</span>
+<a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a><span class="x">}</span>
+<a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a>
+<a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a><span class="x">// Response verification (after curl)</span>
+<a id="__codelineno-4-20" name="__codelineno-4-20" href="#__codelineno-4-20"></a><span class="x">$resp_sign = isset($this-&gt;rspDatas['sign']) ? $this-&gt;rspDatas['sign'] : '';</span>
+<a id="__codelineno-4-21" name="__codelineno-4-21" href="#__codelineno-4-21"></a><span class="x">$resp_data = isset($this-&gt;rspDatas['data']) ? $this-&gt;rspDatas['data'] : '';</span>
+<a id="__codelineno-4-22" name="__codelineno-4-22" href="#__codelineno-4-22"></a><span class="x">if (!BsPayTools::verifySign_sort($resp_sign, $resp_data, $merConfig-&gt;rsa_huifu_public_key)) {</span>
+<a id="__codelineno-4-23" name="__codelineno-4-23" href="#__codelineno-4-23"></a><span class="x">    $this-&gt;error = ['code' =&gt; 'RESP_SIGN_VERIFY_FAILED', 'msg' =&gt; '...'];</span>
+<a id="__codelineno-4-24" name="__codelineno-4-24" href="#__codelineno-4-24"></a><span class="x">}</span>
+</code></pre></div>
+<h3 id="25-sdk-init-merconfig">2.5 SDK init / MerConfig<a class="headerlink" href="#25-sdk-init-merconfig" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="x">// File: BsPaySdk/core/BsPay.php — init()</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="x">public static function init($config_info, $is_object=false, $merchantKey = 'default'){</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="x">    // Accepts array or JSON file path</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="x">    // Config keys: product_id, sys_id, rsa_merch_private_key, rsa_huifu_public_key</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="x">    $merConfig = new MerConfig();</span>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="x">    $merConfig-&gt;product_id = $config_obj['product_id'] ?? '';</span>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="x">    $merConfig-&gt;sys_id = $config_obj['sys_id'] ?? '';</span>
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="x">    $merConfig-&gt;rsa_merch_private_key = $config_obj['rsa_merch_private_key'] ?? '';</span>
+<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="x">    $merConfig-&gt;rsa_huifu_public_key = $config_obj['rsa_huifu_public_key'] ?? '';</span>
+<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="x">    self::addMerConfig($merchantKey, $merConfig);</span>
+<a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a><span class="x">}</span>
+</code></pre></div>
+<p>SDK function code convention: <code>V2_TRADE_PAYMENT_JSPAY</code> → URL <code>/v2/trade/payment/jspay</code> (dots → slashes). Production vs test base URL determined by <code>PROD_MODE</code> constant.</p>
+<hr />
+<h2 id="3-payment-apis">3. Payment APIs<a class="headerlink" href="#3-payment-apis" title="Permanent link">&para;</a></h2>
+<h3 id="31-unified-order-jsapiminiappnativeh5app">3.1 Unified Order (JSAPI/MiniApp/Native/H5/APP)<a class="headerlink" href="#31-unified-order-jsapiminiappnativeh5app" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>POST /v2/trade/payment/jspay
+</code></pre></div>
+<p><strong>Request <code>data</code> fields:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>req_date</code></td>
+<td>string(8)</td>
+<td>Yes</td>
+<td>Ymd format, e.g. <code>"20230725"</code></td>
+</tr>
+<tr>
+<td><code>req_seq_id</code></td>
+<td>string</td>
+<td>Yes</td>
+<td>Merchant order number, unique</td>
+</tr>
+<tr>
+<td><code>huifu_id</code></td>
+<td>string</td>
+<td>Yes</td>
+<td>Merchant <code>sys_id</code> or sub-merchant <code>huifu_id</code></td>
+</tr>
+<tr>
+<td><code>trade_type</code></td>
+<td>string</td>
+<td>Yes</td>
+<td><code>T_JSAPI</code>, <code>T_MINIAPP</code>, <code>T_NATIVE</code>, <code>T_APP</code>, <code>T_H5</code></td>
+</tr>
+<tr>
+<td><code>trans_amt</code></td>
+<td>string</td>
+<td>Yes</td>
+<td>Amount in YUAN, e.g. <code>"10.00"</code></td>
+</tr>
+<tr>
+<td><code>goods_desc</code></td>
+<td>string</td>
+<td>Yes</td>
+<td>Product description (UTF-8)</td>
+</tr>
+<tr>
+<td><code>notify_url</code></td>
+<td>string</td>
+<td>Yes</td>
+<td>Async callback URL</td>
+</tr>
+<tr>
+<td><code>wx_data</code></td>
+<td>string</td>
+<td>Conditional</td>
+<td>JSON string: miniapp → <code>{"sub_appid":"...","sub_openid":"..."}</code>, JSAPI → <code>{"openid":"..."}</code></td>
+</tr>
+<tr>
+<td><code>time_expire</code></td>
+<td>string</td>
+<td>No</td>
+<td>Order expiry</td>
+</tr>
+<tr>
+<td><code>alipay_data</code></td>
+<td>string</td>
+<td>No</td>
+<td>Alipay channel data</td>
+</tr>
+<tr>
+<td><code>acct_split_bunch</code></td>
+<td>string</td>
+<td>No</td>
+<td>Split settlement config</td>
+</tr>
+<tr>
+<td><code>risk_check_data</code></td>
+<td>string</td>
+<td>No</td>
+<td>Risk control</td>
+</tr>
+<tr>
+<td><code>terminal_device_data</code></td>
+<td>string</td>
+<td>No</td>
+<td>POS terminal data</td>
+</tr>
+<tr>
+<td><code>extend_pay_data</code></td>
+<td>string</td>
+<td>No</td>
+<td>Extended pay data</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Response <code>data</code> fields:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>resp_code</code></td>
+<td><code>00000100</code> (order created), <code>00000000</code> (success), other = error</td>
+</tr>
+<tr>
+<td><code>resp_desc</code></td>
+<td>Description</td>
+</tr>
+<tr>
+<td><code>hf_seq_id</code></td>
+<td>Huifu transaction seq ID</td>
+</tr>
+<tr>
+<td><code>req_seq_id</code></td>
+<td>Echo back merchant order no</td>
+</tr>
+<tr>
+<td><code>trans_stat</code></td>
+<td><code>P</code> = processing, <code>S</code> = success, <code>F</code> = failed</td>
+</tr>
+<tr>
+<td><code>bank_code</code> / <code>bank_message</code></td>
+<td>Channel info</td>
+</tr>
+<tr>
+<td><code>pay_info</code></td>
+<td>JSON: <code>{appId, timeStamp, package, paySign, signType, nonceStr}</code> for <code>wx.requestPayment</code></td>
+</tr>
+<tr>
+<td><code>trans_amt</code></td>
+<td>Amount</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Sample successful jspay response:</strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="p">{</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">    </span><span class="nt">"data"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">        </span><span class="nt">"bank_code"</span><span class="p">:</span><span class="w"> </span><span class="s2">"SUCCESS"</span><span class="p">,</span>
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">        </span><span class="nt">"bank_message"</span><span class="p">:</span><span class="w"> </span><span class="s2">"用户支付中"</span><span class="p">,</span>
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="w">        </span><span class="nt">"hf_seq_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"002900TOP2B230725151155P901ac139fc400000"</span><span class="p">,</span>
+<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="w">        </span><span class="nt">"huifu_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"6666000135263684"</span><span class="p">,</span>
+<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="w">        </span><span class="nt">"pay_info"</span><span class="p">:</span><span class="w"> </span><span class="s2">"{\"timeStamp\":\"1690269116\",\"package\":\"prepay_...\",\"paySign\":\"...\",\"appId\":\"wx...\",\"signType\":\"RSA\",\"nonceStr\":\"...\"}"</span><span class="p">,</span>
+<a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="w">        </span><span class="nt">"req_date"</span><span class="p">:</span><span class="w"> </span><span class="s2">"20230725"</span><span class="p">,</span>
+<a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="w">        </span><span class="nt">"req_seq_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"5534c98f980d6b02f0cc"</span><span class="p">,</span>
+<a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a><span class="w">        </span><span class="nt">"resp_code"</span><span class="p">:</span><span class="w"> </span><span class="s2">"00000100"</span><span class="p">,</span>
+<a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a><span class="w">        </span><span class="nt">"resp_desc"</span><span class="p">:</span><span class="w"> </span><span class="s2">"下单成功"</span><span class="p">,</span>
+<a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a><span class="w">        </span><span class="nt">"trade_type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"T_MINIAPP"</span><span class="p">,</span>
+<a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a><span class="w">        </span><span class="nt">"trans_amt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"10.00"</span><span class="p">,</span>
+<a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a><span class="w">        </span><span class="nt">"trans_stat"</span><span class="p">:</span><span class="w"> </span><span class="s2">"P"</span>
+<a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a><span class="w">    </span><span class="p">},</span>
+<a id="__codelineno-7-16" name="__codelineno-7-16" href="#__codelineno-7-16"></a><span class="w">    </span><span class="nt">"sign"</span><span class="p">:</span><span class="w"> </span><span class="s2">"..."</span>
+<a id="__codelineno-7-17" name="__codelineno-7-17" href="#__codelineno-7-17"></a><span class="p">}</span>
+</code></pre></div>
+<h3 id="32-scanpay-query">3.2 Scanpay Query<a class="headerlink" href="#32-scanpay-query" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>POST /v2/trade/payment/scanpay/query
+</code></pre></div>
+<p>Request: <code>org_req_seq_id</code>, <code>org_req_date</code>, <code>huifu_id</code>.</p>
+<h3 id="33-close-order">3.3 Close Order<a class="headerlink" href="#33-close-order" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>POST /v2/trade/payment/scanpay/close
+</code></pre></div>
+<p>Request: <code>req_date</code>, <code>req_seq_id</code>, <code>huifu_id</code>, <code>org_req_date</code>, <code>org_req_seq_id</code>.</p>
+<h3 id="34-refund">3.4 Refund<a class="headerlink" href="#34-refund" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>POST /v2/trade/payment/scanpay/refund
+</code></pre></div>
+<p>Request: <code>req_date</code>, <code>req_seq_id</code> (new refund order no), <code>huifu_id</code>, <code>ord_amt</code> (yuan string), <code>org_req_date</code>, <code>org_req_seq_id</code>.</p>
+<hr />
+<h2 id="4-asynchronous-notification">4. Asynchronous Notification<a class="headerlink" href="#4-asynchronous-notification" title="Permanent link">&para;</a></h2>
+<h3 id="41-format">4.1 Format<a class="headerlink" href="#41-format" title="Permanent link">&para;</a></h3>
+<p>POST, Content-Type: <code>application/x-www-form-urlencoded</code>. Three fields:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>resp_code</code></td>
+<td>Response code</td>
+</tr>
+<tr>
+<td><code>resp_data</code></td>
+<td>JSON string of payload</td>
+</tr>
+<tr>
+<td><code>sign</code></td>
+<td>RSA-SHA256 of raw <code>resp_data</code> string</td>
+</tr>
+</tbody>
+</table>
+<h3 id="42-notification-payload-resp_data-json">4.2 Notification payload (<code>resp_data</code> JSON)<a class="headerlink" href="#42-notification-payload-resp_data-json" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="p">{</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="w">    </span><span class="nt">"bank_code"</span><span class="p">:</span><span class="w"> </span><span class="s2">"00"</span><span class="p">,</span>
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="w">    </span><span class="nt">"bank_message"</span><span class="p">:</span><span class="w"> </span><span class="s2">"交易受理成功"</span><span class="p">,</span>
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="w">    </span><span class="nt">"end_time"</span><span class="p">:</span><span class="w"> </span><span class="s2">"20221202141817"</span><span class="p">,</span>
+<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="w">    </span><span class="nt">"hf_seq_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"0029000topB221202141742P452c0a8305300000"</span><span class="p">,</span>
+<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a><span class="w">    </span><span class="nt">"huifu_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"6666000103977566"</span><span class="p">,</span>
+<a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a><span class="w">    </span><span class="nt">"out_trans_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"4200001639202212023117210870"</span><span class="p">,</span>
+<a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a><span class="w">    </span><span class="nt">"party_order_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2212025146252905407"</span><span class="p">,</span>
+<a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a><span class="w">    </span><span class="nt">"req_date"</span><span class="p">:</span><span class="w"> </span><span class="s2">"20221202"</span><span class="p">,</span>
+<a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a><span class="w">    </span><span class="nt">"req_seq_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"20211669961862"</span><span class="p">,</span>
+<a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a><span class="w">    </span><span class="nt">"resp_code"</span><span class="p">:</span><span class="w"> </span><span class="s2">"00000000"</span><span class="p">,</span>
+<a id="__codelineno-11-12" name="__codelineno-11-12" href="#__codelineno-11-12"></a><span class="w">    </span><span class="nt">"trans_amt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"1.03"</span><span class="p">,</span>
+<a id="__codelineno-11-13" name="__codelineno-11-13" href="#__codelineno-11-13"></a><span class="w">    </span><span class="nt">"trans_stat"</span><span class="p">:</span><span class="w"> </span><span class="s2">"S"</span><span class="p">,</span>
+<a id="__codelineno-11-14" name="__codelineno-11-14" href="#__codelineno-11-14"></a><span class="w">    </span><span class="nt">"trans_time"</span><span class="p">:</span><span class="w"> </span><span class="s2">"141742"</span><span class="p">,</span>
+<a id="__codelineno-11-15" name="__codelineno-11-15" href="#__codelineno-11-15"></a><span class="w">    </span><span class="nt">"trans_type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"T_INATIVE"</span><span class="p">,</span>
+<a id="__codelineno-11-16" name="__codelineno-11-16" href="#__codelineno-11-16"></a><span class="w">    </span><span class="nt">"wx_response"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<a id="__codelineno-11-17" name="__codelineno-11-17" href="#__codelineno-11-17"></a><span class="w">        </span><span class="nt">"transaction_id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"4200001639202212023117210870"</span><span class="p">,</span>
+<a id="__codelineno-11-18" name="__codelineno-11-18" href="#__codelineno-11-18"></a><span class="w">        </span><span class="nt">"openid"</span><span class="p">:</span><span class="w"> </span><span class="s2">"o3CTo59HfKt9RPn7a2v4LP5ZmS2U"</span><span class="p">,</span>
+<a id="__codelineno-11-19" name="__codelineno-11-19" href="#__codelineno-11-19"></a><span class="w">        </span><span class="nt">"sub_openid"</span><span class="p">:</span><span class="w"> </span><span class="s2">"oFug15eXZOh1Ywbo_8aFSXz-9eE0"</span><span class="p">,</span>
+<a id="__codelineno-11-20" name="__codelineno-11-20" href="#__codelineno-11-20"></a><span class="w">        </span><span class="nt">"total_fee"</span><span class="p">:</span><span class="w"> </span><span class="s2">"1.03"</span><span class="p">,</span>
+<a id="__codelineno-11-21" name="__codelineno-11-21" href="#__codelineno-11-21"></a><span class="w">        </span><span class="nt">"trade_type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"NATIVE"</span><span class="p">,</span>
+<a id="__codelineno-11-22" name="__codelineno-11-22" href="#__codelineno-11-22"></a><span class="w">        </span><span class="nt">"time_end"</span><span class="p">:</span><span class="w"> </span><span class="s2">"20221202141817"</span>
+<a id="__codelineno-11-23" name="__codelineno-11-23" href="#__codelineno-11-23"></a><span class="w">    </span><span class="p">}</span>
+<a id="__codelineno-11-24" name="__codelineno-11-24" href="#__codelineno-11-24"></a><span class="p">}</span>
+</code></pre></div>
+<h3 id="43-status-codes">4.3 Status codes<a class="headerlink" href="#43-status-codes" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Code</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>00000000</code></td>
+<td>Success</td>
+</tr>
+<tr>
+<td><code>00000100</code></td>
+<td>Processing</td>
+</tr>
+<tr>
+<td>Other</td>
+<td>Error — see <code>resp_desc</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="5-legacy-paystrategy-implementation-farm-neighbor">5. Legacy PayStrategy Implementation (farm-neighbor)<a class="headerlink" href="#5-legacy-paystrategy-implementation-farm-neighbor" title="Permanent link">&para;</a></h2>
+<h3 id="51-paystrategy-interface">5.1 PayStrategy interface<a class="headerlink" href="#51-paystrategy-interface" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="x">// File: MainBundle/Payment/PayStrategy.php</span>
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="x">namespace MainBundle\Payment;</span>
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="x">use MainBundle\Entity\Invoice;</span>
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>
+<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="x">interface PayStrategy</span>
+<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a><span class="x">{</span>
+<a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a><span class="x">    function pay(Invoice $invoice);</span>
+<a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a><span class="x">    function notify();</span>
+<a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a><span class="x">    function refund(Invoice $invoice, $amount);</span>
+<a id="__codelineno-12-10" name="__codelineno-12-10" href="#__codelineno-12-10"></a><span class="x">}</span>
+</code></pre></div>
+<h3 id="52-huifupaystrategy-full-implementation">5.2 HuifuPayStrategy — full implementation<a class="headerlink" href="#52-huifupaystrategy-full-implementation" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="x">// File: MainBundle/Payment/HuifuPayStrategy.php (560 lines)</span>
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="x">namespace MainBundle\Payment;</span>
+<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>
+<a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="x">class HuifuPayStrategy implements PayStrategy</span>
+<a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a><span class="x">{</span>
+<a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a><span class="x">    const PAYMENT = 'huifu';</span>
+<a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a>
+<a id="__codelineno-13-8" name="__codelineno-13-8" href="#__codelineno-13-8"></a><span class="x">    protected $container;</span>
+<a id="__codelineno-13-9" name="__codelineno-13-9" href="#__codelineno-13-9"></a><span class="x">    private $config;</span>
+<a id="__codelineno-13-10" name="__codelineno-13-10" href="#__codelineno-13-10"></a><span class="x">    private $gateway = 'wechat';</span>
+<a id="__codelineno-13-11" name="__codelineno-13-11" href="#__codelineno-13-11"></a><span class="x">    private $tradeType = 'T_MINIAPP';</span>
+<a id="__codelineno-13-12" name="__codelineno-13-12" href="#__codelineno-13-12"></a><span class="x">    private $paymentApiUrl = 'https://api.huifu.com/v2/trade/payment/jspay';</span>
+<a id="__codelineno-13-13" name="__codelineno-13-13" href="#__codelineno-13-13"></a><span class="x">    private $refundApiUrl = 'https://api.huifu.com/v2/trade/payment/scanpay/refund';</span>
+<a id="__codelineno-13-14" name="__codelineno-13-14" href="#__codelineno-13-14"></a><span class="x">    private $org_req_date = null;</span>
+<a id="__codelineno-13-15" name="__codelineno-13-15" href="#__codelineno-13-15"></a>
+<a id="__codelineno-13-16" name="__codelineno-13-16" href="#__codelineno-13-16"></a><span class="x">    function __construct(ContainerInterface $container)</span>
+<a id="__codelineno-13-17" name="__codelineno-13-17" href="#__codelineno-13-17"></a><span class="x">    {</span>
+<a id="__codelineno-13-18" name="__codelineno-13-18" href="#__codelineno-13-18"></a><span class="x">        $this-&gt;container = $container;</span>
+<a id="__codelineno-13-19" name="__codelineno-13-19" href="#__codelineno-13-19"></a><span class="x">        $this-&gt;config = $container-&gt;getParameter('huifu.payment');</span>
+<a id="__codelineno-13-20" name="__codelineno-13-20" href="#__codelineno-13-20"></a><span class="x">    }</span>
+<a id="__codelineno-13-21" name="__codelineno-13-21" href="#__codelineno-13-21"></a>
+<a id="__codelineno-13-22" name="__codelineno-13-22" href="#__codelineno-13-22"></a><span class="x">    // --- config ---</span>
+<a id="__codelineno-13-23" name="__codelineno-13-23" href="#__codelineno-13-23"></a><span class="x">    function config(array $conf): HuifuPayStrategy</span>
+<a id="__codelineno-13-24" name="__codelineno-13-24" href="#__codelineno-13-24"></a><span class="x">    {</span>
+<a id="__codelineno-13-25" name="__codelineno-13-25" href="#__codelineno-13-25"></a><span class="x">        if(array_key_exists('trade_type', $conf)) $this-&gt;tradeType = $conf['trade_type'];</span>
+<a id="__codelineno-13-26" name="__codelineno-13-26" href="#__codelineno-13-26"></a><span class="x">        if(array_key_exists('gateway', $conf) &amp;&amp; $conf['gateway']) $this-&gt;gateway = $conf['gateway'];</span>
+<a id="__codelineno-13-27" name="__codelineno-13-27" href="#__codelineno-13-27"></a>
+<a id="__codelineno-13-28" name="__codelineno-13-28" href="#__codelineno-13-28"></a><span class="x">        switch ($this-&gt;gateway) {</span>
+<a id="__codelineno-13-29" name="__codelineno-13-29" href="#__codelineno-13-29"></a><span class="x">            case 'jspay':     $this-&gt;paymentApiUrl = 'https://api.huifu.com/v2/trade/payment/jspay'; break;</span>
+<a id="__codelineno-13-30" name="__codelineno-13-30" href="#__codelineno-13-30"></a><span class="x">            case 'quickpay':  $this-&gt;paymentApiUrl = 'https://api.huifu.com/v2/trade/onlinepayment/quickpay/frontpay'; break;</span>
+<a id="__codelineno-13-31" name="__codelineno-13-31" href="#__codelineno-13-31"></a><span class="x">            case 'scanpay-query':</span>
+<a id="__codelineno-13-32" name="__codelineno-13-32" href="#__codelineno-13-32"></a><span class="x">                $this-&gt;org_req_date = $conf['org_req_date'];</span>
+<a id="__codelineno-13-33" name="__codelineno-13-33" href="#__codelineno-13-33"></a><span class="x">                $this-&gt;paymentApiUrl = 'https://api.huifu.com/v2/trade/payment/scanpay/query';</span>
+<a id="__codelineno-13-34" name="__codelineno-13-34" href="#__codelineno-13-34"></a><span class="x">                break;</span>
+<a id="__codelineno-13-35" name="__codelineno-13-35" href="#__codelineno-13-35"></a><span class="x">            default: throw new ValidatorException('Invalid gateway: ' . $this-&gt;gateway);</span>
+<a id="__codelineno-13-36" name="__codelineno-13-36" href="#__codelineno-13-36"></a><span class="x">        }</span>
+<a id="__codelineno-13-37" name="__codelineno-13-37" href="#__codelineno-13-37"></a><span class="x">        return $this;</span>
+<a id="__codelineno-13-38" name="__codelineno-13-38" href="#__codelineno-13-38"></a><span class="x">    }</span>
+<a id="__codelineno-13-39" name="__codelineno-13-39" href="#__codelineno-13-39"></a>
+<a id="__codelineno-13-40" name="__codelineno-13-40" href="#__codelineno-13-40"></a><span class="x">    // --- pay ---</span>
+<a id="__codelineno-13-41" name="__codelineno-13-41" href="#__codelineno-13-41"></a><span class="x">    function pay(Invoice $invoice)</span>
+<a id="__codelineno-13-42" name="__codelineno-13-42" href="#__codelineno-13-42"></a><span class="x">    {</span>
+<a id="__codelineno-13-43" name="__codelineno-13-43" href="#__codelineno-13-43"></a><span class="x">        if($invoice-&gt;getStatus() != Invoice::STATUS_PENDING)</span>
+<a id="__codelineno-13-44" name="__codelineno-13-44" href="#__codelineno-13-44"></a><span class="x">            throw new ValidatorException('Current invoice cannot be pay.');</span>
+<a id="__codelineno-13-45" name="__codelineno-13-45" href="#__codelineno-13-45"></a>
+<a id="__codelineno-13-46" name="__codelineno-13-46" href="#__codelineno-13-46"></a><span class="x">        $curl = new Curl();</span>
+<a id="__codelineno-13-47" name="__codelineno-13-47" href="#__codelineno-13-47"></a><span class="x">        $generateCode = function($length = 8) {</span>
+<a id="__codelineno-13-48" name="__codelineno-13-48" href="#__codelineno-13-48"></a><span class="x">            return strtoupper(substr(md5(microtime().rand()), 5, $length));</span>
+<a id="__codelineno-13-49" name="__codelineno-13-49" href="#__codelineno-13-49"></a><span class="x">        };</span>
+<a id="__codelineno-13-50" name="__codelineno-13-50" href="#__codelineno-13-50"></a>
+<a id="__codelineno-13-51" name="__codelineno-13-51" href="#__codelineno-13-51"></a><span class="x">        $extraData = json_decode(json_encode($invoice-&gt;getExtraData()), true);</span>
+<a id="__codelineno-13-52" name="__codelineno-13-52" href="#__codelineno-13-52"></a>
+<a id="__codelineno-13-53" name="__codelineno-13-53" href="#__codelineno-13-53"></a><span class="x">        // Return saved payment if exists</span>
+<a id="__codelineno-13-54" name="__codelineno-13-54" href="#__codelineno-13-54"></a><span class="x">        if($this-&gt;gateway != 'scanpay-query' &amp;&amp; array_key_exists('payment', $extraData)) {</span>
+<a id="__codelineno-13-55" name="__codelineno-13-55" href="#__codelineno-13-55"></a><span class="x">            return ['invoice' =&gt; $invoice, 'payment' =&gt; $extraData['payment']];</span>
+<a id="__codelineno-13-56" name="__codelineno-13-56" href="#__codelineno-13-56"></a><span class="x">        }</span>
+<a id="__codelineno-13-57" name="__codelineno-13-57" href="#__codelineno-13-57"></a>
+<a id="__codelineno-13-58" name="__codelineno-13-58" href="#__codelineno-13-58"></a><span class="x">        $invoiceOutTradeNo = $generateCode(20);</span>
+<a id="__codelineno-13-59" name="__codelineno-13-59" href="#__codelineno-13-59"></a>
+<a id="__codelineno-13-60" name="__codelineno-13-60" href="#__codelineno-13-60"></a><span class="x">        // Build request data</span>
+<a id="__codelineno-13-61" name="__codelineno-13-61" href="#__codelineno-13-61"></a><span class="x">        switch ($this-&gt;gateway) {</span>
+<a id="__codelineno-13-62" name="__codelineno-13-62" href="#__codelineno-13-62"></a><span class="x">            case 'jspay':</span>
+<a id="__codelineno-13-63" name="__codelineno-13-63" href="#__codelineno-13-63"></a><span class="x">                $data = [</span>
+<a id="__codelineno-13-64" name="__codelineno-13-64" href="#__codelineno-13-64"></a><span class="x">                    'req_date' =&gt; (new \DateTime())-&gt;format('Ymd'),</span>
+<a id="__codelineno-13-65" name="__codelineno-13-65" href="#__codelineno-13-65"></a><span class="x">                    'req_seq_id' =&gt; $invoiceOutTradeNo,</span>
+<a id="__codelineno-13-66" name="__codelineno-13-66" href="#__codelineno-13-66"></a><span class="x">                    'huifu_id' =&gt; $this-&gt;config['sys_id'],</span>
+<a id="__codelineno-13-67" name="__codelineno-13-67" href="#__codelineno-13-67"></a><span class="x">                    'trade_type' =&gt; $this-&gt;tradeType,</span>
+<a id="__codelineno-13-68" name="__codelineno-13-68" href="#__codelineno-13-68"></a><span class="x">                    'trans_amt' =&gt; $invoice-&gt;getAmount(),</span>
+<a id="__codelineno-13-69" name="__codelineno-13-69" href="#__codelineno-13-69"></a><span class="x">                    'goods_desc' =&gt; 'Invoice Purchase',</span>
+<a id="__codelineno-13-70" name="__codelineno-13-70" href="#__codelineno-13-70"></a><span class="x">                    'notify_url' =&gt; $this-&gt;generateNotifyUrl(),</span>
+<a id="__codelineno-13-71" name="__codelineno-13-71" href="#__codelineno-13-71"></a><span class="x">                ];</span>
+<a id="__codelineno-13-72" name="__codelineno-13-72" href="#__codelineno-13-72"></a><span class="x">                // wx_data for miniapp: sub_appid + sub_openid</span>
+<a id="__codelineno-13-73" name="__codelineno-13-73" href="#__codelineno-13-73"></a><span class="x">                // wx_data for JSAPI: openid</span>
+<a id="__codelineno-13-74" name="__codelineno-13-74" href="#__codelineno-13-74"></a><span class="x">                break;</span>
+<a id="__codelineno-13-75" name="__codelineno-13-75" href="#__codelineno-13-75"></a>
+<a id="__codelineno-13-76" name="__codelineno-13-76" href="#__codelineno-13-76"></a><span class="x">            case 'quickpay':</span>
+<a id="__codelineno-13-77" name="__codelineno-13-77" href="#__codelineno-13-77"></a><span class="x">                $data = [</span>
+<a id="__codelineno-13-78" name="__codelineno-13-78" href="#__codelineno-13-78"></a><span class="x">                    'req_date' =&gt; (new \DateTime())-&gt;format('Ymd'),</span>
+<a id="__codelineno-13-79" name="__codelineno-13-79" href="#__codelineno-13-79"></a><span class="x">                    'req_seq_id' =&gt; $invoiceOutTradeNo,</span>
+<a id="__codelineno-13-80" name="__codelineno-13-80" href="#__codelineno-13-80"></a><span class="x">                    'huifu_id' =&gt; $this-&gt;config['sys_id'],</span>
+<a id="__codelineno-13-81" name="__codelineno-13-81" href="#__codelineno-13-81"></a><span class="x">                    'trans_amt' =&gt; $invoice-&gt;getAmount(),</span>
+<a id="__codelineno-13-82" name="__codelineno-13-82" href="#__codelineno-13-82"></a><span class="x">                    'notify_url' =&gt; $this-&gt;generateNotifyUrl(),</span>
+<a id="__codelineno-13-83" name="__codelineno-13-83" href="#__codelineno-13-83"></a><span class="x">                    'extend_pay_data' =&gt; json_encode(['goods_short_name'=&gt;'...','biz_tp'=&gt;'100001','gw_chnnl_tp'=&gt;'02']),</span>
+<a id="__codelineno-13-84" name="__codelineno-13-84" href="#__codelineno-13-84"></a><span class="x">                    'terminal_device_data' =&gt; json_encode(['device_type'=&gt;'1','device_ip'=&gt;'...']),</span>
+<a id="__codelineno-13-85" name="__codelineno-13-85" href="#__codelineno-13-85"></a><span class="x">                    'risk_check_data' =&gt; json_encode(['ip_addr'=&gt;'...']),</span>
+<a id="__codelineno-13-86" name="__codelineno-13-86" href="#__codelineno-13-86"></a><span class="x">                ];</span>
+<a id="__codelineno-13-87" name="__codelineno-13-87" href="#__codelineno-13-87"></a><span class="x">                break;</span>
+<a id="__codelineno-13-88" name="__codelineno-13-88" href="#__codelineno-13-88"></a>
+<a id="__codelineno-13-89" name="__codelineno-13-89" href="#__codelineno-13-89"></a><span class="x">            case 'scanpay-query':</span>
+<a id="__codelineno-13-90" name="__codelineno-13-90" href="#__codelineno-13-90"></a><span class="x">                $data = [</span>
+<a id="__codelineno-13-91" name="__codelineno-13-91" href="#__codelineno-13-91"></a><span class="x">                    'org_req_seq_id' =&gt; $invoiceOutTradeNo,</span>
+<a id="__codelineno-13-92" name="__codelineno-13-92" href="#__codelineno-13-92"></a><span class="x">                    'org_req_date' =&gt; $this-&gt;org_req_date ?: substr($invoiceOutTradeNo, 0, 8),</span>
+<a id="__codelineno-13-93" name="__codelineno-13-93" href="#__codelineno-13-93"></a><span class="x">                    'huifu_id' =&gt; $this-&gt;config['sys_id'],</span>
+<a id="__codelineno-13-94" name="__codelineno-13-94" href="#__codelineno-13-94"></a><span class="x">                ];</span>
+<a id="__codelineno-13-95" name="__codelineno-13-95" href="#__codelineno-13-95"></a><span class="x">                break;</span>
+<a id="__codelineno-13-96" name="__codelineno-13-96" href="#__codelineno-13-96"></a><span class="x">        }</span>
+<a id="__codelineno-13-97" name="__codelineno-13-97" href="#__codelineno-13-97"></a>
+<a id="__codelineno-13-98" name="__codelineno-13-98" href="#__codelineno-13-98"></a><span class="x">        // Sign and send</span>
+<a id="__codelineno-13-99" name="__codelineno-13-99" href="#__codelineno-13-99"></a><span class="x">        ksort($data);</span>
+<a id="__codelineno-13-100" name="__codelineno-13-100" href="#__codelineno-13-100"></a><span class="x">        $sign = self::sha_with_rsa_sign(</span>
+<a id="__codelineno-13-101" name="__codelineno-13-101" href="#__codelineno-13-101"></a><span class="x">            json_encode($data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),</span>
+<a id="__codelineno-13-102" name="__codelineno-13-102" href="#__codelineno-13-102"></a><span class="x">            $this-&gt;config['rsa_merch_private_key']</span>
+<a id="__codelineno-13-103" name="__codelineno-13-103" href="#__codelineno-13-103"></a><span class="x">        );</span>
+<a id="__codelineno-13-104" name="__codelineno-13-104" href="#__codelineno-13-104"></a>
+<a id="__codelineno-13-105" name="__codelineno-13-105" href="#__codelineno-13-105"></a><span class="x">        $postData = [</span>
+<a id="__codelineno-13-106" name="__codelineno-13-106" href="#__codelineno-13-106"></a><span class="x">            'sys_id' =&gt; $this-&gt;config['sys_id'],</span>
+<a id="__codelineno-13-107" name="__codelineno-13-107" href="#__codelineno-13-107"></a><span class="x">            'product_id' =&gt; $this-&gt;config['product_id'],</span>
+<a id="__codelineno-13-108" name="__codelineno-13-108" href="#__codelineno-13-108"></a><span class="x">            'data' =&gt; $data,</span>
+<a id="__codelineno-13-109" name="__codelineno-13-109" href="#__codelineno-13-109"></a><span class="x">            'sign' =&gt; $sign</span>
+<a id="__codelineno-13-110" name="__codelineno-13-110" href="#__codelineno-13-110"></a><span class="x">        ];</span>
+<a id="__codelineno-13-111" name="__codelineno-13-111" href="#__codelineno-13-111"></a>
+<a id="__codelineno-13-112" name="__codelineno-13-112" href="#__codelineno-13-112"></a><span class="x">        $curl-&gt;setHeader('Content-Type', 'application/json; charset=utf-8');</span>
+<a id="__codelineno-13-113" name="__codelineno-13-113" href="#__codelineno-13-113"></a><span class="x">        $curl-&gt;post($this-&gt;paymentApiUrl, json_encode($postData));</span>
+<a id="__codelineno-13-114" name="__codelineno-13-114" href="#__codelineno-13-114"></a><span class="x">        $payment = json_decode($curl-&gt;getResponse(), true)['data'];</span>
+<a id="__codelineno-13-115" name="__codelineno-13-115" href="#__codelineno-13-115"></a>
+<a id="__codelineno-13-116" name="__codelineno-13-116" href="#__codelineno-13-116"></a><span class="x">        if($payment['resp_code'] == '00000100' || $payment['resp_code'] == '00000000') {</span>
+<a id="__codelineno-13-117" name="__codelineno-13-117" href="#__codelineno-13-117"></a><span class="x">            $invoice-&gt;setPayment(self::PAYMENT);</span>
+<a id="__codelineno-13-118" name="__codelineno-13-118" href="#__codelineno-13-118"></a><span class="x">            $invoice-&gt;setGateway($this-&gt;gateway);</span>
+<a id="__codelineno-13-119" name="__codelineno-13-119" href="#__codelineno-13-119"></a><span class="x">            $invoice-&gt;setTradeType($this-&gt;tradeType);</span>
+<a id="__codelineno-13-120" name="__codelineno-13-120" href="#__codelineno-13-120"></a><span class="x">            $extraData['payment'] = $payment;</span>
+<a id="__codelineno-13-121" name="__codelineno-13-121" href="#__codelineno-13-121"></a><span class="x">            $invoice-&gt;setExtraData($extraData);</span>
+<a id="__codelineno-13-122" name="__codelineno-13-122" href="#__codelineno-13-122"></a><span class="x">            $invoice-&gt;setOutTradeNo($invoiceOutTradeNo);</span>
+<a id="__codelineno-13-123" name="__codelineno-13-123" href="#__codelineno-13-123"></a><span class="x">            // For scanpay-query: if trans_stat=S, set transactionId + status=PAID</span>
+<a id="__codelineno-13-124" name="__codelineno-13-124" href="#__codelineno-13-124"></a><span class="x">            return ['invoice' =&gt; $invoice, 'payment' =&gt; $payment];</span>
+<a id="__codelineno-13-125" name="__codelineno-13-125" href="#__codelineno-13-125"></a><span class="x">        }</span>
+<a id="__codelineno-13-126" name="__codelineno-13-126" href="#__codelineno-13-126"></a><span class="x">        throw new ValidatorException($payment['resp_desc']);</span>
+<a id="__codelineno-13-127" name="__codelineno-13-127" href="#__codelineno-13-127"></a><span class="x">    }</span>
+<a id="__codelineno-13-128" name="__codelineno-13-128" href="#__codelineno-13-128"></a>
+<a id="__codelineno-13-129" name="__codelineno-13-129" href="#__codelineno-13-129"></a><span class="x">    // --- notify ---</span>
+<a id="__codelineno-13-130" name="__codelineno-13-130" href="#__codelineno-13-130"></a><span class="x">    function notify()</span>
+<a id="__codelineno-13-131" name="__codelineno-13-131" href="#__codelineno-13-131"></a><span class="x">    {</span>
+<a id="__codelineno-13-132" name="__codelineno-13-132" href="#__codelineno-13-132"></a><span class="x">        $invoiceService = $this-&gt;container-&gt;get(InvoiceService::class);</span>
+<a id="__codelineno-13-133" name="__codelineno-13-133" href="#__codelineno-13-133"></a><span class="x">        $request = $this-&gt;container-&gt;get('request_stack')-&gt;getCurrentRequest();</span>
+<a id="__codelineno-13-134" name="__codelineno-13-134" href="#__codelineno-13-134"></a>
+<a id="__codelineno-13-135" name="__codelineno-13-135" href="#__codelineno-13-135"></a><span class="x">        // Huifu sends application/x-www-form-urlencoded, NOT JSON!</span>
+<a id="__codelineno-13-136" name="__codelineno-13-136" href="#__codelineno-13-136"></a><span class="x">        parse_str($request-&gt;getContent(), $content);</span>
+<a id="__codelineno-13-137" name="__codelineno-13-137" href="#__codelineno-13-137"></a>
+<a id="__codelineno-13-138" name="__codelineno-13-138" href="#__codelineno-13-138"></a><span class="x">        if($content['resp_code'] === '00000000') {</span>
+<a id="__codelineno-13-139" name="__codelineno-13-139" href="#__codelineno-13-139"></a><span class="x">            // Verify signature of resp_data string</span>
+<a id="__codelineno-13-140" name="__codelineno-13-140" href="#__codelineno-13-140"></a><span class="x">            $rsaPubKey = $this-&gt;container-&gt;getParameter('huifu.payment')['rsa_huifu_public_key'];</span>
+<a id="__codelineno-13-141" name="__codelineno-13-141" href="#__codelineno-13-141"></a><span class="x">            if(!self::verifySign($content['sign'], $content['resp_data'], $rsaPubKey))</span>
+<a id="__codelineno-13-142" name="__codelineno-13-142" href="#__codelineno-13-142"></a><span class="x">                throw new ValidatorException('Checksum failure');</span>
+<a id="__codelineno-13-143" name="__codelineno-13-143" href="#__codelineno-13-143"></a>
+<a id="__codelineno-13-144" name="__codelineno-13-144" href="#__codelineno-13-144"></a><span class="x">            $data = json_decode($content['resp_data'], true);</span>
+<a id="__codelineno-13-145" name="__codelineno-13-145" href="#__codelineno-13-145"></a>
+<a id="__codelineno-13-146" name="__codelineno-13-146" href="#__codelineno-13-146"></a><span class="x">            // Semaphore lock to prevent duplicate processing</span>
+<a id="__codelineno-13-147" name="__codelineno-13-147" href="#__codelineno-13-147"></a><span class="x">            $receivedOrderId = "RECV_ORD_ID_{$data['req_seq_id']}";</span>
+<a id="__codelineno-13-148" name="__codelineno-13-148" href="#__codelineno-13-148"></a><span class="x">            $factory = new Factory(new SemaphoreStore());</span>
+<a id="__codelineno-13-149" name="__codelineno-13-149" href="#__codelineno-13-149"></a><span class="x">            $lock = $factory-&gt;createLock($receivedOrderId, 30);</span>
+<a id="__codelineno-13-150" name="__codelineno-13-150" href="#__codelineno-13-150"></a>
+<a id="__codelineno-13-151" name="__codelineno-13-151" href="#__codelineno-13-151"></a><span class="x">            try {</span>
+<a id="__codelineno-13-152" name="__codelineno-13-152" href="#__codelineno-13-152"></a><span class="x">                if(!$lock-&gt;acquire()) throw new ValidatorException('Cannot acquire the lock');</span>
+<a id="__codelineno-13-153" name="__codelineno-13-153" href="#__codelineno-13-153"></a>
+<a id="__codelineno-13-154" name="__codelineno-13-154" href="#__codelineno-13-154"></a><span class="x">                $entity = $invoiceService-&gt;get(['outTradeNo' =&gt; $data['req_seq_id']]);</span>
+<a id="__codelineno-13-155" name="__codelineno-13-155" href="#__codelineno-13-155"></a><span class="x">                if ($entity) {</span>
+<a id="__codelineno-13-156" name="__codelineno-13-156" href="#__codelineno-13-156"></a><span class="x">                    if ($data['resp_code'] === '00000000') {</span>
+<a id="__codelineno-13-157" name="__codelineno-13-157" href="#__codelineno-13-157"></a><span class="x">                        if($entity-&gt;getStatus() == Invoice::STATUS_PENDING</span>
+<a id="__codelineno-13-158" name="__codelineno-13-158" href="#__codelineno-13-158"></a><span class="x">                           || $entity-&gt;getStatus() == Invoice::STATUS_CANCELLED) {</span>
+<a id="__codelineno-13-159" name="__codelineno-13-159" href="#__codelineno-13-159"></a><span class="x">                            $entity-&gt;setTransactionId($data['out_trans_id']);</span>
+<a id="__codelineno-13-160" name="__codelineno-13-160" href="#__codelineno-13-160"></a><span class="x">                            $entity-&gt;setPaidTime(new \DateTime());</span>
+<a id="__codelineno-13-161" name="__codelineno-13-161" href="#__codelineno-13-161"></a><span class="x">                            $invoiceService-&gt;update($entity, ['status' =&gt; Invoice::STATUS_PAID]);</span>
+<a id="__codelineno-13-162" name="__codelineno-13-162" href="#__codelineno-13-162"></a><span class="x">                        }</span>
+<a id="__codelineno-13-163" name="__codelineno-13-163" href="#__codelineno-13-163"></a><span class="x">                    } else {</span>
+<a id="__codelineno-13-164" name="__codelineno-13-164" href="#__codelineno-13-164"></a><span class="x">                        // On failure: clear extraData and retry payment</span>
+<a id="__codelineno-13-165" name="__codelineno-13-165" href="#__codelineno-13-165"></a><span class="x">                        $entity-&gt;setExtraData([]);</span>
+<a id="__codelineno-13-166" name="__codelineno-13-166" href="#__codelineno-13-166"></a><span class="x">                        $invoiceService-&gt;update($entity);</span>
+<a id="__codelineno-13-167" name="__codelineno-13-167" href="#__codelineno-13-167"></a><span class="x">                        $invoiceService-&gt;pay($entity);</span>
+<a id="__codelineno-13-168" name="__codelineno-13-168" href="#__codelineno-13-168"></a><span class="x">                    }</span>
+<a id="__codelineno-13-169" name="__codelineno-13-169" href="#__codelineno-13-169"></a><span class="x">                }</span>
+<a id="__codelineno-13-170" name="__codelineno-13-170" href="#__codelineno-13-170"></a><span class="x">            } finally {</span>
+<a id="__codelineno-13-171" name="__codelineno-13-171" href="#__codelineno-13-171"></a><span class="x">                $lock-&gt;release();</span>
+<a id="__codelineno-13-172" name="__codelineno-13-172" href="#__codelineno-13-172"></a><span class="x">            }</span>
+<a id="__codelineno-13-173" name="__codelineno-13-173" href="#__codelineno-13-173"></a><span class="x">            return new Response($receivedOrderId);</span>
+<a id="__codelineno-13-174" name="__codelineno-13-174" href="#__codelineno-13-174"></a><span class="x">        }</span>
+<a id="__codelineno-13-175" name="__codelineno-13-175" href="#__codelineno-13-175"></a><span class="x">        return new Response('ERROR');</span>
+<a id="__codelineno-13-176" name="__codelineno-13-176" href="#__codelineno-13-176"></a><span class="x">    }</span>
+<a id="__codelineno-13-177" name="__codelineno-13-177" href="#__codelineno-13-177"></a>
+<a id="__codelineno-13-178" name="__codelineno-13-178" href="#__codelineno-13-178"></a><span class="x">    // --- refund ---</span>
+<a id="__codelineno-13-179" name="__codelineno-13-179" href="#__codelineno-13-179"></a><span class="x">    function refund(Invoice $invoice, $amount)</span>
+<a id="__codelineno-13-180" name="__codelineno-13-180" href="#__codelineno-13-180"></a><span class="x">    {</span>
+<a id="__codelineno-13-181" name="__codelineno-13-181" href="#__codelineno-13-181"></a><span class="x">        $generateCode = function($length = 8) {</span>
+<a id="__codelineno-13-182" name="__codelineno-13-182" href="#__codelineno-13-182"></a><span class="x">            return strtoupper(substr(md5(microtime().rand()), 5, $length));</span>
+<a id="__codelineno-13-183" name="__codelineno-13-183" href="#__codelineno-13-183"></a><span class="x">        };</span>
+<a id="__codelineno-13-184" name="__codelineno-13-184" href="#__codelineno-13-184"></a><span class="x">        $extraData = json_decode(json_encode($invoice-&gt;getExtraData()), true);</span>
+<a id="__codelineno-13-185" name="__codelineno-13-185" href="#__codelineno-13-185"></a><span class="x">        $invoiceOutTradeNo = $generateCode(20);</span>
+<a id="__codelineno-13-186" name="__codelineno-13-186" href="#__codelineno-13-186"></a>
+<a id="__codelineno-13-187" name="__codelineno-13-187" href="#__codelineno-13-187"></a><span class="x">        $data = [</span>
+<a id="__codelineno-13-188" name="__codelineno-13-188" href="#__codelineno-13-188"></a><span class="x">            'req_date' =&gt; (new \DateTime())-&gt;format('Ymd'),</span>
+<a id="__codelineno-13-189" name="__codelineno-13-189" href="#__codelineno-13-189"></a><span class="x">            'req_seq_id' =&gt; $invoiceOutTradeNo,</span>
+<a id="__codelineno-13-190" name="__codelineno-13-190" href="#__codelineno-13-190"></a><span class="x">            'huifu_id' =&gt; $this-&gt;config['sys_id'],</span>
+<a id="__codelineno-13-191" name="__codelineno-13-191" href="#__codelineno-13-191"></a><span class="x">            'ord_amt' =&gt; $amount,</span>
+<a id="__codelineno-13-192" name="__codelineno-13-192" href="#__codelineno-13-192"></a><span class="x">            'org_req_date' =&gt; $invoice-&gt;getCreatedTime()-&gt;format('Ymd'),</span>
+<a id="__codelineno-13-193" name="__codelineno-13-193" href="#__codelineno-13-193"></a><span class="x">            'org_req_seq_id' =&gt; $invoice-&gt;getOutTradeNo(),</span>
+<a id="__codelineno-13-194" name="__codelineno-13-194" href="#__codelineno-13-194"></a><span class="x">        ];</span>
+<a id="__codelineno-13-195" name="__codelineno-13-195" href="#__codelineno-13-195"></a>
+<a id="__codelineno-13-196" name="__codelineno-13-196" href="#__codelineno-13-196"></a><span class="x">        ksort($data);</span>
+<a id="__codelineno-13-197" name="__codelineno-13-197" href="#__codelineno-13-197"></a><span class="x">        $sign = self::sha_with_rsa_sign(</span>
+<a id="__codelineno-13-198" name="__codelineno-13-198" href="#__codelineno-13-198"></a><span class="x">            json_encode($data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE),</span>
+<a id="__codelineno-13-199" name="__codelineno-13-199" href="#__codelineno-13-199"></a><span class="x">            $this-&gt;config['rsa_merch_private_key']</span>
+<a id="__codelineno-13-200" name="__codelineno-13-200" href="#__codelineno-13-200"></a><span class="x">        );</span>
+<a id="__codelineno-13-201" name="__codelineno-13-201" href="#__codelineno-13-201"></a>
+<a id="__codelineno-13-202" name="__codelineno-13-202" href="#__codelineno-13-202"></a><span class="x">        $postData = ['sys_id' =&gt; $this-&gt;config['sys_id'], 'product_id' =&gt; $this-&gt;config['product_id'], 'data' =&gt; $data, 'sign' =&gt; $sign];</span>
+<a id="__codelineno-13-203" name="__codelineno-13-203" href="#__codelineno-13-203"></a>
+<a id="__codelineno-13-204" name="__codelineno-13-204" href="#__codelineno-13-204"></a><span class="x">        $curl = new Curl();</span>
+<a id="__codelineno-13-205" name="__codelineno-13-205" href="#__codelineno-13-205"></a><span class="x">        $curl-&gt;setHeader('Content-Type', 'application/json; charset=utf-8');</span>
+<a id="__codelineno-13-206" name="__codelineno-13-206" href="#__codelineno-13-206"></a><span class="x">        $curl-&gt;post($this-&gt;refundApiUrl, json_encode($postData));</span>
+<a id="__codelineno-13-207" name="__codelineno-13-207" href="#__codelineno-13-207"></a><span class="x">        $refund = json_decode($curl-&gt;getResponse(), true)['data'];</span>
+<a id="__codelineno-13-208" name="__codelineno-13-208" href="#__codelineno-13-208"></a>
+<a id="__codelineno-13-209" name="__codelineno-13-209" href="#__codelineno-13-209"></a><span class="x">        if($refund['resp_code'] == '00000100') {</span>
+<a id="__codelineno-13-210" name="__codelineno-13-210" href="#__codelineno-13-210"></a><span class="x">            $extraData['refund'] = $refund;</span>
+<a id="__codelineno-13-211" name="__codelineno-13-211" href="#__codelineno-13-211"></a><span class="x">            $invoice-&gt;setExtraData($extraData);</span>
+<a id="__codelineno-13-212" name="__codelineno-13-212" href="#__codelineno-13-212"></a><span class="x">            $invoiceService-&gt;update($invoice, ['status' =&gt; Invoice::STATUS_REFUNDED]);</span>
+<a id="__codelineno-13-213" name="__codelineno-13-213" href="#__codelineno-13-213"></a><span class="x">            return true;</span>
+<a id="__codelineno-13-214" name="__codelineno-13-214" href="#__codelineno-13-214"></a><span class="x">        }</span>
+<a id="__codelineno-13-215" name="__codelineno-13-215" href="#__codelineno-13-215"></a><span class="x">        throw new ValidatorException($refund['resp_desc']);</span>
+<a id="__codelineno-13-216" name="__codelineno-13-216" href="#__codelineno-13-216"></a><span class="x">    }</span>
+<a id="__codelineno-13-217" name="__codelineno-13-217" href="#__codelineno-13-217"></a>
+<a id="__codelineno-13-218" name="__codelineno-13-218" href="#__codelineno-13-218"></a><span class="x">    // --- Signing (same as SDK) ---</span>
+<a id="__codelineno-13-219" name="__codelineno-13-219" href="#__codelineno-13-219"></a><span class="x">    static public function sha_with_rsa_sign($data, $rsaPrivateKey, $alg=OPENSSL_ALGO_SHA256){</span>
+<a id="__codelineno-13-220" name="__codelineno-13-220" href="#__codelineno-13-220"></a><span class="x">        $key = "-----BEGIN PRIVATE KEY-----\n".wordwrap($rsaPrivateKey, 64, "\n", true)."\n-----END PRIVATE KEY-----";</span>
+<a id="__codelineno-13-221" name="__codelineno-13-221" href="#__codelineno-13-221"></a><span class="x">        openssl_sign($data, $signature, $key, $alg);</span>
+<a id="__codelineno-13-222" name="__codelineno-13-222" href="#__codelineno-13-222"></a><span class="x">        return base64_encode($signature);</span>
+<a id="__codelineno-13-223" name="__codelineno-13-223" href="#__codelineno-13-223"></a><span class="x">    }</span>
+<a id="__codelineno-13-224" name="__codelineno-13-224" href="#__codelineno-13-224"></a>
+<a id="__codelineno-13-225" name="__codelineno-13-225" href="#__codelineno-13-225"></a><span class="x">    static public function verifySign($signature, $data, $rsaPublicKey, $alg=OPENSSL_ALGO_SHA256){</span>
+<a id="__codelineno-13-226" name="__codelineno-13-226" href="#__codelineno-13-226"></a><span class="x">        $key = "-----BEGIN PUBLIC KEY-----\n".wordwrap($rsaPublicKey, 64, "\n", true)."\n-----END PUBLIC KEY-----";</span>
+<a id="__codelineno-13-227" name="__codelineno-13-227" href="#__codelineno-13-227"></a><span class="x">        return openssl_verify($data, base64_decode($signature), $key, $alg);</span>
+<a id="__codelineno-13-228" name="__codelineno-13-228" href="#__codelineno-13-228"></a><span class="x">    }</span>
+<a id="__codelineno-13-229" name="__codelineno-13-229" href="#__codelineno-13-229"></a><span class="x">}</span>
+</code></pre></div>
+<h3 id="53-huifupospaystrategy-pos-variant">5.3 HuifuPosPayStrategy (POS variant)<a class="headerlink" href="#53-huifupospaystrategy-pos-variant" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="x">// File: MainBundle/Payment/HuifuPosPayStrategy.php (168 lines)</span>
+<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="x">namespace MainBundle\Payment;</span>
+<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>
+<a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="x">class HuifuPosPayStrategy implements PayStrategy</span>
+<a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a><span class="x">{</span>
+<a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a><span class="x">    const PAYMENT = 'huifu-pos';</span>
+<a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a>
+<a id="__codelineno-14-8" name="__codelineno-14-8" href="#__codelineno-14-8"></a><span class="x">    function pay(Invoice $invoice) {</span>
+<a id="__codelineno-14-9" name="__codelineno-14-9" href="#__codelineno-14-9"></a><span class="x">        throw new AccessDeniedException();  // Not Web-initiated</span>
+<a id="__codelineno-14-10" name="__codelineno-14-10" href="#__codelineno-14-10"></a><span class="x">    }</span>
+<a id="__codelineno-14-11" name="__codelineno-14-11" href="#__codelineno-14-11"></a>
+<a id="__codelineno-14-12" name="__codelineno-14-12" href="#__codelineno-14-12"></a><span class="x">    function refund(Invoice $invoice, $amount) {</span>
+<a id="__codelineno-14-13" name="__codelineno-14-13" href="#__codelineno-14-13"></a><span class="x">        throw new AccessDeniedException();</span>
+<a id="__codelineno-14-14" name="__codelineno-14-14" href="#__codelineno-14-14"></a><span class="x">    }</span>
+<a id="__codelineno-14-15" name="__codelineno-14-15" href="#__codelineno-14-15"></a>
+<a id="__codelineno-14-16" name="__codelineno-14-16" href="#__codelineno-14-16"></a><span class="x">    function notify(): Response</span>
+<a id="__codelineno-14-17" name="__codelineno-14-17" href="#__codelineno-14-17"></a><span class="x">    {</span>
+<a id="__codelineno-14-18" name="__codelineno-14-18" href="#__codelineno-14-18"></a><span class="x">        // Key difference: uses rsa_async_public_key (separate from normal payment key!)</span>
+<a id="__codelineno-14-19" name="__codelineno-14-19" href="#__codelineno-14-19"></a><span class="x">        $rsaPubKey = $this-&gt;container-&gt;getParameter('huifu.payment')['rsa_async_public_key'];</span>
+<a id="__codelineno-14-20" name="__codelineno-14-20" href="#__codelineno-14-20"></a>
+<a id="__codelineno-14-21" name="__codelineno-14-21" href="#__codelineno-14-21"></a><span class="x">        parse_str($request-&gt;getContent(), $content);</span>
+<a id="__codelineno-14-22" name="__codelineno-14-22" href="#__codelineno-14-22"></a>
+<a id="__codelineno-14-23" name="__codelineno-14-23" href="#__codelineno-14-23"></a><span class="x">        if($content['resp_code'] === '00000000') {</span>
+<a id="__codelineno-14-24" name="__codelineno-14-24" href="#__codelineno-14-24"></a><span class="x">            if (!HuifuPayStrategy::verifySign($content['sign'], $content['resp_data'], $rsaPubKey))</span>
+<a id="__codelineno-14-25" name="__codelineno-14-25" href="#__codelineno-14-25"></a><span class="x">                throw new ValidatorException('Checksum failure');</span>
+<a id="__codelineno-14-26" name="__codelineno-14-26" href="#__codelineno-14-26"></a>
+<a id="__codelineno-14-27" name="__codelineno-14-27" href="#__codelineno-14-27"></a><span class="x">            $data = json_decode($content['resp_data'], true);</span>
+<a id="__codelineno-14-28" name="__codelineno-14-28" href="#__codelineno-14-28"></a>
+<a id="__codelineno-14-29" name="__codelineno-14-29" href="#__codelineno-14-29"></a><span class="x">            // Look up POS device by terminalId (devs_id)</span>
+<a id="__codelineno-14-30" name="__codelineno-14-30" href="#__codelineno-14-30"></a><span class="x">            $posDevice = $huifuPosDeviceService-&gt;get(['terminalId' =&gt; $data['devs_id']]);</span>
+<a id="__codelineno-14-31" name="__codelineno-14-31" href="#__codelineno-14-31"></a><span class="x">            $store = $posDevice-&gt;getStore();</span>
+<a id="__codelineno-14-32" name="__codelineno-14-32" href="#__codelineno-14-32"></a><span class="x">            $targetUser = $posDevice-&gt;getTargetUser() ?? $store-&gt;getUser();</span>
+<a id="__codelineno-14-33" name="__codelineno-14-33" href="#__codelineno-14-33"></a>
+<a id="__codelineno-14-34" name="__codelineno-14-34" href="#__codelineno-14-34"></a><span class="x">            // Create Deposit entity, link Invoice, mark PAID</span>
+<a id="__codelineno-14-35" name="__codelineno-14-35" href="#__codelineno-14-35"></a><span class="x">            // Uses semaphore lock RECV_ORD_ID_{req_seq_id}</span>
+<a id="__codelineno-14-36" name="__codelineno-14-36" href="#__codelineno-14-36"></a>
+<a id="__codelineno-14-37" name="__codelineno-14-37" href="#__codelineno-14-37"></a><span class="x">            return new Response("RECV_ORD_ID_{$data['req_seq_id']}");</span>
+<a id="__codelineno-14-38" name="__codelineno-14-38" href="#__codelineno-14-38"></a><span class="x">        }</span>
+<a id="__codelineno-14-39" name="__codelineno-14-39" href="#__codelineno-14-39"></a><span class="x">        return new Response('ERROR');</span>
+<a id="__codelineno-14-40" name="__codelineno-14-40" href="#__codelineno-14-40"></a><span class="x">    }</span>
+<a id="__codelineno-14-41" name="__codelineno-14-41" href="#__codelineno-14-41"></a><span class="x">}</span>
+</code></pre></div>
+<h3 id="54-invoicelistener-close-order-on-cancel">5.4 InvoiceListener — close order on cancel<a class="headerlink" href="#54-invoicelistener-close-order-on-cancel" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="x">// File: HuifuBundle/EventListener/InvoiceListener.php</span>
+<a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="x">class InvoiceListener extends EntityListener</span>
+<a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="x">{</span>
+<a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="x">    public function preUpdate(PreUpdateEventArgs $args)</span>
+<a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a><span class="x">    {</span>
+<a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a><span class="x">        $entity = $args-&gt;getObject();</span>
+<a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a><span class="x">        $changeArray = $args-&gt;getEntityChangeSet();</span>
+<a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a>
+<a id="__codelineno-15-9" name="__codelineno-15-9" href="#__codelineno-15-9"></a><span class="x">        if ($entity instanceof Invoice</span>
+<a id="__codelineno-15-10" name="__codelineno-15-10" href="#__codelineno-15-10"></a><span class="x">            &amp;&amp; $entity-&gt;getPayment() == Invoice::PAYMENT_HUIFU</span>
+<a id="__codelineno-15-11" name="__codelineno-15-11" href="#__codelineno-15-11"></a><span class="x">            &amp;&amp; array_key_exists('status', $changeArray)</span>
+<a id="__codelineno-15-12" name="__codelineno-15-12" href="#__codelineno-15-12"></a><span class="x">        ) {</span>
+<a id="__codelineno-15-13" name="__codelineno-15-13" href="#__codelineno-15-13"></a><span class="x">            [$before, $after] = $changeArray['status'];</span>
+<a id="__codelineno-15-14" name="__codelineno-15-14" href="#__codelineno-15-14"></a>
+<a id="__codelineno-15-15" name="__codelineno-15-15" href="#__codelineno-15-15"></a><span class="x">            // When PENDING → CANCELLED: close the Huifu order</span>
+<a id="__codelineno-15-16" name="__codelineno-15-16" href="#__codelineno-15-16"></a><span class="x">            if($before == Invoice::STATUS_PENDING &amp;&amp; $after == Invoice::STATUS_CANCELLED) {</span>
+<a id="__codelineno-15-17" name="__codelineno-15-17" href="#__codelineno-15-17"></a><span class="x">                $data = [</span>
+<a id="__codelineno-15-18" name="__codelineno-15-18" href="#__codelineno-15-18"></a><span class="x">                    'req_date' =&gt; (new \DateTime())-&gt;format('Ymd'),</span>
+<a id="__codelineno-15-19" name="__codelineno-15-19" href="#__codelineno-15-19"></a><span class="x">                    'req_seq_id' =&gt; UUID::v4c(),</span>
+<a id="__codelineno-15-20" name="__codelineno-15-20" href="#__codelineno-15-20"></a><span class="x">                    'huifu_id' =&gt; $config['sys_id'],</span>
+<a id="__codelineno-15-21" name="__codelineno-15-21" href="#__codelineno-15-21"></a><span class="x">                    'org_req_date' =&gt; $extraData['payment']['req_date'],</span>
+<a id="__codelineno-15-22" name="__codelineno-15-22" href="#__codelineno-15-22"></a><span class="x">                    'org_req_seq_id' =&gt; $entity-&gt;getOutTradeNo(),</span>
+<a id="__codelineno-15-23" name="__codelineno-15-23" href="#__codelineno-15-23"></a><span class="x">                ];</span>
+<a id="__codelineno-15-24" name="__codelineno-15-24" href="#__codelineno-15-24"></a><span class="x">                ksort($data);</span>
+<a id="__codelineno-15-25" name="__codelineno-15-25" href="#__codelineno-15-25"></a><span class="x">                $sign = HuifuPayStrategy::sha_with_rsa_sign(...);</span>
+<a id="__codelineno-15-26" name="__codelineno-15-26" href="#__codelineno-15-26"></a><span class="x">                // POST to https://api.huifu.com/v2/trade/payment/scanpay/close</span>
+<a id="__codelineno-15-27" name="__codelineno-15-27" href="#__codelineno-15-27"></a><span class="x">            }</span>
+<a id="__codelineno-15-28" name="__codelineno-15-28" href="#__codelineno-15-28"></a><span class="x">        }</span>
+<a id="__codelineno-15-29" name="__codelineno-15-29" href="#__codelineno-15-29"></a><span class="x">    }</span>
+<a id="__codelineno-15-30" name="__codelineno-15-30" href="#__codelineno-15-30"></a><span class="x">}</span>
+</code></pre></div>
+<h3 id="55-huifuaccountservice-transfer-and-withdraw">5.5 HuifuAccountService — transfer and withdraw<a class="headerlink" href="#55-huifuaccountservice-transfer-and-withdraw" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="x">// File: HuifuBundle/Service/HuifuAccountService.php (334 lines)</span>
+<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="x">namespace HuifuBundle\Service;</span>
+<a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>
+<a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="x">final class HuifuAccountService extends BaseService</span>
+<a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a><span class="x">{</span>
+<a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a><span class="x">    // balance — query sub-merchant account balance</span>
+<a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a><span class="x">    public function balance(HuifuAccount $entity) { ... }</span>
+<a id="__codelineno-16-8" name="__codelineno-16-8" href="#__codelineno-16-8"></a>
+<a id="__codelineno-16-9" name="__codelineno-16-9" href="#__codelineno-16-9"></a><span class="x">    // sync — pull account info from Huifu, update entity</span>
+<a id="__codelineno-16-10" name="__codelineno-16-10" href="#__codelineno-16-10"></a><span class="x">    public function sync(HuifuAccount $entity, bool $persist = true) {</span>
+<a id="__codelineno-16-11" name="__codelineno-16-11" href="#__codelineno-16-11"></a><span class="x">        // Uses V2UserBasicdataQueryRequest</span>
+<a id="__codelineno-16-12" name="__codelineno-16-12" href="#__codelineno-16-12"></a><span class="x">        // populates: indvBaseInfo, entBaseInfo, settleConfig, cardInfo, qryCashConfigList, qryCashCardInfoList</span>
+<a id="__codelineno-16-13" name="__codelineno-16-13" href="#__codelineno-16-13"></a><span class="x">    }</span>
+<a id="__codelineno-16-14" name="__codelineno-16-14" href="#__codelineno-16-14"></a>
+<a id="__codelineno-16-15" name="__codelineno-16-15" href="#__codelineno-16-15"></a><span class="x">    // userBusinessModify — modify settlement, card info</span>
+<a id="__codelineno-16-16" name="__codelineno-16-16" href="#__codelineno-16-16"></a><span class="x">    public function userBusinessModify(HuifuAccount $account, array $data = []) { ... }</span>
+<a id="__codelineno-16-17" name="__codelineno-16-17" href="#__codelineno-16-17"></a>
+<a id="__codelineno-16-18" name="__codelineno-16-18" href="#__codelineno-16-18"></a><span class="x">    // transfer — sub-merchant to sub-merchant transfer</span>
+<a id="__codelineno-16-19" name="__codelineno-16-19" href="#__codelineno-16-19"></a><span class="x">    // POST /v2/trade/acctpayment/pay</span>
+<a id="__codelineno-16-20" name="__codelineno-16-20" href="#__codelineno-16-20"></a><span class="x">    // Uses acctSplitBunch with div_amt + huifu_id</span>
+<a id="__codelineno-16-21" name="__codelineno-16-21" href="#__codelineno-16-21"></a><span class="x">    public function transfer(HuifuAccount $from, HuifuAccount $to, float $amount) {</span>
+<a id="__codelineno-16-22" name="__codelineno-16-22" href="#__codelineno-16-22"></a><span class="x">        $amount = sprintf('%.2f', $amount);</span>
+<a id="__codelineno-16-23" name="__codelineno-16-23" href="#__codelineno-16-23"></a><span class="x">        $request = new V2TradeAcctpaymentPayRequest();</span>
+<a id="__codelineno-16-24" name="__codelineno-16-24" href="#__codelineno-16-24"></a><span class="x">        $request-&gt;setOutHuifuId($from-&gt;getHuifuId());</span>
+<a id="__codelineno-16-25" name="__codelineno-16-25" href="#__codelineno-16-25"></a><span class="x">        $request-&gt;setOrdAmt($amount);</span>
+<a id="__codelineno-16-26" name="__codelineno-16-26" href="#__codelineno-16-26"></a><span class="x">        $request-&gt;setAcctSplitBunch(json_encode([</span>
+<a id="__codelineno-16-27" name="__codelineno-16-27" href="#__codelineno-16-27"></a><span class="x">            'acct_infos' =&gt; [[</span>
+<a id="__codelineno-16-28" name="__codelineno-16-28" href="#__codelineno-16-28"></a><span class="x">                'div_amt' =&gt; $amount,</span>
+<a id="__codelineno-16-29" name="__codelineno-16-29" href="#__codelineno-16-29"></a><span class="x">                'huifu_id' =&gt; $to-&gt;getHuifuId(),</span>
+<a id="__codelineno-16-30" name="__codelineno-16-30" href="#__codelineno-16-30"></a><span class="x">            ]]</span>
+<a id="__codelineno-16-31" name="__codelineno-16-31" href="#__codelineno-16-31"></a><span class="x">        ]));</span>
+<a id="__codelineno-16-32" name="__codelineno-16-32" href="#__codelineno-16-32"></a><span class="x">    }</span>
+<a id="__codelineno-16-33" name="__codelineno-16-33" href="#__codelineno-16-33"></a>
+<a id="__codelineno-16-34" name="__codelineno-16-34" href="#__codelineno-16-34"></a><span class="x">    // withdraw — transfer + settlement enchashment</span>
+<a id="__codelineno-16-35" name="__codelineno-16-35" href="#__codelineno-16-35"></a><span class="x">    // 1. transfer from main account to sub account</span>
+<a id="__codelineno-16-36" name="__codelineno-16-36" href="#__codelineno-16-36"></a><span class="x">    // 2. POST /v2/trade/settlement/enchashment (with token_no, cashAmt, intoAcctDateType="DM")</span>
+<a id="__codelineno-16-37" name="__codelineno-16-37" href="#__codelineno-16-37"></a><span class="x">    // 3. On failure: reverse the transfer</span>
+<a id="__codelineno-16-38" name="__codelineno-16-38" href="#__codelineno-16-38"></a><span class="x">    public function withdraw(HuifuAccount $account, float $amount) { ... }</span>
+<a id="__codelineno-16-39" name="__codelineno-16-39" href="#__codelineno-16-39"></a><span class="x">}</span>
+</code></pre></div>
+<hr />
+<h2 id="6-invoiceclose-event-close-unpaid-order">6. InvoiceClose Event (close unpaid order)<a class="headerlink" href="#6-invoiceclose-event-close-unpaid-order" title="Permanent link">&para;</a></h2>
+<p>When Invoice status changes PENDING → CANCELLED and <code>payment == 'huifu'</code>:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="x">// POST https://api.huifu.com/v2/trade/payment/scanpay/close</span>
+<a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="x">$data = [</span>
+<a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a><span class="x">    'req_date' =&gt; (new \DateTime())-&gt;format('Ymd'),</span>
+<a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a><span class="x">    'req_seq_id' =&gt; UUID::v4c(),</span>
+<a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a><span class="x">    'huifu_id' =&gt; $config['sys_id'],</span>
+<a id="__codelineno-17-6" name="__codelineno-17-6" href="#__codelineno-17-6"></a><span class="x">    'org_req_date' =&gt; $extraData['payment']['req_date'],</span>
+<a id="__codelineno-17-7" name="__codelineno-17-7" href="#__codelineno-17-7"></a><span class="x">    'org_req_seq_id' =&gt; $entity-&gt;getOutTradeNo(),</span>
+<a id="__codelineno-17-8" name="__codelineno-17-8" href="#__codelineno-17-8"></a><span class="x">];</span>
+<a id="__codelineno-17-9" name="__codelineno-17-9" href="#__codelineno-17-9"></a><span class="x">// ksort + sign + POST</span>
+</code></pre></div>
+<hr />
+<h2 id="7-configuration-shape">7. Configuration Shape<a class="headerlink" href="#7-configuration-shape" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="nt">huifu.payment</span><span class="p">:</span>
+<a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a><span class="w">    </span><span class="nt">sys_id</span><span class="p">:</span><span class="w"> </span><span class="s">"6666000135263684"</span><span class="w">        </span><span class="c1"># Merchant system ID</span>
+<a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a><span class="w">    </span><span class="nt">product_id</span><span class="p">:</span><span class="w"> </span><span class="s">"YMFZS"</span><span class="w">               </span><span class="c1"># Product ID (default for yunmafu)</span>
+<a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a><span class="w">    </span><span class="nt">rsa_merch_private_key</span><span class="p">:</span><span class="w"> </span><span class="s">"..."</span><span class="w">      </span><span class="c1"># Raw base64 (no PEM headers)</span>
+<a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a><span class="w">    </span><span class="nt">rsa_huifu_public_key</span><span class="p">:</span><span class="w"> </span><span class="s">"..."</span><span class="w">       </span><span class="c1"># Raw base64 (no PEM headers)</span>
+<a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a><span class="w">    </span><span class="nt">rsa_async_public_key</span><span class="p">:</span><span class="w"> </span><span class="s">"..."</span><span class="w">       </span><span class="c1"># (optional) For POS async notifications</span>
+</code></pre></div>
+<hr />
+<h2 id="8-integration-notes-for-crud-skeleton">8. Integration Notes for crud-skeleton<a class="headerlink" href="#8-integration-notes-for-crud-skeleton" title="Permanent link">&para;</a></h2>
+<h3 id="81-amount-conversion">8.1 Amount conversion<a class="headerlink" href="#81-amount-conversion" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Direction</th>
+<th>Legacy</th>
+<th>New Module</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Stored</td>
+<td>decimal string</td>
+<td>int (cents)</td>
+</tr>
+<tr>
+<td>→ Huifu</td>
+<td><code>"10.00"</code> (yuan string)</td>
+<td><code>sprintf('%.2f', $cents / 100)</code></td>
+</tr>
+<tr>
+<td>← Huifu</td>
+<td><code>"10.00"</code> string</td>
+<td><code>(int) round(floatval($yuan) * 100)</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="82-status-mapping">8.2 Status mapping<a class="headerlink" href="#82-status-mapping" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Legacy</th>
+<th>New</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Invoice::STATUS_PENDING</code> (0)</td>
+<td><code>'pending'</code></td>
+</tr>
+<tr>
+<td><code>Invoice::STATUS_PAID</code> (1)</td>
+<td><code>'paid'</code></td>
+</tr>
+<tr>
+<td><code>Invoice::STATUS_CANCELLED</code> (-2)</td>
+<td><code>'cancelled'</code></td>
+</tr>
+<tr>
+<td><code>Invoice::STATUS_FAILED</code> (-2)</td>
+<td><code>'failed'</code></td>
+</tr>
+<tr>
+<td><code>Invoice::STATUS_REFUNDED</code> (-1)</td>
+<td><code>'refunded'</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="83-gateway-interface-mapping">8.3 Gateway interface mapping<a class="headerlink" href="#83-gateway-interface-mapping" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Legacy <code>PayStrategy</code></th>
+<th>New <code>PaymentGatewayInterface</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>pay(Invoice)</code> → array|false</td>
+<td><code>pay(Invoice, array $options)</code> → <code>PaymentResult</code></td>
+</tr>
+<tr>
+<td><code>notify()</code> → mixed</td>
+<td><code>notify(Request)</code> → <code>PaymentNotifyResult</code></td>
+</tr>
+<tr>
+<td><code>refund(Invoice, $amount)</code> → bool</td>
+<td><code>refund(Invoice, int, string, array)</code> → <code>PaymentRefundResult</code></td>
+</tr>
+<tr>
+<td>—</td>
+<td><code>getNotifySuccessResponse()</code> → <code>Response</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="84-notification-response">8.4 Notification response<a class="headerlink" href="#84-notification-response" title="Permanent link">&para;</a></h3>
+<p>Legacy returns plain text <code>RECV_ORD_ID_{req_seq_id}</code>. New:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="x">return new Response('RECV_ORD_ID_' . $result-&gt;outTradeNo, 200,</span>
+<a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a><span class="x">    ['Content-Type' =&gt; 'text/plain']);</span>
+</code></pre></div>
+<h3 id="85-notification-body-parsing-critical">8.5 Notification body parsing (CRITICAL)<a class="headerlink" href="#85-notification-body-parsing-critical" title="Permanent link">&para;</a></h3>
+<p>Huifu callbacks use <code>application/x-www-form-urlencoded</code>, NOT JSON:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="x">parse_str($request-&gt;getContent(), $content);</span>
+<a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a><span class="x">// $content['resp_code'], $content['resp_data'] (JSON string), $content['sign']</span>
+</code></pre></div>
+<h3 id="86-key-idempotency-pattern">8.6 Key idempotency pattern<a class="headerlink" href="#86-key-idempotency-pattern" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span class="x">// Legacy uses Symfony Lock + SemaphoreStore</span>
+<a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a><span class="x">$receivedOrderId = "RECV_ORD_ID_{$data['req_seq_id']}";</span>
+<a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a><span class="x">$factory = new Factory(new SemaphoreStore());</span>
+<a id="__codelineno-21-4" name="__codelineno-21-4" href="#__codelineno-21-4"></a><span class="x">$lock = $factory-&gt;createLock($receivedOrderId, 30);</span>
+</code></pre></div>
+<p>New module already has idempotency in <code>InvoiceService::markPaid()</code> (checks status before workflow transition).</p>
+<h3 id="87-no-sdk-needed">8.7 No SDK needed<a class="headerlink" href="#87-no-sdk-needed" title="Permanent link">&para;</a></h3>
+<p>Core is simple:
+1. <code>ksort($data)</code>
+2. <code>json_encode($data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)</code>
+3. <code>openssl_sign($json, $sig, $privateKey, OPENSSL_ALGO_SHA256)</code>
+4. <code>base64_encode($sig)</code>
+5. POST JSON envelope to <code>https://api.huifu.com/v2/trade/payment/jspay</code></p>
+<p>A standalone <code>HuifuSigner</code> helper replaces the SDK completely.</p>
+<h3 id="88-recommended-file-structure">8.8 Recommended file structure<a class="headerlink" href="#88-recommended-file-structure" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a>src/Payment/Service/Gateway/Huifu/
+<a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a>├── HuifuGateway.php      — implements PaymentGatewayInterface
+<a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a>├── HuifuPosGateway.php   — POS variant (future)
+<a id="__codelineno-22-4" name="__codelineno-22-4" href="#__codelineno-22-4"></a>├── HuifuClient.php       — HTTP client (wrap Symfony HttpClient)
+<a id="__codelineno-22-5" name="__codelineno-22-5" href="#__codelineno-22-5"></a>├── HuifuSigner.php       — RSA-SHA256 sign + verify
+<a id="__codelineno-22-6" name="__codelineno-22-6" href="#__codelineno-22-6"></a>└── HuifuNotifyParser.php — parse application/x-www-form-urlencoded callbacks
+</code></pre></div>
+<hr />
+<h2 id="9-all-legacy-api-endpoints-for-reference">9. ALL Legacy API Endpoints (for reference)<a class="headerlink" href="#9-all-legacy-api-endpoints-for-reference" title="Permanent link">&para;</a></h2>
+<p>From SDK function codes (<code>FunctionCodeEnum</code>):</p>
+<table>
+<thead>
+<tr>
+<th>Function Code</th>
+<th>URL</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>V2_TRADE_PAYMENT_JSPAY</code></td>
+<td><code>/v2/trade/payment/jspay</code></td>
+<td>Unified order</td>
+</tr>
+<tr>
+<td><code>V2_TRADE_PAYMENT_MICROPAY</code></td>
+<td><code>/v2/trade/payment/micropay</code></td>
+<td>Barcode pay</td>
+</tr>
+<tr>
+<td><code>V2_TRADE_PAYMENT_SCANPAY_QUERY</code></td>
+<td><code>/v2/trade/payment/scanpay/query</code></td>
+<td>Query order</td>
+</tr>
+<tr>
+<td><code>V2_TRADE_PAYMENT_SCANPAY_CLOSE</code></td>
+<td><code>/v2/trade/payment/scanpay/close</code></td>
+<td>Close order</td>
+</tr>
+<tr>
+<td><code>V2_TRADE_PAYMENT_SCANPAY_REFUND</code></td>
+<td><code>/v2/trade/payment/scanpay/refund</code></td>
+<td>Refund</td>
+</tr>
+<tr>
+<td><code>V2_TRADE_PAYMENT_SCANPAY_REFUNDQUERY</code></td>
+<td><code>/v2/trade/payment/scanpay/refundquery</code></td>
+<td>Refund query</td>
+</tr>
+<tr>
+<td><code>V2_TRADE_ACCTPAYMENT_PAY</code></td>
+<td><code>/v2/trade/acctpayment/pay</code></td>
+<td>Sub-merchant transfer</td>
+</tr>
+<tr>
+<td><code>V2_TRADE_ACCTPAYMENT_BALANCE_QUERY</code></td>
+<td><code>/v2/trade/acctpayment/balance/query</code></td>
+<td>Balance query</td>
+</tr>
+<tr>
+<td><code>V2_TRADE_SETTLEMENT_ENCHASHMENT</code></td>
+<td><code>/v2/trade/settlement/enchashment</code></td>
+<td>Withdraw to bank card</td>
+</tr>
+<tr>
+<td><code>V2_TRADE_ONLINEPAYMENT_QUICKPAY_FRONTPAY</code></td>
+<td><code>/v2/trade/onlinepayment/quickpay/frontpay</code></td>
+<td>H5/quick pay</td>
+</tr>
+<tr>
+<td><code>V2_QUICKBUCKLE_ONEKEY_CARDBIND</code></td>
+<td>—</td>
+<td>Card binding</td>
+</tr>
+</tbody>
+</table>
+<p>Sub-merchant account / POS / withdraw APIs are for a future <code>Payment\Provider\Huifu\</code> submodule, NOT the payment gateway.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  回到页面顶部
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+      
+        <script src="../../javascripts/mermaid-init.js"></script>
+      
+    
+  </body>
+</html>

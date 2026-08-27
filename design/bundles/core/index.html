@@ -1,0 +1,3876 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Symfony 8.1 API backend skeleton with modular architecture">
+      
+      
+      
+        <link rel="canonical" href="https://immane.github.io/crud-skeleton/design/bundles/core/">
+      
+      
+        <link rel="prev" href="../../naming-convention/">
+      
+      
+        <link rel="next" href="../common/">
+      
+      
+        
+          <link rel="alternate" href="/crud-skeleton/" hreflang="en">
+        
+          <link rel="alternate" href="/crud-skeleton/zh/" hreflang="zh">
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Core Framework - CRUD Skeleton</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#core-bundle-design" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="CRUD Skeleton" class="md-header__button md-logo" aria-label="CRUD Skeleton" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            CRUD Skeleton
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Core Framework
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Select language">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="/crud-skeleton/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="/crud-skeleton/zh/" hreflang="zh" class="md-select__link">
+              中文
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/immane/crud-skeleton" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="CRUD Skeleton" class="md-nav__button md-logo" aria-label="CRUD Skeleton" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    CRUD Skeleton
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/immane/crud-skeleton" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Development Manual
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Development Manual
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../manual/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Manual Index
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../manual/getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../manual/architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../manual/project-structure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project Structure
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../manual/core-framework/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core Framework
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../manual/core-usage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core Usage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../manual/query-system/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Query System
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../manual/development-workflow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Development Workflow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../manual/testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../manual/api-contracts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Contracts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../manual/development-contracts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Development Contracts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../manual/integration-events/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Integration Events
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../manual/database-and-migrations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Database & Migrations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../manual/deployment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../manual/extracting-a-service/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Extracting a Service
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../manual/i18n/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Internationalization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Design Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Design Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../system-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    System Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api-design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../data-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../module-design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Module Design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../controller-design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Controller Design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api-documentation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Documentation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../system-contracts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    System Contracts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../naming-convention/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Naming Convention
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bundles
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Bundles
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core Framework
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core Framework
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Overview
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. Overview">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#11-what-core-provides" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.1 What Core Provides
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-file-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. File Structure
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-restcontroller-base-controller-contract" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. RestController -- Base Controller Contract
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. RestController -- Base Controller Contract">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-core-methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 Core Methods
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-setter-injection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 Setter Injection
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33-response-envelope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3 Response Envelope
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-baseservice-crud-service-contract" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. BaseService -- CRUD Service Contract
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. BaseService -- CRUD Service Contract">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-baseserviceinterface-methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 BaseServiceInterface Methods
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#411-identifier-lookup-contract" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1.1 Identifier Lookup Contract
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-dynamic-query-pipeline-list-method" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2 Dynamic Query Pipeline (list() method)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43-update-mutation-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.3 update() Mutation Pipeline
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#44-transaction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.4 Transaction
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-view-mixin-system" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. View Mixin System
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-expression-dynamic-query-engine" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Expression Dynamic Query Engine
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. Expression Dynamic Query Engine">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#61-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.1 Flow
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#62-expressiondqlparser" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.2 ExpressionDqlParser
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#63-expressionquerybuilderassembler" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.3 ExpressionQueryBuilderAssembler
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#64-legacyevaluator" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.4 LegacyEvaluator
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-serializer-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Serializer Pipeline
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Serializer Pipeline">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#71-normalizer-stack" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.1 Normalizer Stack
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#72-circular-reference-handling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.2 Circular Reference Handling
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#73-serializercontextfactory" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.3 SerializerContextFactory
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#74-objectcallback" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.4 ObjectCallback
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-event-listeners" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Event Listeners
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. Event Listeners">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#81-exceptioninterceptor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.1 ExceptionInterceptor
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#82-controllerlistener" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.2 ControllerListener
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-utility-classes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Utility Classes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-environment-variables-core-related" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Environment Variables (Core-Related)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-testing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. Testing
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../common/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Common (CMS)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../trade/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Trade (E-Commerce)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../store/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Store (Multi-Store Operations)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../inventory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Inventory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../payment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Payment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../wallet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Wallet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../settlement/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Settlement (Allocation + Finality)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../exchange/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Exchange (Pool-backed Economy)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../identity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Identity (Auth)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../wechat/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Wechat (Login + Pay)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Runbooks
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Runbooks
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../runbooks/common/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Common
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../runbooks/core/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../runbooks/exchange/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Exchange
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../runbooks/identity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Identity
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../runbooks/inventory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Inventory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../runbooks/payment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Payment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../runbooks/promotion/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Promotion
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../runbooks/settlement/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Settlement
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../runbooks/storage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Storage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../runbooks/store/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Store
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../runbooks/trade/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Trade
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../runbooks/wallet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Wallet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../runbooks/wechat/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    WeChat
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Research
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Research
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../research/easywechat-6.x-usage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    EasyWeChat 6.x Usage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../research/huifu-payment-api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Huifu Payment API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Issues
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Issues
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../issues/architecture-review-2026-06-26/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture Review 2026-06-26
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Testing
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../testing/crud-skeleton-production/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Production Validation Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../testing/crud-skeleton-production/TEST_STRATEGY/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Test Strategy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../testing/crud-skeleton-production/SYSTEM_WALKTHROUGH/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    System Walkthrough And Test Seams
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../testing/crud-skeleton-production/TEST_MATRIX/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Test Matrix
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../testing/crud-skeleton-production/BUSINESS_INVARIANTS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Business Invariants
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../testing/crud-skeleton-production/ARCHITECTURE_TEST_MAPPING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture Test Mapping
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../testing/crud-skeleton-production/FAILURE_MODES/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Failure Modes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../testing/crud-skeleton-production/PRODUCTION_VALIDATION/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Release Validation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../testing/crud-skeleton-production/AI_DEVELOPMENT_PROCESS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI Development Process
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../ai/context/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI Context
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../openapi/endpoints.yaml" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Overview
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. Overview">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#11-what-core-provides" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.1 What Core Provides
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-file-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. File Structure
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-restcontroller-base-controller-contract" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. RestController -- Base Controller Contract
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. RestController -- Base Controller Contract">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-core-methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 Core Methods
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-setter-injection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 Setter Injection
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33-response-envelope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3 Response Envelope
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-baseservice-crud-service-contract" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. BaseService -- CRUD Service Contract
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. BaseService -- CRUD Service Contract">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-baseserviceinterface-methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 BaseServiceInterface Methods
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#411-identifier-lookup-contract" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1.1 Identifier Lookup Contract
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-dynamic-query-pipeline-list-method" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2 Dynamic Query Pipeline (list() method)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43-update-mutation-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.3 update() Mutation Pipeline
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#44-transaction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.4 Transaction
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-view-mixin-system" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. View Mixin System
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-expression-dynamic-query-engine" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Expression Dynamic Query Engine
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. Expression Dynamic Query Engine">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#61-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.1 Flow
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#62-expressiondqlparser" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.2 ExpressionDqlParser
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#63-expressionquerybuilderassembler" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.3 ExpressionQueryBuilderAssembler
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#64-legacyevaluator" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.4 LegacyEvaluator
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-serializer-pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Serializer Pipeline
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Serializer Pipeline">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#71-normalizer-stack" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.1 Normalizer Stack
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#72-circular-reference-handling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.2 Circular Reference Handling
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#73-serializercontextfactory" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.3 SerializerContextFactory
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#74-objectcallback" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.4 ObjectCallback
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-event-listeners" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Event Listeners
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. Event Listeners">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#81-exceptioninterceptor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.1 ExceptionInterceptor
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#82-controllerlistener" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.2 ControllerListener
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-utility-classes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Utility Classes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-environment-variables-core-related" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Environment Variables (Core-Related)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-testing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. Testing
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="core-bundle-design">Core Bundle Design<a class="headerlink" href="#core-bundle-design" title="Permanent link">&para;</a></h1>
+<blockquote>
+<p>The Core bundle (<code>src/Core/</code>) is the <strong>foundational framework</strong> that all business modules depend on.
+It provides the controller base class, CRUD service abstraction, dynamic query engine, view mixin system, serializer pipeline, and utility classes.</p>
+</blockquote>
+<hr />
+<h2 id="1-overview">1. Overview<a class="headerlink" href="#1-overview" title="Permanent link">&para;</a></h2>
+<p>The Core bundle is NOT a business module -- it is the framework layer. It exports abstractions consumed by Common, Trade, Payment, Wallet, and Identity modules. Core MUST NOT depend on any business module.</p>
+<h3 id="11-what-core-provides">1.1 What Core Provides<a class="headerlink" href="#11-what-core-provides" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Concern</th>
+<th>Components</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>HTTP Response</td>
+<td><code>RestController</code> -- unified JSON success/warning/pagination</td>
+</tr>
+<tr>
+<td>CRUD Service</td>
+<td><code>BaseService</code> + <code>BaseServiceInterface</code> -- abstract CRUD with dynamic queries</td>
+</tr>
+<tr>
+<td>View Mixins</td>
+<td>9 PHP traits -- list, detail, create, update, delete, workflow, singleton</td>
+</tr>
+<tr>
+<td>Dynamic Queries</td>
+<td><code>ExpressionDqlParser</code> -- compile expression to DQL, <code>ExpressionService</code> -- caching facade</td>
+</tr>
+<tr>
+<td>Serializer</td>
+<td><code>FlatNormalizer</code> -- decorates ObjectNormalizer, <code>CircularReferenceHandler</code>, <code>ObjectCallback</code></td>
+</tr>
+<tr>
+<td>Error Handling</td>
+<td><code>ExceptionInterceptor</code> -- catch unhandled /api exceptions, <code>ControllerListener</code> -- request logging</td>
+</tr>
+<tr>
+<td>Utilities</td>
+<td>UUID, RSA, Math, ArrayCommon, StringCase, Inflect, FilterDateTime, FixJSON, Location</td>
+</tr>
+<tr>
+<td>DI</td>
+<td><code>ServiceLocatorInterface</code> + <code>DefaultServiceLocator</code> -- testable service location</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="2-file-structure">2. File Structure<a class="headerlink" href="#2-file-structure" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>src/Core/
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>|-- CoreBundle.php                              # Empty Symfony bundle class
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>|-- Controller/
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>|   |-- RestController.php                      # Base API controller (356 lines)
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>|   |-- DefaultController.php                   # Empty stub
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>|-- DependencyInjection/
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>|   |-- Configuration.php                       # Empty config tree
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>|   |-- CoreExtension.php                       # Loads services.yaml
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>|-- EventListener/
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>|   |-- ControllerListener.php                  # Logs PUT/POST requests
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>|   |-- ExceptionInterceptor.php                # Catches unhandled /api exceptions
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>|-- Exception/
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>|   |-- MessageErrorHttpException.php           # User-facing error
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>|   |-- MessageSuccessHttpException.php         # Success with custom message
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>|-- Parser/
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>|   |-- ExpressionDqlParser.php                 # Expression -&gt; DQL compiler (479 lines)
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>|   |-- ExpressionQueryBuilderAssembler.php     # QueryBuilder from fragments (172 lines)
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>|-- Resources/config/
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>|   |-- services.yaml                           # Core service registrations
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>|-- Serializer/
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>|   |-- Callbacks/ObjectCallback.php            # Static ID callback
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>|   |-- CircularReferenceHandler.php            # Returns entity ID or hash
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>|   |-- Normalizer/
+<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>|   |   |-- CircularReferenceHandler.php        # Alternative requiring getId()
+<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>|   |   |-- FlatNormalizer.php                  # Decorates ObjectNormalizer (181 lines)
+<a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a>|   |-- SerializerContextFactory.php            # groups, max_depth context builder
+<a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a>|-- Service/
+<a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a>|   |-- BaseService.php                         # Abstract CRUD service
+<a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a>|   |-- BaseServiceInterface.php                # CRUD contract (6 methods)
+<a id="__codelineno-0-30" name="__codelineno-0-30" href="#__codelineno-0-30"></a>|   |-- DefaultServiceLocator.php               # Production locator
+<a id="__codelineno-0-31" name="__codelineno-0-31" href="#__codelineno-0-31"></a>|   |-- ExpressionService.php / Interface       # Filter parser facade with cache
+<a id="__codelineno-0-32" name="__codelineno-0-32" href="#__codelineno-0-32"></a>|   |-- LegacyEvaluator.php                     # ExpressionLanguage wrapper
+<a id="__codelineno-0-33" name="__codelineno-0-33" href="#__codelineno-0-33"></a>|   |-- QueryBuilderFactory.php                 # QB factory with root alias
+<a id="__codelineno-0-34" name="__codelineno-0-34" href="#__codelineno-0-34"></a>|   |-- ServiceLocatorInterface.php             # DI abstraction contract
+<a id="__codelineno-0-35" name="__codelineno-0-35" href="#__codelineno-0-35"></a>|   |-- Concern/
+<a id="__codelineno-0-36" name="__codelineno-0-36" href="#__codelineno-0-36"></a>|       |-- BaseServiceInfrastructureTrait.php  # EM, Logger, transactions
+<a id="__codelineno-0-37" name="__codelineno-0-37" href="#__codelineno-0-37"></a>|       |-- BaseServiceMutationTrait.php        # new(), update(), remove()
+<a id="__codelineno-0-38" name="__codelineno-0-38" href="#__codelineno-0-38"></a>|       |-- BaseServiceReadListTrait.php        # get(), list() with dynamic queries
+<a id="__codelineno-0-39" name="__codelineno-0-39" href="#__codelineno-0-39"></a>|-- Utils/
+<a id="__codelineno-0-40" name="__codelineno-0-40" href="#__codelineno-0-40"></a>|   |-- ArrayCollection.php
+<a id="__codelineno-0-41" name="__codelineno-0-41" href="#__codelineno-0-41"></a>|   |-- ArrayCommon.php                         # Expression-language compatible array ops
+<a id="__codelineno-0-42" name="__codelineno-0-42" href="#__codelineno-0-42"></a>|   |-- FilterDateTime.php                      # DateTime factory
+<a id="__codelineno-0-43" name="__codelineno-0-43" href="#__codelineno-0-43"></a>|   |-- FixJSON.php                             # JSON repair + type detection
+<a id="__codelineno-0-44" name="__codelineno-0-44" href="#__codelineno-0-44"></a>|   |-- Inflect.php                             # English pluralizer/singularizer
+<a id="__codelineno-0-45" name="__codelineno-0-45" href="#__codelineno-0-45"></a>|   |-- Location.php                            # Tencent Maps API
+<a id="__codelineno-0-46" name="__codelineno-0-46" href="#__codelineno-0-46"></a>|   |-- Math.php                                # Math functions (ExpressionLanguage)
+<a id="__codelineno-0-47" name="__codelineno-0-47" href="#__codelineno-0-47"></a>|   |-- RsaClient.php                           # RSA sign/verify/encrypt/decrypt
+<a id="__codelineno-0-48" name="__codelineno-0-48" href="#__codelineno-0-48"></a>|   |-- StringCase.php                          # dashesToCamelCase
+<a id="__codelineno-0-49" name="__codelineno-0-49" href="#__codelineno-0-49"></a>|   |-- UUID.php                                # UUID v3/v4/v5/v4c
+<a id="__codelineno-0-50" name="__codelineno-0-50" href="#__codelineno-0-50"></a>|-- View/
+<a id="__codelineno-0-51" name="__codelineno-0-51" href="#__codelineno-0-51"></a>    |-- ApiView.php                             # Service binding + commonFilter()
+<a id="__codelineno-0-52" name="__codelineno-0-52" href="#__codelineno-0-52"></a>    |-- CreateApiViewMixin.php                  # POST / single + batch create
+<a id="__codelineno-0-53" name="__codelineno-0-53" href="#__codelineno-0-53"></a>    |-- DeleteApiViewMixin.php                  # DELETE /{id}
+<a id="__codelineno-0-54" name="__codelineno-0-54" href="#__codelineno-0-54"></a>    |-- DetailApiViewMixin.php                  # GET /{id}
+<a id="__codelineno-0-55" name="__codelineno-0-55" href="#__codelineno-0-55"></a>    |-- ListApiViewMixin.php                    # GET / with dynamic queries
+<a id="__codelineno-0-56" name="__codelineno-0-56" href="#__codelineno-0-56"></a>    |-- SingleCreateAndUpdateApiViewMixin.php   # PUT / singleton upsert
+<a id="__codelineno-0-57" name="__codelineno-0-57" href="#__codelineno-0-57"></a>    |-- SingleDetailApiViewMixin.php            # GET / singleton detail
+<a id="__codelineno-0-58" name="__codelineno-0-58" href="#__codelineno-0-58"></a>    |-- TransformContent.php                    # Expression-based field transform
+<a id="__codelineno-0-59" name="__codelineno-0-59" href="#__codelineno-0-59"></a>    |-- UpdateApiViewMixin.php                  # PUT /{id} + batch-update
+<a id="__codelineno-0-60" name="__codelineno-0-60" href="#__codelineno-0-60"></a>    |-- WorkflowApiViewMixin.php                # State machine transitions
+</code></pre></div>
+<hr />
+<h2 id="3-restcontroller-base-controller-contract">3. RestController -- Base Controller Contract<a class="headerlink" href="#3-restcontroller-base-controller-contract" title="Permanent link">&para;</a></h2>
+<p><strong>File</strong>: <code>src/Core/Controller/RestController.php</code></p>
+<p>Extends <code>Symfony\Bundle\FrameworkBundle\Controller\AbstractController</code>. All API controllers MUST extend this.</p>
+<h3 id="31-core-methods">3.1 Core Methods<a class="headerlink" href="#31-core-methods" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="x">// Success response: {data, code: status, message}</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="x">success($content, $message = 'SUCCESS', $status = 200): JsonResponse</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="x">// Error response: {code: error_code, message, data}</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="x">warning($error_msg = null, $error_code = 400, $raw_data = '', $status = 400): JsonResponse</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="x">// Pagination handler: supports QueryBuilder, array, ArrayCollection</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="x">pagination($collection): array  // returns paginator metadata</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="x">// Field projection &amp; nested expansion</span>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="x">requestProcess($collection, $request): void</span>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="x">expandObjects($entities, $expands): void</span>
+</code></pre></div>
+<h3 id="32-setter-injection">3.2 Setter Injection<a class="headerlink" href="#32-setter-injection" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Dependency</th>
+<th>Method</th>
+<th>Attribute</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>RequestStack</code></td>
+<td><code>setRequestStack()</code></td>
+<td><code>#[Required]</code></td>
+</tr>
+<tr>
+<td><code>SerializerInterface</code></td>
+<td><code>setSerializer()</code></td>
+<td><code>#[Required]</code></td>
+</tr>
+<tr>
+<td><code>TranslatorInterface</code></td>
+<td><code>setTranslator()</code></td>
+<td><code>#[Required]</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="33-response-envelope">3.3 Response Envelope<a class="headerlink" href="#33-response-envelope" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1">// Success</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="p">{</span><span class="nt">"data"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="err">...</span><span class="p">},</span><span class="w"> </span><span class="nt">"code"</span><span class="p">:</span><span class="w"> </span><span class="mi">200</span><span class="p">,</span><span class="w"> </span><span class="nt">"message"</span><span class="p">:</span><span class="w"> </span><span class="s2">"SUCCESS"</span><span class="p">}</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="c1">// With pagination</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="p">{</span><span class="nt">"data"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="err">...</span><span class="p">],</span><span class="w"> </span><span class="nt">"code"</span><span class="p">:</span><span class="w"> </span><span class="mi">200</span><span class="p">,</span><span class="w"> </span><span class="nt">"message"</span><span class="p">:</span><span class="w"> </span><span class="s2">"SUCCESS"</span><span class="p">,</span><span class="w"> </span><span class="nt">"paginator"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">"page"</span><span class="p">:</span><span class="mi">1</span><span class="p">,</span><span class="nt">"limit"</span><span class="p">:</span><span class="mi">20</span><span class="p">,</span><span class="nt">"pages"</span><span class="p">:</span><span class="mi">5</span><span class="p">,</span><span class="nt">"total"</span><span class="p">:</span><span class="mi">100</span><span class="p">}}</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="c1">// Error</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="p">{</span><span class="nt">"code"</span><span class="p">:</span><span class="w"> </span><span class="mi">400</span><span class="p">,</span><span class="w"> </span><span class="nt">"message"</span><span class="p">:</span><span class="w"> </span><span class="s2">"..."</span><span class="p">,</span><span class="w"> </span><span class="nt">"data"</span><span class="p">:</span><span class="w"> </span><span class="s2">""</span><span class="p">}</span>
+</code></pre></div>
+<hr />
+<h2 id="4-baseservice-crud-service-contract">4. BaseService -- CRUD Service Contract<a class="headerlink" href="#4-baseservice-crud-service-contract" title="Permanent link">&para;</a></h2>
+<p><strong>File</strong>: <code>src/Core/Service/BaseService.php</code>
+<strong>Interface</strong>: <code>src/Core/Service/BaseServiceInterface.php</code></p>
+<p>Composed of three traits:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>BaseService (abstract)
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>|-- BaseServiceInfrastructureTrait   # EM, Logger, Serializer, Validator, Transactions
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>|-- BaseServiceReadListTrait         # get(), list() with dynamic queries
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>|-- BaseServiceMutationTrait         # new(), update(), updateWithoutListener(), remove()
+</code></pre></div>
+<h3 id="41-baseserviceinterface-methods">4.1 BaseServiceInterface Methods<a class="headerlink" href="#41-baseserviceinterface-methods" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Signature</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>get</code></td>
+<td><code>get(mixed $object, bool $directly=false)</code></td>
+<td>Find by local id, UUID, criteria, or QueryBuilder</td>
+</tr>
+<tr>
+<td><code>list</code></td>
+<td><code>list($object=null, $order=null, bool $disableRequest=true)</code></td>
+<td>List or return QueryBuilder</td>
+</tr>
+<tr>
+<td><code>new</code></td>
+<td><code>new()</code></td>
+<td>Create entity instance</td>
+</tr>
+<tr>
+<td><code>update</code></td>
+<td><code>update($object, array $data=null, bool $noFlush=false)</code></td>
+<td>Persist entity with data</td>
+</tr>
+<tr>
+<td><code>updateWithoutListener</code></td>
+<td><code>updateWithoutListener($object, array $data)</code></td>
+<td>Bulk DQL update (no events)</td>
+</tr>
+<tr>
+<td><code>remove</code></td>
+<td><code>remove($object): bool</code></td>
+<td>Delete entity</td>
+</tr>
+</tbody>
+</table>
+<h3 id="411-identifier-lookup-contract">4.1.1 Identifier Lookup Contract<a class="headerlink" href="#411-identifier-lookup-contract" title="Permanent link">&para;</a></h3>
+<p><code>get()</code> is the common lookup facade. The current implementation resolves scalar values
+through the local primary key. The following is the target compatibility contract for
+the UUID-aware implementation; it must be covered by Core regression tests before code
+changes are released:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="x">$service-&gt;get(123);                  // local integer primary key</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="x">$service-&gt;get('123');                // local integer primary key, backward compatible</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="x">$service-&gt;get('canonical-uuid');     // unique uuid field</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="x">$service-&gt;get(['uuid' =&gt; $uuid]);    // explicit criteria, always unambiguous</span>
+</code></pre></div>
+<p>Rules:</p>
+<ol>
+<li>Integers and digit-only strings resolve to the local primary key.</li>
+<li>A canonical UUID string resolves against the entity's <code>uuid</code> field.</li>
+<li>Arrays remain explicit Doctrine criteria and QueryBuilder handling remains unchanged.</li>
+<li>An entity without a mapped <code>uuid</code> field returns <code>null</code> or raises a clear development
+   error for UUID input; it MUST NOT silently retry the value as a primary key.</li>
+<li>The implementation MUST NOT use an "id lookup then UUID fallback" heuristic because
+   it is ambiguous and adds unnecessary queries.</li>
+</ol>
+<p>Cross-module services, event consumers, and external API code SHOULD use explicit
+<code>get(['uuid' =&gt; $uuid])</code> or a module-specific <code>getByUuid()</code> convenience method. The
+plain <code>get($uuid)</code> form is available for ergonomic controller/service code, not as an
+authorization shortcut.</p>
+<h3 id="42-dynamic-query-pipeline-list-method">4.2 Dynamic Query Pipeline (<code>list()</code> method)<a class="headerlink" href="#42-dynamic-query-pipeline-list-method" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>request params
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>  -&gt; @dql         (DQL WHERE sub-clause)
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>  -&gt; @filter      (Expression -&gt; ExpressionDqlParser -&gt; DQL WHERE)
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>      fallback: LegacyEvaluator (in-memory)
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>  -&gt; @order       (DQL ORDER BY)
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>  -&gt; @select      (DQL SELECT)
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>  -&gt; @groupBy     (DQL GROUP BY)
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>  -&gt; @hints       (Query hints)
+<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>  -&gt; @sort        (in-memory sort)
+<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>  -&gt; @showDQL     (debug: return compiled DQL)
+</code></pre></div>
+<h3 id="43-update-mutation-pipeline">4.3 <code>update()</code> Mutation Pipeline<a class="headerlink" href="#43-update-mutation-pipeline" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>Input data
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>  -&gt; ManyToOne / OneToOne: resolve by ID
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>  -&gt; ManyToMany / OneToMany: add/remove by ID (uses Inflect for setter naming)
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>  -&gt; DateTime: deserialize from string
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>  -&gt; Scalar fields: Symfony Serializer
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>  -&gt; Symfony Validator
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>  -&gt; persist + flush (unless $noFlush)
+</code></pre></div>
+<h3 id="44-transaction">4.4 Transaction<a class="headerlink" href="#44-transaction" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="x">$this-&gt;wrapInTransaction(function ($em) {</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="x">    // All-or-nothing operations</span>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="x">});</span>
+</code></pre></div>
+<hr />
+<h2 id="5-view-mixin-system">5. View Mixin System<a class="headerlink" href="#5-view-mixin-system" title="Permanent link">&para;</a></h2>
+<p>See the <a href="../../controller-design/">Controller Design Contract</a> for the full trait catalog and hook contracts.</p>
+<p>The 9 traits in <code>src/Core/View/</code> provide the controller composition toolkit:</p>
+<table>
+<thead>
+<tr>
+<th>Trait</th>
+<th>Route(s)</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ApiView</code></td>
+<td>(none)</td>
+<td>Service binding, commonFilter()</td>
+</tr>
+<tr>
+<td><code>ListApiViewMixin</code></td>
+<td><code>GET /</code></td>
+<td>Paginated collection</td>
+</tr>
+<tr>
+<td><code>DetailApiViewMixin</code></td>
+<td><code>GET /{id}</code></td>
+<td>Single entity by numeric ID or UUID</td>
+</tr>
+<tr>
+<td><code>CreateApiViewMixin</code></td>
+<td><code>POST /</code></td>
+<td>Single + batch create</td>
+</tr>
+<tr>
+<td><code>UpdateApiViewMixin</code></td>
+<td><code>PUT /{id}</code>, <code>POST /batch-update</code></td>
+<td>Single update + batch upsert by numeric ID or UUID</td>
+</tr>
+<tr>
+<td><code>DeleteApiViewMixin</code></td>
+<td><code>DELETE /{id}</code></td>
+<td>Entity removal by numeric ID or UUID</td>
+</tr>
+<tr>
+<td><code>ScopedListApiViewMixin</code></td>
+<td><code>GET /</code></td>
+<td>Collection scoped by a required parent route parameter</td>
+</tr>
+<tr>
+<td><code>ScopedDetailApiViewMixin</code></td>
+<td><code>GET /{id}</code></td>
+<td>Detail scoped by a required parent route parameter</td>
+</tr>
+<tr>
+<td><code>SingleCreateAndUpdateApiViewMixin</code></td>
+<td><code>PUT /</code></td>
+<td>Singleton upsert</td>
+</tr>
+<tr>
+<td><code>SingleDetailApiViewMixin</code></td>
+<td><code>GET /</code></td>
+<td>Singleton detail</td>
+</tr>
+<tr>
+<td><code>WorkflowApiViewMixin</code></td>
+<td><code>/todo</code>, <code>/transitions</code>, <code>/do/{*}</code>, <code>/status-reset</code></td>
+<td>State machine ops</td>
+</tr>
+<tr>
+<td><code>TransformContent</code></td>
+<td>(used by others)</td>
+<td>Expression-based field transformation</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="6-expression-dynamic-query-engine">6. Expression Dynamic Query Engine<a class="headerlink" href="#6-expression-dynamic-query-engine" title="Permanent link">&para;</a></h2>
+<h3 id="61-flow">6.1 Flow<a class="headerlink" href="#61-flow" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>User query string (@filter or @sort)
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>  -&gt; ExpressionService (PSR-16 cache facade)
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>    -&gt; ExpressionDqlParser::parse(string $expression)
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>      -&gt; fragments: [joins, where, parameters]
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>    -&gt; ExpressionQueryBuilderAssembler::assemble(fragments, QueryBuilder)
+<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>      -&gt; complete QueryBuilder
+</code></pre></div>
+<h3 id="62-expressiondqlparser">6.2 ExpressionDqlParser<a class="headerlink" href="#62-expressiondqlparser" title="Permanent link">&para;</a></h3>
+<p><strong>File</strong>: <code>src/Core/Parser/ExpressionDqlParser.php</code> (479 lines)</p>
+<ul>
+<li>Compiles string expressions into DQL fragments</li>
+<li>Supports binary operators (<code>==</code>, <code>!=</code>, <code>&gt;</code>, <code>&lt;</code>, <code>&gt;=</code>, <code>&lt;=</code>, <code>&amp;&amp;</code>, <code>||</code>, <code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>, <code>matches</code>)</li>
+<li>Supports unary <code>!</code> operator</li>
+<li>Supports chained attributes (<code>entity.getCategory().getName()</code>)</li>
+<li>Validates fragments against Doctrine metadata (must match real entity fields/relations)</li>
+<li>Constants: <code>ROOT_ALIAS = 'filter_entity'</code>, <code>PARAM_PREFIX = 'filter_parameter_'</code></li>
+<li>Caching: PSR-16 cache for compiled expressions</li>
+</ul>
+<h3 id="63-expressionquerybuilderassembler">6.3 ExpressionQueryBuilderAssembler<a class="headerlink" href="#63-expressionquerybuilderassembler" title="Permanent link">&para;</a></h3>
+<p><strong>File</strong>: <code>src/Core/Parser/ExpressionQueryBuilderAssembler.php</code> (172 lines)</p>
+<ul>
+<li>Assembles QueryBuilder from parser fragments</li>
+<li>Handles alias remapping for JOINs</li>
+<li>Avoids parameter name collisions</li>
+</ul>
+<h3 id="64-legacyevaluator">6.4 LegacyEvaluator<a class="headerlink" href="#64-legacyevaluator" title="Permanent link">&para;</a></h3>
+<p>When DQL compilation fails (e.g., expression references non-DQL-compatible constructs), falls back to:
+- Symfony ExpressionLanguage + in-memory filter/sort via <code>ArrayCommon::filter()</code> / <code>ArrayCommon::sort()</code></p>
+<hr />
+<h2 id="7-serializer-pipeline">7. Serializer Pipeline<a class="headerlink" href="#7-serializer-pipeline" title="Permanent link">&para;</a></h2>
+<h3 id="71-normalizer-stack">7.1 Normalizer Stack<a class="headerlink" href="#71-normalizer-stack" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>Symfony ObjectNormalizer
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>  -&gt; FlatNormalizer (decorator)
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>    -&gt; Strips Doctrine proxy internals
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>    -&gt; Adds __toString to every entity
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>    -&gt; Collapses related entities to {id, __toString, __metadata}
+<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>    -&gt; Auto-parses JSON strings to arrays/objects
+</code></pre></div>
+<h3 id="72-circular-reference-handling">7.2 Circular Reference Handling<a class="headerlink" href="#72-circular-reference-handling" title="Permanent link">&para;</a></h3>
+<p><code>CircularReferenceHandler.php</code> -- returns entity ID or <code>spl_object_hash()</code> if no <code>getId()</code>.</p>
+<h3 id="73-serializercontextfactory">7.3 SerializerContextFactory<a class="headerlink" href="#73-serializercontextfactory" title="Permanent link">&para;</a></h3>
+<p>Builds context with <code>groups</code>, <code>max_depth</code>, <code>enable_max_depth</code>, <code>circular_reference_handler</code>.</p>
+<h3 id="74-objectcallback">7.4 ObjectCallback<a class="headerlink" href="#74-objectcallback" title="Permanent link">&para;</a></h3>
+<p>Static callback for serialization groups -- returns ID or null.</p>
+<hr />
+<h2 id="8-event-listeners">8. Event Listeners<a class="headerlink" href="#8-event-listeners" title="Permanent link">&para;</a></h2>
+<h3 id="81-exceptioninterceptor">8.1 ExceptionInterceptor<a class="headerlink" href="#81-exceptioninterceptor" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Subscribes to <code>kernel.exception</code></li>
+<li>Intercepts unhandled exceptions on <code>/api/*</code> routes</li>
+<li>Logs the exception</li>
+<li>Returns JSON <code>{code, message, data: {class}}</code></li>
+<li>Bypassed in <code>dev</code> mode</li>
+</ul>
+<h3 id="82-controllerlistener">8.2 ControllerListener<a class="headerlink" href="#82-controllerlistener" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Subscribes to <code>kernel.controller</code></li>
+<li>Logs PUT/POST requests with user ID, URI, and truncated body (1KB max)</li>
+</ul>
+<hr />
+<h2 id="9-utility-classes">9. Utility Classes<a class="headerlink" href="#9-utility-classes" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Class</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>UUID</code></td>
+<td>v3 (MD5), v4 (random), v5 (SHA1), v4c (compact no dashes)</td>
+</tr>
+<tr>
+<td><code>Math</code></td>
+<td>Wraps PHP math functions for ExpressionLanguage</td>
+</tr>
+<tr>
+<td><code>ArrayCommon</code></td>
+<td>ExpressionLanguage-compatible array operations</td>
+</tr>
+<tr>
+<td><code>RsaClient</code></td>
+<td>RSA sign/verify/encrypt/decrypt</td>
+</tr>
+<tr>
+<td><code>FilterDateTime</code></td>
+<td>DateTime factory with timezone</td>
+</tr>
+<tr>
+<td><code>FixJSON</code></td>
+<td>Single-quote repair, <code>getJSONType()</code> (object/array)</td>
+</tr>
+<tr>
+<td><code>Inflect</code></td>
+<td>English pluralizer (for ManyToMany setter naming)</td>
+</tr>
+<tr>
+<td><code>StringCase</code></td>
+<td><code>dashesToCamelCase()</code></td>
+</tr>
+<tr>
+<td><code>Location</code></td>
+<td>Tencent Maps geocode/reverse/distance API</td>
+</tr>
+<tr>
+<td><code>ArrayCollection</code></td>
+<td>Doctrine ArrayCollection wrapper with JSON factory</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="10-environment-variables-core-related">10. Environment Variables (Core-Related)<a class="headerlink" href="#10-environment-variables-core-related" title="Permanent link">&para;</a></h2>
+<p>Core framework itself has no special env vars. Configuration is via <code>config/services.yaml</code>:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="nt">services</span><span class="p">:</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="w">  </span><span class="nt">App\</span><span class="p">:</span>
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="w">    </span><span class="nt">resource</span><span class="p">:</span><span class="w"> </span><span class="s">'../src/'</span>
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="w">    </span><span class="nt">exclude</span><span class="p">:</span>
+<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">'../src/Core/Serializer/Normalizer/FlatNormalizer.php'</span>
+<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">'../src/*/EventListener/'</span>
+<a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">'../src/Identity/Controller/'</span>
+<a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">'../src/Identity/Security/'</span>
+</code></pre></div>
+<hr />
+<h2 id="11-testing">11. Testing<a class="headerlink" href="#11-testing" title="Permanent link">&para;</a></h2>
+<p>Tests for Core components at <code>tests/Core/</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Tests</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>RestController</td>
+<td>Response format, pagination, request processing</td>
+</tr>
+<tr>
+<td>BaseService</td>
+<td>Infrastructure trait, read list trait, mutation trait</td>
+</tr>
+<tr>
+<td>Expression Parser</td>
+<td>DQL parsing, assembler, expression service</td>
+</tr>
+<tr>
+<td>Serializer</td>
+<td>FlatNormalizer, CircularReferenceHandler, ObjectCallback</td>
+</tr>
+<tr>
+<td>Event Listeners</td>
+<td>ExceptionInterceptor, ControllerListener</td>
+</tr>
+<tr>
+<td>Utilities</td>
+<td>Math, UUID, StringCase, FixJSON, ArrayCommon, Inflect, FilterDateTime</td>
+</tr>
+</tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+      
+        <script src="../../../javascripts/mermaid-init.js"></script>
+      
+    
+  </body>
+</html>

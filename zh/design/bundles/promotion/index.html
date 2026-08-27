@@ -1,0 +1,4672 @@
+
+<!doctype html>
+<html lang="zh" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Symfony 8.1 API backend skeleton with modular architecture">
+      
+      
+      
+        <link rel="canonical" href="https://immane.github.io/crud-skeleton/zh/design/bundles/promotion/">
+      
+      
+      
+      
+        
+          <link rel="alternate" href="/crud-skeleton/" hreflang="en">
+        
+          <link rel="alternate" href="/crud-skeleton/zh/" hreflang="zh">
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>促销包设计 - CRUD Skeleton</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#_1" class="md-skip">
+          跳转至
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="页眉">
+    <a href="../../.." title="CRUD Skeleton" class="md-header__button md-logo" aria-label="CRUD Skeleton" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            CRUD Skeleton
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              促销包设计
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="选择当前语言">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="/crud-skeleton/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="/crud-skeleton/zh/" hreflang="zh" class="md-select__link">
+              中文
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="查找">
+        
+        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            正在初始化搜索引擎
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/immane/crud-skeleton" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="导航栏" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="CRUD Skeleton" class="md-nav__button md-logo" aria-label="CRUD Skeleton" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    CRUD Skeleton
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/immane/crud-skeleton" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    首页
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    开发手册
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    开发手册
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../manual/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    手册索引
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../manual/getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    入门
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../manual/architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../manual/project-structure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    项目结构
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../manual/core-framework/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core 框架
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../manual/core-usage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    核心用法
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../manual/query-system/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    查询系统
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../manual/development-workflow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    开发流程
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../manual/testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../manual/api-contracts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API合约
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../manual/development-contracts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    开发合同
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../manual/integration-events/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    整合活动
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../manual/database-and-migrations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    数据库和迁移
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../manual/deployment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../manual/extracting-a-service/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    提取服务
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../manual/i18n/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Internationalization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    设计契约
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    设计契约
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../system-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    系统架构
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api-design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API 设计
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../data-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    数据模型
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../module-design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    模块设计
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../controller-design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    控制器设计
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api-documentation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API 文档
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../system-contracts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    系统契约
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../naming-convention/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    命名约定
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    模块设计
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    模块设计
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../core/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core 框架
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../common/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Common (CMS)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../trade/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Trade (电商)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../store/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    商店（多商店运营）
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../inventory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Inventory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../payment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Payment (支付)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../wallet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Wallet (钱包)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../settlement/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    结算（分配+最终确定）
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../exchange/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    交易所（矿池支持经济）
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../identity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Identity (鉴权)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../wechat/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    微信（登录+支付）
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Runbooks
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Runbooks
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../runbooks/common/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Common
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../runbooks/core/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../runbooks/exchange/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Exchange
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../runbooks/identity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Identity
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../runbooks/inventory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Inventory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../runbooks/payment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Payment (支付)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../runbooks/promotion/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Promotion
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../runbooks/settlement/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Settlement
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../runbooks/storage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Storage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../runbooks/store/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Store
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../runbooks/trade/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Trade
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../runbooks/wallet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Wallet (钱包)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../runbooks/wechat/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    WeChat
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    调研
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    调研
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../research/easywechat-6.x-usage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    EasyWeChat 6.x 用法
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../research/huifu-payment-api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    汇付支付 API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Issues
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Issues
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../issues/architecture-review-2026-06-26/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    架构回顾 2026-06-26
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Testing
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../testing/crud-skeleton-production/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    生产验证概述
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../testing/crud-skeleton-production/TEST_STRATEGY/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    测试策略
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../testing/crud-skeleton-production/SYSTEM_WALKTHROUGH/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    系统演练和测试接缝
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../testing/crud-skeleton-production/TEST_MATRIX/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    测试矩阵
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../testing/crud-skeleton-production/BUSINESS_INVARIANTS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    业务不变量
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../testing/crud-skeleton-production/ARCHITECTURE_TEST_MAPPING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    架构测试映射
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../testing/crud-skeleton-production/FAILURE_MODES/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    失效模式
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../testing/crud-skeleton-production/PRODUCTION_VALIDATION/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    发布验证
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../testing/crud-skeleton-production/AI_DEVELOPMENT_PROCESS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    人工智能开发流程
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../ai/context/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI 快照
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../openapi/endpoints.yaml" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API 参考
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. 概述
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. 概述">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#11" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.1 实体
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12-dsl-expressionlanguage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2 DSL 与 ExpressionLanguage
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. 多商店架构
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. 文件结构
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. 实体设计
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. 实体设计">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 促销模板
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2 促销
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.3 冲突模式
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#44" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.4 约定
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5dsl" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.DSL 设计
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5.DSL 设计">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1 结构
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.2 条件语法
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5.2 条件语法">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        购物车级别
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        项目级别（范围）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        用户级别
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        配置参考
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        逻辑组合器
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#53" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.3 动作语法
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#54" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.4 分层语法
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#55" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.5 优先级
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#56" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.6 字段
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-dsl-7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. 完整的 DSL 示例（所有 7 种类型）
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. 完整的 DSL 示例（所有 7 种类型）">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#61-full_reduction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.1 满减 (full_reduction)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#62" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.2 折扣（折扣）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#63" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.3 满赠（礼物）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#64-n-nth_discount" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.4 N件折扣 (nth_discount)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#65" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.5 阶梯优惠（分层）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#66-free_shipping" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.6 免运费 (free_shipping)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#67-member_discount" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.7 会员折扣 (member_discount)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7dsl" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.DSL 词法分析器和解析器
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7.DSL 词法分析器和解析器">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#71" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.1 架构
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#72-ast" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.2 AST 节点类型
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#73" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.3 运行时评估器
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#74" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.4 策略注册
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. 核心引擎设计
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. 核心引擎设计">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#81" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.1 促销服务
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#82-getavailable" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.2 条件管道（getAvailable）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#83" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.3 促销申请（申请）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#84" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.4 链接（循环）
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. 价格计算管道集成
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="9. 价格计算管道集成">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#91-pricecalculationcontext" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.1 PriceCalculationContext 更改
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#92" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.2 订单服务变更
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#93" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.3 计算器链（最终）
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. API 端点
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10. API 端点">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#101-role_admin" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.1 管理（管理员、ROLE_ADMIN）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#102" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.2 应用程序（公共）
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. 路由注册
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12. 控制器设计
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="12. 控制器设计">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#121" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12.1 升级模板控制器
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#122-promotioncontroller" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12.2 PromotionController（管理）
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#123" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12.3 应用程序/促销控制器
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#13-dsl" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13. DSL 更新流程
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#14-di" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        14. 服务DI
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#15" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15. 测试
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#16" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16. 实施计划
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="16. 实施计划">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-dsl" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        第 1 阶段：核心实体和 DSL 解析器
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-crud-dsl-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        第 2 阶段：CRUD + DSL 验证 API
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        第三阶段：引擎和策略
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        第 4 阶段：高级功能
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        第 5 阶段：可观察性和报告
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#17" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        17. 开放性问题
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#18" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        18. 验收标准
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="_1">促销包设计<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h1>
+<blockquote>
+<p>促销模块 (<code>src/Promotion/</code>) 提供自定义 DSL 驱动的促销引擎。
+促销被定义为存储在 <code>PromotionTemplate</code> 中的人类可读的 DSL 文本，
+在 <code>Promotion</code> 实例中使用每个商店的配置值。引擎挂接到 Trade 的
+价格计算管道作为标记计算器，与交易内部完全解耦。</p>
+</blockquote>
+<hr />
+<h2 id="1">1. 概述<a class="headerlink" href="#1" title="Permanent link">&para;</a></h2>
+<p>Promotion 是一个独立模块，插入 Trade 的 <code>PriceCalculatorInterface</code> 链：</p>
+<pre class="mermaid"><code>flowchart TD
+    A["OrderService::calculatePrices()"] --&gt; B["BasePriceCalculator (-100)&lt;br/&gt;Trade built-in"]
+    A --&gt; C["QuantityCalculator (50)&lt;br/&gt;Trade built-in"]
+    A --&gt; D["PromotionCalculator (60)&lt;br/&gt;Promotion module (tagged trade.price_calculator)"]
+    A --&gt; E["TotalAggregator (100)&lt;br/&gt;Trade built-in"]</code></pre>
+<p>主要特点：</p>
+<ul>
+<li><strong>自定义 DSL</strong>：促销条件和操作以结构化、
+  人类可读的迷你语言——不是ExpressionLanguage，也不是原始的PHP。 DSL 是
+  在保存时解析、验证语法/语义、缓存为 AST 并进行评估
+  在运行时 - 零运行时解析开销。</li>
+<li><strong>多商店</strong>：一个<code>PromotionTemplate</code>（DSL文本）可以服务N个商店。各店
+  使用特定于商店的 <code>config</code> 值（阈值、
+  金额、礼品规格）。该引擎与存储无关。</li>
+<li><strong>模板驱动</strong>：DSL 位于 <code>PromotionTemplate</code> 中。 <code>Promotion</code> 实例携带
+  仅 <code>storeCode</code> + <code>config</code> + 时间范围 + 启用标志。</li>
+<li><strong>连锁</strong>：促销可以触发进一步的促销（例如，买 A 送 B，B 也
+  折扣）。计算器最多循环 20 次迭代。</li>
+<li><strong>相分离</strong>：<code>PHASE_INNER</code>（在项目级循环期间应用）和<code>PHASE_OUTER</code>
+  （内部晋升后适用）分阶段执行。</li>
+<li><strong>解耦</strong>：Trade的<code>OrderService</code>对促销逻辑的了解为零。的
+  模块通过标准 <code>trade.price_calculator</code> 标签进行连接。</li>
+<li><strong>预定义类型</strong>：DSL <code>type</code> 字段映射到执行策略。常见类型
+  有专门的策略课程；通过编写策略+解析器添加新类型
+  关键字 — 没有 ExpressionLanguage hack。</li>
+</ul>
+<h3 id="11">1.1 实体<a class="headerlink" href="#11" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>实体</th>
+<th>表</th>
+<th>目的</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>PromotionTemplate</code></td>
+<td><code>promotion_template</code></td>
+<td>DSL 文本 + 类型 + 字段定义（与商店无关）</td>
+</tr>
+<tr>
+<td><code>Promotion</code></td>
+<td><code>promotion</code></td>
+<td>每个商店实例：配置值、时间范围、启用标志</td>
+</tr>
+</tbody>
+</table>
+<h3 id="12-dsl-expressionlanguage">1.2 DSL 与 ExpressionLanguage<a class="headerlink" href="#12-dsl-expressionlanguage" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>方面</th>
+<th>ExpressionLanguage（农场邻居）</th>
+<th>DSL（本设计）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>可读性</td>
+<td>神秘的俏皮话</td>
+<td>结构化、可读的文本</td>
+</tr>
+<tr>
+<td>安全</td>
+<td>运行时异常、沙箱漏洞</td>
+<td>语法是沙箱——任何不符合语法的东西都是可执行的</td>
+</tr>
+<tr>
+<td>验证</td>
+<td>按原样保存，运行时崩溃</td>
+<td>Lex + 解析 + 保存时语义检查</td>
+</tr>
+<tr>
+<td>编辑器用户体验</td>
+<td>原始文本区域</td>
+<td>可以使用语法感知编辑器（自动完成、错误下划线）</td>
+</tr>
+<tr>
+<td>存储</td>
+<td>3 个字段（验证器、执行器、优先级计算器）</td>
+<td>1 个字段 (<code>dsl</code>)</td>
+</tr>
+<tr>
+<td>调试</td>
+<td>字符串评估，无踪迹</td>
+<td>line:col; 的解析器错误每步执行日志</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="2">2. 多商店架构<a class="headerlink" href="#2" title="Permanent link">&para;</a></h2>
+<pre class="mermaid"><code>flowchart TD
+    subgraph Template["PromotionTemplate (store-agnostic)"]
+        Dsl["type: full_reduction&lt;br/&gt;phase: inner&lt;br/&gt;&lt;br/&gt;when:&lt;br/&gt;cart.subtotal &gt;= config.threshold&lt;br/&gt;do:&lt;br/&gt;discount order config.amount&lt;br/&gt;&lt;br/&gt;priority: config.amount&lt;br/&gt;fields: threshold,amount"]
+        TemplateOwner["Owned by: developer / tech-ops"]
+    end
+    subgraph Instances["Promotion instances (one per store)"]
+        StoreA["Store A&lt;br/&gt;threshold:200&lt;br/&gt;amount:20&lt;br/&gt;enabled:true&lt;br/&gt;start:7/1&lt;br/&gt;end:7/31"]
+        StoreB["Store B&lt;br/&gt;threshold:300&lt;br/&gt;amount:50&lt;br/&gt;enabled:true&lt;br/&gt;start:7/15&lt;br/&gt;end:8/15"]
+        StoreC["Store C&lt;br/&gt;threshold:150&lt;br/&gt;amount:10&lt;br/&gt;enabled:false&lt;br/&gt;start:null&lt;br/&gt;end:null"]
+        InstancesOwner["Owned by: operations / merchant"]
+    end
+    Template --&gt;|"1:N"| Instances
+    Note["PromotionCalculator receives a storeCode from the request/context,&lt;br/&gt;evaluates only matching Promotion instances for the current store."]</code></pre>
+<hr />
+<h2 id="3">3. 文件结构<a class="headerlink" href="#3" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>src/Promotion/
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>├── Controller/
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>│   ├── App/
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>│   │   └── PromotionController.php           # Public read: list active promotions
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>│   └── Manage/
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>│       ├── PromotionController.php           # Admin CRUD
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>│       └── PromotionTemplateController.php  # Admin CRUD + DSL validate on save
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>├── Entity/
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>│   ├── Promotion.php
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>│   └── PromotionTemplate.php
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>├── Repository/
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>│   ├── PromotionRepository.php
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>│   └── PromotionTemplateRepository.php
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>├── Service/
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>│   ├── PromotionService.php                  # CRUD + engine: match, sort, apply
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>│   ├── PromotionServiceInterface.php
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>│   ├── PromotionTemplateService.php          # CRUD (DSL parse/validate on update)
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>│   ├── PromotionTemplateServiceInterface.php
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>│   ├── PromotionCalculator.php               # tagged trade.price_calculator, priority=60
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>│   └── Dsl/
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>│       ├── Lexer.php                         # Tokenizer
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>│       ├── Parser.php                        # Tokens → AST
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>│       ├── AstNode.php                       # AST node classes (Condition, Action, ...)
+<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>│       ├── Evaluator.php                     # AST → bool (conditions) / void (actions)
+<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>│       └── DslSyntaxException.php            # Parse error with line:col
+<a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a>├── Strategy/
+<a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a>│   ├── PromotionStrategyInterface.php        # apply(AST, context): void
+<a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a>│   ├── FullReductionStrategy.php             # 满减
+<a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a>│   ├── DiscountStrategy.php                  # 折扣
+<a id="__codelineno-0-30" name="__codelineno-0-30" href="#__codelineno-0-30"></a>│   ├── GiftStrategy.php                      # 满赠
+<a id="__codelineno-0-31" name="__codelineno-0-31" href="#__codelineno-0-31"></a>│   ├── NthItemDiscountStrategy.php           # N件折扣
+<a id="__codelineno-0-32" name="__codelineno-0-32" href="#__codelineno-0-32"></a>│   ├── TieredStrategy.php                    # 阶梯优惠
+<a id="__codelineno-0-33" name="__codelineno-0-33" href="#__codelineno-0-33"></a>│   ├── FreeShippingStrategy.php              # 免运费
+<a id="__codelineno-0-34" name="__codelineno-0-34" href="#__codelineno-0-34"></a>│   ├── MemberDiscountStrategy.php            # 会员折扣
+<a id="__codelineno-0-35" name="__codelineno-0-35" href="#__codelineno-0-35"></a>│   └── CustomStrategy.php                    # Escape hatch (future ExpressionLanguage)
+<a id="__codelineno-0-36" name="__codelineno-0-36" href="#__codelineno-0-36"></a>├── Exception/
+<a id="__codelineno-0-37" name="__codelineno-0-37" href="#__codelineno-0-37"></a>│   └── PromotionException.php
+<a id="__codelineno-0-38" name="__codelineno-0-38" href="#__codelineno-0-38"></a>└── Resources/
+<a id="__codelineno-0-39" name="__codelineno-0-39" href="#__codelineno-0-39"></a>    └── config/
+<a id="__codelineno-0-40" name="__codelineno-0-40" href="#__codelineno-0-40"></a>        └── services_promotion.yaml           # Strategy registration (tagged)
+</code></pre></div>
+<p>修改后的文件：
+- <code>src/Trade/Service/Pricing/PriceCalculationContext.php</code> — 添加<code>$user</code>、<code>$storeCode</code>
+- <code>src/Trade/Service/OrderService.php</code> — 将 user + storeCode 注入到 <code>calculatePrices()</code> 中的上下文中
+- <code>config/routes.yaml</code> — 添加<code>api_promotion</code>路由组</p>
+<hr />
+<h2 id="4">4. 实体设计<a class="headerlink" href="#4" title="Permanent link">&para;</a></h2>
+<h3 id="41">4.1 促销模板<a class="headerlink" href="#41" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>领域</th>
+<th>类型</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>id</code></td>
+<td>国际汽车</td>
+<td>主键</td>
+</tr>
+<tr>
+<td><code>uuid</code></td>
+<td>字符串(36) 唯一</td>
+<td>UUID v4</td>
+</tr>
+<tr>
+<td><code>name</code></td>
+<td>字符串(255) 唯一</td>
+<td>模板名称</td>
+</tr>
+<tr>
+<td><code>description</code></td>
+<td>文本可为空</td>
+<td>人类可读的描述</td>
+</tr>
+<tr>
+<td><code>type</code></td>
+<td>字符串（50）</td>
+<td>快速分类器：<code>full_reduction</code>、<code>discount</code>、<code>gift</code>、<code>nth_discount</code>、<code>tiered</code>、<code>free_shipping</code>、<code>member_discount</code></td>
+</tr>
+<tr>
+<td><code>phase</code></td>
+<td>整数默认 0</td>
+<td>执行阶段：<code>PHASE_INNER=0</code>、<code>PHASE_OUTER=1</code></td>
+</tr>
+<tr>
+<td><code>enabled</code></td>
+<td>布尔默认 false</td>
+<td>此模板是否可以使用</td>
+</tr>
+<tr>
+<td><code>dsl</code></td>
+<td>文字</td>
+<td>DSL 文本：<code>when</code>/<code>do</code>/<code>priority</code> 块</td>
+</tr>
+<tr>
+<td><code>fields</code></td>
+<td>json 可为空</td>
+<td>管理 UI 的配置字段定义（名称、类型、默认、必需）</td>
+</tr>
+<tr>
+<td><code>astCache</code></td>
+<td>json 可为空</td>
+<td>序列化 AST（由解析器在保存时设置，由引擎在运行时使用）</td>
+</tr>
+<tr>
+<td><code>createdAt</code></td>
+<td>日期时间不可变</td>
+<td>自动设置持续</td>
+</tr>
+<tr>
+<td><code>updatedAt</code></td>
+<td>datetime_immutable 可为空</td>
+<td>更新时自动设置</td>
+</tr>
+</tbody>
+</table>
+<p>常数：
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="x">public const PHASE_ALL = -1;</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="x">public const PHASE_INNER = 0;</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="x">public const PHASE_OUTER = 1;</span>
+</code></pre></div></p>
+<h3 id="42">4.2 促销<a class="headerlink" href="#42" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>领域</th>
+<th>类型</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>id</code></td>
+<td>国际汽车</td>
+<td>主键</td>
+</tr>
+<tr>
+<td><code>uuid</code></td>
+<td>字符串(36) 唯一</td>
+<td>UUID v4</td>
+</tr>
+<tr>
+<td><code>name</code></td>
+<td>字符串(255) 唯一</td>
+<td>活动名称</td>
+</tr>
+<tr>
+<td><code>description</code></td>
+<td>文本可为空</td>
+<td>人类可读的描述</td>
+</tr>
+<tr>
+<td><code>template</code></td>
+<td>多对一 → 促销模板</td>
+<td>此实例使用哪个模板</td>
+</tr>
+<tr>
+<td><code>storeCode</code></td>
+<td>字符串（50）</td>
+<td>商店标识符（例如，<code>"store-a"</code>、<code>"store-b"</code>）</td>
+</tr>
+<tr>
+<td><code>enabled</code></td>
+<td>布尔默认 false</td>
+<td>此促销活动是否有效</td>
+</tr>
+<tr>
+<td><code>startTime</code></td>
+<td>datetime_immutable 可为空</td>
+<td>活动开始</td>
+</tr>
+<tr>
+<td><code>endTime</code></td>
+<td>datetime_immutable 可为空</td>
+<td>活动结束</td>
+</tr>
+<tr>
+<td><code>config</code></td>
+<td>json 可为空</td>
+<td>DSL <code>config.*</code> 占位符的值（阈值、金额、礼品规格 ID 等）</td>
+</tr>
+<tr>
+<td><code>conflictMode</code></td>
+<td>字符串(30) 默认 <code>'stackable'</code></td>
+<td><code>stackable</code></td>
+</tr>
+<tr>
+<td><code>createdAt</code></td>
+<td>日期时间不可变</td>
+<td>自动设置持续</td>
+</tr>
+<tr>
+<td><code>updatedAt</code></td>
+<td>datetime_immutable 可为空</td>
+<td>更新时自动设置</td>
+</tr>
+</tbody>
+</table>
+<p>规范定位是通过 DSL 条件 (<code>item.spec.id in config.target_specs</code>) 完成的，而不是通过实体关系完成的。</p>
+<h3 id="43">4.3 冲突模式<a class="headerlink" href="#43" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>模式</th>
+<th>行为</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>stackable</code></td>
+<td>默认。促销可以堆叠/连锁。</td>
+</tr>
+<tr>
+<td><code>exclusive</code></td>
+<td>一旦此促销匹配，则此迭代中不会应用其他促销。</td>
+</tr>
+<tr>
+<td><code>lock_item</code></td>
+<td>受本次促销活动影响的商品将不再参与后续促销活动。</td>
+</tr>
+</tbody>
+</table>
+<h3 id="44">4.4 约定<a class="headerlink" href="#44" title="Permanent link">&para;</a></h3>
+<p>所有实体都遵循粗略的框架约定：
+- PHP 8 属性（<code>#[ORM\Entity]</code>、<code>#[ORM\Column]</code>）
+- <code>#[ORM\HasLifecycleCallbacks]</code> 和 <code>#[ORM\PrePersist]</code> / <code>#[ORM\PreUpdate]</code> 用于时间戳
+- <code>__toString()</code> 返回<code>$this-&gt;name</code>
+- 通过 <code>App\Core\Utils\UUID::v4()</code> 在构造函数中生成 UUID v4
+- 金额：<code>bigint</code>（分）代表价格的配置值；利率的小数点</p>
+<hr />
+<h2 id="5dsl">5.DSL 设计<a class="headerlink" href="#5dsl" title="Permanent link">&para;</a></h2>
+<h3 id="51">5.1 结构<a class="headerlink" href="#51" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a># Comment lines start with #
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>type: &lt;promotion_type&gt;       # Fast classifier for engine routing
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>phase: &lt;inner|outer&gt;         # Execution phase (default: inner)
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>when:
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>  &lt;condition_1&gt;
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>  &lt;condition_2&gt;
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>do:
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>  &lt;action_1&gt;
+<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>  &lt;action_2&gt;
+<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>
+<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>priority: &lt;expression&gt;       # Sort key (optional)
+<a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a>
+<a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a>fields:
+<a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a>  &lt;name&gt;:&lt;type&gt;:&lt;label&gt;      # Config field declarations (optional)
+</code></pre></div>
+<h3 id="52">5.2 条件语法<a class="headerlink" href="#52" title="Permanent link">&para;</a></h3>
+<h4 id="_2">购物车级别<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>状况</th>
+<th>示例</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>cart.subtotal &gt;= &lt;value&gt;</code></td>
+<td><code>cart.subtotal &gt;= 200.00</code></td>
+</tr>
+<tr>
+<td><code>cart.subtotal &lt;= &lt;value&gt;</code></td>
+<td><code>cart.subtotal &lt;= 500.00</code></td>
+</tr>
+<tr>
+<td><code>cart.items.count &gt;= &lt;value&gt;</code></td>
+<td><code>cart.items.count &gt;= 3</code></td>
+</tr>
+<tr>
+<td><code>cart.items.count &lt;= &lt;value&gt;</code></td>
+<td><code>cart.items.count &lt;= 10</code></td>
+</tr>
+</tbody>
+</table>
+<h4 id="_3">项目级别（范围）<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>状况</th>
+<th>示例</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>item.price &gt;= &lt;value&gt;</code></td>
+<td><code>item.price &gt;= 50.00</code></td>
+</tr>
+<tr>
+<td><code>item.quantity &gt;= &lt;value&gt;</code></td>
+<td><code>item.quantity &gt;= 2</code></td>
+</tr>
+<tr>
+<td><code>item.spec.id in [id1, id2, ...]</code></td>
+<td><code>item.spec.id in [42, 43, 48]</code></td>
+</tr>
+<tr>
+<td><code>item.tags includes "&lt;tag&gt;"</code></td>
+<td><code>item.tags includes "fruit"</code></td>
+</tr>
+</tbody>
+</table>
+<h4 id="_4">用户级别<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>状况</th>
+<th>示例</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>user.level &gt;= "&lt;level&gt;"</code></td>
+<td><code>user.level &gt;= "vip"</code></td>
+</tr>
+<tr>
+<td><code>user.level == "&lt;level&gt;"</code></td>
+<td><code>user.level == "gold"</code></td>
+</tr>
+<tr>
+<td><code>user.tags includes "&lt;tag&gt;"</code></td>
+<td><code>user.tags includes "new_user"</code></td>
+</tr>
+</tbody>
+</table>
+<h4 id="_5">配置参考<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h4>
+<p><code>Promotion.config</code> JSON 中的配置值被引用为 <code>config.&lt;key&gt;</code>：</p>
+<table>
+<thead>
+<tr>
+<th>状况</th>
+<th>示例</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>cart.subtotal &gt;= config.threshold</code></td>
+<td>实例配置填充的阈值</td>
+</tr>
+<tr>
+<td><code>item.quantity &gt;= config.min_qty</code></td>
+<td>min_qty 由实例配置填充</td>
+</tr>
+</tbody>
+</table>
+<h4 id="_6">逻辑组合器<a class="headerlink" href="#_6" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>when:
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>  and:
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>    - cart.subtotal &gt;= config.threshold
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>    - or:
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>        - user.level &gt;= "vip"
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>        - item.tags includes "promo"
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>  not:
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>    item.tags includes "excluded"
+</code></pre></div>
+<h3 id="53">5.3 动作语法<a class="headerlink" href="#53" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>行动</th>
+<th>示例</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>discount order &lt;value&gt;</code></td>
+<td><code>discount order 20.00</code></td>
+<td>全额减免：减去固定金额</td>
+</tr>
+<tr>
+<td><code>discount order &lt;rate&gt;%</code></td>
+<td><code>discount order 10%</code></td>
+<td>总折扣百分比</td>
+</tr>
+<tr>
+<td><code>discount order &lt;value&gt; max &lt;cap&gt;</code></td>
+<td><code>discount order 10% max 50.00</code></td>
+<td>百分比上限</td>
+</tr>
+<tr>
+<td><code>add gift spec:&lt;id&gt; count:&lt;n&gt;</code></td>
+<td><code>add gift spec:config.gift_spec count:1</code></td>
+<td>添加礼品</td>
+</tr>
+<tr>
+<td><code>add gift spec:&lt;id&gt; count:&lt;n&gt; price:&lt;p&gt;</code></td>
+<td><code>add gift spec:42 count:1 price:0.00</code></td>
+<td>添加礼物并明确价格</td>
+</tr>
+<tr>
+<td><code>discount item &lt;n&gt; &lt;rate&gt;%</code></td>
+<td><code>discount item 3 50%</code></td>
+<td>第N件商品折扣</td>
+</tr>
+<tr>
+<td><code>discount item &lt;n&gt; &lt;value&gt;</code></td>
+<td><code>discount item 3 9.99</code></td>
+<td>第 N 件固定价格</td>
+</tr>
+<tr>
+<td><code>tiered</code> + 层块</td>
+<td>（见下文）</td>
+<td>阶梯/阶梯折扣</td>
+</tr>
+<tr>
+<td><code>free shipping</code></td>
+<td><code>free shipping</code></td>
+<td>免费送货标志</td>
+</tr>
+<tr>
+<td><code>member discount &lt;rate&gt;%</code></td>
+<td><code>member discount 95%</code></td>
+<td>会员折扣率</td>
+</tr>
+</tbody>
+</table>
+<h3 id="54">5.4 分层语法<a class="headerlink" href="#54" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>type: tiered
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>when:
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>  cart.subtotal &gt;= config.from_1
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>do:
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>  tiered:
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>    - from: 100.00  less: 10.00
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>    - from: 200.00  less: 30.00
+<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a>    - from: 500.00  less: 80.00
+</code></pre></div>
+<h3 id="55">5.5 优先级<a class="headerlink" href="#55" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>priority: config.priority       # Manual priority from instance config
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>priority: config.amount          # Sort by discount amount
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>priority: config.threshold desc  # Sort by threshold descending
+</code></pre></div>
+<p>如果省略，优先级为 <code>0</code>（最后）。</p>
+<h3 id="56">5.6 字段<a class="headerlink" href="#56" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>fields:
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>  threshold:number:消费门槛(元)
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>  amount:number:优惠金额(元)
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>  gift_spec:spec:赠品规格
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>  min_qty:number:最低件数
+</code></pre></div>
+<p>每个字段：<code>name:type:label</code>。类型：<code>number</code>、<code>spec</code>、<code>string</code>、<code>bool</code>。</p>
+<hr />
+<h2 id="6-dsl-7">6. 完整的 DSL 示例（所有 7 种类型）<a class="headerlink" href="#6-dsl-7" title="Permanent link">&para;</a></h2>
+<h3 id="61-full_reduction">6.1 满减 (full_reduction)<a class="headerlink" href="#61-full_reduction" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a># Spend X, save Y
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>type: full_reduction
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>phase: inner
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>
+<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>when:
+<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>  cart.subtotal &gt;= config.threshold
+<a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>
+<a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a>do:
+<a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a>  discount order config.amount
+<a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a>
+<a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a>priority: config.amount
+<a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a>fields:
+<a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a>  threshold:number:消费门槛(元)
+<a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a>  amount:number:优惠金额(元)
+</code></pre></div>
+<h3 id="62">6.2 折扣（折扣）<a class="headerlink" href="#62" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a># Percentage discount on entire order
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>type: discount
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>phase: outer
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>
+<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>when:
+<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>  cart.subtotal &gt;= config.threshold
+<a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>
+<a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a>do:
+<a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a>  discount order config.rate% max config.cap
+<a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a>
+<a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a>priority: config.rate
+<a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a>fields:
+<a id="__codelineno-8-14" name="__codelineno-8-14" href="#__codelineno-8-14"></a>  threshold:number:满额门槛(元)
+<a id="__codelineno-8-15" name="__codelineno-8-15" href="#__codelineno-8-15"></a>  rate:number:折扣率(%)
+<a id="__codelineno-8-16" name="__codelineno-8-16" href="#__codelineno-8-16"></a>  cap:number:最高优惠上限(元)
+</code></pre></div>
+<h3 id="63">6.3 满赠（礼物）<a class="headerlink" href="#63" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a># Buy X, get free gift Y
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>type: gift
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>phase: inner
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>
+<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>when:
+<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a>  cart.subtotal &gt;= config.threshold
+<a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a>
+<a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a>do:
+<a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a>  add gift spec:config.gift_spec_id count:config.gift_qty price:0.00
+<a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a>
+<a id="__codelineno-9-12" name="__codelineno-9-12" href="#__codelineno-9-12"></a>fields:
+<a id="__codelineno-9-13" name="__codelineno-9-13" href="#__codelineno-9-13"></a>  threshold:number:满额门槛(元)
+<a id="__codelineno-9-14" name="__codelineno-9-14" href="#__codelineno-9-14"></a>  gift_spec_id:spec:赠品规格
+<a id="__codelineno-9-15" name="__codelineno-9-15" href="#__codelineno-9-15"></a>  gift_qty:number:赠品数量
+</code></pre></div>
+<h3 id="64-n-nth_discount">6.4 N件折扣 (nth_discount)<a class="headerlink" href="#64-n-nth_discount" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a># Nth item at discounted price
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>type: nth_discount
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>phase: inner
+<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>
+<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>when:
+<a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a>  item.quantity &gt;= config.min_qty
+<a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a>
+<a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a>do:
+<a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a>  discount item config.position config.rate%
+<a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a>
+<a id="__codelineno-10-12" name="__codelineno-10-12" href="#__codelineno-10-12"></a>priority: config.rate desc
+<a id="__codelineno-10-13" name="__codelineno-10-13" href="#__codelineno-10-13"></a>fields:
+<a id="__codelineno-10-14" name="__codelineno-10-14" href="#__codelineno-10-14"></a>  min_qty:number:最低件数
+<a id="__codelineno-10-15" name="__codelineno-10-15" href="#__codelineno-10-15"></a>  position:number:第几件
+<a id="__codelineno-10-16" name="__codelineno-10-16" href="#__codelineno-10-16"></a>  rate:number:折扣率(%)
+</code></pre></div>
+<h3 id="65">6.5 阶梯优惠（分层）<a class="headerlink" href="#65" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a># Tiered/ladder discount — highest-matching tier wins
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>type: tiered
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>phase: inner
+<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>
+<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>when:
+<a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a>  cart.subtotal &gt;= 100.00
+<a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a>
+<a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a>do:
+<a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a>  tiered:
+<a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a>    - from: 100.00  less: 10.00
+<a id="__codelineno-11-12" name="__codelineno-11-12" href="#__codelineno-11-12"></a>    - from: 200.00  less: 30.00
+<a id="__codelineno-11-13" name="__codelineno-11-13" href="#__codelineno-11-13"></a>    - from: 500.00  less: 80.00
+<a id="__codelineno-11-14" name="__codelineno-11-14" href="#__codelineno-11-14"></a>    - from: 1000.00  less: 200.00
+<a id="__codelineno-11-15" name="__codelineno-11-15" href="#__codelineno-11-15"></a>
+<a id="__codelineno-11-16" name="__codelineno-11-16" href="#__codelineno-11-16"></a>priority: 1000
+</code></pre></div>
+<h3 id="66-free_shipping">6.6 免运费 (free_shipping)<a class="headerlink" href="#66-free_shipping" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a># Free shipping
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>type: free_shipping
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>phase: outer
+<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>
+<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>when:
+<a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a>  cart.subtotal &gt;= config.threshold
+<a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a>
+<a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a>do:
+<a id="__codelineno-12-10" name="__codelineno-12-10" href="#__codelineno-12-10"></a>  free shipping
+<a id="__codelineno-12-11" name="__codelineno-12-11" href="#__codelineno-12-11"></a>
+<a id="__codelineno-12-12" name="__codelineno-12-12" href="#__codelineno-12-12"></a>priority: 0
+<a id="__codelineno-12-13" name="__codelineno-12-13" href="#__codelineno-12-13"></a>fields:
+<a id="__codelineno-12-14" name="__codelineno-12-14" href="#__codelineno-12-14"></a>  threshold:number:满额免运费(元)
+</code></pre></div>
+<h3 id="67-member_discount">6.7 会员折扣 (member_discount)<a class="headerlink" href="#67-member_discount" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a># Member-level discount
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>
+<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>type: member_discount
+<a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a>phase: outer
+<a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a>
+<a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a>when:
+<a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a>  user.level &gt;= config.min_level
+<a id="__codelineno-13-8" name="__codelineno-13-8" href="#__codelineno-13-8"></a>
+<a id="__codelineno-13-9" name="__codelineno-13-9" href="#__codelineno-13-9"></a>do:
+<a id="__codelineno-13-10" name="__codelineno-13-10" href="#__codelineno-13-10"></a>  member discount config.rate%
+<a id="__codelineno-13-11" name="__codelineno-13-11" href="#__codelineno-13-11"></a>
+<a id="__codelineno-13-12" name="__codelineno-13-12" href="#__codelineno-13-12"></a>priority: config.rate
+<a id="__codelineno-13-13" name="__codelineno-13-13" href="#__codelineno-13-13"></a>fields:
+<a id="__codelineno-13-14" name="__codelineno-13-14" href="#__codelineno-13-14"></a>  min_level:string:最低会员等级
+<a id="__codelineno-13-15" name="__codelineno-13-15" href="#__codelineno-13-15"></a>  rate:number:折扣率(%)
+</code></pre></div>
+<hr />
+<h2 id="7dsl">7.DSL 词法分析器和解析器<a class="headerlink" href="#7dsl" title="Permanent link">&para;</a></h2>
+<h3 id="71">7.1 架构<a class="headerlink" href="#71" title="Permanent link">&para;</a></h3>
+<pre class="mermaid"><code>flowchart TD
+    A["POST /manage/promotion-templates&lt;br/&gt;{ dsl: 'type: full_reduction ...' }"]
+    B["Lexer::tokenize(dsl)&lt;br/&gt;Text → [TOKEN_EOL, KEYWORD_TYPE, COLON, STRING('full_reduction'), ...]"]
+    C["Parser::parse(tokens)&lt;br/&gt;Tokens → AstNode tree&lt;br/&gt;Syntax error? → DslSyntaxException('Unexpected token at line 3, col 10')"]
+    D["SemanticValidator::validate(ast)&lt;br/&gt;All config.* refs correspond to declared fields?&lt;br/&gt;All spec refs exist?"]
+    E["Serialize AST → JSON → store in promotion_template.astCache"]
+    F["Return 200 or error"]
+    A --&gt; B --&gt; C --&gt; D --&gt; E --&gt; F</code></pre>
+<h3 id="72-ast">7.2 AST 节点类型<a class="headerlink" href="#72-ast" title="Permanent link">&para;</a></h3>
+<pre class="mermaid"><code>flowchart TD
+    AstProgram["AstProgram&lt;br/&gt;type: string · phase: int"]
+    AstProgram --&gt; Cnds["conditions: AstCondition[]"]
+    AstProgram --&gt; Acts["actions: AstAction[]"]
+    AstProgram --&gt; Prio["priority: AstExpression / null"]
+    AstProgram --&gt; Flds["fields: AstFieldDeclaration[]"]
+    Cnds --&gt; C1["AstCondition { op, left, right }"]
+    Cnds --&gt; C2["AstAnd { children: AstCondition[] }"]
+    Cnds --&gt; C3["AstOr { children: AstCondition[] }"]
+    Cnds --&gt; C4["AstNot { child: AstCondition }"]
+    Acts --&gt; A1["AstDiscount { target, value, isPercent, maxCap }"]
+    Acts --&gt; A2["AstGift { specRef, count, price }"]
+    Acts --&gt; A3["AstNthDiscount { position, rate }"]
+    Acts --&gt; A4["AstTiered { tiers: [{from, less}] }"]
+    Acts --&gt; A5["AstFreeShipping {}"]
+    Acts --&gt; A6["AstMemberDiscount { rate }"]</code></pre>
+<h3 id="73">7.3 运行时评估器<a class="headerlink" href="#73" title="Permanent link">&para;</a></h3>
+<pre class="mermaid"><code>flowchart TD
+    subgraph Cond[Evaluator::evaluateCondition(...): bool]
+        direction LR
+        C1["Resolve left operand&lt;br/&gt;(cart.subtotal → $ctx-&gt;getSubtotal())"]
+        C2["Resolve right operand&lt;br/&gt;(config.threshold → $config['threshold'])"]
+        C3["Apply operator&lt;br/&gt;(&gt;=, &lt;=, ==, !=, in, includes)"]
+        C4["Return bool"]
+        C1 --&gt; C2 --&gt; C3 --&gt; C4
+    end
+    subgraph Act[Evaluator::executeAction(...): void]
+        direction LR
+        A1["Match action type → delegate to PromotionStrategyInterface"]
+        A2["Strategy::apply(action, context, config) → mutate context"]
+        A1 --&gt; A2
+    end</code></pre>
+<h3 id="74">7.4 策略注册<a class="headerlink" href="#74" title="Permanent link">&para;</a></h3>
+<p>每个促销类型都映射到一个策略类：</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="nt">services</span><span class="p">:</span>
+<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="w">    </span><span class="nt">_instanceof</span><span class="p">:</span>
+<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="w">        </span><span class="nt">App\Promotion\Strategy\PromotionStrategyInterface</span><span class="p">:</span>
+<a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="w">            </span><span class="nt">tags</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">'promotion.strategy'</span><span class="p p-Indicator">]</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="x">interface PromotionStrategyInterface</span>
+<a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="x">{</span>
+<a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="x">    public static function supportedType(): string;   // e.g. 'full_reduction'</span>
+<a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="x">    public function apply(AstNode $action, PriceCalculationContext $context, array $config): void;</span>
+<a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a><span class="x">}</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="x">// FullReductionStrategy.php</span>
+<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="x">#[AutoconfigureTag('promotion.strategy')]</span>
+<a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="x">class FullReductionStrategy implements PromotionStrategyInterface</span>
+<a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="x">{</span>
+<a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a><span class="x">    public static function supportedType(): string</span>
+<a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a><span class="x">    {</span>
+<a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a><span class="x">        return 'full_reduction';</span>
+<a id="__codelineno-16-8" name="__codelineno-16-8" href="#__codelineno-16-8"></a><span class="x">    }</span>
+<a id="__codelineno-16-9" name="__codelineno-16-9" href="#__codelineno-16-9"></a>
+<a id="__codelineno-16-10" name="__codelineno-16-10" href="#__codelineno-16-10"></a><span class="x">    public function apply(AstNode $action, PriceCalculationContext $context, array $config): void</span>
+<a id="__codelineno-16-11" name="__codelineno-16-11" href="#__codelineno-16-11"></a><span class="x">    {</span>
+<a id="__codelineno-16-12" name="__codelineno-16-12" href="#__codelineno-16-12"></a><span class="x">        $amount = (int)($action-&gt;value * 100); // convert to cents</span>
+<a id="__codelineno-16-13" name="__codelineno-16-13" href="#__codelineno-16-13"></a><span class="x">        $context-&gt;totalAmount = max(0, $context-&gt;totalAmount - $amount);</span>
+<a id="__codelineno-16-14" name="__codelineno-16-14" href="#__codelineno-16-14"></a><span class="x">    }</span>
+<a id="__codelineno-16-15" name="__codelineno-16-15" href="#__codelineno-16-15"></a><span class="x">}</span>
+</code></pre></div>
+<p>引擎在运行时按类型解析策略 - 不需要 ExpressionLanguage。</p>
+<hr />
+<h2 id="8">8. 核心引擎设计<a class="headerlink" href="#8" title="Permanent link">&para;</a></h2>
+<h3 id="81">8.1 促销服务<a class="headerlink" href="#81" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="x">interface PromotionServiceInterface extends BaseServiceInterface</span>
+<a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="x">{</span>
+<a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a><span class="x">    /**</span>
+<a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a><span class="x">     * Find all available (enabled, passing all conditions, sorted by priority)</span>
+<a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a><span class="x">     * promotions for the current price calculation context.</span>
+<a id="__codelineno-17-6" name="__codelineno-17-6" href="#__codelineno-17-6"></a><span class="x">     */</span>
+<a id="__codelineno-17-7" name="__codelineno-17-7" href="#__codelineno-17-7"></a><span class="x">    public function getAvailable(</span>
+<a id="__codelineno-17-8" name="__codelineno-17-8" href="#__codelineno-17-8"></a><span class="x">        PriceCalculationContext $context,</span>
+<a id="__codelineno-17-9" name="__codelineno-17-9" href="#__codelineno-17-9"></a><span class="x">        ?int $phase = null</span>
+<a id="__codelineno-17-10" name="__codelineno-17-10" href="#__codelineno-17-10"></a><span class="x">    ): array;</span>
+<a id="__codelineno-17-11" name="__codelineno-17-11" href="#__codelineno-17-11"></a>
+<a id="__codelineno-17-12" name="__codelineno-17-12" href="#__codelineno-17-12"></a><span class="x">    /**</span>
+<a id="__codelineno-17-13" name="__codelineno-17-13" href="#__codelineno-17-13"></a><span class="x">     * Get the top-ranked available promotion, or null.</span>
+<a id="__codelineno-17-14" name="__codelineno-17-14" href="#__codelineno-17-14"></a><span class="x">     */</span>
+<a id="__codelineno-17-15" name="__codelineno-17-15" href="#__codelineno-17-15"></a><span class="x">    public function getFirstAvailable(</span>
+<a id="__codelineno-17-16" name="__codelineno-17-16" href="#__codelineno-17-16"></a><span class="x">        PriceCalculationContext $context,</span>
+<a id="__codelineno-17-17" name="__codelineno-17-17" href="#__codelineno-17-17"></a><span class="x">        ?int $phase = null</span>
+<a id="__codelineno-17-18" name="__codelineno-17-18" href="#__codelineno-17-18"></a><span class="x">    ): ?Promotion;</span>
+<a id="__codelineno-17-19" name="__codelineno-17-19" href="#__codelineno-17-19"></a>
+<a id="__codelineno-17-20" name="__codelineno-17-20" href="#__codelineno-17-20"></a><span class="x">    /**</span>
+<a id="__codelineno-17-21" name="__codelineno-17-21" href="#__codelineno-17-21"></a><span class="x">     * Apply a promotion's actions to mutate the context.</span>
+<a id="__codelineno-17-22" name="__codelineno-17-22" href="#__codelineno-17-22"></a><span class="x">     */</span>
+<a id="__codelineno-17-23" name="__codelineno-17-23" href="#__codelineno-17-23"></a><span class="x">    public function apply(</span>
+<a id="__codelineno-17-24" name="__codelineno-17-24" href="#__codelineno-17-24"></a><span class="x">        Promotion $promotion,</span>
+<a id="__codelineno-17-25" name="__codelineno-17-25" href="#__codelineno-17-25"></a><span class="x">        PriceCalculationContext $context</span>
+<a id="__codelineno-17-26" name="__codelineno-17-26" href="#__codelineno-17-26"></a><span class="x">    ): void;</span>
+<a id="__codelineno-17-27" name="__codelineno-17-27" href="#__codelineno-17-27"></a><span class="x">}</span>
+</code></pre></div>
+<h3 id="82-getavailable">8.2 条件管道（getAvailable）<a class="headerlink" href="#82-getavailable" title="Permanent link">&para;</a></h3>
+<pre class="mermaid"><code>flowchart TD
+    Start["getAvailable(context)"]
+    Query["Query: enabled + time-window + storeCode match + (phase filter)"]
+    Loop["For each Promotion:"]
+    C1["template.enabled == true?"]
+    C2["time: startTime &amp;lt;= now &amp;lt;= endTime?"]
+    C3["specification: context items match promotion's target specs?&lt;br/&gt;(empty = all)"]
+    C4["DSL conditions: deserialize AST → Evaluator → bool"]
+    C5["conflictResolution: handle exclusive/lock_item modes"]
+    Sort["Sort by priority from DSL (or 0 if none)"]
+
+    Start --&gt; Query --&gt; Loop --&gt; C1 --&gt; C2 --&gt; C3 --&gt; C4 --&gt; C5 --&gt; Sort</code></pre>
+<h3 id="83">8.3 促销申请（申请）<a class="headerlink" href="#83" title="Permanent link">&para;</a></h3>
+<pre class="mermaid"><code>flowchart TD
+    Start["apply(promotion, context)"]
+    A["Get AST from template.astCache (deserialized)"]
+    B["Get config from promotion.config"]
+    C["Resolve strategy by template.type"]
+    D["Execute each action in order:&lt;br/&gt;Strategy::apply(actionAst, context, config)"]
+    E["Mark promotion as applied in context.meta['promotion']"]
+    Start --&gt; A --&gt; B --&gt; C --&gt; D --&gt; E</code></pre>
+<h3 id="84">8.4 链接（循环）<a class="headerlink" href="#84" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="x">class PromotionCalculator implements PriceCalculatorInterface</span>
+<a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a><span class="x">{</span>
+<a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a><span class="x">    private const MAX_ITERATIONS = 20;</span>
+<a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a>
+<a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a><span class="x">    public function calculate(PriceCalculationContext $context): void</span>
+<a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a><span class="x">    {</span>
+<a id="__codelineno-18-7" name="__codelineno-18-7" href="#__codelineno-18-7"></a><span class="x">        $appliedIds = [];</span>
+<a id="__codelineno-18-8" name="__codelineno-18-8" href="#__codelineno-18-8"></a><span class="x">        for ($i = 0; $i &lt; self::MAX_ITERATIONS; $i++) {</span>
+<a id="__codelineno-18-9" name="__codelineno-18-9" href="#__codelineno-18-9"></a><span class="x">            $promotion = $this-&gt;promotionService-&gt;getFirstAvailable(</span>
+<a id="__codelineno-18-10" name="__codelineno-18-10" href="#__codelineno-18-10"></a><span class="x">                $context, PromotionTemplate::PHASE_INNER, $appliedIds</span>
+<a id="__codelineno-18-11" name="__codelineno-18-11" href="#__codelineno-18-11"></a><span class="x">            );</span>
+<a id="__codelineno-18-12" name="__codelineno-18-12" href="#__codelineno-18-12"></a><span class="x">            if ($promotion === null) break;</span>
+<a id="__codelineno-18-13" name="__codelineno-18-13" href="#__codelineno-18-13"></a>
+<a id="__codelineno-18-14" name="__codelineno-18-14" href="#__codelineno-18-14"></a><span class="x">            $this-&gt;promotionService-&gt;apply($promotion, $context);</span>
+<a id="__codelineno-18-15" name="__codelineno-18-15" href="#__codelineno-18-15"></a>
+<a id="__codelineno-18-16" name="__codelineno-18-16" href="#__codelineno-18-16"></a><span class="x">            $innerApplied[] = [</span>
+<a id="__codelineno-18-17" name="__codelineno-18-17" href="#__codelineno-18-17"></a><span class="x">                'promotion_id' =&gt; $promotion-&gt;getId(),</span>
+<a id="__codelineno-18-18" name="__codelineno-18-18" href="#__codelineno-18-18"></a><span class="x">                'promotion_name' =&gt; $promotion-&gt;getName(),</span>
+<a id="__codelineno-18-19" name="__codelineno-18-19" href="#__codelineno-18-19"></a><span class="x">                'template_name' =&gt; $promotion-&gt;getTemplate()-&gt;getName(),</span>
+<a id="__codelineno-18-20" name="__codelineno-18-20" href="#__codelineno-18-20"></a><span class="x">                'type' =&gt; $promotion-&gt;getTemplate()-&gt;getType(),</span>
+<a id="__codelineno-18-21" name="__codelineno-18-21" href="#__codelineno-18-21"></a><span class="x">                'config' =&gt; $promotion-&gt;getConfig(),</span>
+<a id="__codelineno-18-22" name="__codelineno-18-22" href="#__codelineno-18-22"></a><span class="x">                'context_snapshot' =&gt; [</span>
+<a id="__codelineno-18-23" name="__codelineno-18-23" href="#__codelineno-18-23"></a><span class="x">                    'totalAmount' =&gt; $context-&gt;totalAmount,</span>
+<a id="__codelineno-18-24" name="__codelineno-18-24" href="#__codelineno-18-24"></a><span class="x">                    'items_count' =&gt; count($context-&gt;items),</span>
+<a id="__codelineno-18-25" name="__codelineno-18-25" href="#__codelineno-18-25"></a><span class="x">                ],</span>
+<a id="__codelineno-18-26" name="__codelineno-18-26" href="#__codelineno-18-26"></a><span class="x">                'iteration' =&gt; $i,</span>
+<a id="__codelineno-18-27" name="__codelineno-18-27" href="#__codelineno-18-27"></a><span class="x">            ];</span>
+<a id="__codelineno-18-28" name="__codelineno-18-28" href="#__codelineno-18-28"></a>
+<a id="__codelineno-18-29" name="__codelineno-18-29" href="#__codelineno-18-29"></a><span class="x">            if ($promotion-&gt;getConflictMode() === 'exclusive') break;</span>
+<a id="__codelineno-18-30" name="__codelineno-18-30" href="#__codelineno-18-30"></a><span class="x">            if ($promotion-&gt;getConflictMode() === 'lock_item') {</span>
+<a id="__codelineno-18-31" name="__codelineno-18-31" href="#__codelineno-18-31"></a><span class="x">                $appliedIds[] = $promotion-&gt;getId();</span>
+<a id="__codelineno-18-32" name="__codelineno-18-32" href="#__codelineno-18-32"></a><span class="x">            }</span>
+<a id="__codelineno-18-33" name="__codelineno-18-33" href="#__codelineno-18-33"></a><span class="x">        }</span>
+<a id="__codelineno-18-34" name="__codelineno-18-34" href="#__codelineno-18-34"></a>
+<a id="__codelineno-18-35" name="__codelineno-18-35" href="#__codelineno-18-35"></a><span class="x">        // Phase OUTER: order-level promotions after inner loop</span>
+<a id="__codelineno-18-36" name="__codelineno-18-36" href="#__codelineno-18-36"></a><span class="x">        // (e.g., member discount, free shipping on total after inner promotions)</span>
+<a id="__codelineno-18-37" name="__codelineno-18-37" href="#__codelineno-18-37"></a><span class="x">        $outerPromotion = $this-&gt;promotionService-&gt;getFirstAvailable(</span>
+<a id="__codelineno-18-38" name="__codelineno-18-38" href="#__codelineno-18-38"></a><span class="x">            $context, PromotionTemplate::PHASE_OUTER</span>
+<a id="__codelineno-18-39" name="__codelineno-18-39" href="#__codelineno-18-39"></a><span class="x">        );</span>
+<a id="__codelineno-18-40" name="__codelineno-18-40" href="#__codelineno-18-40"></a><span class="x">        if ($outerPromotion) {</span>
+<a id="__codelineno-18-41" name="__codelineno-18-41" href="#__codelineno-18-41"></a><span class="x">            $this-&gt;promotionService-&gt;apply($outerPromotion, $context);</span>
+<a id="__codelineno-18-42" name="__codelineno-18-42" href="#__codelineno-18-42"></a><span class="x">            $context-&gt;meta['promotion'] = ['inner' =&gt; $innerApplied, 'outer' =&gt; [...]];</span>
+<a id="__codelineno-18-43" name="__codelineno-18-43" href="#__codelineno-18-43"></a><span class="x">        }</span>
+<a id="__codelineno-18-44" name="__codelineno-18-44" href="#__codelineno-18-44"></a><span class="x">    }</span>
+<a id="__codelineno-18-45" name="__codelineno-18-45" href="#__codelineno-18-45"></a>
+<a id="__codelineno-18-46" name="__codelineno-18-46" href="#__codelineno-18-46"></a><span class="x">    public static function getPriority(): int { return 60; }</span>
+<a id="__codelineno-18-47" name="__codelineno-18-47" href="#__codelineno-18-47"></a><span class="x">}</span>
+</code></pre></div>
+<hr />
+<h2 id="9">9. 价格计算管道集成<a class="headerlink" href="#9" title="Permanent link">&para;</a></h2>
+<h3 id="91-pricecalculationcontext">9.1 PriceCalculationContext 更改<a class="headerlink" href="#91-pricecalculationcontext" title="Permanent link">&para;</a></h3>
+<p>三个新领域：</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="x">class PriceCalculationContext</span>
+<a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a><span class="x">{</span>
+<a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a><span class="x">    // ... existing fields ...</span>
+<a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a>
+<a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a><span class="x">    /** User object for promotion condition evaluation (member level, etc.) */</span>
+<a id="__codelineno-19-6" name="__codelineno-19-6" href="#__codelineno-19-6"></a><span class="x">    public ?object $user = null;</span>
+<a id="__codelineno-19-7" name="__codelineno-19-7" href="#__codelineno-19-7"></a>
+<a id="__codelineno-19-8" name="__codelineno-19-8" href="#__codelineno-19-8"></a><span class="x">    /** Store identifier for multi-store promotion filtering */</span>
+<a id="__codelineno-19-9" name="__codelineno-19-9" href="#__codelineno-19-9"></a><span class="x">    public ?string $storeCode = null;</span>
+<a id="__codelineno-19-10" name="__codelineno-19-10" href="#__codelineno-19-10"></a><span class="x">}</span>
+<a id="__codelineno-19-11" name="__codelineno-19-11" href="#__codelineno-19-11"></a>
+<a id="__codelineno-19-12" name="__codelineno-19-12" href="#__codelineno-19-12"></a><span class="x">// Promotion results are written to context.meta['promotion'] —</span>
+<a id="__codelineno-19-13" name="__codelineno-19-13" href="#__codelineno-19-13"></a><span class="x">// Trade never reads this structure, maintaining full decoupling.</span>
+</code></pre></div>
+<h3 id="92">9.2 订单服务变更<a class="headerlink" href="#92" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="x">public function calculatePrices(array $items, string $currency = 'CNY', ?string $storeCode = null, array $meta = []): PriceCalculationResult</span>
+<a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a><span class="x">{</span>
+<a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a><span class="x">    $context = new PriceCalculationContext($items, $currency);</span>
+<a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a><span class="x">    $context-&gt;user = $this-&gt;user;</span>
+<a id="__codelineno-20-5" name="__codelineno-20-5" href="#__codelineno-20-5"></a><span class="x">    $context-&gt;storeCode = $storeCode;</span>
+<a id="__codelineno-20-6" name="__codelineno-20-6" href="#__codelineno-20-6"></a><span class="x">    $context-&gt;meta = $meta;    // ← bidirectional channel for calculators</span>
+<a id="__codelineno-20-7" name="__codelineno-20-7" href="#__codelineno-20-7"></a>
+<a id="__codelineno-20-8" name="__codelineno-20-8" href="#__codelineno-20-8"></a><span class="x">    // ... existing calculator chain ...</span>
+<a id="__codelineno-20-9" name="__codelineno-20-9" href="#__codelineno-20-9"></a><span class="x">}</span>
+</code></pre></div>
+<h3 id="93">9.3 计算器链（最终）<a class="headerlink" href="#93" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>优先</th>
+<th>计算器</th>
+<th>模块</th>
+<th>责任</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>-100</td>
+<td>-100 <code>BasePriceCalculator</code></td>
+<td>贸易</td>
+<td>解析规格，提取单价</td>
+</tr>
+<tr>
+<td>50</td>
+<td>50 <code>QuantityCalculator</code></td>
+<td>贸易</td>
+<td><code>price = unitPrice * quantity</code></td>
+</tr>
+<tr>
+<td><strong>60</strong></td>
+<td><strong><code>PromotionCalculator</code></strong></td>
+<td><strong>促销</strong></td>
+<td><strong>DSL 评估 → 匹配 → 应用（循环）</strong></td>
+</tr>
+<tr>
+<td>100</td>
+<td>100 <code>TotalAggregator</code></td>
+<td>贸易</td>
+<td>求和到 <code>totalAmount</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="10-api">10. API 端点<a class="headerlink" href="#10-api" title="Permanent link">&para;</a></h2>
+<h3 id="101-role_admin">10.1 管理（管理员、ROLE_ADMIN）<a class="headerlink" href="#101-role_admin" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>路径</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>获取</td>
+<td><code>/api/v1/manage/promotion-templates</code></td>
+<td>列表模板</td>
+</tr>
+<tr>
+<td>获取</td>
+<td><code>/api/v1/manage/promotion-templates/{id}</code></td>
+<td>模板详细信息（包括 DSL 文本）</td>
+</tr>
+<tr>
+<td>发布</td>
+<td><code>/api/v1/manage/promotion-templates</code></td>
+<td>创建模板 + DSL 解析/验证</td>
+</tr>
+<tr>
+<td>放置</td>
+<td><code>/api/v1/manage/promotion-templates/{id}</code></td>
+<td>更新模板+DSL解析/验证</td>
+</tr>
+<tr>
+<td>删除</td>
+<td><code>/api/v1/manage/promotion-templates/{id}</code></td>
+<td>删除模板</td>
+</tr>
+<tr>
+<td>发布</td>
+<td><code>/api/v1/manage/promotion-templates/{id}/validate</code></td>
+<td>空运行：解析 DSL，返回 AST + 错误</td>
+</tr>
+<tr>
+<td>发布</td>
+<td><code>/api/v1/manage/promotion-templates/{id}/dry-run</code></td>
+<td>试运行：使用示例上下文模拟应用程序</td>
+</tr>
+<tr>
+<td>获取</td>
+<td><code>/api/v1/manage/promotions</code></td>
+<td>列出促销活动（可按商店代码过滤）</td>
+</tr>
+<tr>
+<td>获取</td>
+<td><code>/api/v1/manage/promotions/{id}</code></td>
+<td>促销详情</td>
+</tr>
+<tr>
+<td>发布</td>
+<td><code>/api/v1/manage/promotions</code></td>
+<td>创建促销</td>
+</tr>
+<tr>
+<td>放置</td>
+<td><code>/api/v1/manage/promotions/{id}</code></td>
+<td>更新促销</td>
+</tr>
+<tr>
+<td>删除</td>
+<td><code>/api/v1/manage/promotions/{id}</code></td>
+<td>删除促销</td>
+</tr>
+</tbody>
+</table>
+<h3 id="102">10.2 应用程序（公共）<a class="headerlink" href="#102" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>路径</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>获取</td>
+<td><code>/api/v1/app/promotions</code></td>
+<td>列出当前活动/可用的促销活动（可选<code>?storeCode=</code>）</td>
+</tr>
+<tr>
+<td>获取</td>
+<td><code>/api/v1/app/promotions/{id}</code></td>
+<td>促销详情</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="11_1">11. 路由注册<a class="headerlink" href="#11_1" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span class="c1"># config/routes.yaml</span>
+<a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a><span class="nt">api_promotion</span><span class="p">:</span>
+<a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a><span class="w">    </span><span class="nt">prefix</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/api/v1</span>
+<a id="__codelineno-21-4" name="__codelineno-21-4" href="#__codelineno-21-4"></a><span class="w">    </span><span class="nt">resource</span><span class="p">:</span>
+<a id="__codelineno-21-5" name="__codelineno-21-5" href="#__codelineno-21-5"></a><span class="w">        </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">../src/Promotion/Controller/</span>
+<a id="__codelineno-21-6" name="__codelineno-21-6" href="#__codelineno-21-6"></a><span class="w">        </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">App\Promotion\Controller</span>
+<a id="__codelineno-21-7" name="__codelineno-21-7" href="#__codelineno-21-7"></a><span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">attribute</span>
+</code></pre></div>
+<hr />
+<h2 id="12">12. 控制器设计<a class="headerlink" href="#12" title="Permanent link">&para;</a></h2>
+<h3 id="121">12.1 升级模板控制器<a class="headerlink" href="#121" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a><span class="x">#[Route('/manage/promotion-templates', name: 'manage-promotion-templates-')]</span>
+<a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a><span class="x">#[IsGranted('ROLE_ADMIN')]</span>
+<a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a><span class="x">class PromotionTemplateController extends RestController</span>
+<a id="__codelineno-22-4" name="__codelineno-22-4" href="#__codelineno-22-4"></a><span class="x">{</span>
+<a id="__codelineno-22-5" name="__codelineno-22-5" href="#__codelineno-22-5"></a><span class="x">    use ApiView, DetailApiViewMixin, ListApiViewMixin,</span>
+<a id="__codelineno-22-6" name="__codelineno-22-6" href="#__codelineno-22-6"></a><span class="x">        CreateApiViewMixin, UpdateApiViewMixin, DeleteApiViewMixin;</span>
+<a id="__codelineno-22-7" name="__codelineno-22-7" href="#__codelineno-22-7"></a>
+<a id="__codelineno-22-8" name="__codelineno-22-8" href="#__codelineno-22-8"></a><span class="x">    protected array $requiredCreateProperties = ['name', 'type', 'dsl'];</span>
+<a id="__codelineno-22-9" name="__codelineno-22-9" href="#__codelineno-22-9"></a><span class="x">    protected array $acceptedCreateProperties = [</span>
+<a id="__codelineno-22-10" name="__codelineno-22-10" href="#__codelineno-22-10"></a><span class="x">        'name', 'description', 'type', 'phase', 'enabled', 'dsl', 'fields',</span>
+<a id="__codelineno-22-11" name="__codelineno-22-11" href="#__codelineno-22-11"></a><span class="x">    ];</span>
+<a id="__codelineno-22-12" name="__codelineno-22-12" href="#__codelineno-22-12"></a><span class="x">    protected array $acceptedUpdateProperties = [</span>
+<a id="__codelineno-22-13" name="__codelineno-22-13" href="#__codelineno-22-13"></a><span class="x">        'name', 'description', 'type', 'phase', 'enabled', 'dsl', 'fields',</span>
+<a id="__codelineno-22-14" name="__codelineno-22-14" href="#__codelineno-22-14"></a><span class="x">    ];</span>
+<a id="__codelineno-22-15" name="__codelineno-22-15" href="#__codelineno-22-15"></a>
+<a id="__codelineno-22-16" name="__codelineno-22-16" href="#__codelineno-22-16"></a><span class="x">    public function __construct(</span>
+<a id="__codelineno-22-17" name="__codelineno-22-17" href="#__codelineno-22-17"></a><span class="x">        protected readonly PromotionTemplateServiceInterface $service,</span>
+<a id="__codelineno-22-18" name="__codelineno-22-18" href="#__codelineno-22-18"></a><span class="x">    ) {}</span>
+<a id="__codelineno-22-19" name="__codelineno-22-19" href="#__codelineno-22-19"></a>
+<a id="__codelineno-22-20" name="__codelineno-22-20" href="#__codelineno-22-20"></a><span class="x">    #[Route('/{id}/validate', name: 'validate', methods: ['POST'])]</span>
+<a id="__codelineno-22-21" name="__codelineno-22-21" href="#__codelineno-22-21"></a><span class="x">    public function validateAction(int $id): JsonResponse</span>
+<a id="__codelineno-22-22" name="__codelineno-22-22" href="#__codelineno-22-22"></a><span class="x">    {</span>
+<a id="__codelineno-22-23" name="__codelineno-22-23" href="#__codelineno-22-23"></a><span class="x">        /** @var PromotionTemplate $template */</span>
+<a id="__codelineno-22-24" name="__codelineno-22-24" href="#__codelineno-22-24"></a><span class="x">        $template = $this-&gt;service-&gt;get($id);</span>
+<a id="__codelineno-22-25" name="__codelineno-22-25" href="#__codelineno-22-25"></a><span class="x">        $result = $this-&gt;service-&gt;parseDsl($template-&gt;getDsl());</span>
+<a id="__codelineno-22-26" name="__codelineno-22-26" href="#__codelineno-22-26"></a><span class="x">        return $this-&gt;success($result);</span>
+<a id="__codelineno-22-27" name="__codelineno-22-27" href="#__codelineno-22-27"></a><span class="x">    }</span>
+<a id="__codelineno-22-28" name="__codelineno-22-28" href="#__codelineno-22-28"></a>
+<a id="__codelineno-22-29" name="__codelineno-22-29" href="#__codelineno-22-29"></a><span class="x">    #[Route('/{id}/dry-run', name: 'dry-run', methods: ['POST'])]</span>
+<a id="__codelineno-22-30" name="__codelineno-22-30" href="#__codelineno-22-30"></a><span class="x">    public function dryRunAction(int $id): JsonResponse</span>
+<a id="__codelineno-22-31" name="__codelineno-22-31" href="#__codelineno-22-31"></a><span class="x">    {</span>
+<a id="__codelineno-22-32" name="__codelineno-22-32" href="#__codelineno-22-32"></a><span class="x">        /** @var PromotionTemplate $template */</span>
+<a id="__codelineno-22-33" name="__codelineno-22-33" href="#__codelineno-22-33"></a><span class="x">        $template = $this-&gt;service-&gt;get($id);</span>
+<a id="__codelineno-22-34" name="__codelineno-22-34" href="#__codelineno-22-34"></a><span class="x">        $result = $this-&gt;service-&gt;simulate($template, /* sample context */);</span>
+<a id="__codelineno-22-35" name="__codelineno-22-35" href="#__codelineno-22-35"></a><span class="x">        return $this-&gt;success($result);</span>
+<a id="__codelineno-22-36" name="__codelineno-22-36" href="#__codelineno-22-36"></a><span class="x">    }</span>
+<a id="__codelineno-22-37" name="__codelineno-22-37" href="#__codelineno-22-37"></a><span class="x">}</span>
+</code></pre></div>
+<p>DSL 解析在持久化之前在 <code>PromotionTemplateService::update()</code> 内部触发。
+如果解析失败，则会返回 422 响应，其中包含错误详细信息，包括行：列。</p>
+<h3 id="122-promotioncontroller">12.2 PromotionController（管理）<a class="headerlink" href="#122-promotioncontroller" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a><span class="x">#[Route('/manage/promotions', name: 'manage-promotions-')]</span>
+<a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a><span class="x">#[IsGranted('ROLE_ADMIN')]</span>
+<a id="__codelineno-23-3" name="__codelineno-23-3" href="#__codelineno-23-3"></a><span class="x">class PromotionController extends RestController</span>
+<a id="__codelineno-23-4" name="__codelineno-23-4" href="#__codelineno-23-4"></a><span class="x">{</span>
+<a id="__codelineno-23-5" name="__codelineno-23-5" href="#__codelineno-23-5"></a><span class="x">    use ApiView, DetailApiViewMixin, ListApiViewMixin,</span>
+<a id="__codelineno-23-6" name="__codelineno-23-6" href="#__codelineno-23-6"></a><span class="x">        CreateApiViewMixin, UpdateApiViewMixin, DeleteApiViewMixin;</span>
+<a id="__codelineno-23-7" name="__codelineno-23-7" href="#__codelineno-23-7"></a>
+<a id="__codelineno-23-8" name="__codelineno-23-8" href="#__codelineno-23-8"></a><span class="x">    protected array $requiredCreateProperties = ['name', 'template', 'storeCode'];</span>
+<a id="__codelineno-23-9" name="__codelineno-23-9" href="#__codelineno-23-9"></a><span class="x">    protected array $acceptedCreateProperties = [</span>
+<a id="__codelineno-23-10" name="__codelineno-23-10" href="#__codelineno-23-10"></a><span class="x">        'name', 'description', 'template', 'storeCode',</span>
+<a id="__codelineno-23-11" name="__codelineno-23-11" href="#__codelineno-23-11"></a><span class="x">        'enabled', 'startTime', 'endTime', 'config', 'specifications', 'conflictMode',</span>
+<a id="__codelineno-23-12" name="__codelineno-23-12" href="#__codelineno-23-12"></a><span class="x">    ];</span>
+<a id="__codelineno-23-13" name="__codelineno-23-13" href="#__codelineno-23-13"></a><span class="x">    protected array $acceptedUpdateProperties = [</span>
+<a id="__codelineno-23-14" name="__codelineno-23-14" href="#__codelineno-23-14"></a><span class="x">        'name', 'description', 'template', 'storeCode',</span>
+<a id="__codelineno-23-15" name="__codelineno-23-15" href="#__codelineno-23-15"></a><span class="x">        'enabled', 'startTime', 'endTime', 'config', 'specifications', 'conflictMode',</span>
+<a id="__codelineno-23-16" name="__codelineno-23-16" href="#__codelineno-23-16"></a><span class="x">    ];</span>
+<a id="__codelineno-23-17" name="__codelineno-23-17" href="#__codelineno-23-17"></a>
+<a id="__codelineno-23-18" name="__codelineno-23-18" href="#__codelineno-23-18"></a><span class="x">    public function __construct(</span>
+<a id="__codelineno-23-19" name="__codelineno-23-19" href="#__codelineno-23-19"></a><span class="x">        protected readonly PromotionServiceInterface $service,</span>
+<a id="__codelineno-23-20" name="__codelineno-23-20" href="#__codelineno-23-20"></a><span class="x">    ) {}</span>
+<a id="__codelineno-23-21" name="__codelineno-23-21" href="#__codelineno-23-21"></a><span class="x">}</span>
+</code></pre></div>
+<h3 id="123">12.3 应用程序/促销控制器<a class="headerlink" href="#123" title="Permanent link">&para;</a></h3>
+<p>只读；仅使用<code>ApiView</code>、<code>DetailApiViewMixin</code>、<code>ListApiViewMixin</code>。
+<code>commonFilter()</code> 限制为 <code>enabled = true</code> 和时间窗口活动，可通过 <code>?storeCode=</code> 过滤。</p>
+<hr />
+<h2 id="13-dsl">13. DSL 更新流程<a class="headerlink" href="#13-dsl" title="Permanent link">&para;</a></h2>
+<pre class="mermaid"><code>flowchart TD
+    A["PUT /manage/promotion-templates/{id}&lt;br/&gt;body: { dsl: 'type: full_reduction ...' }"]
+    B["1. Lexer tokenizes DSL text"]
+    C["2. Parser builds AST"]
+    C --&gt;|"Fail"| CErr["422 { errors: [{line:3, col:10, msg: 'Unexpected token ='}] }"]
+    C --&gt;|"Pass"| D["3. Semantic validator checks AST"]
+    D --&gt;|"Fail"| DErr["422 { errors: [{field: 'config.missing_key', msg: '...'}] }"]
+    D --&gt;|"Pass"| E["4. Serialize AST → JSON"]
+    E --&gt; F["5. Set template.dsl = raw text"]
+    F --&gt; G["6. Set template.astCache = serialized AST"]
+    G --&gt; H["7. Persist"]
+    H --&gt; I["8. Return 200 { data: { template, ast } }"]
+    A --&gt; B --&gt; C</code></pre>
+<hr />
+<h2 id="14-di">14. 服务DI<a class="headerlink" href="#14-di" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a><span class="c1"># src/Promotion/Resources/config/services_promotion.yaml</span>
+<a id="__codelineno-24-2" name="__codelineno-24-2" href="#__codelineno-24-2"></a><span class="nt">services</span><span class="p">:</span>
+<a id="__codelineno-24-3" name="__codelineno-24-3" href="#__codelineno-24-3"></a><span class="w">    </span><span class="nt">_instanceof</span><span class="p">:</span>
+<a id="__codelineno-24-4" name="__codelineno-24-4" href="#__codelineno-24-4"></a><span class="w">        </span><span class="nt">App\Promotion\Strategy\PromotionStrategyInterface</span><span class="p">:</span>
+<a id="__codelineno-24-5" name="__codelineno-24-5" href="#__codelineno-24-5"></a><span class="w">            </span><span class="nt">tags</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">'promotion.strategy'</span><span class="p p-Indicator">]</span>
+<a id="__codelineno-24-6" name="__codelineno-24-6" href="#__codelineno-24-6"></a>
+<a id="__codelineno-24-7" name="__codelineno-24-7" href="#__codelineno-24-7"></a><span class="w">    </span><span class="nt">App\Promotion\Service\Dsl\</span><span class="p">:</span>
+<a id="__codelineno-24-8" name="__codelineno-24-8" href="#__codelineno-24-8"></a><span class="w">        </span><span class="nt">resource</span><span class="p">:</span><span class="w"> </span><span class="s">'../../Dsl/'</span>
+<a id="__codelineno-24-9" name="__codelineno-24-9" href="#__codelineno-24-9"></a>
+<a id="__codelineno-24-10" name="__codelineno-24-10" href="#__codelineno-24-10"></a><span class="w">    </span><span class="nt">App\Promotion\Strategy\</span><span class="p">:</span>
+<a id="__codelineno-24-11" name="__codelineno-24-11" href="#__codelineno-24-11"></a><span class="w">        </span><span class="nt">resource</span><span class="p">:</span><span class="w"> </span><span class="s">'../../Strategy/'</span>
+</code></pre></div>
+<p><code>App\</code> 自动装配涵盖了其余部分。 <code>#[AutoconfigureTag('trade.price_calculator')]</code>
+<code>PromotionCalculator</code> 上处理管道标记。</p>
+<hr />
+<h2 id="15">15. 测试<a class="headerlink" href="#15" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>套房</th>
+<th>测试</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>tests/Promotion/Entity/</code></td>
+<td>促销、促销模板单元测试</td>
+</tr>
+<tr>
+<td><code>tests/Promotion/Service/Dsl/</code></td>
+<td>Lexer 标记化、Parser AST 生成、错误边缘情况</td>
+</tr>
+<tr>
+<td><code>tests/Promotion/Service/Dsl/</code></td>
+<td>评估器条件解析、动作执行</td>
+</tr>
+<tr>
+<td><code>tests/Promotion/Service/</code></td>
+<td>PromotionService getAvailable、a​​pply、condition 过滤器链</td>
+</tr>
+<tr>
+<td><code>tests/Promotion/Strategy/</code></td>
+<td>每个策略类别：full_reduction、discount、gift、nth_discount、tiered、free_shipping、member_discount</td>
+</tr>
+<tr>
+<td><code>tests/Promotion/Service/</code></td>
+<td>PromotionCalculator 链接、冲突模式、最大迭代限制</td>
+</tr>
+<tr>
+<td><code>tests/Promotion/Integration/</code></td>
+<td>带有贸易计算器+多商店过滤的完整管道</td>
+</tr>
+<tr>
+<td><code>tests/Promotion/Controller/</code></td>
+<td>管理和应用程序端点测试； DSL 验证端点</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="16">16. 实施计划<a class="headerlink" href="#16" title="Permanent link">&para;</a></h2>
+<h3 id="1-dsl">第 1 阶段：核心实体和 DSL 解析器<a class="headerlink" href="#1-dsl" title="Permanent link">&para;</a></h3>
+<ol>
+<li>创建具有属性、存储库的 <code>PromotionTemplate</code> 实体。</li>
+<li>创建具有属性、存储库的<code>Promotion</code>实体。</li>
+<li>实现 <code>Lexer</code> — 标记 DSL 文本。</li>
+<li>实现 <code>Parser</code> — tokens → AST，带有错误恢复。</li>
+<li>实现<code>AstNode</code>类。</li>
+<li>使用 line:col 元数据实现 <code>DslSyntaxException</code>。</li>
+<li>Lexer + Parser 的单元测试（有效 DSL、错误 DSL、边缘情况）。</li>
+</ol>
+<h3 id="2-crud-dsl-api">第 2 阶段：CRUD + DSL 验证 API<a class="headerlink" href="#2-crud-dsl-api" title="Permanent link">&para;</a></h3>
+<ol>
+<li>创建<code>PromotionTemplateService</code>+接口。</li>
+<li>实现<code>parseDsl()</code>和<code>simulate()</code>方法。</li>
+<li><code>update()</code>中节省时间的DSL解析+语义验证。</li>
+<li>创建 <code>PromotionTemplateController</code> （管理、管理 CRUD + 验证/空运行）。</li>
+<li>创建<code>PromotionService</code> + 接口（最初是薄CRUD）。</li>
+<li>创建<code>PromotionController</code>（管理、管理CRUD）。</li>
+<li>创建<code>PromotionController</code>（应用程序，只读）。</li>
+<li>在<code>config/routes.yaml</code>中添加<code>api_promotion</code>路由组。</li>
+<li>为<code>promotion_template</code>和<code>promotion</code>表生成迁移。</li>
+</ol>
+<h3 id="_7">第三阶段：引擎和策略<a class="headerlink" href="#_7" title="Permanent link">&para;</a></h3>
+<ol>
+<li>实现<code>PromotionStrategyInterface</code>并注册。</li>
+<li>实施所有 7 个策略类别。</li>
+<li>实现<code>Evaluator</code>——条件AST→bool；行动 AST → 策略调度。</li>
+<li>构建<code>PromotionService</code>引擎方法：</li>
+<li><code>getAvailable()</code> — 查询+过滤+排序</li>
+<li><code>getFirstAvailable()</code> — 顶级匹配</li>
+<li><code>apply()</code> — 通过策略执行操作</li>
+<li>在<code>PriceCalculationContext</code>中添加<code>$user</code>、<code>$storeCode</code>。</li>
+<li>修改<code>OrderService::calculatePrices()</code>注入user + storeCode。</li>
+<li>创建实现 <code>PriceCalculatorInterface</code> 的 <code>PromotionCalculator</code>。</li>
+<li>Evaluator、引擎和每个策略的单元测试。</li>
+</ol>
+<h3 id="4_1">第 4 阶段：高级功能<a class="headerlink" href="#4_1" title="Permanent link">&para;</a></h3>
+<ol>
+<li>冲突模式（<code>exclusive</code>、<code>lock_item</code>）。</li>
+<li><code>PromotionCalculator</code> 中的阶段 OUTER 支持。</li>
+<li>试运行端点：针对样品购物车模拟促销。</li>
+<li>AST缓存失效策略。</li>
+</ol>
+<h3 id="5">第 5 阶段：可观察性和报告<a class="headerlink" href="#5" title="Permanent link">&para;</a></h3>
+<ol>
+<li>升级结果写入<code>context.meta['promotion']</code>，并带有之前/之后的快照。</li>
+<li>提升执行日志以供调试。</li>
+<li>端点：<code>/api/v1/app/promotions</code>，带有时间窗口+storeCode 过滤。</li>
+</ol>
+<hr />
+<h2 id="17">17. 开放性问题<a class="headerlink" href="#17" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>问题</th>
+<th>当前决定</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DSL 应该支持内联数学表达式吗？ （例如，<code>cart.subtotal * 0.8 &gt;= 100</code>）</td>
+<td>不——保持 DSL 简单。复杂的数学属于策略类。</td>
+</tr>
+<tr>
+<td><code>fields</code> 声明应该自动生成管理表单吗？</td>
+<td>保留：前端任务。 <code>fields</code> 是合同。</td>
+</tr>
+<tr>
+<td><code>appliedPromotions</code> 应该在订单上保留吗？</td>
+<td>否。结果存储在 <code>context.meta['promotion']</code> 中，通过 <code>PriceCalculationResult.meta</code> 传递到前端。</td>
+</tr>
+<tr>
+<td>最大循环迭代次数？</td>
+<td>20、<code>PromotionCalculator</code>中可配置常量。</td>
+</tr>
+<tr>
+<td>AST 缓存存储：DB JSON 列还是文件系统？</td>
+<td>数据库 JSON 列 (<code>astCache</code>)。零部署依赖。</td>
+</tr>
+<tr>
+<td>如何应对循环促销？</td>
+<td>最大迭代+applyId跟踪+lock_item模式。</td>
+</tr>
+<tr>
+<td>DSL 是否应该支持 <code>import</code> 进行模板组合？</td>
+<td>否 - 保持每个模板独立。通过单独的实例进行组合。</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="18">18. 验收标准<a class="headerlink" href="#18" title="Permanent link">&para;</a></h2>
+<p>促销模块在以下情况下完成：</p>
+<table>
+<thead>
+<tr>
+<th>标准</th>
+<th>要求</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>实体</td>
+<td>PromotionTemplate 和 Promotion 实体具有 PHP 8 属性</td>
+</tr>
+<tr>
+<td>DSL 解析器</td>
+<td>Lexer + Parser 正确标记和 AST 构建所有 7 个 DSL 示例；错误携带行：col</td>
+</tr>
+<tr>
+<td>增删改查</td>
+<td>管理员可以通过 API 进行 CRUD 模板和促销</td>
+</tr>
+<tr>
+<td>节省时间验证</td>
+<td>DSL 在模板保存时解析；无效 DSL 被拒绝并出现精确错误</td>
+</tr>
+<tr>
+<td>计算器</td>
+<td><code>PromotionCalculator</code> 自动发现并在价格管道中运行</td>
+</tr>
+<tr>
+<td>策略</td>
+<td>所有 7 种促销类型（full_reduction、discount、gift、nth_discount、tiered、free_shipping、member_discount）均正确执行</td>
+</tr>
+<tr>
+<td>链接</td>
+<td>可以连续应用多个促销活动（最多 20 次迭代）</td>
+</tr>
+<tr>
+<td>冲突模式</td>
+<td>Exclusive、lock_item、stackable 均正常运行</td>
+</tr>
+<tr>
+<td>多店</td>
+<td>促销活动按商店代码过滤；同一模板服务多个商店</td>
+</tr>
+<tr>
+<td>解耦</td>
+<td>贸易 <code>OrderService</code> 的促销特定代码为零</td>
+</tr>
+<tr>
+<td>测试</td>
+<td>单元测试涵盖 DSL 解析器、评估器、所有策略、引擎、管道集成</td>
+</tr>
+</tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  回到页面顶部
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+      
+        <script src="../../../javascripts/mermaid-init.js"></script>
+      
+    
+  </body>
+</html>

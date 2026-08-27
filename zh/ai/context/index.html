@@ -1,0 +1,6305 @@
+
+<!doctype html>
+<html lang="zh" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Symfony 8.1 API backend skeleton with modular architecture">
+      
+      
+      
+        <link rel="canonical" href="https://immane.github.io/crud-skeleton/zh/ai/context/">
+      
+      
+        <link rel="prev" href="../../testing/crud-skeleton-production/AI_DEVELOPMENT_PROCESS/">
+      
+      
+        <link rel="next" href="../../openapi/endpoints.yaml">
+      
+      
+        
+          <link rel="alternate" href="/crud-skeleton/" hreflang="en">
+        
+          <link rel="alternate" href="/crud-skeleton/zh/" hreflang="zh">
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>AI 快照 - CRUD Skeleton</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#crud-skeleton-full-codebase-context" class="md-skip">
+          跳转至
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="页眉">
+    <a href="../.." title="CRUD Skeleton" class="md-header__button md-logo" aria-label="CRUD Skeleton" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            CRUD Skeleton
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              AI 快照
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="选择当前语言">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="/crud-skeleton/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="/crud-skeleton/zh/" hreflang="zh" class="md-select__link">
+              中文
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="查找">
+        
+        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            正在初始化搜索引擎
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/immane/crud-skeleton" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="导航栏" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="CRUD Skeleton" class="md-nav__button md-logo" aria-label="CRUD Skeleton" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    CRUD Skeleton
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/immane/crud-skeleton" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    首页
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    开发手册
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    开发手册
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manual/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    手册索引
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manual/getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    入门
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manual/architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manual/project-structure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    项目结构
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manual/core-framework/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core 框架
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manual/core-usage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    核心用法
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manual/query-system/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    查询系统
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manual/development-workflow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    开发流程
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manual/testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manual/api-contracts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API合约
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manual/development-contracts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    开发合同
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manual/integration-events/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    整合活动
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manual/database-and-migrations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    数据库和迁移
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manual/deployment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manual/extracting-a-service/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    提取服务
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../manual/i18n/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Internationalization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    设计契约
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    设计契约
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/system-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    系统架构
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/api-design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API 设计
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/data-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    数据模型
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/module-design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    模块设计
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/controller-design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    控制器设计
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/api-documentation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API 文档
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/system-contracts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    系统契约
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/naming-convention/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    命名约定
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    模块设计
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    模块设计
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/core/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core 框架
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/common/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Common (CMS)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/trade/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Trade (电商)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/store/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    商店（多商店运营）
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/inventory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Inventory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/payment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Payment (支付)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/wallet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Wallet (钱包)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/settlement/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    结算（分配+最终确定）
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/exchange/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    交易所（矿池支持经济）
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/identity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Identity (鉴权)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/wechat/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    微信（登录+支付）
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Runbooks
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Runbooks
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/common/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Common
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/core/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/exchange/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Exchange
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/identity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Identity
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/inventory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Inventory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/payment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Payment (支付)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/promotion/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Promotion
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/settlement/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Settlement
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/storage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Storage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/store/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Store
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/trade/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Trade
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/wallet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Wallet (钱包)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/wechat/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    WeChat
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    调研
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    调研
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../research/easywechat-6.x-usage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    EasyWeChat 6.x 用法
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../research/huifu-payment-api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    汇付支付 API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Issues
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Issues
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../issues/architecture-review-2026-06-26/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    架构回顾 2026-06-26
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Testing
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../testing/crud-skeleton-production/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    生产验证概述
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../testing/crud-skeleton-production/TEST_STRATEGY/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    测试策略
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../testing/crud-skeleton-production/SYSTEM_WALKTHROUGH/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    系统演练和测试接缝
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../testing/crud-skeleton-production/TEST_MATRIX/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    测试矩阵
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../testing/crud-skeleton-production/BUSINESS_INVARIANTS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    业务不变量
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../testing/crud-skeleton-production/ARCHITECTURE_TEST_MAPPING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    架构测试映射
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../testing/crud-skeleton-production/FAILURE_MODES/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    失效模式
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../testing/crud-skeleton-production/PRODUCTION_VALIDATION/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    发布验证
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../testing/crud-skeleton-production/AI_DEVELOPMENT_PROCESS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    人工智能开发流程
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI 快照
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI 快照
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-project-overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Project Overview
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-directory-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Directory Structure
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-request-lifecycle" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Request Lifecycle
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-authentication-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Authentication Flow
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Authentication Flow">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-user-profile-app" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 User Profile (App)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-profile-app" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2 Profile (App)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43-user-management-manage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.3 User Management (Manage)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#44-profile-management-manage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.4 Profile Management (Manage)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-dynamic-query-system" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Dynamic Query System
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-baseservice-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. BaseService Architecture
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-trade-module-order-lifecycle" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Trade Module — Order Lifecycle
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Trade Module — Order Lifecycle">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#71-state-machine-workflowyaml" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.1 State Machine (workflow.yaml)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#72-orderservice-methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.2 OrderService Methods
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#73-order-entity-fields" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.3 Order Entity Fields
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#74-manage-order-endpoints" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.4 Manage Order Endpoints
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#75-app-order-endpoints" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.5 App Order Endpoints
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#76-app-specification-endpoints" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.6 App Specification Endpoints
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-payment-module" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Payment Module
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. Payment Module">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#81-invoice-system" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.1 Invoice System
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#82-paymentgatewayinterface-gateway-registry-pattern" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.2 PaymentGatewayInterface — Gateway Registry Pattern
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#821-payment-adjustment-providers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.2.1 Payment Adjustment Providers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#822-first-phase-gateways" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.2.2 First-Phase Gateways
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#83-payment-endpoints" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.3 Payment Endpoints
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#84-paymenttrade-integration-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.4 Payment/Trade Integration Status
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#85-wallet-app-endpoints" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.5 Wallet App Endpoints
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-wechat-module" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Wechat Module
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="9. Wechat Module">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#91-wechatuser-entity-onetoone-user" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.1 WechatUser Entity (OneToOne → User)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#92-login-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.2 Login Flow
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#93-wechatpaygateway" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.3 WechatPayGateway
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#94-wechatuser-crud-controllers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.4 WechatUser CRUD Controllers
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-internationalization-i18n" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Internationalization (i18n)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10. Internationalization (i18n)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#101-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.1 Architecture
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#102-translation-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.2 Translation Flow
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#103-localelistener-srccoreeventlistenerlocalelistenerphp" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.3 LocaleListener (src/Core/EventListener/LocaleListener.php)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#104-multi-language-readme" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.4 Multi-language README
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-storage-module" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. Storage Module
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="11. Storage Module">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#111-drivers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11.1 Drivers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#112-media-upload-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11.2 Media Upload Flow
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12-system-introspection-endpoints" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12. System Introspection Endpoints
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#13-key-patterns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13. Key Patterns
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#14-api-documentation-system" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        14. API Documentation System
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="14. API Documentation System">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#141-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        14.1 Architecture
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#142-openapienricherlistener-srccoreeventlisteneropenapienricherlistenerphp" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        14.2 OpenApiEnricherListener (src/Core/EventListener/OpenApiEnricherListener.php)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#143-tag-auto-detection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        14.3 Tag Auto-Detection
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#144-schema-configuration-configpackagesnelmio_api_docyaml" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        14.4 Schema Configuration (config/packages/nelmio_api_doc.yaml)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#15-database-tables-24-migrations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15. Database Tables (24 Migrations)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#16-documentation-assets" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16. Documentation Assets
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#17-testing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        17. Testing
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#18-environment-variables-key" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        18. Environment Variables (Key)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#19-docker-deployment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        19. Docker Deployment
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="19. Docker Deployment">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#191-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        19.1 Architecture
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#192-development-zero-config" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        19.2 Development (zero-config)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#193-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        19.3 Production
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#194-environment-variables-in-docker" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        19.4 Environment Variables in Docker
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#20-console-commands" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        20. Console Commands
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#21-service-container-wiring" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        21. Service Container Wiring
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#22-inventory-module-stock-reservation-system" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        22. Inventory Module — Stock &amp; Reservation System
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="22. Inventory Module — Stock &amp; Reservation System">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#221-overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        22.1 Overview
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#222-domain-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        22.2 Domain Model
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#223-integration-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        22.3 Integration Flow
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#224-reservation-processing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        22.4 Reservation Processing
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#225-compensation-expiry" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        22.5 Compensation &amp; Expiry
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#226-management-apis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        22.6 Management APIs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#227-store-integration-changes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        22.7 Store Integration Changes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#23-production-readiness-known-defects" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        23. Production Readiness &amp; Known Defects
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="23. Production Readiness &amp; Known Defects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#231-status-summary-2026-08-09" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        23.1 Status summary (2026-08-09)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#232-operational-gaps-productization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        23.2 Operational gaps (productization)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#233-rules-for-ai-agents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        23.3 Rules for AI agents
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#24-platform-operations-endpoints" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        24. Platform Operations Endpoints
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../openapi/endpoints.yaml" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API 参考
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-project-overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Project Overview
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-directory-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Directory Structure
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-request-lifecycle" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Request Lifecycle
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-authentication-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Authentication Flow
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Authentication Flow">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-user-profile-app" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 User Profile (App)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-profile-app" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2 Profile (App)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43-user-management-manage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.3 User Management (Manage)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#44-profile-management-manage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.4 Profile Management (Manage)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-dynamic-query-system" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Dynamic Query System
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-baseservice-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. BaseService Architecture
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-trade-module-order-lifecycle" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Trade Module — Order Lifecycle
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Trade Module — Order Lifecycle">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#71-state-machine-workflowyaml" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.1 State Machine (workflow.yaml)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#72-orderservice-methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.2 OrderService Methods
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#73-order-entity-fields" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.3 Order Entity Fields
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#74-manage-order-endpoints" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.4 Manage Order Endpoints
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#75-app-order-endpoints" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.5 App Order Endpoints
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#76-app-specification-endpoints" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.6 App Specification Endpoints
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-payment-module" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Payment Module
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. Payment Module">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#81-invoice-system" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.1 Invoice System
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#82-paymentgatewayinterface-gateway-registry-pattern" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.2 PaymentGatewayInterface — Gateway Registry Pattern
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#821-payment-adjustment-providers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.2.1 Payment Adjustment Providers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#822-first-phase-gateways" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.2.2 First-Phase Gateways
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#83-payment-endpoints" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.3 Payment Endpoints
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#84-paymenttrade-integration-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.4 Payment/Trade Integration Status
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#85-wallet-app-endpoints" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.5 Wallet App Endpoints
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-wechat-module" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Wechat Module
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="9. Wechat Module">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#91-wechatuser-entity-onetoone-user" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.1 WechatUser Entity (OneToOne → User)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#92-login-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.2 Login Flow
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#93-wechatpaygateway" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.3 WechatPayGateway
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#94-wechatuser-crud-controllers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.4 WechatUser CRUD Controllers
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-internationalization-i18n" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Internationalization (i18n)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10. Internationalization (i18n)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#101-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.1 Architecture
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#102-translation-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.2 Translation Flow
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#103-localelistener-srccoreeventlistenerlocalelistenerphp" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.3 LocaleListener (src/Core/EventListener/LocaleListener.php)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#104-multi-language-readme" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.4 Multi-language README
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-storage-module" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. Storage Module
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="11. Storage Module">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#111-drivers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11.1 Drivers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#112-media-upload-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11.2 Media Upload Flow
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12-system-introspection-endpoints" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12. System Introspection Endpoints
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#13-key-patterns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13. Key Patterns
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#14-api-documentation-system" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        14. API Documentation System
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="14. API Documentation System">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#141-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        14.1 Architecture
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#142-openapienricherlistener-srccoreeventlisteneropenapienricherlistenerphp" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        14.2 OpenApiEnricherListener (src/Core/EventListener/OpenApiEnricherListener.php)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#143-tag-auto-detection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        14.3 Tag Auto-Detection
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#144-schema-configuration-configpackagesnelmio_api_docyaml" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        14.4 Schema Configuration (config/packages/nelmio_api_doc.yaml)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#15-database-tables-24-migrations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        15. Database Tables (24 Migrations)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#16-documentation-assets" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        16. Documentation Assets
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#17-testing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        17. Testing
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#18-environment-variables-key" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        18. Environment Variables (Key)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#19-docker-deployment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        19. Docker Deployment
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="19. Docker Deployment">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#191-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        19.1 Architecture
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#192-development-zero-config" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        19.2 Development (zero-config)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#193-production" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        19.3 Production
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#194-environment-variables-in-docker" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        19.4 Environment Variables in Docker
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#20-console-commands" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        20. Console Commands
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#21-service-container-wiring" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        21. Service Container Wiring
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#22-inventory-module-stock-reservation-system" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        22. Inventory Module — Stock &amp; Reservation System
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="22. Inventory Module — Stock &amp; Reservation System">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#221-overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        22.1 Overview
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#222-domain-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        22.2 Domain Model
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#223-integration-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        22.3 Integration Flow
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#224-reservation-processing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        22.4 Reservation Processing
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#225-compensation-expiry" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        22.5 Compensation &amp; Expiry
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#226-management-apis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        22.6 Management APIs
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#227-store-integration-changes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        22.7 Store Integration Changes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#23-production-readiness-known-defects" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        23. Production Readiness &amp; Known Defects
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="23. Production Readiness &amp; Known Defects">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#231-status-summary-2026-08-09" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        23.1 Status summary (2026-08-09)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#232-operational-gaps-productization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        23.2 Operational gaps (productization)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#233-rules-for-ai-agents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        23.3 Rules for AI agents
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#24-platform-operations-endpoints" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        24. Platform Operations Endpoints
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="crud-skeleton-full-codebase-context">CRUD Skeleton - Full Codebase Context<a class="headerlink" href="#crud-skeleton-full-codebase-context" title="Permanent link">&para;</a></h1>
+<blockquote>
+<p>Context snapshot. Last updated: 2026-08-15</p>
+</blockquote>
+<hr />
+<h2 id="1-project-overview">1. Project Overview<a class="headerlink" href="#1-project-overview" title="Permanent link">&para;</a></h2>
+<p><strong>CRUD Skeleton</strong> is a Symfony 8.1 API backend skeleton with:
+- <strong>PHP 8.4+</strong>, Doctrine ORM 3.6, MySQL 8 (Docker), SQLite (tests)
+- JWT authentication (RS256), OTP/SMS login, WeChat Mini Program / Official Account login
+- Expression-based dynamic query engine (<code>@filter</code>, <code>@sort</code>, <code>@dql</code>)
+- Modular architecture: <strong>Core</strong> (framework), <strong>Common</strong> (CMS), <strong>Promotion</strong> (DSL-driven promotions), <strong>Identity</strong> (auth), <strong>Trade</strong> (commercial orders), <strong>Store</strong> (multi-store operations), <strong>Payment</strong> (invoices), <strong>Wallet</strong> (balances), <strong>Inventory</strong> (stock &amp; reservation), <strong>Wechat</strong> (login + pay), <strong>Storage</strong> (file upload drivers)
+- EasyWeChat 6.x integration (Mini Program, Official Account OAuth, WeChat Pay V3)
+- NelmioApiDoc (Swagger at <code>/api/doc</code>), PHPUnit 12.5, Docker Compose (7 services: app, worker, scheduler, nginx, MySQL, Redis, Mailpit)
+- MkDocs Material + GitHub Pages documentation (<strong>mermaid diagram rendering enabled</strong> via CDN + <code>pymdownx.superfences</code> custom fence)
+- <strong>i18n</strong>: Symfony Translation with en, zh, zh_Hant, ja — all user-facing messages, entity/field names, and status values translated
+- <strong>Wallet ledger</strong>: voucher-backed single-sided deposits/withdrawals (<code>wallet_voucher</code> boundary ledger) with provider-owned voucher-type permissions; <strong>Exchange</strong> bundle design (pool-backed points economy) at <code>docs/design/bundles/exchange.md</code></p>
+<h2 id="2-directory-structure">2. Directory Structure<a class="headerlink" href="#2-directory-structure" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>├── public/index.php              # Front controller
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>├── public/.htaccess              # Apache rewrite rules + Authorization header forwarding
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>├── src/Kernel.php                # Symfony Kernel (MicroKernelTrait)
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>├── bin/console                   # CLI entry point
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>│
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>├── src/Core/                     # Framework core
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>│   ├── Controller/RestController.php    # Base API controller (success/warning/pagination)
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>│   ├── Controller/System/               # System introspection (EntityController, RouterController)
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>│   ├── View/                     # PHP traits: List, Detail, Create, Update, Delete, Workflow, Single, Transform
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>│   ├── View/ApiViewMessages.php         # Extracted message constants for View traits (ENTITY_NOT_FOUND, SUCCESS, INVALID_JSON, propertyRequired(), etc.)
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>│   ├── Service/BaseService.php          # Abstract CRUD service (@template TEntity generics)
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>│   ├── Service/Concern/                 # Traits: Infrastructure, ReadList, Mutation (@template TEntity)
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>│   ├── Parser/ExpressionDqlParser.php   # Expression → DQL compiler
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>│   ├── Serializer/FlatNormalizer.php    # Custom object normalizer (Doctrine internal objects → class names)
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>│   ├── EventListener/                   # ExceptionInterceptor, ControllerListener, OpenApiEnricherListener, LocaleListener, AccessLogListener
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>│   └── Utils/                           # UUID, Math, RSA, Location, Inflect, etc.
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>│
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>├── src/Common/                   # CMS module: Category, Tag, Content, Comment, Page, Media, Setting, Picture
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>│   ├── Entity/                   # 8 entities
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>│   ├── Repository/
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>│   ├── Service/
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>│   └── Controller/App/ + Manage/ + Public/
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>│
+<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>├── src/Identity/                 # Authentication &amp; Identity
+<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>│   ├── Entity/User.php, RefreshToken.php, Profile.php     # User has __toString(): username fallback to email; User::$profile (OneToOne→Profile)
+<a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a>│   ├── Security/JwtAuthenticator.php, TokenManager.php
+<a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a>│   ├── Service/OtpService.php, UserService.php, SMS providers
+<a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a>│   ├── Command/CreateUserCommand.php
+<a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a>│   └── Controller/AuthController.php, App/UserController.php, App/ProfileController.php, Manage/UserController.php, Manage/ProfileController.php
+<a id="__codelineno-0-30" name="__codelineno-0-30" href="#__codelineno-0-30"></a>│
+<a id="__codelineno-0-31" name="__codelineno-0-31" href="#__codelineno-0-31"></a>├── src/Trade/                    # E-commerce module
+<a id="__codelineno-0-32" name="__codelineno-0-32" href="#__codelineno-0-32"></a>│   ├── Entity/                   # Product, Specification, Order, OrderItem, TradeOutboxMessage
+<a id="__codelineno-0-33" name="__codelineno-0-33" href="#__codelineno-0-33"></a>│   ├── Service/OrderService.php        # StoreContext-aware creation + price pipeline
+<a id="__codelineno-0-34" name="__codelineno-0-34" href="#__codelineno-0-34"></a>│   ├── Command/PublishOutboxCommand.php # app:trade:outbox:publish
+<a id="__codelineno-0-35" name="__codelineno-0-35" href="#__codelineno-0-35"></a>│   ├── MessageHandler/           # Store acceptance/rejection consumers
+<a id="__codelineno-0-36" name="__codelineno-0-36" href="#__codelineno-0-36"></a>│   ├── Service/Pricing/                # PriceCalculatorInterface (Base, Quantity, Total)
+<a id="__codelineno-0-37" name="__codelineno-0-37" href="#__codelineno-0-37"></a>│   ├── EventListener/OrderWorkflowListener.php
+<a id="__codelineno-0-38" name="__codelineno-0-38" href="#__codelineno-0-38"></a>│   ├── Exception/                      # OrderInvalidTransitionException, SpecificationNotFoundException
+<a id="__codelineno-0-39" name="__codelineno-0-39" href="#__codelineno-0-39"></a>│   └── Controller/App/ + Manage/       # CRUD + workflow + pay/refund/fulfill + items + cancel + spec browse/v2
+<a id="__codelineno-0-40" name="__codelineno-0-40" href="#__codelineno-0-40"></a>│
+<a id="__codelineno-0-41" name="__codelineno-0-41" href="#__codelineno-0-41"></a>├── src/Store/                    # Multi-store operational boundary
+<a id="__codelineno-0-42" name="__codelineno-0-42" href="#__codelineno-0-42"></a>│   ├── Entity/                   # Store, membership, StoreOrder, Outbox, Inbox
+<a id="__codelineno-0-43" name="__codelineno-0-43" href="#__codelineno-0-43"></a>│   ├── Service/                  # Context, membership, StoreOrder, Outbox services
+<a id="__codelineno-0-44" name="__codelineno-0-44" href="#__codelineno-0-44"></a>│   ├── MessageHandler/           # Inbox-idempotent Trade order consumer; Inventory outcome consumers
+<a id="__codelineno-0-45" name="__codelineno-0-45" href="#__codelineno-0-45"></a>│   ├── Command/PublishOutboxCommand.php # app:store:outbox:publish
+<a id="__codelineno-0-46" name="__codelineno-0-46" href="#__codelineno-0-46"></a>│   └── Controller/App/ + Manage/ + Staff/
+<a id="__codelineno-0-47" name="__codelineno-0-47" href="#__codelineno-0-47"></a>│
+<a id="__codelineno-0-48" name="__codelineno-0-48" href="#__codelineno-0-48"></a>├── src/Payment/                  # Payment module
+<a id="__codelineno-0-49" name="__codelineno-0-49" href="#__codelineno-0-49"></a>│   ├── Entity/Invoice.php              # Payment invoice (pending→paying→paid→refunded)
+<a id="__codelineno-0-50" name="__codelineno-0-50" href="#__codelineno-0-50"></a>│   ├── DTO/                            # PaymentResult, PaymentNotifyResult, PaymentRefundResult, PaymentAdjustmentContext, PaymentAdjustmentResult
+<a id="__codelineno-0-51" name="__codelineno-0-51" href="#__codelineno-0-51"></a>│   ├── Event/                          # InvoicePaidEvent, InvoiceRefundedEvent, etc.
+<a id="__codelineno-0-52" name="__codelineno-0-52" href="#__codelineno-0-52"></a>│   ├── Service/PaymentGatewayInterface.php  # Gateway contract (pay(explicit amount), notify, refund(explicit amount))
+<a id="__codelineno-0-53" name="__codelineno-0-53" href="#__codelineno-0-53"></a>│   ├── Service/Adjustment/PaymentAdjustmentProviderInterface.php  # Adjustments before gateway payment (implemented by Wallet)
+<a id="__codelineno-0-54" name="__codelineno-0-54" href="#__codelineno-0-54"></a>│   ├── Service/Adjustment/PaymentAdjustmentRegistry.php  # #[AutowireIterator('payment.adjustment_provider')] registry
+<a id="__codelineno-0-55" name="__codelineno-0-55" href="#__codelineno-0-55"></a>│   ├── Service/Gateway/MockGateway.php       # Deterministic test gateway (only gateway remaining in Payment)
+<a id="__codelineno-0-56" name="__codelineno-0-56" href="#__codelineno-0-56"></a>│   ├── Service/PaymentGatewayRegistry.php    # #[AutowireIterator('payment.gateway')] registry
+<a id="__codelineno-0-57" name="__codelineno-0-57" href="#__codelineno-0-57"></a>│   └── Controller/App/ + Manage/ + Webhook/
+<a id="__codelineno-0-58" name="__codelineno-0-58" href="#__codelineno-0-58"></a>│       # Current Trade result propagation is synchronous Invoice domain events.
+<a id="__codelineno-0-59" name="__codelineno-0-59" href="#__codelineno-0-59"></a>│       # Planned phase 1: Payment Outbox -&gt; Trade Inbox; Payment Inbox is deferred.
+<a id="__codelineno-0-60" name="__codelineno-0-60" href="#__codelineno-0-60"></a>│
+<a id="__codelineno-0-61" name="__codelineno-0-61" href="#__codelineno-0-61"></a>├── src/Wallet/                   # Wallet module
+<a id="__codelineno-0-62" name="__codelineno-0-62" href="#__codelineno-0-62"></a>│   ├── Entity/                   # Wallet, Transaction, Voucher, VoucherComment, PaymentDeduction
+<a id="__codelineno-0-63" name="__codelineno-0-63" href="#__codelineno-0-63"></a>│   ├── Repository/               # Wallet, Transaction, Voucher, VoucherComment, PaymentDeduction
+<a id="__codelineno-0-64" name="__codelineno-0-64" href="#__codelineno-0-64"></a>│   ├── Service/Transfer/TransferService.php     # Atomic transfers (+ hold/release via `held`)
+<a id="__codelineno-0-65" name="__codelineno-0-65" href="#__codelineno-0-65"></a>│   ├── Service/Deposit/                 # DepositService + provider registry (voucher-backed credit)
+<a id="__codelineno-0-66" name="__codelineno-0-66" href="#__codelineno-0-66"></a>│   ├── Service/Withdraw/                # WithdrawService + provider registry (voucher-backed debit)
+<a id="__codelineno-0-67" name="__codelineno-0-67" href="#__codelineno-0-67"></a>│   ├── Service/WalletService.php       # verifyBalance() + reconcile()
+<a id="__codelineno-0-68" name="__codelineno-0-68" href="#__codelineno-0-68"></a>│   ├── Service/VoucherService.php, VoucherCommentService.php   # list/detail + append-only annotations
+<a id="__codelineno-0-69" name="__codelineno-0-69" href="#__codelineno-0-69"></a>│   ├── Service/Payment/WalletGateway.php              # Implements PaymentGatewayInterface
+<a id="__codelineno-0-70" name="__codelineno-0-70" href="#__codelineno-0-70"></a>│   ├── Service/Payment/WalletBalanceAdjustmentProvider.php  # Wallet deduction as Payment adjustment provider
+<a id="__codelineno-0-71" name="__codelineno-0-71" href="#__codelineno-0-71"></a>│   ├── Service/Payment/PaymentDeductionService.php    # Wallet-owned deduction lifecycle
+<a id="__codelineno-0-72" name="__codelineno-0-72" href="#__codelineno-0-72"></a>│   ├── DTO/PaymentDeductionRequest.php
+<a id="__codelineno-0-73" name="__codelineno-0-73" href="#__codelineno-0-73"></a>│   └── Controller/App/ + Manage/       # App list/detail/balance + self deposit/withdraw; Manage CRUD/audit/reconcile/deposit/withdraw/reverse
+<a id="__codelineno-0-74" name="__codelineno-0-74" href="#__codelineno-0-74"></a>│
+<a id="__codelineno-0-75" name="__codelineno-0-75" href="#__codelineno-0-75"></a>├── src/Wechat/                   # WeChat module
+<a id="__codelineno-0-76" name="__codelineno-0-76" href="#__codelineno-0-76"></a>│   ├── Entity/WechatUser.php           # OneToOne→User
+<a id="__codelineno-0-77" name="__codelineno-0-77" href="#__codelineno-0-77"></a>│   ├── Repository/WechatUserRepository.php
+<a id="__codelineno-0-78" name="__codelineno-0-78" href="#__codelineno-0-78"></a>│   ├── Service/WechatService.php       # EasyWeChat factory
+<a id="__codelineno-0-79" name="__codelineno-0-79" href="#__codelineno-0-79"></a>│   ├── Service/WechatAuthService.php   # Login orchestration
+<a id="__codelineno-0-80" name="__codelineno-0-80" href="#__codelineno-0-80"></a>│   ├── Service/WechatUserService.php   # CRUD service
+<a id="__codelineno-0-81" name="__codelineno-0-81" href="#__codelineno-0-81"></a>│   ├── Service/Payment/WechatPayGateway.php  # implements PaymentGatewayInterface
+<a id="__codelineno-0-82" name="__codelineno-0-82" href="#__codelineno-0-82"></a>│   └── Controller/
+<a id="__codelineno-0-83" name="__codelineno-0-83" href="#__codelineno-0-83"></a>│
+<a id="__codelineno-0-84" name="__codelineno-0-84" href="#__codelineno-0-84"></a>├── src/Storage/                  # Storage module (pluggable file upload drivers)
+<a id="__codelineno-0-85" name="__codelineno-0-85" href="#__codelineno-0-85"></a>│   ├── Service/MediaStorageInterface.php       # Driver contract (store/delete)
+<a id="__codelineno-0-86" name="__codelineno-0-86" href="#__codelineno-0-86"></a>│   ├── Service/MediaStorageRegistry.php        # Tagged iterator collection
+<a id="__codelineno-0-87" name="__codelineno-0-87" href="#__codelineno-0-87"></a>│   ├── Service/LocalStorage.php                # Local filesystem (public/uploads/)
+<a id="__codelineno-0-88" name="__codelineno-0-88" href="#__codelineno-0-88"></a>│   ├── Service/QiniuStorage.php                # Qiniu Kodo cloud storage (optional SDK)
+<a id="__codelineno-0-89" name="__codelineno-0-89" href="#__codelineno-0-89"></a>│   └── Resources/config/services_storage.yaml
+<a id="__codelineno-0-90" name="__codelineno-0-90" href="#__codelineno-0-90"></a>│
+<a id="__codelineno-0-91" name="__codelineno-0-91" href="#__codelineno-0-91"></a>├── src/Promotion/                # Promotion module (DSL-driven promotion engine)
+<a id="__codelineno-0-92" name="__codelineno-0-92" href="#__codelineno-0-92"></a>│   ├── Entity/                   # PromotionTemplate, Promotion
+<a id="__codelineno-0-93" name="__codelineno-0-93" href="#__codelineno-0-93"></a>│   ├── Repository/
+<a id="__codelineno-0-94" name="__codelineno-0-94" href="#__codelineno-0-94"></a>│   ├── Service/                  # PromotionService, PromotionTemplateService, PromotionCalculator
+<a id="__codelineno-0-95" name="__codelineno-0-95" href="#__codelineno-0-95"></a>│   │   └── Dsl/                  # DSL lexer/parser/evaluator
+<a id="__codelineno-0-96" name="__codelineno-0-96" href="#__codelineno-0-96"></a>│   ├── Strategy/                 # 7 strategies: FullReduction, Discount, Gift, NthItemDiscount, Tiered, FreeShipping, MemberDiscount
+<a id="__codelineno-0-97" name="__codelineno-0-97" href="#__codelineno-0-97"></a>│   ├── Controller/App/           # Read-only endpoints
+<a id="__codelineno-0-98" name="__codelineno-0-98" href="#__codelineno-0-98"></a>│   ├── Controller/Manage/        # Admin CRUD endpoints
+<a id="__codelineno-0-99" name="__codelineno-0-99" href="#__codelineno-0-99"></a>│   └── Exception/
+<a id="__codelineno-0-100" name="__codelineno-0-100" href="#__codelineno-0-100"></a>│
+<a id="__codelineno-0-101" name="__codelineno-0-101" href="#__codelineno-0-101"></a>├── src/Inventory/                # Inventory module (material, stock, recipe, reservation)
+<a id="__codelineno-0-102" name="__codelineno-0-102" href="#__codelineno-0-102"></a>│   ├── Entity/                   # Material, Stock, SpecificationRecipe, RecipeLine, Reservation, ReservationLine, LedgerEntry, Inbox, Outbox
+<a id="__codelineno-0-103" name="__codelineno-0-103" href="#__codelineno-0-103"></a>│   ├── Repository/
+<a id="__codelineno-0-104" name="__codelineno-0-104" href="#__codelineno-0-104"></a>│   ├── Service/                  # InventoryService (reserve/release/adjust), MaterialService
+<a id="__codelineno-0-105" name="__codelineno-0-105" href="#__codelineno-0-105"></a>│   ├── MessageHandler/           # Reservation request/release consumers with inbox idempotency
+<a id="__codelineno-0-106" name="__codelineno-0-106" href="#__codelineno-0-106"></a>│   ├── Command/                  # PublishOutboxCommand, ReleaseExpiredReservationsCommand
+<a id="__codelineno-0-107" name="__codelineno-0-107" href="#__codelineno-0-107"></a>│   └── Controller/Manage/        # Material, Stock, Recipe, Reservation, Ledger admin APIs
+<a id="__codelineno-0-108" name="__codelineno-0-108" href="#__codelineno-0-108"></a>│
+<a id="__codelineno-0-109" name="__codelineno-0-109" href="#__codelineno-0-109"></a>├── config/
+<a id="__codelineno-0-110" name="__codelineno-0-110" href="#__codelineno-0-110"></a>│   ├── services.yaml             # Service wiring + imports src/*/Resources/config + exclusions
+<a id="__codelineno-0-111" name="__codelineno-0-111" href="#__codelineno-0-111"></a>│   ├── routes.yaml               # Route imports (wechat, wechat_app, wechat_manage added)
+<a id="__codelineno-0-112" name="__codelineno-0-112" href="#__codelineno-0-112"></a>│   └── packages/
+<a id="__codelineno-0-113" name="__codelineno-0-113" href="#__codelineno-0-113"></a>│       ├── nelmio_api_doc.yaml   # OpenAPI 3.1 config: System + Wechat tags
+<a id="__codelineno-0-114" name="__codelineno-0-114" href="#__codelineno-0-114"></a>│       ├── security.yaml         # PUBLIC_ACCESS: docs/auth/webhooks/wechat + GET /api/v1/public/*
+<a id="__codelineno-0-115" name="__codelineno-0-115" href="#__codelineno-0-115"></a>│       ├── translation.yaml      # Translator config: default_locale en, translations/ path
+<a id="__codelineno-0-116" name="__codelineno-0-116" href="#__codelineno-0-116"></a>│       ├── workflow.yaml         # Order state machine, including Store acceptance
+<a id="__codelineno-0-117" name="__codelineno-0-117" href="#__codelineno-0-117"></a>│       ├── messenger.yaml        # Trade/Store integration messages to async transport
+<a id="__codelineno-0-118" name="__codelineno-0-118" href="#__codelineno-0-118"></a>│       └── ...
+<a id="__codelineno-0-119" name="__codelineno-0-119" href="#__codelineno-0-119"></a>├── migrations/                   # 24 migrations (latest: wallet_voucher_comment, 2026-08-15)
+<a id="__codelineno-0-120" name="__codelineno-0-120" href="#__codelineno-0-120"></a>├── translations/                 # i18n translation files (messages.en/zh/zh_Hant/ja.yaml)
+<a id="__codelineno-0-121" name="__codelineno-0-121" href="#__codelineno-0-121"></a>├── docs/
+<a id="__codelineno-0-122" name="__codelineno-0-122" href="#__codelineno-0-122"></a>│   ├── ai/context.md             # This file
+<a id="__codelineno-0-123" name="__codelineno-0-123" href="#__codelineno-0-123"></a>│   ├── design/                   # Design contracts (incl. security-hardening.md)
+<a id="__codelineno-0-124" name="__codelineno-0-124" href="#__codelineno-0-124"></a>│   │   └── bundles/              # Per-module design docs (core, common, trade, wallet, identity, wechat, payment, storage, promotion, store, inventory, exchange)
+<a id="__codelineno-0-125" name="__codelineno-0-125" href="#__codelineno-0-125"></a>│   ├── testing/                  # Test-quality contract: TEST_STRATEGY, TEST_MATRIX, BUSINESS_INVARIANTS, FAILURE_MODES, PRODUCTION_VALIDATION, SYSTEM_WALKTHROUGH, AI_DEVELOPMENT_PROCESS (+ reusable framework-template/)
+<a id="__codelineno-0-126" name="__codelineno-0-126" href="#__codelineno-0-126"></a>│   ├── issues/                   # Audit &amp; coverage reports (coverage-2026-08-09/, test-audit-2026-08-09/)
+<a id="__codelineno-0-127" name="__codelineno-0-127" href="#__codelineno-0-127"></a>│   └── openapi/                       # endpoints.yaml + order/payment frontend flow docs
+<a id="__codelineno-0-128" name="__codelineno-0-128" href="#__codelineno-0-128"></a>├── scripts/tests/                # API smoke, Store orchestration smoke, trade workflow scripts
+<a id="__codelineno-0-129" name="__codelineno-0-129" href="#__codelineno-0-129"></a>├── tests/                        # 312 PHPUnit test files, organized by layer:
+<a id="__codelineno-0-130" name="__codelineno-0-130" href="#__codelineno-0-130"></a>│   ├── UnitTest/                 #   197 files — pure unit tests (no kernel/DB), App\Tests\UnitTest\...
+<a id="__codelineno-0-131" name="__codelineno-0-131" href="#__codelineno-0-131"></a>│   ├── Integration/              #   72 files — kernel/DB/HTTP tests + helpers (DatabaseBootstrapTrait, IntegrationWebTestCase), App\Tests\Integration\...
+<a id="__codelineno-0-132" name="__codelineno-0-132" href="#__codelineno-0-132"></a>│   └── LowValue/                 #   43 files — deprecated/low-value tests, excluded from default run, App\Tests\LowValue\...
+<a id="__codelineno-0-133" name="__codelineno-0-133" href="#__codelineno-0-133"></a>│                                 主套件 = UnitTest + Integration（2311 tests）；低价值可 --group low-value 显式运行
+<a id="__codelineno-0-134" name="__codelineno-0-134" href="#__codelineno-0-134"></a>├── README.md                     # English README
+<a id="__codelineno-0-135" name="__codelineno-0-135" href="#__codelineno-0-135"></a>├── README.zh-cn.md               # Chinese (Simplified) README
+<a id="__codelineno-0-136" name="__codelineno-0-136" href="#__codelineno-0-136"></a>├── README.zh-hant.md             # Chinese (Traditional) README
+<a id="__codelineno-0-137" name="__codelineno-0-137" href="#__codelineno-0-137"></a>├── README.ja.md                  # Japanese README
+<a id="__codelineno-0-138" name="__codelineno-0-138" href="#__codelineno-0-138"></a>├── mkdocs.yml                    # MkDocs Material config
+<a id="__codelineno-0-139" name="__codelineno-0-139" href="#__codelineno-0-139"></a>├── compose.yaml                  # Production deployment: app (PHP-FPM), nginx, MySQL, Redis, Mailpit
+<a id="__codelineno-0-140" name="__codelineno-0-140" href="#__codelineno-0-140"></a>├── compose.override.yaml         # Dev overrides (source mount, debug, exposed ports)
+<a id="__codelineno-0-141" name="__codelineno-0-141" href="#__codelineno-0-141"></a>├── Dockerfile                    # PHP 8.4-FPM Alpine with openssl + JWT key entrypoint
+<a id="__codelineno-0-142" name="__codelineno-0-142" href="#__codelineno-0-142"></a>├── .dockerignore                 # Build context exclusions (tests, docs, dev files)
+<a id="__codelineno-0-143" name="__codelineno-0-143" href="#__codelineno-0-143"></a>├── docker/
+<a id="__codelineno-0-144" name="__codelineno-0-144" href="#__codelineno-0-144"></a>│   ├── app/entrypoint.sh         # Dev key generation + prod key validation
+<a id="__codelineno-0-145" name="__codelineno-0-145" href="#__codelineno-0-145"></a>│   └── nginx/default.conf        # nginx config (reverse proxy to PHP-FPM)
+<a id="__codelineno-0-146" name="__codelineno-0-146" href="#__codelineno-0-146"></a>└── .github/workflows/
+<a id="__codelineno-0-147" name="__codelineno-0-147" href="#__codelineno-0-147"></a>    ├── ci.yml                    # CI: PHP 8.4, PHPStan Level 8, 90% coverage, Rector type-rule dry-run; tests job runs on PostgreSQL 16
+<a id="__codelineno-0-148" name="__codelineno-0-148" href="#__codelineno-0-148"></a>    ├── migrations.yml            # CI: MySQL 8.4 migration chain validation
+<a id="__codelineno-0-149" name="__codelineno-0-149" href="#__codelineno-0-149"></a>    └── docs.yml                  # GitHub Pages deploy
+</code></pre></div>
+<h2 id="3-request-lifecycle">3. Request Lifecycle<a class="headerlink" href="#3-request-lifecycle" title="Permanent link">&para;</a></h2>
+<ol>
+<li><code>public/index.php</code> → <code>App\Kernel</code> (MicroKernelTrait)</li>
+<li><code>config/routes.yaml</code> imports: <code>/api/v1</code> (Common/Trade/Store/Wallet/Payment/Promotion/Wechat App+Manage), <code>/api/auth</code> (Identity), <code>/api/wechat</code> (Wechat login), <code>/system</code> (introspection), <code>/api/payment/notify</code> (webhook)</li>
+<li><code>JwtAuthenticator</code> intercepts all <code>/api</code> routes (except public paths listed in security.yaml)</li>
+<li>Controller action (trait mixin or custom method) → <code>BaseService</code> methods → Doctrine EntityManager → DB</li>
+<li><code>RestController::success()</code> / <code>warning()</code> → JSON <code>{data, code, message, paginator}</code></li>
+</ol>
+<h2 id="4-authentication-flow">4. Authentication Flow<a class="headerlink" href="#4-authentication-flow" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Endpoint</th>
+<th>Method</th>
+<th>Auth</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/api/auth/login</code></td>
+<td>POST</td>
+<td>PUBLIC</td>
+<td>Email/username/phone + password → <code>{access_token, refresh_token}</code></td>
+</tr>
+<tr>
+<td><code>/api/auth/register</code></td>
+<td>POST</td>
+<td>PUBLIC</td>
+<td><strong>Self-registration</strong> (email, username, password, phone?) → tokens</td>
+</tr>
+<tr>
+<td><code>/api/auth/otp/request</code></td>
+<td>POST</td>
+<td>PUBLIC</td>
+<td>Request 6-digit OTP via SMS (Alibaba Cloud)</td>
+</tr>
+<tr>
+<td><code>/api/auth/otp/verify</code></td>
+<td>POST</td>
+<td>PUBLIC</td>
+<td>Verify OTP → tokens or mark phone verified</td>
+</tr>
+<tr>
+<td><code>/api/auth/token/refresh</code></td>
+<td>POST</td>
+<td>PUBLIC</td>
+<td>Rotate refresh token (old revoked, new issued)</td>
+</tr>
+<tr>
+<td><code>/api/auth/logout</code></td>
+<td>POST</td>
+<td>PUBLIC</td>
+<td>Revoke access token + optional refresh token</td>
+</tr>
+<tr>
+<td><code>/api/wechat/miniapp/login</code></td>
+<td>POST</td>
+<td>PUBLIC</td>
+<td>WeChat Mini Program <code>js_code</code> → JWT tokens</td>
+</tr>
+<tr>
+<td><code>/api/wechat/oauth/url</code></td>
+<td>GET</td>
+<td>PUBLIC</td>
+<td>Official Account OAuth redirect URL</td>
+</tr>
+<tr>
+<td><code>/api/wechat/oauth/callback</code></td>
+<td>POST</td>
+<td>PUBLIC</td>
+<td>OAuth <code>code</code> → JWT tokens</td>
+</tr>
+<tr>
+<td><code>/api/wechat/miniapp/phone</code></td>
+<td>POST</td>
+<td>AUTH</td>
+<td>Bind WeChat phone number to authenticated user</td>
+</tr>
+</tbody>
+</table>
+<h3 id="41-user-profile-app">4.1 User Profile (App)<a class="headerlink" href="#41-user-profile-app" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Path</th>
+<th>Auth</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GET</td>
+<td><code>/api/v1/app/users/me</code></td>
+<td>ROLE_USER</td>
+<td>Current user profile</td>
+</tr>
+<tr>
+<td>PUT</td>
+<td><code>/api/v1/app/users/me</code></td>
+<td>ROLE_USER</td>
+<td>Update email, username, phone, optional password</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/v1/app/users/change-password</code></td>
+<td>ROLE_USER</td>
+<td>Change password (requires current)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="42-profile-app">4.2 Profile (App)<a class="headerlink" href="#42-profile-app" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Path</th>
+<th>Auth</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GET</td>
+<td><code>/api/v1/app/profiles</code></td>
+<td>ROLE_USER</td>
+<td>Current user profile (self-service: nickname, avatar, metadata)</td>
+</tr>
+<tr>
+<td>PUT</td>
+<td><code>/api/v1/app/profiles</code></td>
+<td>ROLE_USER</td>
+<td>Update nickname, avatar, metadata (level is admin-only)</td>
+</tr>
+</tbody>
+</table>
+<p>Profile is auto-created on User registration via a Doctrine lifecycle listener. Points are delegated to Wallet (currency=POINTS). Formerly named Member.</p>
+<h3 id="43-user-management-manage">4.3 User Management (Manage)<a class="headerlink" href="#43-user-management-manage" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Path</th>
+<th>Auth</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GET/POST/PUT/DELETE</td>
+<td><code>/api/v1/manage/users/*</code></td>
+<td>ROLE_ADMIN</td>
+<td>Admin user CRUD</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/v1/manage/users/{id}/change-password</code></td>
+<td>ROLE_ADMIN</td>
+<td>Admin change user password</td>
+</tr>
+</tbody>
+</table>
+<h3 id="44-profile-management-manage">4.4 Profile Management (Manage)<a class="headerlink" href="#44-profile-management-manage" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Path</th>
+<th>Auth</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GET/POST/PUT/DELETE</td>
+<td><code>/api/v1/manage/profiles/*</code></td>
+<td>ROLE_ADMIN</td>
+<td>Admin profile CRUD (including level)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>UserService</strong> (<code>App\Identity\Service\UserService</code>): encapsulates register, verifyPassword, changePassword, adminChangePassword, updateProfile. Auto-hashes passwords in <code>update()</code>.</p>
+<p><strong>Token management</strong>: RS256 JWT (7200s TTL), HMAC-SHA256 refresh tokens with rotation + reuse detection.</p>
+<p><strong>Translation</strong>: AuthController, OtpController, LoginController inject <code>TranslatorInterface</code> and pass error messages through <code>trans()</code>. JwtAuthenticator also translates <code>onAuthenticationFailure()</code> messages.</p>
+<h2 id="5-dynamic-query-system">5. Dynamic Query System<a class="headerlink" href="#5-dynamic-query-system" title="Permanent link">&para;</a></h2>
+<p><code>BaseServiceReadListTrait::list()</code> supports:</p>
+<table>
+<thead>
+<tr>
+<th>Param</th>
+<th>Description</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>@filter</code></td>
+<td>Expression → DQL WHERE</td>
+<td><code>entity.status == "active"</code></td>
+</tr>
+<tr>
+<td><code>@dql</code></td>
+<td>Raw DQL sub-query</td>
+<td><code>(entity.price &gt; 100)</code></td>
+</tr>
+<tr>
+<td><code>@order</code></td>
+<td>ORDER BY</td>
+<td><code>createdAt\|DESC</code></td>
+</tr>
+<tr>
+<td><code>@select</code></td>
+<td>DQL SELECT</td>
+<td><code>entity.id, entity.name</code></td>
+</tr>
+<tr>
+<td><code>@groupBy</code></td>
+<td>GROUP BY</td>
+<td><code>entity.category</code></td>
+</tr>
+<tr>
+<td><code>@sort</code></td>
+<td>In-memory sort</td>
+<td><code>item.getPrice()</code></td>
+</tr>
+<tr>
+<td><code>@expands</code></td>
+<td>Nested expansion</td>
+<td><code>category,tags</code></td>
+</tr>
+<tr>
+<td><code>@display</code></td>
+<td>Field projection</td>
+<td><code>complex</code>, <code>reduce</code></td>
+</tr>
+<tr>
+<td><code>@transform</code></td>
+<td>Field transformation</td>
+<td><code>Math.mul(value, 100)</code></td>
+</tr>
+<tr>
+<td><code>page</code>, <code>limit</code></td>
+<td>Pagination</td>
+<td><code>page=1&amp;limit=20</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Expression syntax</strong>: <code>==</code>, <code>!=</code>, <code>&gt;</code>, <code>&lt;</code>, <code>&gt;=</code>, <code>&lt;=</code>, <code>&amp;&amp;</code>, <code>||</code>, <code>!</code>, <code>matches</code>, chained attributes, <code>Math</code>, <code>ArrayCommon</code>, <code>FilterDateTime</code> functions. Falls back to in-memory <code>LegacyEvaluator</code> when DQL compilation fails.</p>
+<h2 id="6-baseservice-architecture">6. BaseService Architecture<a class="headerlink" href="#6-baseservice-architecture" title="Permanent link">&para;</a></h2>
+<p><code>BaseServiceInterface</code> and <code>BaseService</code> use <code>@template TEntity of object</code> to propagate entity types through the service layer. Concrete services declare <code>@extends BaseService&lt;Entity&gt;</code> and interfaces declare <code>@extends BaseServiceInterface&lt;Entity&gt;</code>. This enables PHPStan to infer return types from <code>get()</code>, <code>new()</code>, and <code>update()</code> at call sites.</p>
+<pre class="mermaid"><code>flowchart TD
+    base["BaseService&lt;Order&gt; (abstract, @template TEntity, @implements BaseServiceInterface&lt;TEntity&gt;)"]
+    base --&gt; infra["BaseServiceInfrastructureTrait # EM, Logger, Serializer, Validator, Transactions"]
+    base --&gt; readList["BaseServiceReadListTrait&lt;TEntity&gt; # get(mixed): TEntity|null, list(): mixed"]
+    base --&gt; mutation["BaseServiceMutationTrait&lt;TEntity&gt; # new(): object, update(mixed): object|false, remove(): bool"]</code></pre>
+<p>Key PHPDoc contracts:
+- <strong><code>get(mixed $criteria)</code></strong>: Accepts <code>TEntity|int|string|array&lt;string, mixed&gt;|QueryBuilder</code> → returns <code>TEntity|null</code>
+- <strong><code>list(array $params)</code></strong>: Returns <code>mixed</code> (QueryBuilder, Entity[], or scalar arrays depending on @select/@groupBy)
+- <strong><code>new()</code></strong>: Returns <code>object</code> (native), <code>@return TEntity</code> (PHPDoc)
+- <strong><code>update(mixed $object, ?array $data)</code></strong>: Returns <code>object|false</code> — native <code>mixed</code> param with PHPDoc <code>@param mixed</code> for trait compatibility
+- <strong><code>remove($object)</code></strong>: Accepts <code>TEntity|int|string|array&lt;string, mixed&gt;</code>
+- <strong><code>wrapInTransaction(callable $fn)</code></strong>: Transaction with commit/rollback</p>
+<h2 id="7-trade-module-order-lifecycle">7. Trade Module — Order Lifecycle<a class="headerlink" href="#7-trade-module-order-lifecycle" title="Permanent link">&para;</a></h2>
+<h3 id="71-state-machine-workflowyaml">7.1 State Machine (workflow.yaml)<a class="headerlink" href="#71-state-machine-workflowyaml" title="Permanent link">&para;</a></h3>
+<pre class="mermaid"><code>flowchart TD
+    draft["draft"] --&gt; pending["pending"] --&gt; confirmed["confirmed"] --&gt; paid["paid"] --&gt; fulfilled["fulfilled"] --&gt; completed["completed"] --&gt; refunded["refunded"]
+    draft --&gt; awaiting["awaiting_store_acceptance"]
+    awaiting --&gt; accepted["store_accepted"]
+    accepted --&gt; confirmed
+    awaiting --&gt; rejected["store_rejected"]
+    rejected --&gt; cancelled["cancelled"]</code></pre>
+<h3 id="72-orderservice-methods">7.2 OrderService Methods<a class="headerlink" href="#72-orderservice-methods" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>calculatePrices(items, currency, storeCode?, meta?)</code></td>
+<td>Pipeline: BasePriceCalculator → QuantityCalculator → <strong>TotalAggregator (subtotal, priority 55)</strong> → <strong>PromotionCalculator (priority 60)</strong>. <code>meta</code> is an opaque bidirectional channel for calculators.</td>
+</tr>
+<tr>
+<td><code>createOrder(..., ?StoreContext)</code></td>
+<td>Creates Order + OrderItems. A resolved StoreContext writes <code>_store</code> metadata and <code>trade.order.created.v1</code> in the same transaction.</td>
+</tr>
+<tr>
+<td><code>pay(Order, systemWalletId, paymentMethod)</code></td>
+<td>User wallet → system wallet via <code>TransferService</code>. Sets <code>paidAt</code>.</td>
+</tr>
+<tr>
+<td><code>refund(Order, systemWalletId, reason)</code></td>
+<td>System wallet → user wallet via <code>TransferService</code>. Sets <code>refundedAt</code>.</td>
+</tr>
+<tr>
+<td><code>fulfill(Order, data)</code></td>
+<td>Set tracking/shipping + <code>fulfilledAt</code>.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="73-order-entity-fields">7.3 Order Entity Fields<a class="headerlink" href="#73-order-entity-fields" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>When Set</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>paidAt</code></td>
+<td>DateTimeImmutable</td>
+<td>On <code>pay</code> transition</td>
+</tr>
+<tr>
+<td><code>refundedAt</code></td>
+<td>DateTimeImmutable</td>
+<td>On <code>refund</code> transition</td>
+</tr>
+<tr>
+<td><code>fulfilledAt</code></td>
+<td>DateTimeImmutable</td>
+<td>On <code>fulfill</code> transition</td>
+</tr>
+<tr>
+<td><code>paymentMethod</code></td>
+<td>string</td>
+<td>On pay</td>
+</tr>
+<tr>
+<td><code>trackingNumber</code></td>
+<td>string</td>
+<td>On fulfill</td>
+</tr>
+<tr>
+<td><code>shippingAddress</code></td>
+<td>text</td>
+<td>On fulfill</td>
+</tr>
+<tr>
+<td><code>refundReason</code></td>
+<td>text</td>
+<td>On refund</td>
+</tr>
+<tr>
+<td><code>metadata</code></td>
+<td>json</td>
+<td>Optional request payload from app/manage order creation; useful for receiver/address snapshots</td>
+</tr>
+</tbody>
+</table>
+<h3 id="74-manage-order-endpoints">7.4 Manage Order Endpoints<a class="headerlink" href="#74-manage-order-endpoints" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Path</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>POST</td>
+<td><code>/manage/orders</code></td>
+<td>Create with price calculation</td>
+</tr>
+<tr>
+<td><strong>POST</strong></td>
+<td><strong><code>/manage/orders/quote</code></strong></td>
+<td><strong>Price preview without creating order</strong></td>
+</tr>
+<tr>
+<td>PUT</td>
+<td><code>/manage/orders/{id}</code></td>
+<td>Update draft only</td>
+</tr>
+<tr>
+<td>DELETE</td>
+<td><code>/manage/orders/{id}</code></td>
+<td>Delete draft only</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/manage/orders/{id}/items</code></td>
+<td>View order items</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/manage/orders/{id}/pay</code></td>
+<td>Wallet payment + transition</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/manage/orders/{id}/fulfill</code></td>
+<td>Fulfill with tracking</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/manage/orders/{id}/refund</code></td>
+<td>Wallet refund + transition</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/manage/orders/todo</code></td>
+<td>Orders with pending transitions</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/manage/orders/{id}/transitions</code></td>
+<td>Available transitions</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/manage/orders/{id}/do/{transition}</code></td>
+<td>Execute generic transition</td>
+</tr>
+</tbody>
+</table>
+<h3 id="75-app-order-endpoints">7.5 App Order Endpoints<a class="headerlink" href="#75-app-order-endpoints" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Path</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>POST</td>
+<td><code>/app/orders</code></td>
+<td>Create order. With trusted <code>X-Store-Code</code>, returns <code>202</code> while Store accepts asynchronously; otherwise uses the standard Trade flow.</td>
+</tr>
+<tr>
+<td><strong>POST</strong></td>
+<td><strong><code>/app/orders/quote</code></strong></td>
+<td><strong>Price preview without creating order</strong></td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/app/orders/{id}/items</code></td>
+<td>View own order items</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/app/orders/{id}/items</code></td>
+<td>View own order items</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/app/orders/{id}/cancel</code></td>
+<td>Cancel own order (draft/pending/confirmed)</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/app/orders/{id}/payment</code></td>
+<td><strong>Pay order via gateway (wallet, mock, wechat)</strong></td>
+</tr>
+</tbody>
+</table>
+<h3 id="76-app-specification-endpoints">7.6 App Specification Endpoints<a class="headerlink" href="#76-app-specification-endpoints" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Path</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GET</td>
+<td><code>/api/v1/app/specifications</code></td>
+<td>Browse all active specs</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/v1/app/specifications/by-product/{id}</code></td>
+<td>Specs for a product</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/v1/app/specifications/{id}</code></td>
+<td>Spec detail</td>
+</tr>
+</tbody>
+</table>
+<h2 id="8-payment-module">8. Payment Module<a class="headerlink" href="#8-payment-module" title="Permanent link">&para;</a></h2>
+<h3 id="81-invoice-system">8.1 Invoice System<a class="headerlink" href="#81-invoice-system" title="Permanent link">&para;</a></h3>
+<pre class="mermaid"><code>flowchart TD
+    invoice["Invoice (pending→paying→paid→refunded)"]
+    invoice --&gt; payment["payment: 'wallet'|'wechat'|'mock'"]
+    invoice --&gt; scene["scene: 'order'|'deposit'|'wallet_topup'"]
+    invoice --&gt; amount["amount/currency (cents)"]
+    invoice --&gt; payer["payer (User, nullable)"]</code></pre>
+<h3 id="82-paymentgatewayinterface-gateway-registry-pattern">8.2 PaymentGatewayInterface — Gateway Registry Pattern<a class="headerlink" href="#82-paymentgatewayinterface-gateway-registry-pattern" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="x">interface PaymentGatewayInterface {</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="x">    static getName(): string;           // e.g. 'wallet', 'wechat', 'mock'</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="x">    pay(Invoice, int $amount, array $options): PaymentResult;</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="x">    notify(Request $request): PaymentNotifyResult;</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="x">    refund(Invoice, int $amount, int $paidAmount, string $reason, array $options): PaymentRefundResult;</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="x">    getNotifySuccessResponse(PaymentNotifyResult $result): Response;</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="x">}</span>
+</code></pre></div>
+<p>Gateways receive <strong>explicit payment/refund amounts</strong> and MUST NOT inspect deduction or adjustment options. <code>Invoice::amount</code> remains the gross business payable amount; the gateway amount is computed by <code>InvoiceService</code> after applying payment adjustments.</p>
+<p>Gateways are auto-tagged <code>payment.gateway</code> via <code>_instanceof</code> rule. <code>PaymentGatewayRegistry</code> uses <code>#[AutowireIterator('payment.gateway')]</code> for auto-discovery.</p>
+<h3 id="821-payment-adjustment-providers">8.2.1 Payment Adjustment Providers<a class="headerlink" href="#821-payment-adjustment-providers" title="Permanent link">&para;</a></h3>
+<p>Payment defines <code>PaymentAdjustmentProviderInterface</code> — a pre-payment hook that reduces the amount a gateway must process. Implementations live in the owning module (e.g., Wallet provides <code>WalletBalanceAdjustmentProvider</code> for wallet balance deduction). Providers are auto-tagged <code>payment.adjustment_provider</code> and collected by <code>PaymentAdjustmentRegistry</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Provider</th>
+<th>Module</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>wallet_balance</code></td>
+<td>Wallet</td>
+<td>Wallet balance deduction before gateway payment</td>
+</tr>
+<tr>
+<td>(future) coupons / points</td>
+<td>Coupon / Loyalty modules</td>
+<td>Other deduction types through the same extension point</td>
+</tr>
+</tbody>
+</table>
+<p><code>InvoiceService</code> orchestrates adjustment providers and gateways without knowing deduction internals:
+1. Apply registered adjustments → total applied amount
+2. Compute <code>gatewayAmount = invoice.amount - adjustmentAmount</code>
+3. Call gateway with explicit amount</p>
+<h3 id="822-first-phase-gateways">8.2.2 First-Phase Gateways<a class="headerlink" href="#822-first-phase-gateways" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Gateway</th>
+<th>Module</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>mock</code></td>
+<td>Payment (<code>Service/Gateway/MockGateway.php</code>)</td>
+<td>Deterministic test/development gateway</td>
+</tr>
+<tr>
+<td><code>wallet</code></td>
+<td>Wallet (<code>Service/Payment/WalletGateway.php</code>)</td>
+<td>Internal wallet balance payment</td>
+</tr>
+<tr>
+<td><code>wechat</code></td>
+<td>Wechat (<code>Service/Payment/WechatPayGateway.php</code>)</td>
+<td>WeChat Pay V3 adapter</td>
+</tr>
+</tbody>
+</table>
+<h3 id="83-payment-endpoints">8.3 Payment Endpoints<a class="headerlink" href="#83-payment-endpoints" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Path</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>POST</td>
+<td><code>/app/invoices/{id}/pay/{payment}</code></td>
+<td>User pays invoice via gateway</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/manage/invoices/{id}/pay/{payment}</code></td>
+<td>Admin pays invoice</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/manage/invoices/{id}/cancel</code></td>
+<td>Cancel invoice</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/manage/invoices/{id}/refund</code></td>
+<td>Refund invoice</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/payment/notify/{payment}</code></td>
+<td>Payment callback (public, G/W signature verified)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="84-paymenttrade-integration-status">8.4 Payment/Trade Integration Status<a class="headerlink" href="#84-paymenttrade-integration-status" title="Permanent link">&para;</a></h3>
+<p>Current payment-result propagation is synchronous: <code>InvoiceService</code> dispatches
+<code>InvoicePaidEvent</code>, <code>InvoiceFailedEvent</code>, <code>InvoiceCancelledEvent</code>, and
+<code>InvoiceRefundedEvent</code>; <code>Trade\EventListener\OrderInvoiceListener</code> updates the Trade
+order in process.</p>
+<p>The approved next migration is intentionally limited to <strong>Payment Outbox -&gt; Trade
+Inbox</strong>. Payment will write versioned lifecycle events in the same transaction as an
+Invoice state mutation, and Trade will consume them idempotently. The first event is
+<code>payment.invoice.paid.v1</code>, followed by failed/cancelled/refunded events. Trade keeps
+the current synchronous <code>InvoiceService</code> calls for Invoice creation, payment initiation,
+cancellation, and refund during this phase. A Payment Inbox and
+<code>trade.payment.requested.v1</code> Saga are explicitly deferred until Payment service
+extraction requires them.</p>
+<p>The future payment Outbox publisher will join the automatic scheduler alongside Trade
+and Store publishers; the existing <code>worker</code> will consume its Messenger messages.</p>
+<h3 id="85-wallet-app-endpoints">8.5 Wallet App Endpoints<a class="headerlink" href="#85-wallet-app-endpoints" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Path</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GET</td>
+<td><code>/app/wallets</code></td>
+<td>Current user's wallets only</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/app/wallets/{id}</code></td>
+<td>Current user's wallet detail only</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/app/wallets/balance</code></td>
+<td>Current user's wallet balance audit: <code>totalBalance</code>, <code>totalDeposited</code>, <code>discrepancy</code>, <code>matches</code>, <code>walletCount</code></td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/app/transactions</code></td>
+<td>Current user's wallet transactions only</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/app/transactions/{id}</code></td>
+<td>Current user's transaction detail only</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/app/vouchers/deposit</code></td>
+<td>Self-service deposit into own wallet (<code>voucherType</code> required, provider-permissioned)</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/app/vouchers/withdraw</code></td>
+<td>Self-service withdrawal out of own wallet (<code>voucherType</code> required)</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/app/vouchers/{uuid}/reverse</code></td>
+<td>Reverse own voucher (deposit or withdrawal by direction)</td>
+</tr>
+</tbody>
+</table>
+<p>Manage keeps global audit endpoints: <code>GET /manage/wallets/balance</code>, <code>POST /manage/wallets/reconcile</code>, <code>POST /manage/vouchers/deposit|withdraw</code> (voucher-backed funding/payout, <code>voucherType</code> defaults to <code>manual</code>) and <code>POST /manage/vouchers/{uuid}/reverse</code>.</p>
+<h2 id="9-wechat-module">9. Wechat Module<a class="headerlink" href="#9-wechat-module" title="Permanent link">&para;</a></h2>
+<h3 id="91-wechatuser-entity-onetoone-user">9.1 WechatUser Entity (OneToOne → User)<a class="headerlink" href="#91-wechatuser-entity-onetoone-user" title="Permanent link">&para;</a></h3>
+<pre class="mermaid"><code>flowchart LR
+    wechatUser["WechatUser (wechat_user)&lt;br/&gt;openid (unique), unionid, sessionKey&lt;br/&gt;nickname, avatar, sex, province, city, country&lt;br/&gt;appType ('miniapp' | 'official')&lt;br/&gt;rawData (json)"]
+    user["User (users)"]
+    wechatUser -- "OneToOne" --&gt; user</code></pre>
+<p><strong>User.php is NOT modified</strong> — WechatUser extends identity via OneToOne with CASCADE delete.</p>
+<h3 id="92-login-flow">9.2 Login Flow<a class="headerlink" href="#92-login-flow" title="Permanent link">&para;</a></h3>
+<pre class="mermaid"><code>flowchart TD
+    subgraph Mini[Mini Program]
+        direction LR
+        M1["wx.login() → js_code → POST /api/wechat/miniapp/login"]
+        M2["WechatService.code2Session() → {openid, unionid, session_key}"]
+        M3["WechatAuthService.authenticateFromMiniApp()"]
+        M3 --&gt;|"hit"| M4["findByOpenid(openid) → update sessionKey → return User"]
+        M3 --&gt;|"miss"| M5["new User() + new WechatUser() → flush → return User"]
+        M6["TokenManager.createTokens() → {access_token, refresh_token, expires_in}"]
+        M1 --&gt; M2 --&gt; M3
+        M4 --&gt; M6
+        M5 --&gt; M6
+    end
+    subgraph OA[Official Account]
+        direction LR
+        O1["redirect → oauth code → POST /api/wechat/oauth/callback"]
+        O2["WechatService.getOAuthUser(code) → {openid, nickname, avatar, ...}"]
+        O3["WechatAuthService.authenticateFromOfficialAccount()"]
+        O4["TokenManager.createTokens() → JWT"]
+        O1 --&gt; O2 --&gt; O3 --&gt; O4
+    end</code></pre>
+<p>New users get random password (cannot password-login), synthetic email/username from openid.</p>
+<h3 id="93-wechatpaygateway">9.3 WechatPayGateway<a class="headerlink" href="#93-wechatpaygateway" title="Permanent link">&para;</a></h3>
+<p>Implements <code>PaymentGatewayInterface</code> with <code>getName() → 'wechat'</code>:
+- <strong>File</strong>: <code>src/Wechat/Service/Payment/WechatPayGateway.php</code>
+- <strong>pay()</strong>: JSAPI (requires payer openid from WechatUser) or Native (QR code) — receives explicit <code>$amount</code>
+- <strong>notify()</strong>: EasyWeChat server + validator, signature verification
+- <strong>refund()</strong>: Creates refund via WeChat Pay V3 API — receives explicit <code>$paidAmount</code> for <code>total</code>
+- Auto-registered as <code>payment.gateway</code> via <code>_instanceof</code> rule</p>
+<h3 id="94-wechatuser-crud-controllers">9.4 WechatUser CRUD Controllers<a class="headerlink" href="#94-wechatuser-crud-controllers" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Prefix</th>
+<th>Auth</th>
+<th>Filter</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/api/v1/app/wechat-users</code></td>
+<td>ROLE_USER</td>
+<td><code>['user' =&gt; $this-&gt;getUser()]</code></td>
+<td>User-scoped CRUD (only own data)</td>
+</tr>
+<tr>
+<td><code>/api/v1/manage/wechat-users</code></td>
+<td>ROLE_ADMIN</td>
+<td><code>[]</code> (no filter)</td>
+<td>Admin CRUD (all records)</td>
+</tr>
+</tbody>
+</table>
+<p>When <code>$this-&gt;getUser()</code> returns null in App controllers, <code>commonFilter()</code> returns <code>['id' =&gt; -1]</code> to block all records (security: unauthenticated users see nothing).</p>
+<h2 id="10-internationalization-i18n">10. Internationalization (i18n)<a class="headerlink" href="#10-internationalization-i18n" title="Permanent link">&para;</a></h2>
+<h3 id="101-architecture">10.1 Architecture<a class="headerlink" href="#101-architecture" title="Permanent link">&para;</a></h3>
+<p>Symfony Translation component with 4 locales. Translation files are YAML-based under <code>translations/</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Locale</th>
+<th>File</th>
+<th>Language</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>en</code></td>
+<td><code>translations/messages.en.yaml</code></td>
+<td>English (default, identity mapping)</td>
+</tr>
+<tr>
+<td><code>zh</code></td>
+<td><code>translations/messages.zh.yaml</code></td>
+<td>Chinese (Simplified)</td>
+</tr>
+<tr>
+<td><code>zh_Hant</code></td>
+<td><code>translations/messages.zh_Hant.yaml</code></td>
+<td>Chinese (Traditional)</td>
+</tr>
+<tr>
+<td><code>ja</code></td>
+<td><code>translations/messages.ja.yaml</code></td>
+<td>Japanese</td>
+</tr>
+</tbody>
+</table>
+<p><strong>~280 translation keys</strong> per locale covering: entity names (19), field names (96), status/enum values (17), authentication/JWT messages, WeChat errors, Core framework errors (View mixins, Service traits), success messages, Wallet/Trade/Payment/media/Storage errors, expression parser errors, and more.</p>
+<h3 id="102-translation-flow">10.2 Translation Flow<a class="headerlink" href="#102-translation-flow" title="Permanent link">&para;</a></h3>
+<p>All user-facing messages pass through the translator:</p>
+<table>
+<thead>
+<tr>
+<th>Source</th>
+<th>Method</th>
+<th>Translation Point</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Uncaught exceptions (API routes)</td>
+<td><code>ExceptionInterceptor::onKernelException()</code></td>
+<td><code>$this-&gt;translator-&gt;trans($exception-&gt;getMessage())</code></td>
+</tr>
+<tr>
+<td>Controller warnings</td>
+<td><code>RestController::warning()</code></td>
+<td><code>$this-&gt;getTranslator()-&gt;trans($error_msg)</code></td>
+</tr>
+<tr>
+<td>Auth/Otp/Login errors</td>
+<td><code>AuthController::error()</code> etc.</td>
+<td><code>$this-&gt;translator-&gt;trans($message)</code></td>
+</tr>
+<tr>
+<td>JWT auth failures</td>
+<td><code>JwtAuthenticator::onAuthenticationFailure()</code></td>
+<td><code>$this-&gt;translator-&gt;trans($messageKey)</code></td>
+</tr>
+<tr>
+<td>Entity field names</td>
+<td><code>EntityController</code> <code>/system/entities/{name}</code></td>
+<td><code>$this-&gt;getTranslator()-&gt;trans($plainTextFieldName)</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="103-localelistener-srccoreeventlistenerlocalelistenerphp">10.3 LocaleListener (<code>src/Core/EventListener/LocaleListener.php</code>)<a class="headerlink" href="#103-localelistener-srccoreeventlistenerlocalelistenerphp" title="Permanent link">&para;</a></h3>
+<p>Registered at <code>kernel.request</code> priority 20. Language detection priority:</p>
+<ol>
+<li><strong><code>?_locale=</code> query parameter</strong> — explicit override (e.g., <code>?_locale=ja</code>)</li>
+<li><strong><code>Accept-Language</code> header</strong> — browser-sent preference with quality factor ordering  </li>
+<li><code>zh-CN</code>, <code>zh-Hans</code> → <code>zh</code>  </li>
+<li><code>zh-TW</code>, <code>zh-HK</code>, <code>zh-Hant</code> → <code>zh_Hant</code>  </li>
+<li><code>ja-JP</code> → <code>ja</code>  </li>
+<li><code>en-US</code>, <code>en-GB</code> → <code>en</code></li>
+<li><strong>Fallback</strong> — <code>config/packages/translation.yaml</code> <code>default_locale: en</code></li>
+</ol>
+<p>Sub-requests are ignored.</p>
+<h3 id="104-multi-language-readme">10.4 Multi-language README<a class="headerlink" href="#104-multi-language-readme" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Language</th>
+<th>File</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>English</td>
+<td><code>README.md</code></td>
+</tr>
+<tr>
+<td>Chinese (Simplified)</td>
+<td><code>README.zh-cn.md</code></td>
+</tr>
+<tr>
+<td>Chinese (Traditional)</td>
+<td><code>README.zh-hant.md</code></td>
+</tr>
+<tr>
+<td>Japanese</td>
+<td><code>README.ja.md</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="11-storage-module">11. Storage Module<a class="headerlink" href="#11-storage-module" title="Permanent link">&para;</a></h2>
+<p>Storage is an infrastructure module under <code>src/Storage/</code>. Common/Media depends only on <code>MediaStorageInterface</code> and <code>MediaStorageRegistry</code>; Storage does not depend on Common entities or controllers.</p>
+<h3 id="111-drivers">11.1 Drivers<a class="headerlink" href="#111-drivers" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Driver</th>
+<th>Class</th>
+<th>Configuration</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>local</code></td>
+<td><code>App\Storage\Service\LocalStorage</code></td>
+<td><code>media.local.upload_path</code>, <code>media.local.base_url</code></td>
+<td>Always available. Stores under <code>public/uploads/{YYYYMM}/{random}.{ext}</code> and returns <code>/uploads/...</code> URLs.</td>
+</tr>
+<tr>
+<td><code>qiniu</code></td>
+<td><code>App\Storage\Service\QiniuStorage</code></td>
+<td><code>common_setting</code> keys</td>
+<td>Optional. Reads <code>qiniu.access_key</code>, <code>qiniu.secret_key</code>, <code>qiniu.bucket</code>, <code>qiniu.domain</code> at runtime.</td>
+</tr>
+</tbody>
+</table>
+<p>Qiniu SDK note: <code>qiniu/php-sdk</code> is intentionally not required by <code>composer.json</code> because v7.14 emits PHP 8.5 vendor deprecations. <code>QiniuStorage</code> checks for <code>Qiniu\Auth</code>, <code>Qiniu\Storage\UploadManager</code>, and <code>Qiniu\Storage\BucketManager</code> only when <code>storage=qiniu</code> is used; if missing, it throws a clear runtime error. Server deployments that need Qiniu may install it locally with <code>composer require qiniu/php-sdk</code>.</p>
+<h3 id="112-media-upload-flow">11.2 Media Upload Flow<a class="headerlink" href="#112-media-upload-flow" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Endpoint</th>
+<th>Method</th>
+<th>Auth</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/api/v1/app/media/upload</code></td>
+<td>POST multipart</td>
+<td>ROLE_USER</td>
+<td>Upload current user's media. App media list/detail is scoped by <code>['user' =&gt; $this-&gt;getUser()]</code>.</td>
+</tr>
+<tr>
+<td><code>/api/v1/app/media/{id}</code></td>
+<td>DELETE</td>
+<td>ROLE_USER</td>
+<td>Delete current user's own uploaded media. Uses app <code>commonFilter()</code> so other users' media returns 404; local files are best-effort removed.</td>
+</tr>
+<tr>
+<td><code>/api/v1/manage/media/upload</code></td>
+<td>POST multipart</td>
+<td>ROLE_ADMIN</td>
+<td>Admin upload endpoint, reuses App upload action via inheritance. Manage media CRUD uses no common filter.</td>
+</tr>
+<tr>
+<td><code>/api/v1/public/media</code></td>
+<td>GET</td>
+<td>PUBLIC</td>
+<td>Public read-only media list. Only returns media with nullable owner (<code>user IS NULL</code>).</td>
+</tr>
+<tr>
+<td><code>/api/v1/public/media/{id}</code></td>
+<td>GET</td>
+<td>PUBLIC</td>
+<td>Public read-only media detail. Only returns media with nullable owner (<code>user IS NULL</code>).</td>
+</tr>
+</tbody>
+</table>
+<p>Multipart fields:
+- <code>file</code>: required uploaded file
+- <code>storage</code>: optional driver name, defaults to <code>MEDIA_STORAGE_DEFAULT</code> / <code>media.storage.default</code> (<code>local</code>)
+- <code>category</code>: optional <code>common_category</code> id; invalid ids return <code>Category is not found</code>
+- <code>alt</code>, <code>title</code>, <code>width</code>, <code>height</code>: optional metadata</p>
+<p><code>MediaService::createFromUpload()</code> validates file presence/size/MIME, resolves the selected storage driver, stores the physical file, persists <code>Common\Entity\Media</code>, assigns the current authenticated <code>User</code> when available, and binds an optional <code>Category</code> from multipart <code>category</code>. <code>MediaService::remove()</code> best-effort deletes the physical file via the media's stored driver before removing the entity. App media delete now reuses <code>DeleteApiViewMixin</code>, scoped by owner.</p>
+<p><code>Media</code> stores <code>storage</code>, nullable owner <code>user</code> (<code>ManyToOne User</code>, <code>ON DELETE SET NULL</code>), and nullable <code>category</code> (<code>ManyToOne Category</code>, <code>ON DELETE SET NULL</code>). Manage media create/update accepts <code>category</code> ids. Public media uses a QueryBuilder <code>commonFilter()</code> with <code>media.user IS NULL</code> because array criteria cannot express SQL <code>IS NULL</code>.</p>
+<h2 id="12-system-introspection-endpoints">12. System Introspection Endpoints<a class="headerlink" href="#12-system-introspection-endpoints" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Endpoint</th>
+<th>Method</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/system/entities</code></td>
+<td>GET</td>
+<td>List all Doctrine entity FQCNs</td>
+</tr>
+<tr>
+<td><code>/system/entities/{entityName}</code></td>
+<td>GET</td>
+<td>Field + association metadata per entity (type, nullable, targetEntity)</td>
+</tr>
+<tr>
+<td><code>/system/router</code></td>
+<td>GET</td>
+<td>List all registered routes</td>
+</tr>
+</tbody>
+</table>
+<p>Placed in <code>src/Core/Controller/System/</code> (framework layer). NelmioApiDoc path_patterns include <code>^/system</code>. Tag: <code>System</code>.</p>
+<h2 id="13-key-patterns">13. Key Patterns<a class="headerlink" href="#13-key-patterns" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Pattern</th>
+<th>Where</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Trait mixins</strong></td>
+<td>View layer</td>
+<td>9 PHP traits composed into controllers</td>
+</tr>
+<tr>
+<td><strong>View message constants</strong></td>
+<td>Core/View</td>
+<td><code>ApiViewMessages</code> extracts all hardcoded strings from View traits into constants + formatters</td>
+</tr>
+<tr>
+<td><strong>Generic services</strong></td>
+<td>Core/Service</td>
+<td><code>@template TEntity</code> + <code>@extends BaseService&lt;Entity&gt;</code> enables static analysis inference across the service layer</td>
+</tr>
+<tr>
+<td><strong>Field whitelisting</strong></td>
+<td>Controllers</td>
+<td><code>$requiredCreateProperties</code>, <code>$acceptedCreateProperties</code>, <code>$acceptedUpdateProperties</code></td>
+</tr>
+<tr>
+<td><strong>Money in cents</strong></td>
+<td>Wallet + Trade + Payment</td>
+<td><code>bigint</code> cents, API boundary converts ×/÷100</td>
+</tr>
+<tr>
+<td><strong>UUID v4</strong></td>
+<td>Trade + Wallet</td>
+<td><code>UUID::v4()</code> for external identity</td>
+</tr>
+<tr>
+<td><strong>Soft delete</strong></td>
+<td>Trade</td>
+<td><code>isDeleted</code> boolean on Product, Specification</td>
+</tr>
+<tr>
+<td><strong>Snapshot</strong></td>
+<td>Trade</td>
+<td><code>OrderItem</code> captures <code>specSnapshot</code>/<code>productSnapshot</code> at creation</td>
+</tr>
+<tr>
+<td><strong>Order metadata</strong></td>
+<td>Trade</td>
+<td>App order creation accepts optional <code>metadata</code> JSON and persists it as-is to <code>trade_order.metadata</code>, useful for receiver/address snapshots and frontend extension data</td>
+</tr>
+<tr>
+<td><strong>State machine</strong></td>
+<td>Trade</td>
+<td>Symfony Workflow for orders</td>
+</tr>
+<tr>
+<td><strong>Token rotation + reuse detection</strong></td>
+<td>Identity</td>
+<td>HMAC-SHA256 refresh tokens</td>
+</tr>
+<tr>
+<td><strong>Idempotency</strong></td>
+<td>Wallet</td>
+<td><code>referenceId</code> unique constraint on Transaction</td>
+</tr>
+<tr>
+<td><strong>Pipeline</strong></td>
+<td>Trade</td>
+<td><code>PriceCalculatorInterface</code> with priority ordering</td>
+</tr>
+<tr>
+<td><strong>Meta channel</strong></td>
+<td>Trade</td>
+<td><code>PriceCalculationContext.meta</code> / <code>PriceCalculationResult.meta</code> — bidirectional opaque channel. Calculators read/write module-specific keys (<code>meta['promotion']</code>, <code>meta['coupon']</code>). Trade never inspects content.</td>
+</tr>
+<tr>
+<td><strong>Optimistic locking</strong></td>
+<td>Wallet</td>
+<td><code>SELECT … FOR UPDATE</code> pessimistic locking + manual <code>version</code> counter (<code>SET version = version + 1</code>); no <code>#[ORM\Version]</code> attribute</td>
+</tr>
+<tr>
+<td><strong>Post-response enrichment</strong></td>
+<td>Core</td>
+<td><code>OpenApiEnricherListener</code> post-processes <code>/api/doc</code> and <code>/api/doc.json</code></td>
+</tr>
+<tr>
+<td><strong>commonFilter</strong></td>
+<td>Controllers</td>
+<td>Array criteria or QueryBuilder injected into all queries. <code>[]</code> = no filter (admin), <code>['user' =&gt; $user]</code> = user-scoped, <code>['id' =&gt; -1]</code> = block all, QueryBuilder required for <code>IS NULL</code> filters</td>
+</tr>
+<tr>
+<td><strong>Payment via wallet</strong></td>
+<td>Trade</td>
+<td><code>POST /app/orders/{id}/payment</code> with <code>payment: "wallet"</code> creates Invoice → WalletGateway deducts user wallet</td>
+</tr>
+<tr>
+<td><strong>Payment integration migration</strong></td>
+<td>Payment -&gt; Trade</td>
+<td>Next phase replaces synchronous Invoice domain-event consumption with Payment Outbox and Trade Inbox; Payment request Inbox/Saga remains deferred</td>
+</tr>
+<tr>
+<td><strong>Balance audit</strong></td>
+<td>Wallet</td>
+<td><code>GET /app/wallets/balance</code> audits only current user's wallets; <code>GET /manage/wallets/balance</code> is global; <code>POST /manage/wallets/reconcile</code> fixes per-wallet gaps with <code>TYPE_ADJUSTMENT</code></td>
+</tr>
+<tr>
+<td><strong>Idempotent deposit</strong></td>
+<td>Wallet</td>
+<td><code>POST /api/v1/manage/vouchers/deposit</code> with <code>referenceId</code> — duplicate requests return existing transaction</td>
+</tr>
+<tr>
+<td><strong>Voucher-backed deposit/withdrawal</strong></td>
+<td>Wallet</td>
+<td>Single-sided credit/debit entries backed by <code>wallet_voucher</code>: deposit = <code>fromWallet = null</code> (TYPE_DEPOSIT), withdrawal = <code>toWallet = null</code> (TYPE_WITHDRAWAL); reversal returns funds to the source wallet (<code>credit_reversal</code> / <code>debit_reversal</code>)</td>
+</tr>
+<tr>
+<td><strong>Provider-owned voucher permission</strong></td>
+<td>Wallet</td>
+<td><code>assertPermitted()</code> on deposit/withdraw providers decides who may use a voucher type (<code>manual</code> requires ROLE_ADMIN; CLI/queue calls are trusted); controllers map <code>AccessDeniedException</code> → 403</td>
+</tr>
+<tr>
+<td><strong>Immutable wallet currency</strong></td>
+<td>Wallet</td>
+<td><code>Wallet::setCurrency()</code> throws after persistence — the unit of account cannot change once created</td>
+</tr>
+<tr>
+<td><strong>Concurrent idempotency</strong></td>
+<td>Wallet</td>
+<td>Unique-violation on <code>referenceId</code> is caught and re-queried, returning the existing deposit/withdraw/transfer instead of a 500</td>
+</tr>
+<tr>
+<td><strong>Gateway registry</strong></td>
+<td>Payment</td>
+<td><code>#[AutowireIterator]</code> + <code>_instanceof</code> auto-tags all <code>PaymentGatewayInterface</code> implementations</td>
+</tr>
+<tr>
+<td><strong>Adjustment provider registry</strong></td>
+<td>Payment</td>
+<td><code>#[AutowireIterator]</code> + <code>_instanceof</code> for <code>PaymentAdjustmentProviderInterface</code> — wallet deduction is a Wallet-owned provider</td>
+</tr>
+<tr>
+<td><strong>Deduction owned by Wallet</strong></td>
+<td>Wallet</td>
+<td>Wallet balance deduction lives in Wallet (<code>PaymentDeduction</code> entity, <code>PaymentDeductionService</code>, <code>WalletBalanceAdjustmentProvider</code>). Payment owns only the generic adjustment contract</td>
+</tr>
+<tr>
+<td><strong>OneToOne extension</strong></td>
+<td>Wechat</td>
+<td><code>WechatUser</code> extends User identity without modifying User entity</td>
+</tr>
+<tr>
+<td><strong>Storage driver registry</strong></td>
+<td>Storage</td>
+<td><code>MediaStorageInterface</code> implementations are tagged <code>media.storage</code>; callers select driver with multipart <code>storage</code> field</td>
+</tr>
+<tr>
+<td><strong>Media ownership</strong></td>
+<td>Common</td>
+<td>App media endpoints are user-scoped via <code>commonFilter()</code>, including delete. Manage media endpoints inherit App upload code but override <code>commonFilter()</code> to <code>[]</code>. Public media endpoints expose only ownerless media (<code>user IS NULL</code>) over anonymous GET.</td>
+</tr>
+<tr>
+<td><strong>Error response translation</strong></td>
+<td>Identity + Core</td>
+<td>AuthController, OtpController, LoginController, JwtAuthenticator inject <code>TranslatorInterface</code> — all error() and onAuthenticationFailure() methods pass messages through <code>trans()</code></td>
+</tr>
+<tr>
+<td><strong>Locale auto-detection</strong></td>
+<td>Core</td>
+<td><code>LocaleListener</code> at kernel.request priority 20: <code>?_locale=</code> param &gt; <code>Accept-Language</code> header &gt; default_locale fallback. Sub-requests are ignored.</td>
+</tr>
+<tr>
+<td><strong>Apache .htaccess</strong></td>
+<td>public/</td>
+<td>Rewrite all non-file requests to <code>index.php</code> + forward <code>Authorization</code> header via <code>SetEnvIf</code> for JWT in PHP-FPM environments</td>
+</tr>
+<tr>
+<td><strong>System introspection</strong></td>
+<td>Core</td>
+<td>Entity metadata + route export via <code>/system/*</code> endpoints</td>
+</tr>
+<tr>
+<td><strong>Promotion DSL</strong></td>
+<td>Promotion</td>
+<td>Custom lexer/parser/evaluator for human-readable promotion rules</td>
+</tr>
+<tr>
+<td><strong>Promotion strategy tag</strong></td>
+<td>Promotion</td>
+<td><code>promotion.strategy</code> auto-tag for strategy implementations, collected via <code>#[AutowireIterator]</code></td>
+</tr>
+<tr>
+<td><strong>Promotion calculator pipeline</strong></td>
+<td>Promotion</td>
+<td><code>PromotionCalculator</code> tagged <code>trade.price_calculator</code> (priority 60). TotalAggregator runs at priority 55 to establish the subtotal before promotion evaluation.</td>
+</tr>
+<tr>
+<td><strong>Profile auto-creation</strong></td>
+<td>Identity</td>
+<td><code>Profile</code> entity created on User registration via Doctrine lifecycle listener; user has <code>$profile</code> (OneToOne) instead of <code>$member</code></td>
+</tr>
+<tr>
+<td><strong>Points delegated to Wallet</strong></td>
+<td>Identity</td>
+<td>Profile points use Wallet with currency=POINTS</td>
+</tr>
+<tr>
+<td><strong>Inventory reservation</strong></td>
+<td>Inventory</td>
+<td>Store requests reservation by specification; Inventory resolves recipes, reserves material stock atomically, produces confirmed/rejected events</td>
+</tr>
+<tr>
+<td><strong>Inventory global bypass</strong></td>
+<td>Store + Inventory</td>
+<td>INVENTORY_ENABLED env var allows deployments without inventory management</td>
+</tr>
+<tr>
+<td><strong>Per-stock negative inventory</strong></td>
+<td>Inventory</td>
+<td>Each Stock has allowNegativeStock flag; independent per store/material pair</td>
+</tr>
+<tr>
+<td><strong>Outbox claim pattern</strong></td>
+<td>Inventory + Store + Trade</td>
+<td>Outbox publishers atomically claim rows via UPDATE WHERE, preventing concurrent delivery</td>
+</tr>
+</tbody>
+</table>
+<h2 id="14-api-documentation-system">14. API Documentation System<a class="headerlink" href="#14-api-documentation-system" title="Permanent link">&para;</a></h2>
+<h3 id="141-architecture">14.1 Architecture<a class="headerlink" href="#141-architecture" title="Permanent link">&para;</a></h3>
+<p>Controller <code>#[OA\*]</code> attributes → swagger-php (raw spec) → NelmioApiDocBundle (merge config) → <code>OpenApiEnricherListener</code> (post-process) → Swagger UI</p>
+<h3 id="142-openapienricherlistener-srccoreeventlisteneropenapienricherlistenerphp">14.2 OpenApiEnricherListener (<code>src/Core/EventListener/OpenApiEnricherListener.php</code>)<a class="headerlink" href="#142-openapienricherlistener-srccoreeventlisteneropenapienricherlistenerphp" title="Permanent link">&para;</a></h3>
+<p>Enriches all endpoints (90+):
+- <strong><code>detectTag()</code></strong>: Infers module tag from <code>operationId</code>: <code>manage-products-*</code> → Products, <code>system-*</code> → System, <code>wechat-*</code> → Wechat, <code>sys-auth-*</code> → Auth, etc.
+- <strong><code>META</code></strong>: Optional summaries/descriptions for key endpoints
+- <strong><code>ensureTag()</code></strong>: Adds dynamically detected tags to the spec's tag list
+- <strong>Generic tag removal</strong>: Filters out operation-type tags (List, Detail, Create, Update, Delete, Workflow) from swagger-php output — replaced with module tags
+- Registered in <code>services.yaml</code> as <code>kernel.event_listener</code> on <code>kernel.response</code> (priority -10)</p>
+<h3 id="143-tag-auto-detection">14.3 Tag Auto-Detection<a class="headerlink" href="#143-tag-auto-detection" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>operationId Pattern</th>
+<th>Tag</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>sys-auth-*</code></td>
+<td>Auth</td>
+</tr>
+<tr>
+<td><code>system-*</code></td>
+<td>System</td>
+</tr>
+<tr>
+<td><code>wechat-*</code></td>
+<td>Wechat</td>
+</tr>
+<tr>
+<td><code>manage-products-*</code>, <code>app-products-*</code></td>
+<td>Products</td>
+</tr>
+<tr>
+<td><code>manage-orders-*</code>, <code>app-orders-*</code></td>
+<td>Orders</td>
+</tr>
+<tr>
+<td><code>manage-categories-*</code>, <code>app-categories-*</code></td>
+<td>Categories</td>
+</tr>
+<tr>
+<td><code>manage-tags-*</code>, <code>app-tags-*</code></td>
+<td>Tags</td>
+</tr>
+<tr>
+<td><code>manage-contents-*</code>, <code>app-contents-*</code></td>
+<td>Contents</td>
+</tr>
+<tr>
+<td><code>manage-comments-*</code>, <code>app-comments-*</code></td>
+<td>Comments</td>
+</tr>
+<tr>
+<td><code>manage-pages-*</code>, <code>app-pages-*</code></td>
+<td>Pages</td>
+</tr>
+<tr>
+<td><code>manage-media-*</code>, <code>app-media-*</code></td>
+<td>Media</td>
+</tr>
+<tr>
+<td><code>manage-settings-*</code>, <code>app-settings-*</code></td>
+<td>Settings</td>
+</tr>
+<tr>
+<td><code>manage-promotions-*</code>, <code>app-promotions-*</code></td>
+<td>Promotions</td>
+</tr>
+<tr>
+<td><code>manage-promotion-templates-*</code>, <code>app-promotion-templates-*</code></td>
+<td>PromotionTemplates</td>
+</tr>
+<tr>
+<td><code>manage-wallets-*</code>, <code>manage-transactions-*</code>, <code>manage-transfers-*</code></td>
+<td>Wallet</td>
+</tr>
+<tr>
+<td>Any other <code>manage-{X}-*</code></td>
+<td>{X} (auto-title-cased)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="144-schema-configuration-configpackagesnelmio_api_docyaml">14.4 Schema Configuration (<code>config/packages/nelmio_api_doc.yaml</code>)<a class="headerlink" href="#144-schema-configuration-configpackagesnelmio_api_docyaml" title="Permanent link">&para;</a></h3>
+<p>44+ named schemas across 13 tags (Auth, Products, Orders, Categories, Tags, Contents, Comments, Pages, Media, Settings, Promotions, PromotionTemplates, Wallet, System, Wechat). Each with field-level type, description, enum, and example values. <code>path_patterns</code> includes both <code>^/api</code> and <code>^/system</code>.</p>
+<h2 id="15-database-tables-24-migrations">15. Database Tables (24 Migrations)<a class="headerlink" href="#15-database-tables-24-migrations" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Version</th>
+<th>Tables</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>20250514000000</td>
+<td><code>users</code>, <code>common_content</code></td>
+</tr>
+<tr>
+<td>20250515000001</td>
+<td><code>identity_refresh_token</code></td>
+</tr>
+<tr>
+<td>20250516000000</td>
+<td><code>common_category</code>, <code>common_tag</code>, <code>common_content_tag</code>, <code>common_media</code>, <code>common_page</code>, <code>common_comment</code>, <code>common_setting</code></td>
+</tr>
+<tr>
+<td>20250517000000</td>
+<td><code>wallet</code>, <code>wallet_transaction</code></td>
+</tr>
+<tr>
+<td>20250620000000</td>
+<td><code>trade_product</code>, <code>trade_specification</code>, <code>trade_order</code>, <code>trade_order_item</code></td>
+</tr>
+<tr>
+<td>20250621000000</td>
+<td>Added to <code>trade_order</code>: <code>paid_at</code>, <code>refunded_at</code>, <code>fulfilled_at</code>, <code>payment_method</code>, <code>tracking_number</code>, <code>shipping_address</code>, <code>refund_reason</code></td>
+</tr>
+<tr>
+<td>20250624223701</td>
+<td><code>payment_invoice</code>, <code>wechat_user</code>, <code>messenger_messages</code></td>
+</tr>
+<tr>
+<td>20260626000000</td>
+<td><code>wallet_payment_deduction</code> (wallet-owned deduction audit, scalar invoice references, FK to <code>wallet</code>)</td>
+</tr>
+<tr>
+<td>20260703000000</td>
+<td>Added to <code>common_media</code>: <code>storage</code>, nullable <code>user_id</code> FK to <code>users</code></td>
+</tr>
+<tr>
+<td>20260703010000</td>
+<td>Added to <code>common_media</code>: nullable <code>category_id</code> FK to <code>common_category</code></td>
+</tr>
+<tr>
+<td>20260703020000</td>
+<td><code>identity_profile</code> (replaces <code>member</code> table; level, nickname, avatar, metadata; FK to <code>users</code>)</td>
+</tr>
+<tr>
+<td>20260704000000</td>
+<td><code>promotion_template</code>, <code>promotion</code> (DSL text, AST cache, per-store config, time range, <code>IDX_PROMOTION_ACTIVE_STORE</code> composite index)</td>
+</tr>
+<tr>
+<td>20260713000000</td>
+<td><code>common_picture</code> (nullable <code>user_id</code> FK→<code>users</code> ON DELETE SET NULL, required <code>category_id</code> FK→<code>common_category</code> ON DELETE CASCADE, nullable <code>title</code>, required <code>image</code>, nullable <code>metadata</code> json)</td>
+</tr>
+<tr>
+<td>20260725000000-20260725050000</td>
+<td>Identity User UUID; Store, Store membership/order, Store Outbox/Inbox; Trade Outbox; Specification UUID; Trade order status <code>VARCHAR(40)</code></td>
+</tr>
+<tr>
+<td>20260726000000</td>
+<td>Inventory tables (material, stock, recipe, recipe_line, reservation, reservation_line, ledger_entry, inbox, outbox) + <code>store_trade_order_cancellation</code></td>
+</tr>
+<tr>
+<td>20260815000000</td>
+<td><code>wallet.currency</code> widened to VARCHAR(32) (unit-of-account codes like <code>CNY.ESCROW</code>)</td>
+</tr>
+<tr>
+<td>20260815010000</td>
+<td><code>wallet.held</code> column (frozen/available balance separation)</td>
+</tr>
+<tr>
+<td>20260815020000</td>
+<td><code>wallet_voucher</code> (boundary ledger: credit/debit vouchers, unique <code>reference_id</code> + <code>(voucher_type, voucher_id)</code>, FK to <code>wallet</code>)</td>
+</tr>
+<tr>
+<td>20260815030000</td>
+<td><code>wallet_voucher_comment</code> (append-only annotations on vouchers, FK cascade)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="16-documentation-assets">16. Documentation Assets<a class="headerlink" href="#16-documentation-assets" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>docs/design/system-architecture.md</code></td>
+<td>Layer rules, module structure, DI contract</td>
+</tr>
+<tr>
+<td><code>docs/design/api-design.md</code></td>
+<td>Response envelope, URL conventions, HTTP semantics, query params</td>
+</tr>
+<tr>
+<td><code>docs/design/data-model.md</code></td>
+<td>Entity conventions, naming, relationships, patterns</td>
+</tr>
+<tr>
+<td><code>docs/design/module-design.md</code></td>
+<td>Module skeleton, file contracts, checklist</td>
+</tr>
+<tr>
+<td><code>docs/design/controller-design.md</code></td>
+<td>Trait mixin catalog, hook methods, assembly patterns</td>
+</tr>
+<tr>
+<td><code>docs/design/api-documentation.md</code></td>
+<td>API doc system architecture, enricher contract, new module guide</td>
+</tr>
+<tr>
+<td><code>docs/design/system-contracts.md</code></td>
+<td>Transactions, errors, logging, security, testing</td>
+</tr>
+<tr>
+<td><code>docs/design/bundles/core.md</code></td>
+<td>Core framework design</td>
+</tr>
+<tr>
+<td><code>docs/design/bundles/common.md</code></td>
+<td>CMS module design</td>
+</tr>
+<tr>
+<td><code>docs/design/bundles/trade.md</code></td>
+<td>E-commerce module design</td>
+</tr>
+<tr>
+<td><code>docs/design/bundles/wallet.md</code></td>
+<td>Wallet module design</td>
+</tr>
+<tr>
+<td><code>docs/design/bundles/identity.md</code></td>
+<td>Auth module design</td>
+</tr>
+<tr>
+<td><code>docs/design/bundles/wechat.md</code></td>
+<td>WeChat module design (Mini Program, Official Account, Pay)</td>
+</tr>
+<tr>
+<td><code>docs/design/bundles/payment.md</code></td>
+<td>Payment module design (invoice, gateway, adjustment providers, deduction)</td>
+</tr>
+<tr>
+<td><code>docs/design/bundles/storage.md</code></td>
+<td>Storage module design (pluggable file upload drivers)</td>
+</tr>
+<tr>
+<td><code>docs/design/bundles/promotion.md</code></td>
+<td>Promotion module design (DSL engine, 7 strategy types, tagged calculator)</td>
+</tr>
+<tr>
+<td><code>docs/design/bundles/inventory.md</code></td>
+<td>Inventory module design (materials, stock, recipes, reservations, inbox/outbox)</td>
+</tr>
+<tr>
+<td><code>docs/design/bundles/exchange.md</code></td>
+<td>Exchange bundle design (pool-backed points economy: effective-dated rates, bcmath conversion, pledge/mint/exchange/redemption)</td>
+</tr>
+<tr>
+<td><code>docs/openapi/order-payment-flow.md</code></td>
+<td>Frontend order/payment/cancel/refund API integration guide, including WeChat Mini Program pay</td>
+</tr>
+<tr>
+<td><code>docs/openapi/order-payment-flow.zh.md</code></td>
+<td>Chinese translation of the frontend order/payment/cancel/refund API guide</td>
+</tr>
+<tr>
+<td><code>docs/testing/crud-skeleton-production/</code></td>
+<td>Test-quality contract: README, TEST_STRATEGY, TEST_MATRIX, BUSINESS_INVARIANTS, FAILURE_MODES, ARCHITECTURE_TEST_MAPPING, SYSTEM_WALKTHROUGH, PRODUCTION_VALIDATION, AI_DEVELOPMENT_PROCESS</td>
+</tr>
+<tr>
+<td><code>docs/testing/framework-template/</code></td>
+<td>Reusable testing-doc templates for future modules</td>
+</tr>
+<tr>
+<td><code>docs/issues/coverage-2026-08-09/</code></td>
+<td>24-agent coverage campaign: 96 new test files → 99.46% lines; documents 74 bugs (2 CRITICAL, 8 HIGH, 30 MEDIUM, 34 LOW) with file:line + proposed fixes</td>
+</tr>
+<tr>
+<td><code>docs/issues/test-audit-2026-08-09/</code></td>
+<td>14-agent test audit: 412 redundant-test candidates (190 HIGH) for later deletion; baseline run + timing analysis</td>
+</tr>
+<tr>
+<td><code>docs/ai/context.md</code></td>
+<td>This file — AI context snapshot</td>
+</tr>
+<tr>
+<td><code>mkdocs.yml</code></td>
+<td>MkDocs Material site config (mermaid rendering: <code>pymdownx.superfences</code> custom fence + mermaid@11 CDN + <code>javascripts/mermaid-init.js</code>)</td>
+</tr>
+<tr>
+<td><code>scripts/tests/simulate-trade.php</code></td>
+<td>Generates 100 orders across all 8 statuses into <code>var/test.db</code></td>
+</tr>
+<tr>
+<td><code>scripts/tests/demo-trade-workflow.php</code></td>
+<td>E2E workflow demo (all transitions + guards)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="17-testing">17. Testing<a class="headerlink" href="#17-testing" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Framework</strong>: PHPUnit 12.5 (brianium/paratest available for parallel runs)</li>
+<li><strong>Layout</strong>: tests are organized by layer, not by module — <code>tests/UnitTest/</code> (pure unit tests, no kernel/DB), <code>tests/Integration/</code> (kernel + DB + HTTP tests, plus helpers <code>DatabaseBootstrapTrait</code>/<code>IntegrationWebTestCase</code>/<code>IntegrationKernelTestCase</code>/<code>StoreTradeFlowTestCase</code>), <code>tests/LowValue/</code> (deprecated/low-value tests excluded from the default run). Namespace <code>App\Tests\</code> mirrors the layout: <code>App\Tests\UnitTest\...</code>, <code>App\Tests\Integration\...</code>, <code>App\Tests\LowValue\...</code>. Test-support resources: <code>tests/bootstrap.php</code> and JWT test keys under <code>tests/Identity/Security/</code> (referenced by <code>.env.test</code> and CI).</li>
+<li><strong>Low-value exclusion mechanism</strong>: <code>phpunit.dist.xml</code> defines the "Project Test Suite" (UnitTest + Integration dirs) and a separate "Low Value" suite; a global <code>&lt;exclude&gt;&lt;group&gt;low-value&lt;/group&gt;&lt;/exclude&gt;</code> removes every test carrying <code>#[Group('low-value')]</code> (class- or method-level) from the default run — covering both whole LowValue files and individual flagged methods inside kept files (from the 2026-08-09 test audit). Run them explicitly with <code>php bin/phpunit --group low-value</code> (~480 tests).</li>
+<li><strong>DB</strong>: local tests default to SQLite <code>var/test.db</code> (paratest uses per-worker SQLite files); CI tests job runs on <strong>PostgreSQL 16</strong>; <code>migrations.yml</code> validates the migration chain on <strong>MySQL 8.4</strong></li>
+<li><strong>Coverage</strong>: 90% minimum (enforced in CI), currently <strong>99.46% lines (8511/8557)</strong> from latest local Xdebug run (2026-08-09)</li>
+<li><strong>Test count</strong>: <strong>2311 tests / 8374 assertions</strong> in the default suite (UnitTest + Integration), plus ~480 low-value tests excluded by default; 31 skipped tests document real <code>src/</code> bugs (see §23 and <code>docs/issues/coverage-2026-08-09/</code>); <strong>never delete or un-skip them</strong> without fixing the underlying bug</li>
+<li><strong>Suite runtime</strong>: serial ≈ 59 s (kernel-bootstrapping integration tests dominate). Run parallel with paratest for ~2.3× speedup: <code>PARATEST=1 php vendor/bin/paratest --processes 8 --runner WrapperRunner</code> (≈26 s; per-worker SQLite isolation is handled by <code>tests/bootstrap.php</code>)</li>
+<li><strong>PHPUnit Notices</strong>: 159 pre-existing mock/no-expectation noise (does not fail the run); new tests should avoid adding more</li>
+<li><strong>Memory</strong>: <code>phpunit.dist.xml</code> sets test-process <code>memory_limit=512M</code> (OpenAPI integration builds the full spec in-process)</li>
+<li><strong>Test-quality contract</strong>: <code>docs/testing/crud-skeleton-production/</code> (TEST_STRATEGY, TEST_MATRIX, BUSINESS_INVARIANTS, FAILURE_MODES, PRODUCTION_VALIDATION) governs what evidence a change requires before merge/release</li>
+<li><strong>Static analysis</strong>: PHPStan Level 8 with zero errors in its configured scope (<code>src/</code>, excluding optional SDK code, exception classes, and documented false-positive suppressions). Generic contract via <code>@template TEntity</code> on <code>BaseServiceInterface</code>/<code>BaseService</code> + <code>@extends</code> on 18 concrete service pairs. Rector automates Doctrine Collection/Repository PHPDoc with <code>composer rector:types</code>; CI enforces <code>composer rector:types:check</code> as a dry-run.</li>
+<li><strong>Local PHP note</strong>: default <code>php</code> may point to PHP 7.4; use Homebrew PHP 8.5 at <code>/opt/homebrew/opt/php@8.5/bin/php</code> for local Symfony/PHPUnit commands.</li>
+<li><strong>HTML coverage report</strong>: <code>XDEBUG_MODE=coverage ./vendor/bin/phpunit --coverage-html var/coverage</code></li>
+<li><strong>Key test groups</strong> (after the 2026-08-09 layer re-organization; module folders now live under each layer):</li>
+<li><code>tests/UnitTest/</code>: 197 files — pure unit tests (entities, utils, DSL, strategies, mock-based services/controllers, workflow state machine, listeners)</li>
+<li><code>tests/Integration/</code>: 72 files — kernel+DB+HTTP (module integration flows, API regressions, outbox/inbox, concurrency, cross-module flows, health/metrics/rate-limit endpoints) plus the 4 shared helpers; Trade integration remains the slowest area (see test-audit)</li>
+<li><code>tests/LowValue/</code>: 43 files — flagged by the 2026-08-09 audit as duplicates/coverage-chasing; excluded from default runs (<code>--group low-value</code> to execute)</li>
+<li><code>scripts/tests/api-smoke.sh</code>: real HTTP auth/catalog/wallet/order/payment smoke; strict 401/403/404 checks</li>
+<li><code>scripts/tests/store-smoke.sh</code>: real HTTP Store-scoped order, Trade Outbox, Messenger consumer, Store Outbox, and <code>store_accepted</code> assertion</li>
+<li><code>scripts/tests/inventory-smoke.sh</code>: Inventory-scoped smoke (only when <code>INVENTORY_ENABLED=1</code>)</li>
+</ul>
+<h2 id="18-environment-variables-key">18. Environment Variables (Key)<a class="headerlink" href="#18-environment-variables-key" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Var</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>APP_ENV</code>, <code>APP_DEBUG</code></td>
+<td>Symfony environment</td>
+</tr>
+<tr>
+<td><code>DATABASE_URL</code></td>
+<td>DB connection (PostgreSQL/SQLite/MySQL)</td>
+</tr>
+<tr>
+<td><code>JWT_PRIVATE_KEY_PATH</code>, <code>JWT_PUBLIC_KEY_PATH</code></td>
+<td>RS256 key pair (Docker dev: generated once under mounted <code>./var/jwt</code> if missing)</td>
+</tr>
+<tr>
+<td><code>JWT_PASSPHRASE</code></td>
+<td>Private key passphrase</td>
+</tr>
+<tr>
+<td><code>REFRESH_TOKEN_SECRET</code></td>
+<td>HMAC-SHA256 secret</td>
+</tr>
+<tr>
+<td><code>OTP_REDIS_DSN</code></td>
+<td>Redis for OTP storage</td>
+</tr>
+<tr>
+<td><code>ALIYUN_SMS_*</code></td>
+<td>Alibaba Cloud SMS</td>
+</tr>
+<tr>
+<td><code>WECHAT_MINIAPP_APP_ID</code>, <code>WECHAT_MINIAPP_SECRET</code></td>
+<td>WeChat Mini Program</td>
+</tr>
+<tr>
+<td><code>WECHAT_OFFICIAL_APP_ID</code>, <code>WECHAT_OFFICIAL_SECRET</code>, <code>WECHAT_OFFICIAL_TOKEN</code>, <code>WECHAT_OFFICIAL_AES_KEY</code></td>
+<td>Official Account</td>
+</tr>
+<tr>
+<td><code>WECHAT_PAY_MCH_ID</code>, <code>WECHAT_PAY_SECRET_KEY</code>, <code>WECHAT_PAY_PRIVATE_KEY</code>, <code>WECHAT_PAY_CERTIFICATE</code>, <code>WECHAT_PAY_NOTIFY_URL</code></td>
+<td>WeChat Pay V3</td>
+</tr>
+<tr>
+<td><code>MESSENGER_TRANSPORT_DSN</code></td>
+<td>Async transport</td>
+</tr>
+<tr>
+<td><code>OUTBOX_PUBLISH_INTERVAL</code></td>
+<td>Seconds between automatic Trade/Store Outbox relay runs (default <code>5</code>)</td>
+</tr>
+<tr>
+<td><code>DEFAULT_URI</code></td>
+<td>Base URL for CLI contexts</td>
+</tr>
+<tr>
+<td><code>MAILER_DSN</code></td>
+<td>Mailer transport</td>
+</tr>
+<tr>
+<td><code>MEDIA_STORAGE_DEFAULT</code></td>
+<td>Default media storage driver (<code>local</code> by default)</td>
+</tr>
+<tr>
+<td><code>INVENTORY_ENABLED</code></td>
+<td>Toggle global inventory bypass (<code>0</code> = disabled, <code>1</code> = enabled, default <code>0</code>)</td>
+</tr>
+</tbody>
+</table>
+<p>Qiniu configuration is intentionally <strong>not</strong> environment-variable based. Configure these records in <code>common_setting</code> when <code>storage=qiniu</code> is needed: <code>qiniu.access_key</code>, <code>qiniu.secret_key</code>, <code>qiniu.bucket</code>, <code>qiniu.domain</code>.</p>
+<h2 id="19-docker-deployment">19. Docker Deployment<a class="headerlink" href="#19-docker-deployment" title="Permanent link">&para;</a></h2>
+<h3 id="191-architecture">19.1 Architecture<a class="headerlink" href="#191-architecture" title="Permanent link">&para;</a></h3>
+<p>7 services in <code>compose.yaml</code>: <strong>nginx</strong> (reverse proxy), <strong>app</strong> (PHP-FPM 8.4), <strong>worker</strong> (Messenger async consumer), <strong>scheduler</strong> (Trade/Store Outbox relay; Payment joins when its Outbox is implemented), <strong>database</strong> (MySQL 8), <strong>redis</strong> (Redis 7 Alpine), <strong>mailer</strong> (Mailpit).</p>
+<h3 id="192-development-zero-config">19.2 Development (zero-config)<a class="headerlink" href="#192-development-zero-config" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>docker<span class="w"> </span>compose<span class="w"> </span>up<span class="w"> </span>-d<span class="w"> </span>--build
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>docker<span class="w"> </span>compose<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>app<span class="w"> </span>php<span class="w"> </span>bin/console<span class="w"> </span>doctrine:migrations:migrate<span class="w"> </span>--no-interaction
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>docker<span class="w"> </span>compose<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>app<span class="w"> </span>php<span class="w"> </span>bin/console<span class="w"> </span>app:identity:user:create<span class="w"> </span>admin@example.com<span class="w"> </span>admin<span class="w"> </span><span class="s1">'P@ssw0rd'</span><span class="w"> </span>--admin
+</code></pre></div>
+<ul>
+<li><code>compose.override.yaml</code> auto-loads — sets <code>APP_ENV=dev</code>, <code>APP_DEBUG=1</code>, source mount</li>
+<li><code>docker/app/entrypoint.sh</code> creates development JWT keys once under mounted <code>./var/jwt</code> if missing; production fails fast when keys are missing</li>
+<li>All optional features (WeChat, SMS) default to empty — disabled gracefully</li>
+</ul>
+<h3 id="193-production">19.3 Production<a class="headerlink" href="#193-production" title="Permanent link">&para;</a></h3>
+<p>Requires <code>.env.prod.local</code> copied from <code>.env.prod.example</code> with <code>APP_SECRET</code>, <code>REFRESH_TOKEN_SECRET</code>, <code>MYSQL_PASSWORD</code>, and <code>MYSQL_ROOT_PASSWORD</code>. JWT keys are generated on the host at <code>./var/jwt/</code> and mounted into the container. Start production with <code>docker compose -f compose.yaml -f compose.prod.yaml --env-file .env.prod.local up -d --build</code>.</p>
+<h3 id="194-environment-variables-in-docker">19.4 Environment Variables in Docker<a class="headerlink" href="#194-environment-variables-in-docker" title="Permanent link">&para;</a></h3>
+<p><code>compose.yaml</code> provides defaults for <code>DATABASE_URL</code>, <code>MAILER_DSN</code>, <code>OTP_REDIS_DSN</code>, and JWT key paths. Required vars use <code>${VAR:?required}</code> which fails fast if missing. Optional vars use <code>${VAR:-}</code> which defaults to empty.</p>
+<h2 id="20-console-commands">20. Console Commands<a class="headerlink" href="#20-console-commands" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Module</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>app:identity:user:create</code></td>
+<td>Identity</td>
+<td>Create user: email, username, password, --phone, --role, --admin, --phone-verified</td>
+</tr>
+<tr>
+<td><code>app:storage:qiniu:settings:init</code></td>
+<td>Storage</td>
+<td>Initialize missing Qiniu <code>common_setting</code> records (<code>qiniu.access_key</code>, <code>qiniu.secret_key</code>, <code>qiniu.bucket</code>, <code>qiniu.domain</code>) without overwriting existing values</td>
+</tr>
+<tr>
+<td><code>app:trade:outbox:publish</code></td>
+<td>Trade</td>
+<td>Relay unpublished Trade integration events to Messenger</td>
+</tr>
+<tr>
+<td><code>app:store:outbox:publish</code></td>
+<td>Store</td>
+<td>Relay Store acceptance/rejection events to Messenger</td>
+</tr>
+<tr>
+<td><code>app:inventory:outbox:publish</code></td>
+<td>Inventory</td>
+<td>Relay published Inventory integration events to Messenger</td>
+</tr>
+<tr>
+<td><code>app:inventory:reservations:release-expired</code></td>
+<td>Inventory</td>
+<td>Release expired confirmed reservations</td>
+</tr>
+</tbody>
+</table>
+<h2 id="21-service-container-wiring">21. Service Container Wiring<a class="headerlink" href="#21-service-container-wiring" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Default: all <code>src/</code> classes autowired/autoconfigured</li>
+<li>Explicit exclusions: <code>FlatNormalizer</code>, EventListener classes (except <code>OpenApiEnricherListener</code>), Auth/Otp controllers, TokenManager, AliyunSmsProvider, RedisOtpStorage, <strong>Storage concrete drivers</strong>, <strong>WechatService, <code>src/Wechat/Service/Payment/WechatPayGateway.php</code></strong></li>
+<li><code>OpenApiEnricherListener</code>: registered with <code>kernel.event_listener</code> tag on <code>kernel.response</code> (priority -10)</li>
+<li><code>AccessLogListener</code>: registered with <code>kernel.event_listener</code> tag on <code>kernel.response</code> (priority -5)</li>
+<li><code>LocaleListener</code>: registered with <code>kernel.event_listener</code> tag on <code>kernel.request</code> (priority 20)</li>
+<li><code>RestController</code> subclasses get <code>RequestStack</code>, <code>SerializerInterface</code>, <code>TranslatorInterface</code> via <code>#[Required]</code> setter injection</li>
+<li><code>PaymentGatewayInterface</code> implementations auto-tagged <code>payment.gateway</code>, collected via <code>#[AutowireIterator]</code></li>
+<li><code>PaymentAdjustmentProviderInterface</code> implementations auto-tagged <code>payment.adjustment_provider</code>, collected via <code>#[AutowireIterator]</code></li>
+<li><code>DepositProviderInterface</code> / <code>WithdrawProviderInterface</code> implementations auto-tagged <code>wallet.deposit_provider</code> / <code>wallet.withdraw_provider</code>, collected via <code>#[AutowireIterator]</code> in the respective registries (voucher-type whitelist; <code>assertPermitted()</code> enforces per-provider permission)</li>
+<li><code>MediaStorageInterface</code> implementations tagged <code>media.storage</code>, collected via <code>#[AutowireIterator]</code>; <code>LocalStorage</code>/<code>QiniuStorage</code> are explicitly wired in <code>src/Storage/Resources/config/services_storage.yaml</code> because they need scalar/config/repository constructor arguments</li>
+<li><code>PriceCalculatorInterface</code> implementations auto-tagged <code>trade.price_calculator</code>, sorted by <code>getPriority()</code> — pipeline: BasePriceCalculator(-100) → QuantityCalculator(50) → <strong>TotalAggregator(55)</strong> (establishes subtotal) → <strong>PromotionCalculator(60)</strong> (applies order-level adjustments on the real subtotal)</li>
+<li><code>PromotionCalculator</code> (<code>App\Promotion\Service\PromotionCalculator</code>) implements <code>PriceCalculatorInterface</code>, tagged <code>trade.price_calculator</code> at priority 60, applies promotions after the subtotal is aggregated</li>
+<li>Promotion strategies auto-tagged <code>promotion.strategy</code> via <code>_instanceof</code> rule, collected by <code>#[AutowireIterator]</code> in the strategy registry</li>
+<li><code>WechatService</code> explicitly defined in <code>services_wechat.yaml</code> with <code>%env()</code> parameter bindings</li>
+<li><code>WechatPayGateway</code> explicitly defined in <code>services_wechat.yaml</code> (excluded from global autowiring scan)</li>
+<li><code>WalletGateway</code> autowired in Wallet via <code>PaymentGatewayInterface</code> tag (no explicit exclusion needed)</li>
+</ul>
+<h2 id="22-inventory-module-stock-reservation-system">22. Inventory Module — Stock &amp; Reservation System<a class="headerlink" href="#22-inventory-module-stock-reservation-system" title="Permanent link">&para;</a></h2>
+<h3 id="221-overview">22.1 Overview<a class="headerlink" href="#221-overview" title="Permanent link">&para;</a></h3>
+<p>The Inventory bundle (<code>src/Inventory/</code>) owns materials, per-store stock, Specification recipes, reservations, and the stock ledger. It implements the deferred reservation boundary defined in Store.</p>
+<p><strong>Preview safety notice:</strong> Inventory is implemented but is not production-ready.
+<code>INVENTORY_ENABLED</code> must remain <code>0</code> outside isolated development and testing until
+fulfillment-driven consumption, safe accepted-order expiry semantics, serialized
+confirmation/cancellation, and release-before-reserve handling are implemented and
+covered by concurrency tests. The disabled schema/module may be deployed safely.</p>
+<h3 id="222-domain-model">22.2 Domain Model<a class="headerlink" href="#222-domain-model" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Entity</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Material</code></td>
+<td>Raw material or finished good. code is unique, immutably frozen upon stock mutation</td>
+</tr>
+<tr>
+<td><code>Stock</code></td>
+<td>Per-store per-material balance with onHandQuantity, reservedQuantity, allowNegativeStock flag</td>
+</tr>
+<tr>
+<td><code>SpecificationRecipe</code></td>
+<td>One active recipe per Trade Specification UUID; stores material BOM lines</td>
+</tr>
+<tr>
+<td><code>RecipeLine</code></td>
+<td>Quantity of a material required per unit of the parent Specification</td>
+</tr>
+<tr>
+<td><code>Reservation</code></td>
+<td>Idempotent reservation aggregate with status: requested, confirmed, rejected, released, consumed</td>
+</tr>
+<tr>
+<td><code>ReservationLine</code></td>
+<td>Immutable snapshot of material demand and reserved quantity per reservation</td>
+</tr>
+<tr>
+<td><code>LedgerEntry</code></td>
+<td>Append-only audit trail for every stock mutation</td>
+</tr>
+<tr>
+<td><code>InventoryConsumedEvent</code></td>
+<td>Inbox idempotency record</td>
+</tr>
+<tr>
+<td><code>InventoryOutboxMessage</code></td>
+<td>Durable integration event relay</td>
+</tr>
+</tbody>
+</table>
+<h3 id="223-integration-flow">22.3 Integration Flow<a class="headerlink" href="#223-integration-flow" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>Trade order created
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>  → Store validates + creates StoreOrder
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>  → Store publishes inventory.reservation.requested.v1 (if INVENTORY_ENABLED)
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>  → Inventory resolves recipe or direct finished material
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>  → Inventory reserves stock atomically (checks allowNegativeStock per stock)
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>  → Inventory publishes confirmed or rejected outcome
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>  → Store accepts (confirmed) or rejects (rejected) StoreOrder
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>  → Store publishes store.order.accepted.v1 or store.order.rejected.v1
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>  → Trade applies workflow transition
+</code></pre></div>
+<h3 id="224-reservation-processing">22.4 Reservation Processing<a class="headerlink" href="#224-reservation-processing" title="Permanent link">&para;</a></h3>
+<p>Recipes expand a Specification into material demand. Material demand is aggregated (same material from multiple specifications merged), then locked in deterministic Material UUID order. Each stock's allowNegativeStock flag controls whether reservation exceeds on-hand quantity. Reservation lines capture immutable material and quantity snapshots.</p>
+<h3 id="225-compensation-expiry">22.5 Compensation &amp; Expiry<a class="headerlink" href="#225-compensation-expiry" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Cancellation triggers release via Store -&gt; Inventory release event</li>
+<li>Expired confirmed reservations are released by <code>app:inventory:reservations:release-expired</code> (scheduler)</li>
+<li>Release is idempotent; repeated release of same reservation is no-op</li>
+</ul>
+<h3 id="226-management-apis">22.6 Management APIs<a class="headerlink" href="#226-management-apis" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Path</th>
+<th>Role</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GET/POST/PUT</td>
+<td><code>/api/v1/manage/inventory/materials</code></td>
+<td>ROLE_ADMIN</td>
+<td>Material master</td>
+</tr>
+<tr>
+<td>GET/POST/PUT</td>
+<td><code>/api/v1/manage/inventory/recipes</code></td>
+<td>ROLE_ADMIN</td>
+<td>Specification recipe</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/v1/manage/inventory/stocks/{storeUuid}/{materialUuid}</code></td>
+<td>ROLE_ADMIN</td>
+<td>Stock view (virtual zero if absent)</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/v1/manage/inventory/stocks/{storeUuid}/{materialUuid}/adjust</code></td>
+<td>ROLE_ADMIN</td>
+<td>Stock adjustment</td>
+</tr>
+<tr>
+<td>PUT</td>
+<td><code>/api/v1/manage/inventory/stocks/{storeUuid}/{materialUuid}/policy</code></td>
+<td>ROLE_ADMIN</td>
+<td>Toggle allowNegativeStock</td>
+</tr>
+</tbody>
+</table>
+<h3 id="227-store-integration-changes">22.7 Store Integration Changes<a class="headerlink" href="#227-store-integration-changes" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>TradeOrderCreatedHandler</code>: when INVENTORY_ENABLED, creates reservationId and writes awaiting_inventory state + reservation request outbox</li>
+<li>New handlers: <code>ReservationConfirmedHandler</code>, <code>ReservationRejectedHandler</code>, <code>ReservationReleasedHandler</code></li>
+<li><code>TradeOrderCancelledHandler</code>: requests inventory release for cancelled orders with reservation</li>
+<li><code>StoreTradeOrderCancellation</code> tombstone entity: handles out-of-order cancellation events</li>
+<li>Trade events use OrderItem.uuid as stable lineId (not specification UUID)</li>
+</ul>
+<h2 id="23-production-readiness-known-defects">23. Production Readiness &amp; Known Defects<a class="headerlink" href="#23-production-readiness-known-defects" title="Permanent link">&para;</a></h2>
+<blockquote>
+<p>Source of truth: <code>docs/issues/coverage-2026-08-09/README.md</code> (74 bugs with file:line + proposed fixes) and <code>docs/issues/test-audit-2026-08-09/README.md</code> (412 redundant-test candidates). Do <strong>not</strong> re-discover these; fix or reference them.</p>
+</blockquote>
+<h3 id="231-status-summary-2026-08-09">23.1 Status summary (2026-08-09)<a class="headerlink" href="#231-status-summary-2026-08-09" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Engineering maturity is high</strong> (module boundaries, PHPStan L8, 99.46% line coverage, dual-DB CI). <strong>Production-readiness is medium</strong>: deployment orchestration exists, but observability, rate limiting, and external-provider certification are missing, and a batch of known <code>src/</code> bugs are unfixed.</li>
+<li><strong>Blocked for production until fixed</strong> (CRITICAL):</li>
+<li><code>src/Core/Utils/RsaClient.php:51,99</code> signs with <strong>MD5</strong> (forgeable, fails FIPS) — should be <code>OPENSSL_ALGO_SHA256</code>.</li>
+<li><code>src/Core/Utils/Location.php</code> depends on <code>php-curl-class</code>, which is <strong>not installed</strong> — every call fatals <code>Class "Curl\Curl" not found</code>.</li>
+<li><strong>Blocked for production</strong> (HIGH, top 8):</li>
+<li><code>src/Wechat/Service/Payment/WechatPayGateway.php:102-126</code> — notify never passes the request to EasyWeChat → <strong>every real WeChat Pay callback fails</strong>. Fix: <code>setRequestFromSymfonyRequest($request)</code> before <code>serve()</code>.</li>
+<li><code>src/Core/Utils/Math.php:85,91</code> — one-arg <code>rand()</code>/<code>mt_rand()</code> <strong>crash on PHP 8.5</strong>.</li>
+<li><code>src/Core/Service/BaseService.php:77</code> + <code>ReadListTrait:270</code> — <code>$user</code> is null for all HTTP requests → <code>@dql/@sort/@hints</code> 403 even for admins.</li>
+<li>Payment retry deadlock: <code>OrderService::createPayment()</code> reuses failed/cancelled invoices → order permanently stuck in <code>confirmed</code> (only reuse when status ∈ {pending, paying}).</li>
+<li><code>src/Trade/Controller/Manage/OrderController.php:329</code> <code>/do/{transition}</code> forwards raw body to <code>update()</code> → admin can tamper order fields, bypassing the whitelist.</li>
+<li><code>src/Trade/MessageHandler/StoreOrderRejectedHandler.php:37</code> — Store rejection does not cancel the Trade order.</li>
+<li>Identity controllers: unguarded <code>json_decode(JSON_THROW_ON_ERROR)</code> → HTTP 500 on malformed bodies; numeric usernames cannot log in; <code>CreateUserCommand</code> persists empty email/username accounts.</li>
+<li><code>src/Core/Controller/RestController.php:198</code> — <code>@expands</code> sets a dynamic <code>__metadata</code> property → PHP 8.5 deprecation (breaks <code>failOnDeprecation</code>).</li>
+<li><strong>Not production-ready by design</strong>: <strong>Inventory</strong> (§22.1) — <code>INVENTORY_ENABLED</code> must stay <code>0</code> outside isolated dev/test until consumption, expiry, serialized confirmation, and release-before-reserve handling are concurrency-tested.</li>
+</ul>
+<h3 id="232-operational-gaps-productization">23.2 Operational gaps (productization)<a class="headerlink" href="#232-operational-gaps-productization" title="Permanent link">&para;</a></h3>
+<p>Closed in 2026-08-10 (see §24):</p>
+<ul>
+<li>✅ <strong>Health checks</strong>: <code>/health/live</code> + <code>/health/ready</code> (public, outside JWT firewall); nginx container healthcheck in <code>compose.yaml</code> uses <code>/health/ready</code>.</li>
+<li>✅ <strong>Rate limiting</strong>: <code>symfony/rate-limiter</code> — per-IP limits on login/register/OTP request/verify/WeChat login/payment initiation; 429 envelope + <code>Retry-After</code>; disabled (high limits) in test env.</li>
+<li>✅ <strong>Metrics</strong>: <code>/metrics</code> Prometheus text format — per-worker request counters/duration histogram/in-flight gauge plus live DB gauges (outbox backlog per topic, failed messenger queue).</li>
+</ul>
+<p>Remaining productization gaps:</p>
+<ul>
+<li><strong>No alerting/APM ingestion</strong>: metrics are exposed but nothing scrapes them (add Prometheus/Grafana or Sentry); no alert channels for outbox backlog or error rates.</li>
+<li><strong>No rate-limit global cache</strong>: limiters use the default filesystem cache — per-process only; enable a shared Redis cache adapter for multi-worker deployments.</li>
+<li><strong>External providers unverified</strong>: WeChat Pay, SMS (Aliyun), and Qiniu have deterministic test adapters but no real sandbox certification evidence; <code>WechatPayGateway::notify()</code> is broken (see 23.1).</li>
+<li><strong>Smoke scripts not in CI</strong>: <code>scripts/tests/*.sh</code> require a disposable Docker environment and run only at release time.</li>
+<li><strong>Test-suite debt</strong>: 186 PHPUnit Notices; 412 redundant-test candidates (190 HIGH) from the coverage campaign — safe deletions are documented in <code>docs/issues/test-audit-2026-08-09/</code> (verify coverage zero-delta before each deletion).</li>
+</ul>
+<h3 id="233-rules-for-ai-agents">23.3 Rules for AI agents<a class="headerlink" href="#233-rules-for-ai-agents" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Skipped tests in the suite are <strong>intentional</strong> bug documentation — do not remove or "un-skip" them; fix the underlying <code>src/</code> bug first, then un-skip.</li>
+<li>Before implementing a known defect, read its report entry; the report contains the exact fix.</li>
+<li>New changes must follow the evidence rules in <code>docs/testing/crud-skeleton-production/TEST_STRATEGY.md</code> (tests at the right layer, invariants protected, coverage gate 90%).</li>
+<li>When adding tests, do not recreate the redundant <code>*CoverageTest</code>/<code>*AdditionalTest</code> patterns flagged by the audit.</li>
+</ul>
+<h2 id="24-platform-operations-endpoints">24. Platform Operations Endpoints<a class="headerlink" href="#24-platform-operations-endpoints" title="Permanent link">&para;</a></h2>
+<p>Public infrastructure endpoints (no JWT; live outside the <code>^/api</code> firewall):</p>
+<table>
+<thead>
+<tr>
+<th>Endpoint</th>
+<th>Purpose</th>
+<th>Response</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GET /health/live</code></td>
+<td>Process liveness probe</td>
+<td>200 <code>{"status":"ok"}</code></td>
+</tr>
+<tr>
+<td><code>GET /health/ready</code></td>
+<td>Readiness probe: DB required, Redis optional (enabled only when <code>OTP_REDIS_DSN</code> set)</td>
+<td>200 <code>{"status":"ok","checks":{...}}</code> or 503 <code>degraded</code></td>
+</tr>
+<tr>
+<td><code>GET /metrics</code></td>
+<td>Prometheus text exposition format (v0.0.4)</td>
+<td>200 <code>text/plain</code></td>
+</tr>
+</tbody>
+</table>
+<p>Implementation notes:</p>
+<ul>
+<li><code>src/Core/Controller/HealthController.php</code> — <code>Connection</code> + a dependency-free RESP <code>PING</code> over TCP for Redis (no Predis needed in prod; <code>predis/predis</code> is dev-only).</li>
+<li><code>src/Core/Controller/MetricsController.php</code> + <code>src/Core/Metrics/MetricsRegistry.php</code> + <code>src/Core/EventListener/MetricsListener.php</code>:</li>
+<li>In-memory per-worker: <code>http_requests_total{method,route,status}</code>, <code>http_request_duration_seconds</code> histogram (default buckets), <code>http_requests_inflight</code>.</li>
+<li>Live DB gauges on scrape: <code>app_outbox_backlog{topic=trade|store|inventory}</code> (<code>published_at IS NULL</code> counts) and <code>app_messenger_failed</code> (<code>messenger_messages.queue_name='failed'</code>); these are accurate across workers.</li>
+<li>The listener skips <code>/health</code>, <code>/metrics</code>, <code>/api/doc</code>, profiler paths, and sub-requests (404s are dispatched as sub-requests here).</li>
+<li><code>src/Core/EventListener/RateLimitListener.php</code> (<code>kernel.controller</code>, priority 10) — path → limiter map, keyed by <code>getClientIp()</code>; on limit: replaces the controller with a 429 <code>{data:null, code:429, message}</code> + <code>Retry-After</code>. Limiters defined in <code>config/packages/rate_limiter.yaml</code>; factories wired via <code>!service_locator</code> in <code>config/services.yaml</code>.</li>
+<li>Test wiring: <code>HealthController</code> is defined explicitly (scalar <code>$otpRedisDsn</code>) with <code>routing.controller</code> + <code>controller.service_arguments</code> tags (both in main and <code>when@test</code> blocks, since explicit definitions drop autoconfig tags); <code>when@test</code> disables the Redis probe and sets all limiter limits to 100000.</li>
+<li><code>compose.yaml</code> nginx healthcheck runs <code>wget -q -O /dev/null http://localhost/health/ready</code> (full-path readiness: nginx → FPM → Symfony → DB/Redis).</li>
+<li>Both endpoints are added to NelmioApiDoc <code>path_patterns</code> (tag <code>System</code>).</li>
+<li>Tests: <code>tests/Integration/Core/Controller/HealthControllerTest.php</code>, <code>tests/Integration/Core/Controller/MetricsControllerTest.php</code>, <code>tests/Integration/Core/EventListener/RateLimitListenerTest.php</code> (real <code>RateLimiterFactory</code> + <code>InMemoryStorage</code>, so global test limits are untouched).</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  回到页面顶部
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+      
+        <script src="../../javascripts/mermaid-init.js"></script>
+      
+    
+  </body>
+</html>
