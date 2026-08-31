@@ -126,9 +126,18 @@ final class TradeRepoFullTest extends KernelTestCase
         $this->em->persist($order);
 
         $item = new OrderItem();
-        $item->setSpecification($spec);
-        $item->setQuantity(5);
-        $item->setUnitPrice(100);
+        $item->setSpecificationUuid($spec->getUuid())
+            ->setSpecificationTitle($spec->getName())
+            ->setSpecSnapshot([
+                'uuid' => $spec->getUuid(),
+                'name' => $spec->getName(),
+            ])
+            ->setProductSnapshot([
+                'uuid' => $product->getUuid(),
+                'name' => $product->getName(),
+            ])
+            ->setQuantity(5)
+            ->setUnitPrice(100);
         $order->addItem($item);
         $this->em->flush();
 
@@ -138,5 +147,6 @@ final class TradeRepoFullTest extends KernelTestCase
 
         $found = $repo->findById($item->getId() ?? 0);
         self::assertNotNull($found);
+        self::assertSame($spec->getUuid(), $found->getSpecificationUuid());
     }
 }

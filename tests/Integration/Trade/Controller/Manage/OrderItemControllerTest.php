@@ -119,13 +119,24 @@ final class OrderItemControllerTest extends IntegrationWebTestCase
 
         $item = new OrderItem();
         $item->setOrder($order)
-            ->setSpecification($specification)
+            ->setSpecificationUuid($specification->getUuid())
+            ->setSpecificationTitle($specification->getName())
+            ->setSpecSnapshot([
+                'uuid' => $specification->getUuid(),
+                'name' => $specification->getName(),
+            ])
+            ->setProductSnapshot([
+                'uuid' => $product->getUuid(),
+                'name' => $product->getName(),
+            ])
             ->setQuantity($quantity)
             ->setUnitPrice($unitPrice);
         $order->addItem($item);
         $this->em->persist($item);
 
         $this->em->flush();
+
+        self::assertSame($specification->getUuid(), $item->getSpecificationUuid());
 
         return $item;
     }

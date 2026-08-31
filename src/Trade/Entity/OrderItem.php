@@ -106,27 +106,6 @@ class OrderItem
         return $this;
     }
 
-    // BC: keep deprecated alias for older code, delegates to UUID
-    /**
-     * @deprecated Use getSpecificationUuid
-     */
-    public function getSpecification(): ?object
-    {
-        return null;
-    }
-
-    /**
-     * @deprecated Use setSpecificationUuid + snapshots
-     * @param mixed $spec
-     */
-    public function setSpecification(mixed $spec): self
-    {
-        if (is_string($spec)) {
-            $this->specificationUuid = $spec;
-        }
-        return $this;
-    }
-
     public function getSpecificationTitle(): ?string
     {
         return $this->specificationTitle;

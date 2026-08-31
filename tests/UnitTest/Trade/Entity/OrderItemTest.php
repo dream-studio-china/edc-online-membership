@@ -6,8 +6,6 @@ namespace App\Tests\UnitTest\Trade\Entity;
 
 use App\Trade\Entity\Order;
 use App\Trade\Entity\OrderItem;
-use App\Store\Entity\Product;
-use App\Store\Entity\Specification;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
@@ -22,7 +20,7 @@ final class OrderItemTest extends TestCase
             $item->getUuid()
         );
         self::assertNull($item->getOrder());
-        self::assertNull($item->getSpecification());
+        self::assertNull($item->getSpecificationUuid());
         self::assertNull($item->getSpecificationTitle());
         self::assertSame(1, $item->getQuantity());
         self::assertSame(0, $item->getUnitPrice());

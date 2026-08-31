@@ -44,22 +44,6 @@ final class Version20260903000001 extends AbstractMigration
 
     public function down(Schema $schema): void
     {
-        $table = $schema->getTable('trade_order_item');
-
-        if (!$table->hasColumn('specification_id')) {
-            $table->addColumn('specification_id', 'integer', ['notnull' => false]);
-        }
-        if (!$table->hasIndex('idx_trade_order_item_specification')) {
-            $table->addIndex(['specification_id'], 'idx_trade_order_item_specification');
-        }
-        if (!$table->hasForeignKey('fk_trade_order_item_specification')) {
-            $table->addForeignKeyConstraint('trade_specification', ['specification_id'], ['id'], ['onDelete' => 'SET NULL'], 'fk_trade_order_item_specification');
-        }
-        if ($table->hasColumn('specification_uuid')) {
-            $table->dropColumn('specification_uuid');
-        }
-        if ($table->hasIndex('idx_trade_order_item_spec_uuid')) {
-            $table->dropIndex('idx_trade_order_item_spec_uuid');
-        }
+        $this->abortIf(true, 'OrderItem UUID reference migration cannot be rolled back without losing catalog references.');
     }
 }
