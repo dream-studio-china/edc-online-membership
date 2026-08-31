@@ -41,7 +41,7 @@ trait SingleCreateAndUpdateApiViewMixin
             $service = $this->service;
             $content = json_decode($request->getContent(), true) ?: [];
 
-            $filter = $this->commonFilter();
+            $filter = $this->resolvedCommonFilter();
             $entity = $service->get($filter, false);
 
             if (empty($entity)) {

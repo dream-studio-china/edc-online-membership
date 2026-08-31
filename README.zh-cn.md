@@ -12,40 +12,41 @@
 
 ```mermaid
 flowchart TB
+    Client["Clients<br/>客户端 · Admin · App · Webhook"]
+    Api["Symfony HTTP API<br/>控制器 · 视图混入 · OpenAPI"]
     Core["<b>Core 框架</b><br/>BaseService · View Mixins · Expression→DQL"]
 
     Identity["Identity<br/>鉴权 · JWT · OTP · User"]
-    Common["Common<br/>CMS（7 实体）"]
+    Authorization["Authorization（设计）<br/>RBAC · 范围 · 字段授权"]
+    Common["Common<br/>CMS · 内容"]
     Storage["Storage<br/>媒体驱动"]
-    Wechat["Wechat<br/>登录 + 支付"]
-    Wallet["Wallet<br/>余额 · 转账 · 凭证"]
-    Payment["Payment<br/>发票 · 网关 · 抵扣"]
+    Promotion["Promotion<br/>定价规则"]
     Trade["Trade<br/>订单 · 定价"]
-    Store["Store<br/>多门店 Outbox"]
-    Inventory["Inventory<br/>库存 · 预留"]
-    Promotion["Promotion<br/>DSL 引擎"]
+    Fulfilment["Store & inventory<br/>多门店 · 库存"]
+    Payments["Payment & wallet<br/>发票 · 余额"]
+    Wechat["Wechat<br/>登录 · 支付"]
     Settlement["Settlement<br/>分账 · 终态"]
-    Exchange["Exchange（设计）<br/>汇率 · 资金池 · 发行"]
+    Exchange["Exchange（设计）<br/>汇率 · 资金池"]
+    Messaging["异步交付<br/>Outbox · Messenger · Inbox"]
+    Persistence["持久化与运行时<br/>Doctrine · MySQL · Redis"]
 
-    Identity --> Core
-    Common --> Core
-    Storage --> Core
-    Storage --> Common
-    Wechat --> Core
-    Wechat --> Identity
-    Wallet --> Core
-    Wallet --> Identity
-    Payment --> Core
-    Payment --> Wallet
-    Trade --> Core
-    Trade --> Payment
-    Trade --> Store
-    Trade --> Inventory
-    Promotion --> Core
+    Client --> Api --> Core
+    Core --> Identity
+    Core --> Common
+    Core --> Promotion
+    Identity --> Authorization
+    Identity --> Wechat
+    Common --> Storage
+    Common -. "Content pilot" .-> Authorization
     Promotion --> Trade
-    Settlement --> Core
-    Settlement --> Wallet
-    Exchange -. "design" .-> Core
+    Trade --> Fulfilment
+    Trade --> Payments --> Settlement
+    Fulfilment -. "scoped decisions" .-> Authorization
+    Payments -. "future economy" .-> Exchange
+    Trade -. events .-> Messaging
+    Fulfilment -. events .-> Messaging
+    Settlement -. events .-> Messaging
+    Messaging --> Persistence
 ```
 
 业务操作遵循一致的“请求到事务”边界。例如，钱包支付在服务层解析其 provider，并在一次数据库事务中记录其效果：
@@ -158,7 +159,7 @@ CRUD Skeleton 面向那些需要超越生成式 CRUD、但暂时不需要分布�
 - **事务性电商工作流**：订单、库存预留、发票、支付网关、钱包抵扣与结算分账。
 - **财务可审计性**：幂等转账、凭证背书的存款与取款、内部余额校验与对账，以及版本化结算规则。
 - **可扩展的集成**：JWT 与 OTP 鉴权、微信登录与支付、本地或七牛媒体存储，以及促销规则 DSL。
-- **访问控制与审计**：角色保护的管理端点、特权动态查询的防护，以及变更请求的有界审计日志。
+- **访问控制与审计**：`ROLE_ADMIN` 保护的管理端点、特权动态查询的防护，以及变更请求的有界审计日志。独立的范围化 RBAC 与字段授权的 Authorization 模块已设计但尚未实现。
 - **可靠的异步处理**：Messenger worker 与跨模块事件的 outbox/inbox 模式。
 - **生产诊断**：OpenAPI 文档、就绪与存活探针、Prometheus 指标与端点限流。
 - **强制的质量检查**：PHPUnit、PHPStan Level 8、Rector 类型规则，以及 CI 中 90% 的行覆盖率门槛。
@@ -182,7 +183,7 @@ CRUD Skeleton 面向那些需要超越生成式 CRUD、但暂时不需要分布�
 
 ## 项目结构
 
-仓库是一个模块化单体：`src/` 存放应用代码（Core 框架以及 Common、Identity、Trade、Payment、Wallet、Storage 等业务模块），旁边是 `config/`、`migrations/`、`tests/`、`docs/` 以及 Docker/Compose 文件。
+仓库是一个模块化单体：`src/` 存放应用代码（Core 框架以及 Common、Identity、Trade、Payment、Wallet、Storage 等业务模块），旁边是 `config/`、`migrations/`、`tests/`、`docs/` 以及 Docker/Compose 文件。已设计的 `src/Authorization/` 模块已单独文档化，尚未在运行时中实现。
 
 完整的详细目录树（到每个模块的控制器、服务、实体、仓库层级），请参阅
 **[项目结构 — 开发手册](docs/manual/project-structure.md)**。
@@ -237,6 +238,7 @@ Docker 开发环境无需创建 env 文件即可启动。本机 PHP/Symfony 运�
 | **Settlement** | 分账与终态 | 版本化规则、可审计分账与钱包入账 |
 | **Promotion** | 定价规则 | 促销 DSL、计算策略与活动路由 |
 | **Identity** | 鉴权 | JWT、OTP、注册、用户资料与管理 |
+| **Authorization** *(设计)* | 授权 | 范围化 RBAC、门店范围授权、严格字段授权与授权审计设计；尚未实现 |
 | **Storage** | 媒体上传 | 本地与七牛 Kodo 存储驱动 |
 | **Wechat** | 微信集成 | 登录与微信支付 V3 |
 | **Exchange** *(设计)* | 点数经济 | 汇率与流动性池设计；尚未实现 |
@@ -290,6 +292,7 @@ class ContentController extends RestController
 - **[数据库与迁移](docs/manual/database-and-migrations.md)** — Doctrine 约定与可移植迁移工作流
 - **[集成事件](docs/manual/integration-events.md)** — 事务性 outbox/inbox、幂等消费者、重试与调度器操作
 - **[Bundle 设计文档](docs/design/bundles/)** — 已实现与设计阶段模块的设计说明
+- **[Authorization 设计](docs/design/bundles/authorization.md)** — 独立的 Authorization 模块设计、迁移路径、内容试点、字段授权与验收标准
 - **[Runbooks 运维手册](docs/runbooks/)** — 各模块的操作流程
 - **[测试与生产验证](docs/testing/crud-skeleton-production/README.md)** — 按变更类型要求的验证证据
 - **[OpenAPI 规范](docs/openapi/endpoints.yaml)** 与 **[订单与支付流程](docs/openapi/order-payment-flow.md)** — API 参考与消费方工作流

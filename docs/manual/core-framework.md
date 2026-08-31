@@ -97,9 +97,10 @@ merging used by the read mixins.
 | Member | Purpose |
 |--------|---------|
 | `entityNotFoundMessage()` | Default `'Entity not found'`. |
-| `commonFilter()` | Extension point: return an array or `QueryBuilder` restricting all queries on the controller (e.g. `['enabled' => true]` or `['user' => $this->getUser()]`). |
-| `mixIdToCommonFilter(int\|string $id)` | Merges an id into the common filter; uses `uuid` as the key when the id is a valid UUID, otherwise `id`. |
-| `mixToCommonFilter(array $data)` | Merges `$data` into the common filter. For a `QueryBuilder` it appends `AND alias.key = :key` conditions. |
+| `commonFilter()` | Extension point: return an array, `QueryBuilder`, or `DqlExpression` restricting all queries on the controller (e.g. `['enabled' => true]`, `['user' => $this->getUser()]`, or `new DqlExpression('entity.getUser() == this.getUser()')`). |
+| `resolvedCommonFilter()` | Internal resolver used by the mixins: returns `commonFilter()` with `this` bound for `DqlExpression`. Do not override. |
+| `mixIdToCommonFilter(int\|string $id)` | Merges an id into the common filter; uses `uuid` as the key when the id is a valid UUID, otherwise `id`. For `DqlExpression` it appends the id as an additional `AND` criterion. |
+| `mixToCommonFilter(array $data)` | Merges `$data` into the common filter. For a `QueryBuilder` it appends `AND alias.key = :key` conditions; for `DqlExpression` it appends criteria via `withCriteria()`. |
 
 ### Standard CRUD mixins
 
@@ -217,8 +218,8 @@ The contract implemented by `BaseService`. Generic over `TEntity`.
 
 | Method | Signature | Purpose |
 |--------|-----------|---------|
-| `get` | `($object, bool $directly = false)` | Resolve an entity from an id, criteria array, `QueryBuilder`, or an object with `getId()`. |
-| `list` | `($object = null, $order = null, bool $disableRequest = true)` | List entities or return a configured `QueryBuilder`. When `$disableRequest` is `false`, consult the current request for `@filter`/`@order`/`@select`/`@groupBy`/`@hints`/`@sort`. |
+| `get` | `($object, bool $directly = false)` | Resolve an entity from an id, criteria array, `QueryBuilder`, `DqlExpression`, or an object with `getId()`. |
+| `list` | `($object = null, $order = null, bool $disableRequest = true)` | List entities or return a configured `QueryBuilder`. Accepts an array, `QueryBuilder`, or `DqlExpression` as the base filter. When `$disableRequest` is `false`, consult the current request for `@filter`/`@order`/`@select`/`@groupBy`/`@hints`/`@sort`. |
 | `new` | `()` | Create a new entity instance. |
 | `update` | `($object, ?array $data, bool $noFlush = false)` | Persist a data array onto an entity; flush unless `$noFlush`. |
 | `remove` | `($object): bool` | Remove and flush. |
@@ -264,14 +265,14 @@ Shared infrastructure accessors and helpers:
 Implements `get()` and `list()` (see [query-system.md](query-system.md) for the
 full `list()` behavior).
 
-- `get()` handles: `null` (→ null), `QueryBuilder` (single result), an object
+- `get()` handles: `null` (→ null), `DqlExpression` (compiled to a filtered `QueryBuilder`), `QueryBuilder` (single result), an object
   with `getId()`, an associative criteria array (`findOneBy`), a valid UUID
   string (matched against a `uuid` field when present), or a plain id
   (`rep->find`).
 - `list()` builds a `QueryBuilder` from the entity class, applies an
-  associative array as equality conditions, and — when `$disableRequest` is
+  associative array as equality conditions or a `DqlExpression` via `ExpressionDqlParser` + `ExpressionQueryBuilderAssembler`, and — when `$disableRequest` is
   `false` — processes `@dql`, `@filter`, `@select`, `@groupBy`, `@order`,
-  `@hints`, `@showDQL`, and the in-memory `@sort`/`@filter` fallback.
+  `@hints`, `@showDQL`, and the in-memory `@sort`/`@filter` fallback. A server-owned `DqlExpression` failure is fail-closed (500) and never falls back to in-memory.
 - Privileged parameters `@dql`, `@sort`, `@hints` are restricted to
   `ROLE_ADMIN`; `@showDQL` is restricted to the `dev` environment. `@select` is
   guarded against accessing identity data.
@@ -313,6 +314,7 @@ Supported operators map to DQL:
 | `>` `>=` `<` `<=` | same |
 | `&&` / `||` | `AND` / `OR` |
 | `+ - * /` | same |
+| `in` / `not in` | `IN (:param)` / `NOT IN (:param)` — bound as array parameters; empty `in []` becomes `1 = 0` (no rows), empty `not in []` becomes `1 = 1` |
 | `matches` | `REGEXP(...) = TRUE` for `/pattern/flags`, else `LIKE '%...%'` |
 
 Notable members:
@@ -329,6 +331,42 @@ Notable members:
 Attribute chains like `entity.getCategory().getName()` produce joins
 (`filter_entity_category` etc.) and a final `filter_entity_category.name`
 reference. A top-level bare attribute compiles to `prop IS NOT NULL`.
+
+### `src/Core/Query/DqlExpression.php`
+
+Immutable value object for **server-owned** row-level scopes (ABAC). Unlike
+client `@filter`, it never falls back to in-memory evaluation and always
+fail-closes.
+
+```php
+use App\Core\Query\DqlExpression;
+
+// Explicit variable binding
+new DqlExpression('entity.getUser() == user', ['user' => $this->getUser()]);
+
+// Controller `this` shorthand — only inside commonFilter()
+new DqlExpression('entity.getUser() == this.getUser()');
+new DqlExpression('entity.getStoreUuid() in this.getAllowedStoreUuids()');
+
+// Combined predicates and collection membership
+new DqlExpression(
+    'entity.getUser() == user && entity.getCurrency() in currencies',
+    ['user' => $user, 'currencies' => ['CNY','USD']]
+);
+```
+
+| Member | Purpose |
+|--------|---------|
+| `__construct(string $expression, array $values = [], array $criteria = [], ?object $context = null)` | Create an immutable scope. `expression` is non-empty; `values` keys are `[A-Za-z_][A-Za-z0-9_]*` and may not be `entity`/`this`. |
+| `withCriteria(array $criteria): self` | Return a new instance with additional `field => value` equality predicates (used internally by `ApiView` to append `id`/`uuid`). Duplicate keys throw. |
+| `withContext(object $context): self` | Bind the controller `this` (idempotent for the same object, rejects a different one). |
+| `usesThis(): bool` | Whether the expression contains `this.` |
+| `criteria(): array` / `context(): ?object` | Accessors. |
+
+Server-owned compilation in `BaseServiceReadListTrait` validates the expression
+against Doctrine metadata, binds variables as parameters, and appends criteria as
+additional `AND` predicates. Empty `in` collections are compiled to `1 = 0` so that
+a missing permission yields no rows rather than an invalid `IN ()`.
 
 ### `src/Core/Parser/ExpressionQueryBuilderAssembler.php`
 

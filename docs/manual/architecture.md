@@ -46,6 +46,7 @@ one Messenger bus, but they must behave as if they were independent services.
 | `Settlement` | Rule-driven funding allocation and settlement finality |
 | `Storage` | Media storage abstraction (local / Qiniu) |
 | `Wechat` | WeChat login (Mini Program / Official Account) and WeChat Pay V3 gateway |
+| `Authorization` *(design — not yet runtime)* | Row-level and scoped RBAC design: `DqlExpression`, Store-scoped grants, field grants, audit log (see `docs/design/bundles/authorization.md`) |
 
 ## Layer Architecture
 
@@ -110,20 +111,28 @@ The result is a generic CRUD service per entity that concrete services override
 where domain rules require it. Every module service also declares an interface
 (e.g. `OrderServiceInterface extends BaseServiceInterface`).
 
-### Expression Dynamic Query Engine
+### Expression Dynamic Query Engine & `DqlExpression`
 
 List endpoints accept expression query parameters that are parsed to DQL:
 
 | Parameter | Meaning |
 |-----------|---------|
-| `@filter` | Declarative filter conditions |
+| `@filter` | Declarative filter conditions (client-supplied, `GET` only) |
 | `@sort` / `@order` | Ordering clauses |
 | `@dql` | Raw DQL fragments / embedded expressions |
 | `@select` | Projection of selected fields |
 
-Implementation lives in `src/Core/Parser/` (`ExpressionDqlParser`,
-`ExpressionQueryBuilderAssembler`) and is executed through
-`App\Core\Service\ExpressionService` with `QueryBuilderFactory`.
+Shared syntax is implemented in `src/Core/Parser/` (`ExpressionDqlParser`,
+`ExpressionQueryBuilderAssembler`) and executed through
+`App\Core\Service\ExpressionService` with `QueryBuilderFactory`. The same syntax
+powers server-owned `DqlExpression` (`src/Core/Query/DqlExpression.php`) for
+row-level authorization: `commonFilter()` may return
+`new DqlExpression('entity.getUser() == this.getUser()')` or
+`new DqlExpression('entity.getStoreUuid() in storeUuids', ['storeUuids' => $allowed])`,
+compiled via `ExpressionDqlParser` + `ExpressionQueryBuilderAssembler` and
+automatically `AND`ed with `id`/`uuid` criteria. Unlike `@filter`, it is
+fail-closed (500 on error) and supports `in`/`not in` with empty-collection
+safety.
 
 ### Pricing Pipeline
 

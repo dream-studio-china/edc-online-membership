@@ -2,6 +2,7 @@
 
 namespace App\Core\View;
 
+use App\Core\Query\DqlExpression;
 use OpenApi\Attributes as OA;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -9,10 +10,10 @@ use Symfony\Component\Routing\Attribute\Route;
 trait DeleteApiViewMixin
 {
     /**
-     * @param array<string, mixed>|\Doctrine\ORM\QueryBuilder|null $filter
-     * @return array<string, mixed>|\Doctrine\ORM\QueryBuilder|null
+     * @param array<string, mixed>|\Doctrine\ORM\QueryBuilder|DqlExpression|null $filter
+     * @return array<string, mixed>|\Doctrine\ORM\QueryBuilder|DqlExpression|null
      */
-    protected function deletionFilter(array|\Doctrine\ORM\QueryBuilder|null $filter = null)
+    protected function deletionFilter(array|\Doctrine\ORM\QueryBuilder|DqlExpression|null $filter = null)
     {
         /** list filter for list entities */
         return $filter;
