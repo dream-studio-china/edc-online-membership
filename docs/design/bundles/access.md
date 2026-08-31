@@ -854,12 +854,17 @@ ABAC policy engine, a user-provided query feature, or a replacement for QueryBui
 | Filter type | Appropriate use |
 |---|---|
 | Array criteria | Simple equality such as `['user' => $user]` |
-| `DqlExpression` | Readable server-owned ownership, Store, status, or tenant rules using current expression syntax |
-| QueryBuilder | `IN`, aggregation, subqueries, database functions, or performance-sensitive custom SQL shape |
+| `DqlExpression` | Readable server-owned ownership, Store, status, tenant or multi-value `in`/`not in` rules using current expression syntax |
+| QueryBuilder | Aggregation, subqueries, database functions, or performance-sensitive custom SQL shape |
 
-The current parser does not support an `in` operator. Multi-Store lists therefore
-continue to use QueryBuilder in this narrow first implementation. Adding grammar is
-out of scope for `DqlExpression`.
+`DqlExpression` supports `in` and `not in` for collection membership, for example:
+
+```php
+new DqlExpression('entity.getStoreUuid() in storeUuids', ['storeUuids' => $allowedStoreUuids]);
+new DqlExpression('entity.getStoreUuid() in this.getAllowedStoreUuids()');
+```
+
+An empty `in` collection compiles to `1 = 0` (no rows, fail-closed); an empty `not in` collection compiles to `1 = 1`. Collections are always bound as array parameters and may be supplied via `this.getAllowed...()`.
 
 ### 15.2 Non-Negotiable Rules
 
@@ -890,7 +895,7 @@ tests.
 | File | Change | Reason |
 |---|---|---|
 | `src/Core/Query/DqlExpression.php` | New immutable value object | Carries expression, bound variables, internal controller context, and mixin-added criteria |
-| `src/Core/Parser/ExpressionDqlParser.php` | Add variable-node compilation | The current parser compiles `entity.getUser() == user` with an empty right operand |
+| `src/Core/Parser/ExpressionDqlParser.php` | Add variable/`in`/`not in`/array compilation | The previous parser compiled `entity.getUser() == user` with an empty right operand and had no collection handling |
 | `src/Core/Service/Concern/BaseServiceReadListTrait.php` | Recognize and compile `DqlExpression` in `get()` and `list()` | Single service-layer enforcement point |
 | `src/Core/View/ApiView.php` | Bind controller `this`; merge ID/UUID criteria into a `DqlExpression` | Preserves controller context and scope for detail/update/delete/batch lookup |
 | `src/Core/View/ListApiViewMixin.php` | Widen hook type only | Allows list filter to receive the value object |

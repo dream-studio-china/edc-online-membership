@@ -7,6 +7,7 @@ use Doctrine\ORM\Query\Parameter;
 use Doctrine\ORM\QueryBuilder;
 use Psr\SimpleCache\CacheInterface as SimpleCacheInterface;
 use Symfony\Component\ExpressionLanguage\ExpressionLanguage;
+use Symfony\Component\ExpressionLanguage\Node\ArrayNode;
 use Symfony\Component\ExpressionLanguage\Node\BinaryNode;
 use Symfony\Component\ExpressionLanguage\Node\ConstantNode;
 use Symfony\Component\ExpressionLanguage\Node\GetAttrNode;
@@ -61,6 +62,8 @@ class ExpressionDqlParser
         '-'  => '%1$s - %2$s',
         '*'  => '%1$s * %2$s',
         '/'  => '%1$s / %2$s',
+        'in' => '%1$s IN (%2$s)',
+        'not in' => '%1$s NOT IN (%2$s)',
     ];
 
     public function __construct(?SimpleCacheInterface $cache = null, ?ExpressionLanguage $language = null)
@@ -281,6 +284,32 @@ class ExpressionDqlParser
             $left = $this->recursiveCompile($node->nodes['left'], $depth + 1);
             $right = $this->recursiveCompile($node->nodes['right'], $depth + 1);
 
+            // handle empty IN / NOT IN as constant predicates
+            if (in_array($op, ['in', 'not in'], true) && str_starts_with($right, ':')) {
+                $paramName = ltrim($right, ':');
+                $paramValue = null;
+                $foundParam = null;
+                $found = false;
+                foreach ($this->parameters as $p) {
+                    if ($p->getName() === $paramName) {
+                        $paramValue = $p->getValue();
+                        $foundParam = $p;
+                        $found = true;
+                        break;
+                    }
+                }
+                if ($found && is_array($paramValue) && count($paramValue) === 0) {
+                    // Remove the now-unused empty array parameter to avoid Doctrine "Too many parameters" error
+                    if ($foundParam !== null) {
+                        $this->parameters->removeElement($foundParam);
+                    }
+                    $out .= ($op === 'in' ? '1 = 0' : '1 = 1');
+                    $out .= $isGrouped ? ')' : '';
+
+                    return $out;
+                }
+            }
+
             // special-case logic operators to append IS NOT NULL for attr checks
             if (in_array($op, self::LOGIC_OPERATORS, true)) {
                 if ($node->nodes['left'] instanceof GetAttrNode) {
@@ -304,6 +333,20 @@ class ExpressionDqlParser
             $paramName = self::PARAM_PREFIX . $idx;
             $this->parameters->add(new Parameter($paramName, $this->values[$varName]));
             $out .= ':' . $paramName;
+        } elseif ($node instanceof ArrayNode) {
+            try {
+                $val = $node->evaluate([], $this->values);
+            } catch (\Throwable $e) {
+                throw new ValidatorException('Failed to evaluate array value: ' . $e->getMessage());
+            }
+            if (!is_array($val)) { // @phpstan-ignore function.alreadyNarrowedType
+                throw new ValidatorException('Array expression did not evaluate to array.');
+            }
+            $idx = $this->parameters->count() + 1;
+            $name = self::PARAM_PREFIX . $idx;
+            $this->parameters->add(new Parameter($name, $val));
+
+            return ':' . $name;
         } elseif ($node instanceof ConstantNode) {
             $idx = $this->parameters->count() + 1;
             $name = self::PARAM_PREFIX . $idx;

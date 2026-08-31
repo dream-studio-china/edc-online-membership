@@ -202,4 +202,130 @@ final class DqlExpressionIntegrationTest extends IntegrationKernelTestCase
         $foundA = $svc->get((new DqlExpression('entity.getUser() == user', ['user'=>$userA]))->withCriteria(['id'=>$wA->getId()]));
         self::assertNotNull($foundA);
     }
+
+    public function testInOperatorWithVariableArray(): void
+    {
+        $user = $this->createUser('dql-in-'.uniqid().'@example.com', 'dql-in-'.uniqid());
+        $codeA = strtoupper('IA'.substr(uniqid(), -5));
+        $codeB = strtoupper('IB'.substr(uniqid(), -5));
+        $codeC = strtoupper('IC'.substr(uniqid(), -5));
+        $wA = new Wallet($user, $codeA);
+        $wB = new Wallet($user, $codeB);
+        $wC = new Wallet($user, $codeC);
+        $this->em->persist($wA); $this->em->persist($wB); $this->em->persist($wC);
+        $this->em->flush();
+
+        $svc = static::getContainer()->get(\App\Wallet\Service\WalletServiceInterface::class);
+
+        $expr = new DqlExpression('entity.getCurrency() in currencies && entity.getUser() == user', ['currencies' => [$codeA, $codeB], 'user'=>$user]);
+        $result = $svc->list($expr, null, true);
+        $items = $result instanceof \Doctrine\ORM\QueryBuilder ? $result->getQuery()->getResult() : (is_array($result) ? $result : []);
+        self::assertCount(2, $items);
+        $curs = array_map(fn($w) => $w->getCurrency(), $items);
+        sort($curs);
+        $expected = [$codeA, $codeB]; sort($expected);
+        self::assertSame($expected, $curs);
+    }
+
+    public function testInOperatorViaThisBinding(): void
+    {
+        $codeA = strtoupper('JA'.substr(uniqid(), -5));
+        $codeB = strtoupper('JB'.substr(uniqid(), -5));
+        $codeC = strtoupper('JC'.substr(uniqid(), -5));
+        $user = $this->createUser('dql-in-this-'.uniqid().'@example.com', 'dql-in-this-'.uniqid());
+        $wA = new Wallet($user, $codeA);
+        $wB = new Wallet($user, $codeB);
+        $wC = new Wallet($user, $codeC);
+        $this->em->persist($wA); $this->em->persist($wB); $this->em->persist($wC);
+        $this->em->flush();
+
+        $svc = static::getContainer()->get(\App\Wallet\Service\WalletServiceInterface::class);
+
+        $controller = new class($codeA, $codeB) {
+            public function __construct(private string $a, private string $b) {}
+            public function getAllowedCurrencies(): array { return [$this->a, $this->b]; }
+        };
+        $expr = (new DqlExpression('entity.getCurrency() in this.getAllowedCurrencies() && entity.getUser() == user', ['user'=>$user]))->withContext($controller);
+        $result = $svc->list($expr, null, true);
+        $items = $result instanceof \Doctrine\ORM\QueryBuilder ? $result->getQuery()->getResult() : (is_array($result) ? $result : []);
+        self::assertCount(2, $items);
+    }
+
+    public function testInOperatorEmptyArrayReturnsNoRows(): void
+    {
+        $user = $this->createUser('dql-in-empty-'.uniqid().'@example.com', 'dql-in-empty-'.uniqid());
+        $code = 'KA'.substr(uniqid(), -5);
+        $w = new Wallet($user, $code);
+        $this->em->persist($w);
+        $this->em->flush();
+
+        $svc = static::getContainer()->get(\App\Wallet\Service\WalletServiceInterface::class);
+
+        $expr = new DqlExpression('entity.getCurrency() in currencies && entity.getUser() == user', ['currencies' => [], 'user'=>$user]);
+        $result = $svc->list($expr, null, true);
+        $items = $result instanceof \Doctrine\ORM\QueryBuilder ? $result->getQuery()->getResult() : (is_array($result) ? $result : []);
+        self::assertCount(0, $items);
+    }
+
+    public function testNotInOperatorFiltersExcluding(): void
+    {
+        $user = $this->createUser('dql-notin-'.uniqid().'@example.com', 'dql-notin-'.uniqid());
+        // Use distinct currencies to avoid per-test leakage (CNY/USD/EUR may already exist from earlier tests)
+        $codeA = strtoupper('N'.substr(uniqid(), -3));
+        $codeB = strtoupper('N'.substr(uniqid('', true), -3));
+        $codeC = strtoupper('N'.substr(uniqid('', true), -3));
+        $wA = new Wallet($user, $codeA);
+        $wB = new Wallet($user, $codeB);
+        $wC = new Wallet($user, $codeC);
+        $this->em->persist($wA); $this->em->persist($wB); $this->em->persist($wC);
+        $this->em->flush();
+
+        $svc = static::getContainer()->get(\App\Wallet\Service\WalletServiceInterface::class);
+
+        // Exclude one of them via variable, assert remaining count
+        $expr = new DqlExpression('entity.getCurrency() not in currencies', ['currencies' => [$codeA]]);
+        $result = $svc->list($expr, null, true);
+        $items = $result instanceof \Doctrine\ORM\QueryBuilder ? $result->getQuery()->getResult() : (is_array($result) ? $result : []);
+        // At least wB and wC should be present, wA must be absent; other prior wallets may inflate count, so assert by presence
+        $curs = array_map(fn($w) => $w->getCurrency(), $items);
+        self::assertContains($codeB, $curs);
+        self::assertContains($codeC, $curs);
+        self::assertNotContains($codeA, $curs);
+    }
+
+    public function testNotInEmptyArrayReturnsAllRows(): void
+    {
+        $user = $this->createUser('dql-notin-empty-'.uniqid().'@example.com', 'dql-notin-empty-'.uniqid());
+        $w = new Wallet($user, 'CNY');
+        $this->em->persist($w);
+        $this->em->flush();
+
+        $svc = static::getContainer()->get(\App\Wallet\Service\WalletServiceInterface::class);
+
+        $expr = new DqlExpression('entity.getCurrency() not in currencies', ['currencies' => []]);
+        $result = $svc->list($expr, null, true);
+        $items = $result instanceof \Doctrine\ORM\QueryBuilder ? $result->getQuery()->getResult() : (is_array($result) ? $result : []);
+        // Should return at least the just-created wallet; empty NOT IN must not filter it out
+        $ids = array_map(fn($w) => $w->getId(), $items);
+        self::assertContains($w->getId(), $ids);
+    }
+
+    public function testInCombinedWithEquality(): void
+    {
+        $userA = $this->createUser('dql-in-comb-a-'.uniqid().'@example.com', 'dql-in-comb-a-'.uniqid());
+        $userB = $this->createUser('dql-in-comb-b-'.uniqid().'@example.com', 'dql-in-comb-b-'.uniqid());
+        $wA1 = new Wallet($userA, 'CNY');
+        $wA2 = new Wallet($userA, 'USD');
+        $wB1 = new Wallet($userB, 'CNY');
+        $this->em->persist($wA1); $this->em->persist($wA2); $this->em->persist($wB1);
+        $this->em->flush();
+
+        $svc = static::getContainer()->get(\App\Wallet\Service\WalletServiceInterface::class);
+
+        $expr = new DqlExpression('entity.getUser() == user && entity.getCurrency() in currencies', ['user'=>$userA, 'currencies'=>['CNY']]);
+        $result = $svc->list($expr, null, true);
+        $items = $result instanceof \Doctrine\ORM\QueryBuilder ? $result->getQuery()->getResult() : (is_array($result) ? $result : []);
+        self::assertCount(1, $items);
+        self::assertSame($wA1->getId(), $items[0]->getId());
+    }
 }
