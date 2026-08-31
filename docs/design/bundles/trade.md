@@ -62,7 +62,7 @@ src/Trade/
 |       |-- OrderController.php            # CRUD + workflow + price calculation
 |-- Entity/
 |   |-- Order.php
-|   |-- OrderItem.php  # ManyToOne Store\Specification (same tables)
+|   |-- OrderItem.php  # scalar specificationUuid + snapshots (FK removed, irreversible)
 |   `-- TradeOutboxMessage.php
 |-- Command/PublishOutboxCommand.php
 |-- DTO/StoreContext.php
@@ -76,23 +76,24 @@ src/Trade/
 |   |-- OrderItemRepository.php
 |   |-- OrderRepository.php
 |-- Service/
-|   |-- OrderItemService.php
-|   |-- OrderService.php                   # Order creation + price pipeline
+|   |-- Catalog/CatalogResolverInterface.php + CatalogItem.php # Trade-owned port/DTO
+|   |-- OrderService.php                   # Order creation + price pipeline (no Store import)
 |   |-- Pricing/
 |       |-- PriceCalculatorInterface.php   # Plugin contract
-|       |-- PriceCalculationContext.php    # Input/output DTO
+|       |-- PriceCalculationContext.php    # Input/output DTO (storeCode)
 |       |-- PriceCalculationResult.php     # Result DTO
-|       |-- BasePriceCalculator.php        # Resolves Store specs with Store visibility
+|       |-- BasePriceCalculator.php        # Resolves via CatalogResolver (Store visibility enforced in Store)
 |       |-- QuantityCalculator.php         # Computes price = unitPrice * quantity
 |       |-- TotalAggregator.php            # Establishes subtotal (priority 55)
 
-src/Store/
-|-- Entity/Product.php  # trade_product, nullable store ManyToOne Store
-|-- Entity/Specification.php # trade_specification, ManyToOne Store\Product
-|-- Repository/ProductRepository.php, SpecificationRepository.php
-|-- Service/ProductService.php, SpecificationService.php
-|-- Controller/App/ProductController.php, SpecificationController.php
-|-- Controller/Manage/ProductController.php, SpecificationController.php, SpecificationAllController.php
+ src/Store/
+ |-- Entity/Product.php  # trade_product, nullable store ManyToOne Store
+ |-- Entity/Specification.php # trade_specification, ManyToOne Store\Product
+ |-- Repository/ProductRepository.php, SpecificationRepository.php
+ |-- Service/ProductService.php, SpecificationService.php
+ |-- Service/Catalog/StoreCatalogResolver.php # Trade CatalogResolverInterface impl (Store visibility)
+ |-- Controller/App/ProductController.php, SpecificationController.php # DqlExpression row-scope
+ |-- Controller/Manage/ProductController.php, SpecificationController.php, SpecificationAllController.php
 ```
 
 ---
@@ -100,23 +101,23 @@ src/Store/
 ## 3. Entity Relationships
 
 ```
-Product (status: active/inactive, isDeleted: bool, metadata: JSON)
+Store\Product (status: active/inactive, isDeleted: bool, metadata: JSON, store: ?Store)
   |
-  +-- 1:N -> Specification (cascade: persist)
+  +-- 1:N -> Store\Specification (cascade: persist)
 
-Specification (name, price: int cents, status, sort, isDeleted)
-  |
-  +-- 1:N -> OrderItem
+Store\Specification (name, price: int cents, status, sort, isDeleted)
+  |  inherits Product.store visibility
+  +-- (no FK) -> Trade\OrderItem via scalar specificationUuid + snapshots
 
-Order (uuid, totalAmount: int cents, currency: CNY, status: state machine, notes, metadata)
+Order (uuid, totalAmount: int cents, currency: CNY, status: state machine, notes, metadata _store)
   |
   +-- M:1 -> User
   +-- 1:N -> OrderItem (cascade: persist)
 
-OrderItem (uuid, quantity, unitPrice: cents, price: cents, cost, profit, snapshots: JSON)
+OrderItem (uuid, quantity, unitPrice: cents, price: cents, cost, profit, specificationUuid, specificationTitle, specSnapshot/productSnapshot: JSON)
   |
   +-- M:1 -> Order
-  +-- M:1 -> Specification
+  +-- (scalar) specificationUuid (indexed, no FK)
 ```
 
 ---
