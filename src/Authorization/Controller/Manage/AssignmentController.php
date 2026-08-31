@@ -12,9 +12,11 @@ use App\Authorization\Service\AuthorizationCacheInvalidator;
 use App\Core\Controller\RestController;
 use App\Core\Utils\UUID;
 use App\Core\View\ApiView;
+use App\Core\View\CreateApiViewMixin;
 use App\Core\View\DeleteApiViewMixin;
+use App\Core\View\DetailApiViewMixin;
 use App\Core\View\ListApiViewMixin;
-use Symfony\Component\HttpFoundation\Request;
+use App\Core\View\UpdateApiViewMixin;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
@@ -23,9 +25,20 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[IsGranted('ROLE_ADMIN')]
 class AssignmentController extends RestController
 {
-    use ApiView;
-    use ListApiViewMixin;
-    use DeleteApiViewMixin;
+    use ApiView, ListApiViewMixin, DetailApiViewMixin,
+        CreateApiViewMixin, UpdateApiViewMixin, DeleteApiViewMixin;
+
+    /** @var list<string> */
+    protected array $acceptedCreateProperties = ['userUuid', 'user_uuid', 'roleUuid', 'role_uuid', 'roleId', 'scopeType', 'scope_type', 'scopeUuid', 'scope_uuid'];
+
+    /** @var list<string> */
+    protected array $acceptedUpdateProperties = ['userUuid', 'user_uuid', 'roleUuid', 'role_uuid', 'roleId', 'scopeType', 'scope_type', 'scopeUuid', 'scope_uuid'];
+
+    /** @var array<int, bool> */
+    private array $grantedAssignments = [];
+
+    /** @var array<int, array{before: array<string, mixed>, oldUserUuid: string}> */
+    private array $updatedAssignments = [];
 
     public function __construct(
         protected readonly AssignmentService $service,
@@ -75,121 +88,170 @@ class AssignmentController extends RestController
         return $criteria;
     }
 
-    #[Route('', name: 'create', methods: ['POST'])]
-    public function createAction(Request $request): Response
+    /**
+     * @param array<string, mixed> $content
+     * @return array{userUuid: string, roleUuid: string, scopeType: string, scopeUuid: ?string}
+     */
+    protected function processCreateContent(array $content, object $entity): array
     {
-        $data = json_decode($request->getContent(), true);
-        if (!\is_array($data)) {
-            return $this->warning('Invalid JSON', 1, null, 400);
+        $userUuid = trim((string) ($content['userUuid'] ?? $content['user_uuid'] ?? ''));
+        $roleUuid = trim((string) ($content['roleUuid'] ?? $content['role_uuid'] ?? $content['roleId'] ?? ''));
+        $scopeType = trim((string) ($content['scopeType'] ?? $content['scope_type'] ?? ''));
+        $scopeUuid = isset($content['scopeUuid']) || isset($content['scope_uuid']) ? trim((string) ($content['scopeUuid'] ?? $content['scope_uuid'] ?? '')) : null;
+
+        if ($userUuid === '' || $roleUuid === '' || $scopeType === '') {
+            throw new \InvalidArgumentException('userUuid, roleUuid and scopeType are required');
         }
-        $isBatch = array_is_list($data);
-        $items = $isBatch ? $data : [$data];
-        $results = [];
-        foreach ($items as $item) {
-            if (!\is_array($item)) {
-                return $this->warning('Invalid JSON', 1, null, 400);
-            }
-            $userUuid = trim((string) ($item['userUuid'] ?? $item['user_uuid'] ?? ''));
-            $roleUuid = trim((string) ($item['roleUuid'] ?? $item['role_uuid'] ?? $item['roleId'] ?? ''));
-            $scopeType = trim((string) ($item['scopeType'] ?? $item['scope_type'] ?? ''));
-            $scopeUuid = isset($item['scopeUuid']) || isset($item['scope_uuid']) ? trim((string) ($item['scopeUuid'] ?? $item['scope_uuid'] ?? '')) : null;
-
-            if ($userUuid === '' || $roleUuid === '' || $scopeType === '') {
-                return $this->warning('userUuid, roleUuid and scopeType are required', 1, null, 400);
-            }
-            if (!UUID::is_valid($userUuid)) {
-                return $this->warning('Invalid userUuid', 1, null, 400);
-            }
-            if ($scopeType !== 'global' && $scopeType !== 'store') {
-                return $this->warning('Invalid scopeType, expected global or store', 1, null, 400);
-            }
-            if ($scopeType === 'global' && $scopeUuid !== null && $scopeUuid !== '') {
-                return $this->warning('scopeUuid must be null for global scope', 1, null, 400);
-            }
-            if ($scopeType === 'store' && ($scopeUuid === null || $scopeUuid === '' || !UUID::is_valid($scopeUuid))) {
-                return $this->warning('Valid scopeUuid required for store scope', 1, null, 400);
-            }
-            if ($scopeType === 'global') {
-                $scopeUuid = null;
-            }
-
-            $role = null;
-            if (UUID::is_valid($roleUuid)) {
-                $role = $this->em->getRepository(Role::class)->findOneBy(['uuid' => $roleUuid]);
-            }
-            if ($role === null && ctype_digit($roleUuid)) {
-                $role = $this->em->getRepository(Role::class)->find((int) $roleUuid);
-            }
-            if ($role === null) {
-                $role = $this->em->getRepository(Role::class)->findOneBy(['code' => $roleUuid]);
-            }
-            if ($role === null) {
-                return $this->warning('Role not found', 1, null, 404);
-            }
-            if ($role->getScopeType() !== $scopeType) {
-                return $this->warning(sprintf('Role scope "%s" incompatible with assignment scope "%s"', $role->getScopeType(), $scopeType), 1, null, 400);
-            }
-
-            $assignmentRepo = $this->em->getRepository(Assignment::class);
-            $existingActive = $assignmentRepo->findActiveAssignment($userUuid, $role, $scopeType, $scopeUuid);
-            if ($existingActive !== null) {
-                $results[] = $existingActive;
-                continue;
-            }
-            $roleId = $role->getId();
-            \assert($roleId !== null);
-            $anyExisting = $assignmentRepo->findAnyByUserRoleScope($userUuid, $roleId, $scopeType, $scopeUuid);
-            $actorUuid = $this->getUser() instanceof \App\Identity\Entity\User ? $this->getUser()->getUuid() : null;
-            if ($anyExisting !== null && $anyExisting->isRevoked()) {
-                $anyExisting->setRevokedAt(null);
-                $this->em->flush();
-                $this->auditService->record($actorUuid, 'assignment.granted', 'assignment', $anyExisting->getUuid(), null, [
-                    'userUuid' => $userUuid,
-                    'roleCode' => $role->getCode(),
-                    'scopeType' => $scopeType,
-                    'scopeUuid' => $scopeUuid,
-                ]);
-                $this->em->flush();
-                $this->cacheInvalidator->invalidateUser($userUuid);
-                $results[] = $anyExisting;
-                continue;
-            }
-
-            $assignment = new Assignment($role, $userUuid, $scopeType, $scopeUuid, $actorUuid);
-            $this->em->wrapInTransaction(function () use ($assignment, $actorUuid, $userUuid, $role, $scopeType, $scopeUuid): void {
-                $this->em->persist($assignment);
-                $this->em->flush();
-                $this->auditService->record($actorUuid, 'assignment.granted', 'assignment', $assignment->getUuid(), null, [
-                    'userUuid' => $userUuid,
-                    'roleCode' => $role->getCode(),
-                    'scopeType' => $scopeType,
-                    'scopeUuid' => $scopeUuid,
-                ]);
-                $this->em->flush();
-            });
-            $this->cacheInvalidator->invalidateUser($userUuid);
-            $results[] = $assignment;
+        if (!UUID::is_valid($userUuid)) {
+            throw new \InvalidArgumentException('Invalid userUuid');
         }
-
-        $data = $isBatch ? $results : ($results[0] ?? null);
-
-        return $this->success($data, 'SUCCESS', 201);
+        if (!\in_array($scopeType, [Assignment::SCOPE_GLOBAL, Assignment::SCOPE_STORE], true)) {
+            throw new \InvalidArgumentException('Invalid scopeType, expected global or store');
+        }
+        if ($scopeType === Assignment::SCOPE_GLOBAL && $scopeUuid !== null && $scopeUuid !== '') {
+            throw new \InvalidArgumentException('scopeUuid must be null for global scope');
+        }
+        if ($scopeType === Assignment::SCOPE_STORE && ($scopeUuid === null || $scopeUuid === '' || !UUID::is_valid($scopeUuid))) {
+            throw new \InvalidArgumentException('Valid scopeUuid required for store scope');
+        }
+        return [
+            'userUuid' => $userUuid,
+            'roleUuid' => $roleUuid,
+            'scopeType' => $scopeType,
+            'scopeUuid' => $scopeType === Assignment::SCOPE_GLOBAL ? null : $scopeUuid,
+        ];
     }
 
-    public function deleteAction(int|string $id): Response
+    protected function processEntity(array $content, object $entity): object
     {
-        $filter = $this->mixIdToCommonFilter($id);
-        $entity = $this->service->get($filter);
+        $role = $this->resolveRole($content['roleUuid']);
+        if ($role === null) {
+            throw $this->createNotFoundException('Role not found');
+        }
+        if ($role->getScopeType() !== $content['scopeType']) {
+            throw new \InvalidArgumentException(sprintf('Role scope "%s" incompatible with assignment scope "%s"', $role->getScopeType(), $content['scopeType']));
+        }
+
+        $repository = $this->em->getRepository(Assignment::class);
+        $assignment = $repository->findActiveAssignment($content['userUuid'], $role, $content['scopeType'], $content['scopeUuid']);
+        if ($assignment !== null) {
+            $this->grantedAssignments[spl_object_id($assignment)] = false;
+
+            return $assignment;
+        }
+
+        $roleId = $role->getId();
+        \assert($roleId !== null);
+        $assignment = $repository->findAnyByUserRoleScope($content['userUuid'], $roleId, $content['scopeType'], $content['scopeUuid']);
+        if ($assignment !== null && $assignment->isRevoked()) {
+            $assignment->setRevokedAt(null);
+        } else {
+            $actorUuid = $this->getUser() instanceof \App\Identity\Entity\User ? $this->getUser()->getUuid() : null;
+            $assignment = new Assignment($role, $content['userUuid'], $content['scopeType'], $content['scopeUuid'], $actorUuid);
+        }
+        $this->grantedAssignments[spl_object_id($assignment)] = true;
+
+        return $assignment;
+    }
+
+    protected function afterCreated(object|false $entity): mixed
+    {
+        if (!$entity instanceof Assignment || !($this->grantedAssignments[spl_object_id($entity)] ?? false)) {
+            return $entity;
+        }
+
+        $actorUuid = $this->getUser() instanceof \App\Identity\Entity\User ? $this->getUser()->getUuid() : null;
+        $this->auditService->record($actorUuid, 'assignment.granted', 'assignment', $entity->getUuid(), null, [
+            'userUuid' => $entity->getUserUuid(),
+            'roleCode' => $entity->getRole()->getCode(),
+            'scopeType' => $entity->getScopeType(),
+            'scopeUuid' => $entity->getScopeUuid(),
+        ]);
+        $this->em->flush();
+        $this->cacheInvalidator->invalidateUser($entity->getUserUuid());
+
+        return $entity;
+    }
+
+    /**
+     * @param array<string, mixed> $content
+     * @return array<string, mixed>
+     */
+    protected function processUpdateContent(array $content, ?object $entity = null): array
+    {
         if (!$entity instanceof Assignment) {
-            return $this->warning('Entity is not found', 1, null, 404);
+            return $content;
+        }
+        if ($content === []) {
+            throw new \InvalidArgumentException('No updatable fields');
+        }
+
+        $userUuid = trim((string) ($content['userUuid'] ?? $content['user_uuid'] ?? $entity->getUserUuid()));
+        $roleIdentifier = trim((string) ($content['roleUuid'] ?? $content['role_uuid'] ?? $content['roleId'] ?? $entity->getRole()->getUuid()));
+        $scopeType = trim((string) ($content['scopeType'] ?? $content['scope_type'] ?? $entity->getScopeType()));
+        $scopeUuid = array_key_exists('scopeUuid', $content) || array_key_exists('scope_uuid', $content)
+            ? trim((string) ($content['scopeUuid'] ?? $content['scope_uuid'] ?? ''))
+            : $entity->getScopeUuid();
+        $normalized = $this->normalizeAssignmentInput($userUuid, $roleIdentifier, $scopeType, $scopeUuid);
+
+        $role = $this->resolveRole($normalized['roleUuid']);
+        if ($role === null) {
+            throw $this->createNotFoundException('Role not found');
+        }
+        if ($role->getScopeType() !== $normalized['scopeType']) {
+            throw new \InvalidArgumentException(sprintf('Role scope "%s" incompatible with assignment scope "%s"', $role->getScopeType(), $normalized['scopeType']));
+        }
+
+        $existing = $this->em->getRepository(Assignment::class)->findActiveAssignment($normalized['userUuid'], $role, $normalized['scopeType'], $normalized['scopeUuid']);
+        if ($existing !== null && $existing->getId() !== $entity->getId()) {
+            throw new \InvalidArgumentException('Assignment already exists');
+        }
+
+        $this->updatedAssignments[spl_object_id($entity)] = [
+            'before' => $this->assignmentData($entity),
+            'oldUserUuid' => $entity->getUserUuid(),
+        ];
+        $entity->setUserUuid($normalized['userUuid']);
+        $entity->setRole($role);
+        $entity->setScopeType($normalized['scopeType']);
+        $entity->setScopeUuid($normalized['scopeUuid']);
+
+        return [];
+    }
+
+    protected function afterUpdated(object|false $entity): mixed
+    {
+        if (!$entity instanceof Assignment || !isset($this->updatedAssignments[spl_object_id($entity)])) {
+            return $entity;
+        }
+
+        $state = $this->updatedAssignments[spl_object_id($entity)];
+        unset($this->updatedAssignments[spl_object_id($entity)]);
+        $after = $this->assignmentData($entity);
+        if ($state['before'] === $after) {
+            return $entity;
+        }
+
+        $actorUuid = $this->getUser() instanceof \App\Identity\Entity\User ? $this->getUser()->getUuid() : null;
+        $this->auditService->record($actorUuid, 'assignment.updated', 'assignment', $entity->getUuid(), $state['before'], $after);
+        $this->em->flush();
+        $this->cacheInvalidator->invalidateUser($state['oldUserUuid']);
+        $this->cacheInvalidator->invalidateUser($entity->getUserUuid());
+
+        return $entity;
+    }
+
+    protected function processDeletion(object $entity): ?Response
+    {
+        if (!$entity instanceof Assignment) {
+            return null;
         }
         if ($entity->isRevoked()) {
-            return $this->success($entity);
+            return $this->success('', 'SUCCESS', 204);
         }
+
         $actorUuid = $this->getUser() instanceof \App\Identity\Entity\User ? $this->getUser()->getUuid() : null;
-        $userUuid = $entity->getUserUuid();
         $entity->setRevokedAt(new \DateTimeImmutable());
-        $this->em->flush();
         $this->auditService->record($actorUuid, 'assignment.revoked', 'assignment', $entity->getUuid(), null, [
             'userUuid' => $entity->getUserUuid(),
             'roleCode' => $entity->getRole()->getCode(),
@@ -197,8 +259,69 @@ class AssignmentController extends RestController
             'scopeUuid' => $entity->getScopeUuid(),
         ]);
         $this->em->flush();
-        $this->cacheInvalidator->invalidateUser($userUuid);
+        $this->cacheInvalidator->invalidateUser($entity->getUserUuid());
 
-        return $this->success($entity);
+        return $this->success('', 'SUCCESS', 204);
+    }
+
+    private function resolveRole(string $identifier): ?Role
+    {
+        $repository = $this->em->getRepository(Role::class);
+        if (UUID::is_valid($identifier)) {
+            $role = $repository->findOneBy(['uuid' => $identifier]);
+            if ($role !== null) {
+                return $role;
+            }
+        }
+        if (ctype_digit($identifier)) {
+            $role = $repository->find((int) $identifier);
+            if ($role !== null) {
+                return $role;
+            }
+        }
+
+        return $repository->findOneBy(['code' => $identifier]);
+    }
+
+    /**
+     * @return array{userUuid: string, roleUuid: string, scopeType: string, scopeUuid: ?string}
+     */
+    private function normalizeAssignmentInput(string $userUuid, string $roleUuid, string $scopeType, ?string $scopeUuid): array
+    {
+        if ($userUuid === '' || $roleUuid === '' || $scopeType === '') {
+            throw new \InvalidArgumentException('userUuid, roleUuid and scopeType are required');
+        }
+        if (!UUID::is_valid($userUuid)) {
+            throw new \InvalidArgumentException('Invalid userUuid');
+        }
+        if (!\in_array($scopeType, [Assignment::SCOPE_GLOBAL, Assignment::SCOPE_STORE], true)) {
+            throw new \InvalidArgumentException('Invalid scopeType, expected global or store');
+        }
+        if ($scopeType === Assignment::SCOPE_GLOBAL && $scopeUuid !== null && $scopeUuid !== '') {
+            throw new \InvalidArgumentException('scopeUuid must be null for global scope');
+        }
+        if ($scopeType === Assignment::SCOPE_STORE && ($scopeUuid === null || $scopeUuid === '' || !UUID::is_valid($scopeUuid))) {
+            throw new \InvalidArgumentException('Valid scopeUuid required for store scope');
+        }
+
+        return [
+            'userUuid' => $userUuid,
+            'roleUuid' => $roleUuid,
+            'scopeType' => $scopeType,
+            'scopeUuid' => $scopeType === Assignment::SCOPE_GLOBAL ? null : $scopeUuid,
+        ];
+    }
+
+    /**
+     * @return array{userUuid: string, roleCode: string, scopeType: string, scopeUuid: ?string}
+     */
+    private function assignmentData(Assignment $assignment): array
+    {
+        return [
+            'userUuid' => $assignment->getUserUuid(),
+            'roleCode' => $assignment->getRole()->getCode(),
+            'scopeType' => $assignment->getScopeType(),
+            'scopeUuid' => $assignment->getScopeUuid(),
+        ];
     }
 }

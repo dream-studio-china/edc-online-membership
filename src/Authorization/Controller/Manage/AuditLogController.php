@@ -16,9 +16,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[IsGranted('ROLE_ADMIN')]
 class AuditLogController extends RestController
 {
-    use ApiView;
-    use ListApiViewMixin;
-    use DetailApiViewMixin;
+    use ApiView, ListApiViewMixin, DetailApiViewMixin;
 
     public function __construct(
         protected readonly AuditLogService $service,

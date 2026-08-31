@@ -9,7 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: \App\Authorization\Repository\AssignmentRepository::class)]
 #[ORM\Table(name: 'authorization_assignment')]
-#[ORM\UniqueConstraint(name: 'uniq_authorization_assignment', columns: ['user_uuid', 'role_id', 'scope_type', 'scope_uuid'])]
+#[ORM\UniqueConstraint(name: 'uniq_authorization_assignment', columns: ['user_uuid', 'role_id', 'scope_type', 'scope_key'])]
 #[ORM\Index(columns: ['user_uuid', 'revoked_at'], name: 'idx_authorization_assignment_user_revoked')]
 #[ORM\Index(columns: ['scope_type', 'scope_uuid', 'revoked_at'], name: 'idx_authorization_assignment_scope_revoked')]
 #[ORM\HasLifecycleCallbacks]
@@ -39,6 +39,9 @@ class Assignment
     #[ORM\Column(type: 'string', length: 36, nullable: true)]
     private ?string $scopeUuid = null;
 
+    #[ORM\Column(type: 'string', length: 36)]
+    private string $scopeKey = '';
+
     #[ORM\Column(type: 'string', length: 36, nullable: true)]
     private ?string $grantedByUuid = null;
 
@@ -55,6 +58,7 @@ class Assignment
         $this->userUuid = $userUuid;
         $this->scopeType = $scopeType;
         $this->scopeUuid = $scopeUuid;
+        $this->scopeKey = $scopeUuid ?? '';
         $this->grantedByUuid = $grantedByUuid;
         $this->createdAt = new \DateTimeImmutable();
     }
@@ -117,9 +121,15 @@ class Assignment
         return $this->scopeUuid;
     }
 
+    public function getScopeKey(): string
+    {
+        return $this->scopeKey;
+    }
+
     public function setScopeUuid(?string $scopeUuid): self
     {
         $this->scopeUuid = $scopeUuid;
+        $this->scopeKey = $scopeUuid ?? '';
 
         return $this;
     }
@@ -164,11 +174,19 @@ class Assignment
     }
 
     #[ORM\PrePersist]
+    #[ORM\PreUpdate]
+    public function syncScopeKey(): void
+    {
+        $this->scopeKey = $this->scopeUuid ?? '';
+    }
+
+    #[ORM\PrePersist]
     public function prePersist(): void
     {
         if (!isset($this->createdAt)) {
             $this->createdAt = new \DateTimeImmutable();
         }
+        $this->syncScopeKey();
     }
 
     public function __toString(): string

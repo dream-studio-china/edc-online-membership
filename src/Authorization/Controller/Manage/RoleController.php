@@ -27,12 +27,8 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[IsGranted('ROLE_ADMIN')]
 class RoleController extends RestController
 {
-    use ApiView;
-    use ListApiViewMixin;
-    use DetailApiViewMixin;
-    use CreateApiViewMixin;
-    use UpdateApiViewMixin;
-    use DeleteApiViewMixin;
+    use ApiView, ListApiViewMixin, DetailApiViewMixin,
+        CreateApiViewMixin, UpdateApiViewMixin, DeleteApiViewMixin;
 
     /** @var list<string> */
     protected array $requiredCreateProperties = ['code', 'name', 'scopeType'];
@@ -190,6 +186,9 @@ class RoleController extends RestController
         if (!$role instanceof Role) {
             return $this->warning('Entity is not found', 1, null, 404);
         }
+        if ($role->isSystem()) {
+            return $this->warning('System role field grants cannot be modified via API', 1, null, 403);
+        }
 
         $data = json_decode($request->getContent(), true);
         if (!\is_array($data)) {
@@ -235,5 +234,21 @@ class RoleController extends RestController
         $grant = $fieldGrantRepo->findOneBy(['role' => $roleId, 'resource' => $resource, 'action' => $action]);
 
         return $this->success($grant);
+    }
+
+    #[Route('/{id}', name: 'delete', requirements: ['id' => '\\d+|[0-9a-fA-F-]{36}'], methods: ['DELETE'])]
+    public function deleteAction(int|string $id): Response
+    {
+        $role = $this->service->get($this->mixIdToCommonFilter($id), false);
+        if (!$role instanceof Role) {
+            return $this->warning('Entity is not found', 1, null, 404);
+        }
+        if ($role->isSystem()) {
+            return $this->warning('System role cannot be deleted', 1, null, 403);
+        }
+
+        return $this->service->remove($role)
+            ? $this->success('', 'SUCCESS', 204)
+            : $this->warning();
     }
 }

@@ -11,18 +11,16 @@ final class Version20260901000001 extends AbstractMigration
 {
     public function getDescription(): string
     {
-        return 'Add storeUuid and metadata to common_content for Authorization pilot';
+        return 'Add metadata to common_content for Authorization field-grant pilot';
     }
 
     public function up(Schema $schema): void
     {
-        $this->addSql('ALTER TABLE common_content ADD store_uuid VARCHAR(36) DEFAULT NULL, ADD metadata JSON DEFAULT NULL');
-        $this->addSql('CREATE INDEX idx_common_content_store_uuid ON common_content (store_uuid)');
+        $this->addSql('ALTER TABLE common_content ADD metadata JSON DEFAULT NULL');
     }
 
     public function down(Schema $schema): void
     {
-        $this->addSql('DROP INDEX idx_common_content_store_uuid ON common_content');
-        $this->addSql('ALTER TABLE common_content DROP store_uuid, DROP metadata');
+        $this->addSql('ALTER TABLE common_content DROP metadata');
     }
 }

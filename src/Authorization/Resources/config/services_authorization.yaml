@@ -6,12 +6,14 @@ services:
     App\Authorization\Service\FieldAuthorizationServiceInterface: '@App\Authorization\Service\FieldAuthorizationService'
 
     App\Authorization\Service\AuthorizationService:
+        public: true
         arguments:
             $assignmentRepository: '@App\Authorization\Repository\AssignmentRepository'
             $cache: '@cache.app'
             $logger: '@logger'
 
     App\Authorization\Service\FieldAuthorizationService:
+        public: true
         arguments:
             $assignmentRepository: '@App\Authorization\Repository\AssignmentRepository'
             $fieldGrantRepository: '@App\Authorization\Repository\RoleFieldGrantRepository'

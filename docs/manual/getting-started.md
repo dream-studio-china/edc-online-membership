@@ -47,9 +47,10 @@ docker compose exec app php bin/console doctrine:migrations:migrate --no-interac
 
 # 3. Create an administrator account (email, screen name, password)
 docker compose exec app php bin/console app:identity:user:create admin@example.com admin 'P@ssw0rd' --admin
+docker compose exec app php bin/console app:authorization:seed
 ```
 
-That is enough to log in and exercise the API. The JWT key pair is generated
+That is enough to log in and exercise the API. The last line seeds Authorization permissions/roles/field-grants (idempotent; see [Authorization Setup](authorization.md)). The JWT key pair is generated
 automatically on first container start by `docker/app/entrypoint.sh` into
 `var/jwt/`. No environment file is required for a first run — `compose.yaml`
 provides safe development defaults.

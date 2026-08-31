@@ -17,7 +17,7 @@ flowchart TB
     Core["<b>Core Framework</b><br/>BaseService · View Mixins · Expression→DQL"]
 
     Identity["Identity<br/>Auth · JWT · OTP · User"]
-    Authorization["Authorization (design)<br/>RBAC · scopes · field grants"]
+    Authorization["Authorization<br/>RBAC · scopes · field grants"]
     Common["Common<br/>CMS · content"]
     Storage["Storage<br/>Media drivers"]
     Promotion["Promotion<br/>Pricing rules"]
@@ -37,7 +37,7 @@ flowchart TB
     Identity --> Authorization
     Identity --> Wechat
     Common --> Storage
-    Common -. "Content pilot" .-> Authorization
+    Common -. "metadata field-grant pilot" .-> Authorization
     Promotion --> Trade
     Trade --> Fulfilment
     Trade --> Payments --> Settlement
@@ -165,7 +165,7 @@ clear extension points for domain-specific behavior.
 - **Transactional commerce workflows**: orders, inventory reservations, invoices, payment gateways, wallet adjustments, and settlement allocation.
 - **Financial auditability**: idempotent transfers, voucher-backed deposits and withdrawals, internal balance verification and reconciliation, and versioned settlement rules.
 - **Extensible integrations**: JWT and OTP authentication, WeChat login and payment, local or Qiniu media storage, and a promotion-rule DSL.
-- **Access control and audit**: `ROLE_ADMIN`-protected management endpoints, safeguards for privileged dynamic queries, and bounded audit logging for mutating requests. A separate scoped RBAC and field-grant Authorization module is designed but not yet implemented.
+- **Access control and audit**: `ROLE_ADMIN`-protected management endpoints plus an independent **Authorization** module (scoped RBAC `global|store`, portable `UNIQUE(user,role,scope_type,scope_key)`, strict field grants, append-only audit, `AuthorizationVoter`). Permission catalogue is seeded and read-only; Content `metadata` field-grant pilot (`common:content:metadata`, no `store_uuid`) is enforced via `FieldAuthorizationService`; `Assignment.scopeKey` is internal (`scopeUuid ?? ''`) with `getScopeKey()`/`syncScopeKey()` lifecycle, no public setter.
 - **Reliable asynchronous processing**: Messenger workers and an outbox/inbox pattern for cross-module events.
 - **Production diagnostics**: OpenAPI documentation, readiness and liveness probes, Prometheus metrics, and endpoint rate limiting.
 - **Enforced quality checks**: PHPUnit, PHPStan Level 8, Rector type rules, and a 90% line-coverage threshold in CI.
@@ -190,10 +190,9 @@ See `composer.json` for the full dependency list.
 ## Project Structure
 
 The repository is a modular monolith: `src/` holds the application code (Core framework
-plus business modules such as Common, Identity, Trade, Payment, Wallet, Storage, and more),
-alongside `config/`, `migrations/`, `tests/`, `docs/`, and the Docker/Compose files. The
-planned `src/Authorization/` module is documented separately and is not present in the runtime
-application yet.
+plus business modules such as Common, Identity, Trade, Payment, Wallet, Storage, Authorization, and more),
+alongside `config/`, `migrations/`, `tests/`, `docs/`, and the Docker/Compose files.
+See [Authorization Setup](docs/manual/authorization.md) for how to seed and operate Authorization.
 
 For the full, detailed directory tree (down to controllers, services, entities, and
 repositories for every module), see
@@ -258,7 +257,7 @@ MySQL, Redis, Mailpit). The app runs on the configured local port.
 | **Settlement** | Allocation and finality | Versioned rules, auditable allocations, and wallet posting |
 | **Promotion** | Pricing rules | Promotion DSL, calculation strategies, and campaign routing |
 | **Identity** | Authentication | JWT, OTP, registration, user profiles, and administration |
-| **Authorization** *(design)* | Authorization | Scoped RBAC, Store-scoped grants, strict field grants, and authorization audit design; not implemented |
+| **Authorization** | Authorization | Scoped RBAC (`global`/`store`), Store-scoped grants, strict field grants, audit log, cache-backed `AuthorizationService` |
 | **Storage** | Media uploads | Local and Qiniu Kodo storage drivers |
 | **Wechat** | WeChat integration | Login and WeChat Pay V3 |
 | **Exchange** *(design)* | Points economy | Exchange-rate and liquidity-pool design; not implemented |

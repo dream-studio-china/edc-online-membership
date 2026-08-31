@@ -39,9 +39,6 @@ class Content
     #[ORM\Column(type: 'datetime_immutable', nullable: true)]
     private ?\DateTimeImmutable $updatedAt = null;
 
-    #[ORM\Column(type: 'string', length: 36, nullable: true)]
-    private ?string $storeUuid = null;
-
     #[ORM\Column(type: 'json', nullable: true)]
     private ?array $metadata = null;
 
@@ -133,19 +130,6 @@ class Content
     public function getUpdatedAt(): ?\DateTimeImmutable
     {
         return $this->updatedAt;
-    }
-
-    public function getStoreUuid(): ?string
-    {
-        return $this->storeUuid;
-    }
-
-    public function setStoreUuid(?string $storeUuid): self
-    {
-        $this->storeUuid = $storeUuid;
-        $this->touch();
-
-        return $this;
     }
 
     public function getMetadata(): ?array

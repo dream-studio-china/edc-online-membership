@@ -17,7 +17,7 @@ flowchart TB
     Core["<b>Core 框架</b><br/>BaseService · View Mixins · Expression→DQL"]
 
     Identity["Identity<br/>鉴权 · JWT · OTP · User"]
-    Authorization["Authorization（设计）<br/>RBAC · 范围 · 字段授权"]
+    Authorization["Authorization<br/>RBAC · 范围 · 字段授权"]
     Common["Common<br/>CMS · 内容"]
     Storage["Storage<br/>媒体驱动"]
     Promotion["Promotion<br/>定价规则"]
@@ -37,7 +37,7 @@ flowchart TB
     Identity --> Authorization
     Identity --> Wechat
     Common --> Storage
-    Common -. "Content pilot" .-> Authorization
+    Common -. "metadata field-grant pilot" .-> Authorization
     Promotion --> Trade
     Trade --> Fulfilment
     Trade --> Payments --> Settlement
@@ -159,7 +159,7 @@ CRUD Skeleton 面向那些需要超越生成式 CRUD、但暂时不需要分布�
 - **事务性电商工作流**：订单、库存预留、发票、支付网关、钱包抵扣与结算分账。
 - **财务可审计性**：幂等转账、凭证背书的存款与取款、内部余额校验与对账，以及版本化结算规则。
 - **可扩展的集成**：JWT 与 OTP 鉴权、微信登录与支付、本地或七牛媒体存储，以及促销规则 DSL。
-- **访问控制与审计**：`ROLE_ADMIN` 保护的管理端点、特权动态查询的防护，以及变更请求的有界审计日志。独立的范围化 RBAC 与字段授权的 Authorization 模块已设计但尚未实现。
+- **访问控制与审计**：`ROLE_ADMIN` 保护的管理端点，外加独立 **Authorization** 模块（`global|store` 范围化 RBAC、可移植 `UNIQUE(user,role,scope_type,scope_key)`、严格字段授权、追加写审计、`AuthorizationVoter`）。权限目录由 `app:authorization:seed` 种子化且只读；Content `metadata` 字段授权试点（`common:content:metadata`，无 `store_uuid`）经 `FieldAuthorizationService` 强制；`Assignment.scopeKey` 为内部派生列（`scopeUuid ?? ''`，`getScopeKey()`/`syncScopeKey()`，无公开 setter）。
 - **可靠的异步处理**：Messenger worker 与跨模块事件的 outbox/inbox 模式。
 - **生产诊断**：OpenAPI 文档、就绪与存活探针、Prometheus 指标与端点限流。
 - **强制的质量检查**：PHPUnit、PHPStan Level 8、Rector 类型规则，以及 CI 中 90% 的行覆盖率门槛。
@@ -183,7 +183,7 @@ CRUD Skeleton 面向那些需要超越生成式 CRUD、但暂时不需要分布�
 
 ## 项目结构
 
-仓库是一个模块化单体：`src/` 存放应用代码（Core 框架以及 Common、Identity、Trade、Payment、Wallet、Storage 等业务模块），旁边是 `config/`、`migrations/`、`tests/`、`docs/` 以及 Docker/Compose 文件。已设计的 `src/Authorization/` 模块已单独文档化，尚未在运行时中实现。
+仓库是一个模块化单体：`src/` 存放应用代码（Core 框架以及 Common、Identity、Trade、Payment、Wallet、Storage、Authorization 等业务模块），旁边是 `config/`、`migrations/`、`tests/`、`docs/` 以及 Docker/Compose 文件。`src/Authorization/` 的种子化与运维见 [Authorization Setup](docs/manual/authorization.md)。
 
 完整的详细目录树（到每个模块的控制器、服务、实体、仓库层级），请参阅
 **[项目结构 — 开发手册](docs/manual/project-structure.md)**。
@@ -238,7 +238,7 @@ Docker 开发环境无需创建 env 文件即可启动。本机 PHP/Symfony 运�
 | **Settlement** | 分账与终态 | 版本化规则、可审计分账与钱包入账 |
 | **Promotion** | 定价规则 | 促销 DSL、计算策略与活动路由 |
 | **Identity** | 鉴权 | JWT、OTP、注册、用户资料与管理 |
-| **Authorization** *(设计)* | 授权 | 范围化 RBAC、门店范围授权、严格字段授权与授权审计设计；尚未实现 |
+| **Authorization** | 授权 | 范围化 RBAC（`global`/`store`）、门店范围授权、严格字段授权、审计日志、基于缓存的 `AuthorizationService` |
 | **Storage** | 媒体上传 | 本地与七牛 Kodo 存储驱动 |
 | **Wechat** | 微信集成 | 登录与微信支付 V3 |
 | **Exchange** *(设计)* | 点数经济 | 汇率与流动性池设计；尚未实现 |

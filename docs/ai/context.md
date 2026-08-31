@@ -10,7 +10,7 @@
 - **PHP 8.4+**, Doctrine ORM 3.6, MySQL 8 (Docker), SQLite (tests)
 - JWT authentication (RS256), OTP/SMS login, WeChat Mini Program / Official Account login
 - Expression-based dynamic query engine (`@filter`, `@sort`, `@dql`) + server-owned row-scope `DqlExpression` (`entity.getUser() == this.getUser()`, `in`/`not in` with empty-collection safety)
-- Modular architecture: **Core** (framework + DqlExpression), **Common** (CMS + store-scoped Content pilot), **Authorization** (independent RBAC — scoped Store grants, strict field grants, audit, `AuthorizationVoter`), **Promotion** (DSL-driven promotions), **Identity** (auth), **Trade** (commercial orders), **Store** (multi-store operations), **Payment** (invoices), **Wallet** (balances), **Inventory** (stock & reservation), **Wechat** (login + pay), **Storage** (file upload drivers)
+- Modular architecture: **Core** (framework + DqlExpression), **Common** (CMS + Content `metadata` field-grant pilot), **Authorization** (independent RBAC — scoped Store grants, strict field grants, audit, `AuthorizationVoter`), **Promotion** (DSL-driven promotions), **Identity** (auth), **Trade** (commercial orders), **Store** (multi-store operations), **Payment** (invoices), **Wallet** (balances), **Inventory** (stock & reservation), **Wechat** (login + pay), **Storage** (file upload drivers)
 - EasyWeChat 6.x integration (Mini Program, Official Account OAuth, WeChat Pay V3)
 - NelmioApiDoc (Swagger at `/api/doc`), PHPUnit 12.5, Docker Compose (7 services: app, worker, scheduler, nginx, MySQL, Redis, Mailpit)
 - MkDocs Material + GitHub Pages documentation (**mermaid diagram rendering enabled** via CDN + `pymdownx.superfences` custom fence)
@@ -38,21 +38,22 @@
 │   ├── EventListener/                   # ExceptionInterceptor, ControllerListener, OpenApiEnricherListener, LocaleListener, AccessLogListener
 │   └── Utils/                           # UUID, Math, RSA, Location, Inflect, etc.
 │
-├── src/Common/                   # CMS module: Category, Tag, Content (storeUuid/metadata pilot), Comment, Page, Media, Setting, Picture
-│   ├── Entity/                   # 8 entities (Content has nullable storeUuid indexed + metadata json)
+├── src/Common/                   # CMS module: Category, Tag, Content (`metadata` field-grant pilot), Comment, Page, Media, Setting, Picture
+│   ├── Entity/                   # 8 entities (Content has nullable `metadata` json — no `storeUuid`)
 │   ├── Repository/
 │   ├── Service/
-│   └── Controller/App/ + Manage/ + Public/ + Store/  # Store/ContentController at /store/stores/{storeUuid}/contents (membership + Authorization + field-grant)
+│   └── Controller/App/ + Manage/ + Public/  # Manage/ContentController accepts `metadata` as whitelisted field for pilot
 │
 ├── src/Authorization/            # Independent authorization boundary (replaces coarse ROLE_ADMIN)
-│   ├── Entity/                   # Permission, Role (global/store), Assignment (userUuid/role/scope), RoleFieldGrant (json), AuditLog (append-only)
+│   ├── Entity/                   # Permission, Role (global/store), Assignment (userUuid/role/scope + scopeKey for portable UNIQUE), RoleFieldGrant (json), AuditLog (append-only)
 │   ├── Repository/               # PermissionRepository, RoleRepository, AssignmentRepository (active+scope indexes), RoleFieldGrantRepository, AuditLogRepository
 │   ├── Service/                  # AuthorizationService (can/require/allowedStoreUuids/effective, cache.app fallback), FieldAuthorizationService (strict field grant), AuthorizationResourceRegistry (common:content), AuthorizationAuditService, AuthorizationCacheInvalidator, AuthorizationScope, ScopedResourceInterface
 │   ├── Security/AuthorizationVoter.php  # Voter for permission strings + AuthorizationScope subjects, admin bypass
-│   ├── Command/SeedAuthorizationCommand.php # app:authorization:seed (11 permissions, 3 roles, 4 field grants, idempotent)
-│   ├── Controller/Manage/        # PermissionController (/manage/permissions), RoleController (/manage/roles + /{uuid}/permissions + /{uuid}/field-grants/{resource}/{action}), AssignmentController (/manage/assignments), AuditLogController (/manage/audit-logs) — all ROLE_ADMIN, ApiView + List/Detail/Create/Update/Delete mixins
+│   ├── Command/SeedAuthorizationCommand.php # app:authorization:seed (11 permissions, 3 roles, 4 field grants, idempotent, registry-validated)
+│   ├── Controller/Manage/        # PermissionController (/manage/permissions — List/Detail, read-only), RoleController (/manage/roles + /{uuid}/permissions + /{uuid}/field-grants/{resource}/{action} — system 403), AssignmentController (/manage/assignments — List/Detail/Create/Update/Delete via mixins, idempotent grant, soft revoke via processDeletion), AuditLogController (/manage/audit-logs) — all ROLE_ADMIN
 │   ├── Controller/App/MyAuthorizationController.php # GET /app/authorization/me (permissions/storeScopes/fieldGrants)
 │   └── Resources/config/services_authorization.yaml
+│   Manual/Runbook: docs/manual/authorization.md + docs/runbooks/authorization.md — how to seed and operate Authorization
 │
 ├── src/Identity/                 # Authentication & Identity
 │   ├── Entity/User.php, RefreshToken.php, Profile.php     # User has __toString(): username fallback to email; User::$profile (OneToOne→Profile)
@@ -149,7 +150,7 @@
 │       ├── workflow.yaml         # Order state machine, including Store acceptance
 │       ├── messenger.yaml        # Trade/Store integration messages to async transport
 │       └── ...
-├── migrations/                   # 26 migrations (latest: 20260901000000 authorization tables + 20260901000001 common_content store_uuid/metadata, 2026-08-15 wallet_voucher_comment)
+├── migrations/                   # 26 migrations (latest: 20260901000000 authorization tables + 20260901000001 common_content `metadata` only, 2026-08-15 wallet_voucher_comment)
 ├── translations/                 # i18n translation files (messages.en/zh/zh_Hant/ja.yaml)
 ├── docs/
 │   ├── ai/context.md             # This file
@@ -161,7 +162,7 @@
 ├── scripts/tests/                # API smoke, Store orchestration smoke, trade workflow scripts
 ├── tests/                        # 320+ PHPUnit test files, organized by layer:
 │   ├── UnitTest/                 #   197 files — pure unit tests (no kernel/DB), App\Tests\UnitTest\...
-│   ├── Integration/              #   73 files — kernel/DB/HTTP tests + helpers (DatabaseBootstrapTrait, IntegrationWebTestCase) incl. AuthorizationContentPilotTest (store_content_editor vs metadata_editor, cross-store 404, /app/authorization/me)
+│   ├── Integration/              #   73 files — kernel/DB/HTTP tests + helpers (DatabaseBootstrapTrait, IntegrationWebTestCase) incl. AuthorizationContentPilotTest (store_content_editor vs metadata_editor field-grant, /app/authorization/me)
 │   └── LowValue/                 #   43 files — deprecated/low-value tests, excluded from default run, App\Tests\LowValue\...
 │                                 主套件 = UnitTest + Integration（2394 tests, 159 notices）；低价值可 --group low-value 显式运行
 ├── README.md                     # English README (vertical chain Clients→Api→Core→Identity/Authorization/Common/Storage/Promotion→Trade→Store&Inventory/Payment&Wallet→Settlement/Exchange→Messaging→Persistence)
@@ -245,14 +246,14 @@ Profile is auto-created on User registration via a Doctrine lifecycle listener. 
 
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
-| GET | `/api/v1/manage/permissions` | ROLE_ADMIN | List permission catalogue (seeded) |
-| GET/POST/PUT/DELETE | `/api/v1/manage/roles/*` | ROLE_ADMIN | Roles (List/Detail/Create/Update/Delete) + `POST /{uuid}/permissions` replace, `PUT /{uuid}/field-grants/{resource}/{action}` replace |
-| GET/POST/DELETE | `/api/v1/manage/assignments` `/manage/assignments/{uuid}` | ROLE_ADMIN | List (filter userUuid/scope), grant (idempotent, scope-compat, audit+cache), revoke (soft `revokedAt`) |
+| GET | `/api/v1/manage/permissions` | ROLE_ADMIN | List permission catalogue (seeded, **read-only** — no HTTP create/update/delete) |
+| GET/POST/PUT/DELETE | `/api/v1/manage/roles/*` | ROLE_ADMIN | Roles (List/Detail/Create/Update/Delete) + `POST /{uuid}/permissions` replace, `PUT /{uuid}/field-grants/{resource}/{action}` replace; system roles are 403 on update/delete/replace |
+| GET/POST/PUT/DELETE | `/api/v1/manage/assignments` `/manage/assignments/{uuid}` | ROLE_ADMIN | List (filter userUuid/scope), grant (idempotent batch, scope-compat, audit+cache), detail, update (re-validated, audit `assignment.updated`), revoke (soft `revokedAt`, audit, cache evict) |
 | GET | `/api/v1/manage/audit-logs` | ROLE_ADMIN | Paginated audit history (`targetType`, `actorUuid`) |
 | GET | `/api/v1/app/authorization/me` | ROLE_USER | Current user effective permissions/storeScopes/fieldGrants (UI only) |
-| POST | `/api/v1/store/stores/{storeUuid}/contents` etc. | ROLE_USER + membership + `common:content:*` | Store-scoped Content pilot (list/create/detail/update/delete, `storeUuid` from route, field-grant enforced via `FieldAuthorizationService`) |
+| `common:content` `metadata` | `metadata` (json) | `Content.metadata` field-grant pilot (editor vs metadata_editor via `FieldAuthorizationService`) |
 
-Seed: `app:authorization:seed` (11 permissions, 3 roles, 4 field grants). `AuthorizationService` uses `cache.app` (`authorization_effective_*`, 300s, DB fallback, admin bypass).
+Setup: `php bin/console doctrine:migrations:migrate && php bin/console app:authorization:seed` (idempotent, registry-validated; see `docs/manual/authorization.md` and `docs/runbooks/authorization.md`). `AuthorizationService` uses `cache.app` (`authorization_effective_*`, 300s, DB fallback, admin bypass). `Assignment` uniqueness is `UNIQUE(user_uuid, role_id, scope_type, scope_key)` (`scope_key=''` for global) so global grants are portable across MySQL/PostgreSQL/SQLite.
 
 ## 5. Dynamic Query System
 
@@ -622,7 +623,7 @@ Placed in `src/Core/Controller/System/` (framework layer). NelmioApiDoc path_pat
 | **Trait mixins** | View layer | 9 PHP traits composed into controllers; Manage Authorization controllers use `ApiView` + `List/Detail/Create/Update/Delete` mixins |
 | **View message constants** | Core/View | `ApiViewMessages` extracts all hardcoded strings from View traits into constants + formatters |
 | **Generic services** | Core/Service | `@template TEntity` + `@extends BaseService<Entity>` enables static analysis inference across the service layer |
-| **Field whitelisting** | Controllers | `$requiredCreateProperties`, `$acceptedCreateProperties`, `$acceptedUpdateProperties` (Role: `code/name/scopeType`; Assignment: `userUuid/roleUuid/scopeType/scopeUuid`; Content Store: `title/body/category/tags/metadata`) |
+| **Field whitelisting** | Controllers | `$requiredCreateProperties`, `$acceptedCreateProperties`, `$acceptedUpdateProperties` (Role: `code/name/scopeType`; Assignment: `userUuid/roleUuid/scopeType/scopeUuid`; Content: `title/body/category/tags/metadata`) |
 | **Money in cents** | Wallet + Trade + Payment | `bigint` cents, API boundary converts ×/÷100 |
 | **UUID v4** | Trade + Wallet + Authorization + Store | `UUID::v4()` for external identity |
 | **Soft delete** | Trade | `isDeleted` boolean on Product, Specification |
@@ -663,8 +664,8 @@ Placed in `src/Core/Controller/System/` (framework layer). NelmioApiDoc path_pat
 | **Inventory global bypass** | Store + Inventory | INVENTORY_ENABLED env var allows deployments without inventory management |
 | **Per-stock negative inventory** | Inventory | Each Stock has allowNegativeStock flag; independent per store/material pair |
 | **Outbox claim pattern** | Inventory + Store + Trade | Outbox publishers atomically claim rows via UPDATE WHERE, preventing concurrent delivery |
-| **Authorization RBAC** | Authorization | Scoped RBAC (`global`/`store`), `AuthorizationService::can/require/allowedStoreUuids` (cache `authorization_effective_*` 300s, DB fallback, admin bypass), `FieldAuthorizationService` (union of `RoleFieldGrant` intersected with controller `accepted*Properties`, strict 403), `AuthorizationVoter`, `Store` membership (`Membership.isActive`) composed with Authorization in `Common/Controller/Store/ContentController` via `DqlExpression` + criteria |
-| **Store Content pilot** | Common + Authorization | `common_content.store_uuid` nullable indexed + `metadata` json; `GET/POST/PUT/DELETE /store/stores/{storeUuid}/contents` enforce membership + `common:content:*` + field grants (editor vs metadata_editor) |
+| **Authorization RBAC** | Authorization | Scoped RBAC (`global`/`store`, `UNIQUE(user,role,scope_type,scope_key)`), `AuthorizationService::can/require/allowedStoreUuids` (cache `authorization_effective_*` 300s, DB fallback, admin bypass), `FieldAuthorizationService` (union of `RoleFieldGrant` intersected with controller `accepted*Properties`, strict 403), `AuthorizationVoter`; Store membership (`Membership.isActive`) composes with Authorization for Store resources (`store:order:*`) |
+| **Content field-grant pilot** | Common + Authorization | `common_content.metadata` json only (no `store_uuid`); `FieldAuthorizationService` demonstrates `metadata` vs non-`metadata` grants (editor vs metadata_editor) |
 
 ## 14. API Documentation System
 

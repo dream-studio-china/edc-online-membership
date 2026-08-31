@@ -19,6 +19,11 @@ trait DeleteApiViewMixin
         return $filter;
     }
 
+    protected function processDeletion(object $entity): ?Response
+    {
+        return null;
+    }
+
     #[OA\Delete(
         tags: ['Delete'],
         responses: [
@@ -38,6 +43,10 @@ trait DeleteApiViewMixin
 
         if (!$entity) {
             return $this->warning(ApiViewMessages::ENTITY_NOT_FOUND, 404, '', 404);
+        }
+
+        if (($response = $this->processDeletion($entity)) !== null) {
+            return $response;
         }
 
         return $service->remove($entity) ?
