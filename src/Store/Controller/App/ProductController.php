@@ -33,20 +33,20 @@ class ProductController extends RestController
             ['status' => 'active', 'isDeleted' => false]
         );
 
-        try {
-            $storeContext = $this->storeContextResolver?->resolve();
-        } catch (\Throwable) {
-            $storeContext = null;
-        }
-
-        if ($storeContext === null || $this->storeRepository === null) {
-            return $global;
-        }
-
-        try {
-            $store = $this->storeRepository->findOneBy(['uuid' => $storeContext->storeUuid]);
-        } catch (\Throwable) {
-            return $global;
+        $store = null;
+        if ($this->storeRepository !== null) {
+            try {
+                $storeContext = $this->storeContextResolver?->resolve();
+            } catch (\Throwable) {
+                $storeContext = null;
+            }
+            if ($storeContext !== null) {
+                try {
+                    $store = $this->storeRepository->findOneBy(['uuid' => $storeContext->storeUuid]);
+                } catch (\Throwable) {
+                    $store = null;
+                }
+            }
         }
 
         if ($store === null) {
