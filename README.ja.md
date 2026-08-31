@@ -12,40 +12,41 @@
 
 ```mermaid
 flowchart TB
+    Client["Clients<br/>Admin · App · Webhook"]
+    Api["Symfony HTTP API<br/>Controllers · View mixins · OpenAPI"]
     Core["<b>Core フレームワーク</b><br/>BaseService · View Mixins · Expression→DQL"]
 
     Identity["Identity<br/>認証 · JWT · OTP · User"]
-    Common["Common<br/>CMS（7 エンティティ）"]
+    Authorization["Authorization（設計）<br/>RBAC · スコープ · フィールド権限"]
+    Common["Common<br/>CMS · コンテンツ"]
     Storage["Storage<br/>メディアドライバ"]
-    Wechat["Wechat<br/>ログイン + 決済"]
-    Wallet["Wallet<br/>残高 · 転送 · バウチャー"]
-    Payment["Payment<br/>請求書 · ゲートウェイ · 調整"]
+    Promotion["Promotion<br/>価格ルール"]
     Trade["Trade<br/>注文 · 価格計算"]
-    Store["Store<br/>マルチストア Outbox"]
-    Inventory["Inventory<br/>在庫 · 予約"]
-    Promotion["Promotion<br/>DSL エンジン"]
+    Fulfilment["Store & inventory<br/>マルチストア · 在庫"]
+    Payments["Payment & wallet<br/>請求書 · 残高"]
+    Wechat["Wechat<br/>ログイン · 決済"]
     Settlement["Settlement<br/>分配 · 最終性"]
-    Exchange["Exchange（設計）<br/>為替 · プール · 発行"]
+    Exchange["Exchange（設計）<br/>為替 · プール"]
+    Messaging["非同期配信<br/>Outbox · Messenger · Inbox"]
+    Persistence["永続化とランタイム<br/>Doctrine · MySQL · Redis"]
 
-    Identity --> Core
-    Common --> Core
-    Storage --> Core
-    Storage --> Common
-    Wechat --> Core
-    Wechat --> Identity
-    Wallet --> Core
-    Wallet --> Identity
-    Payment --> Core
-    Payment --> Wallet
-    Trade --> Core
-    Trade --> Payment
-    Trade --> Store
-    Trade --> Inventory
-    Promotion --> Core
+    Client --> Api --> Core
+    Core --> Identity
+    Core --> Common
+    Core --> Promotion
+    Identity --> Authorization
+    Identity --> Wechat
+    Common --> Storage
+    Common -. "Content pilot" .-> Authorization
     Promotion --> Trade
-    Settlement --> Core
-    Settlement --> Wallet
-    Exchange -. "design" .-> Core
+    Trade --> Fulfilment
+    Trade --> Payments --> Settlement
+    Fulfilment -. "scoped decisions" .-> Authorization
+    Payments -. "future economy" .-> Exchange
+    Trade -. events .-> Messaging
+    Fulfilment -. events .-> Messaging
+    Settlement -. events .-> Messaging
+    Messaging --> Persistence
 ```
 
 ビジネス操作は一貫した「リクエストからトランザクションまで」の境界に従います。たとえばウォレット決済は、サービス層でプロバイダを解決し、その効果を単一のデータベーストランザクションで記録します。
@@ -158,7 +159,7 @@ CRUD Skeleton は、生成された CRUD 以上のものを必要とするが、
 - **トランザクション型コマースワークフロー**: 注文、在庫予約、請求書、決済ゲートウェイ、ウォレット調整、決済分配。
 - **財務の監査可能性**: 冪等な転送、バウチャー裏付けの入金・出金、内部残高検証と照合、バージョン付き決済ルール。
 - **拡張可能な統合**: JWT と OTP 認証、WeChat ログインと決済、ローカルまたは Qiniu メディアストレージ、プロモーションルール DSL。
-- **アクセス制御と監査**: ロール保護された管理エンドポイント、特権動的クエリの保護、変更リクエストの有界監査ログ。
+- **アクセス制御と監査**: `ROLE_ADMIN` で保護された管理エンドポイント、特権動的クエリの保護、変更リクエストの有界監査ログ。スコープ付き RBAC とフィールド権限を持つ独立した Authorization モジュールは設計済みだが未実装。
 - **信頼性の高い非同期処理**: Messenger ワーカーと、モジュール間イベントのための outbox/inbox パターン。
 - **本番診断**: OpenAPI ドキュメント、準備・生存プローブ、Prometheus メトリクス、エンドポイントレート制限。
 - **強制される品質チェック**: PHPUnit、PHPStan Level 8、Rector 型ルール、CI での 90% 行カバレッジ閾値。
@@ -182,7 +183,7 @@ CRUD Skeleton は、生成された CRUD 以上のものを必要とするが、
 
 ## プロジェクト構成
 
-リポジトリはモジュラーモノリスです。`src/` にアプリケーションコード（Core フレームワークと、Common、Identity、Trade、Payment、Wallet、Storage などのビジネスモジュール）が置かれ、その隣に `config/`、`migrations/`、`tests/`、`docs/`、Docker/Compose ファイルがあります。
+リポジトリはモジュラーモノリスです。`src/` にアプリケーションコード（Core フレームワークと、Common、Identity、Trade、Payment、Wallet、Storage などのビジネスモジュール）が置かれ、その隣に `config/`、`migrations/`、`tests/`、`docs/`、Docker/Compose ファイルがあります。設計済みの `src/Authorization/` モジュールは別途ドキュメント化されており、ランタイムにはまだ存在しません。
 
 完全な詳細ディレクトリツリー（各モジュールのコントローラ、サービス、エンティティ、リポジトリまで）は、
 **[プロジェクト構成 — 開発マニュアル](docs/manual/project-structure.md)** を参照してください。
@@ -240,6 +241,7 @@ PHP/Symfony でネイティブに実行するか、Docker Compose（app、nginx�
 | **Settlement** | 分配と最終性 | バージョン付きルール、監査可能な分配、ウォレット入金 |
 | **Promotion** | 価格ルール | プロモーション DSL、計算戦略、キャンペーンルーティング |
 | **Identity** | 認証 | JWT、OTP、登録、ユーザープロフィール、管理 |
+| **Authorization** *(設計)* | 認可 | スコープ付き RBAC、ストアスコープ付与、厳格なフィールド権限と認可監査設計；未実装 |
 | **Storage** | メディアアップロード | ローカルと Qiniu Kodo ストレージドライバ |
 | **Wechat** | WeChat 連携 | ログインと WeChat Pay V3 |
 | **Exchange** *(設計)* | ポイント経済 | 為替レートと流動性プールの設計；未実装 |
@@ -293,6 +295,7 @@ class ContentController extends RestController
 - **[データベースとマイグレーション](docs/manual/database-and-migrations.md)** — Doctrine の慣例と移植可能なマイグレーションワークフロー
 - **[統合イベント](docs/manual/integration-events.md)** — トランザクション outbox/inbox、冪等コンシューマ、リトライ、スケジューラ操作
 - **[バンドル設計ドキュメント](docs/design/bundles/)** — 実装済みおよび設計段階のモジュールの設計ノート
+- **[Authorization 設計](docs/design/bundles/authorization.md)** — 独立した Authorization モジュール設計、移行パス、コンテンツパイロット、フィールド権限と受け入れ基準
 - **[Runbooks](docs/runbooks/)** — モジュール別の運用手順
 - **[テストと本番検証](docs/testing/crud-skeleton-production/README.md)** — 変更タイプ別に必要な検証エビデンス
 - **[OpenAPI 仕様](docs/openapi/endpoints.yaml)** と **[注文と決済フロー](docs/openapi/order-payment-flow.md)** — API リファレンスとコンシューマワークフロー

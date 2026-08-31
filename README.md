@@ -12,45 +12,41 @@ The application is a layered Symfony API: controllers compose trait-based view m
 
 ```mermaid
 flowchart TB
+    Client["Clients<br/>Admin · App · Webhook"]
+    Api["Symfony HTTP API<br/>Controllers · View mixins · OpenAPI"]
     Core["<b>Core Framework</b><br/>BaseService · View Mixins · Expression→DQL"]
 
     Identity["Identity<br/>Auth · JWT · OTP · User"]
-    Authorization["Authorization (design)<br/>RBAC · Store scope · Field grants"]
-    Common["Common<br/>CMS (7 entities)"]
+    Authorization["Authorization (design)<br/>RBAC · scopes · field grants"]
+    Common["Common<br/>CMS · content"]
     Storage["Storage<br/>Media drivers"]
-    Wechat["Wechat<br/>Login + Pay"]
-    Wallet["Wallet<br/>Balance · Transfer · Voucher"]
-    Payment["Payment<br/>Invoice · Gateway · Adjustment"]
-    Trade["Trade<br/>Order · Pricing"]
-    Store["Store<br/>Multi-store Outbox"]
-    Inventory["Inventory<br/>Stock · Reservation"]
-    Promotion["Promotion<br/>DSL engine"]
-    Settlement["Settlement<br/>Allocation · Finality"]
-    Exchange["Exchange (design)<br/>Rates · Pool · Mint"]
+    Promotion["Promotion<br/>Pricing rules"]
+    Trade["Trade<br/>Orders · pricing"]
+    Fulfilment["Store & inventory<br/>Multi-store · stock"]
+    Payments["Payment & wallet<br/>Invoices · balances"]
+    Wechat["Wechat<br/>Login · Pay"]
+    Settlement["Settlement<br/>Allocation · finality"]
+    Exchange["Exchange (design)<br/>Rates · pool"]
+    Messaging["Async delivery<br/>Outbox · Messenger · Inbox"]
+    Persistence["Persistence & runtime<br/>Doctrine · MySQL · Redis"]
 
-    Identity --> Core
-    Authorization -. "design" .-> Core
-    Authorization -. "User UUID" .-> Identity
-    Common --> Core
-    Storage --> Core
-    Storage --> Common
-    Wechat --> Core
-    Wechat --> Identity
-    Wallet --> Core
-    Wallet --> Identity
-    Payment --> Core
-    Payment --> Wallet
-    Trade --> Core
-    Trade --> Payment
-    Trade --> Store
-    Trade --> Inventory
-    Store -. "scoped decisions" .-> Authorization
+    Client --> Api --> Core
+    Core --> Identity
+    Core --> Common
+    Core --> Promotion
+    Identity --> Authorization
+    Identity --> Wechat
+    Common --> Storage
     Common -. "Content pilot" .-> Authorization
-    Promotion --> Core
     Promotion --> Trade
-    Settlement --> Core
-    Settlement --> Wallet
-    Exchange -. "design" .-> Core
+    Trade --> Fulfilment
+    Trade --> Payments --> Settlement
+    Fulfilment -. "scoped decisions" .-> Authorization
+    Payments -. "future economy" .-> Exchange
+    Trade -. events .-> Messaging
+    Fulfilment -. events .-> Messaging
+    Settlement -. events .-> Messaging
+    Messaging --> Persistence
 ```
 
 Business operations follow a consistent request-to-transaction boundary. For example,
