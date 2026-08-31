@@ -6,8 +6,8 @@ namespace App\Tests\UnitTest\Trade\Entity;
 
 use App\Trade\Entity\Order;
 use App\Trade\Entity\OrderItem;
-use App\Trade\Entity\Product;
-use App\Trade\Entity\Specification;
+use App\Store\Entity\Product;
+use App\Store\Entity\Specification;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 

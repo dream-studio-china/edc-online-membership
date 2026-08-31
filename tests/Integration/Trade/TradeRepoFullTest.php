@@ -7,8 +7,8 @@ namespace App\Tests\Integration\Trade;
 use App\Tests\Integration\DatabaseBootstrapTrait;
 use App\Trade\Entity\Order;
 use App\Trade\Entity\OrderItem;
-use App\Trade\Entity\Product;
-use App\Trade\Entity\Specification;
+use App\Store\Entity\Product;
+use App\Store\Entity\Specification;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 

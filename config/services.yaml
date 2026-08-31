@@ -53,6 +53,8 @@ services:
             - '../src/Wechat/Service/Payment/WechatPayGateway.php'
             - '../src/Settlement/Integration/Fixture/*'
             - '../src/Promotion/Exception/*'
+            - '../src/Trade/Repository/ProductRepository.php'
+            - '../src/Trade/Repository/SpecificationRepository.php'
 
     App\Core\EventListener\OpenApiEnricherListener:
         tags:
@@ -111,6 +113,8 @@ services:
 
     App\Identity\Service\OtpStorageInterface: '@App\Identity\Service\LocalCacheOtpStorage'
     App\Trade\Service\StoreContextResolverInterface: '@App\Store\Service\StoreContextResolver'
+    App\Trade\Repository\ProductRepository: '@App\Store\Repository\ProductRepository'
+    App\Trade\Repository\SpecificationRepository: '@App\Store\Repository\SpecificationRepository'
     App\Inventory\Service\MaterialServiceInterface: '@App\Inventory\Service\MaterialService'
     App\Inventory\Service\StockServiceInterface: '@App\Inventory\Service\StockService'
     App\Inventory\Service\SpecificationRecipeServiceInterface: '@App\Inventory\Service\SpecificationRecipeService'

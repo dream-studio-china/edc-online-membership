@@ -62,22 +62,23 @@
 │   ├── Command/CreateUserCommand.php
 │   └── Controller/AuthController.php, App/UserController.php, App/ProfileController.php, Manage/UserController.php, Manage/ProfileController.php
 │
-├── src/Trade/                    # E-commerce module
-│   ├── Entity/                   # Product, Specification, Order, OrderItem, TradeOutboxMessage
-│   ├── Service/OrderService.php        # StoreContext-aware creation + price pipeline
+├── src/Trade/                    # E-commerce module (orders + pricing, Store catalog via StoreContext)
+│   ├── Entity/                   # Order, OrderItem (ManyToOne Store\Specification), TradeOutboxMessage
+│   ├── Service/OrderService.php        # StoreContext-aware creation + price pipeline (Store visibility)
 │   ├── Command/PublishOutboxCommand.php # app:trade:outbox:publish
 │   ├── MessageHandler/           # Store acceptance/rejection consumers
-│   ├── Service/Pricing/                # PriceCalculatorInterface (Base, Quantity, Total)
+│   ├── Service/Pricing/                # PriceCalculatorInterface (Base with Store visibility, Quantity, Total)
 │   ├── EventListener/OrderWorkflowListener.php
 │   ├── Exception/                      # OrderInvalidTransitionException, SpecificationNotFoundException
-│   └── Controller/App/ + Manage/       # CRUD + workflow + pay/refund/fulfill + items + cancel + spec browse/v2
+│   └── Controller/App/ + Manage/       # CRUD + workflow + pay/refund/fulfill + items + cancel (catalog via Store)
 │
-├── src/Store/                    # Multi-store operational boundary
-│   ├── Entity/                   # Store, membership, StoreOrder, Outbox, Inbox
-│   ├── Service/                  # Context, membership, StoreOrder, Outbox services
+├── src/Store/                    # Multi-store operational boundary + catalog
+│   ├── Entity/                   # Store, Product (trade_product, nullable store), Specification (trade_specification), membership, StoreOrder, Outbox, Inbox
+│   ├── Repository/               # ProductRepository, SpecificationRepository (Store-owned)
+│   ├── Service/                  # ProductService, SpecificationService, Context, membership, StoreOrder, Outbox services
 │   ├── MessageHandler/           # Inbox-idempotent Trade order consumer; Inventory outcome consumers
 │   ├── Command/PublishOutboxCommand.php # app:store:outbox:publish
-│   └── Controller/App/ + Manage/ + Staff/ # Staff controllers enforce membership (isActive) before Authorization checks
+│   └── Controller/App/ + Manage/ + Staff/ # App/Manage Product/Specification + StoreOrder + Staff membership checks
 │
 ├── src/Payment/                  # Payment module
 │   ├── Entity/Invoice.php              # Payment invoice (pending→paying→paid→refunded)
@@ -183,16 +184,9 @@
     └── docs.yml                  # GitHub Pages deploy
 ```
 
-### Approved Catalog Target (Not Implemented)
+### Store Catalog (Implemented)
 
-`docs/design/store-catalog.md` defines the approved catalog ownership transition:
-Product and Specification move from Trade to Store; `Product.store = null` means a
-shared/global catalog record, while a non-null Store relation means a Store-private
-record. A resolved active Store remains mandatory for every quote and order. Pricing
-must allow only shared Products or Products owned by that Store; Inventory remains
-keyed by Store UUID and Specification UUID, and Payment remains independent of catalog
-entities. Do not describe this target as the current implementation until the migration,
-Store-scoped catalog APIs, and pricing checks are merged.
+`docs/design/store-catalog.md` is the implemented catalog model: `Store` owns `Product`/`Specification` (`store` nullable, `NULL` = shared/global; tables `trade_product`/`trade_specification` retained via `Version20260902000000`). `App\Store\Controller\App\ProductController` and `Trade\Service\Pricing\BasePriceCalculator` enforce `store IS NULL OR store = currentStore` via `StoreContext` (`X-Store-Code`). `Trade` remains order authority; `Inventory` remains scalar `specificationUuid`.
 
 ## 3. Request Lifecycle
 

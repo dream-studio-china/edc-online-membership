@@ -2,20 +2,16 @@
 
 declare(strict_types=1);
 
-namespace App\Trade\Service;
+namespace App\Store\Service;
 
 use App\Core\Service\BaseService;
 use App\Store\Entity\Specification;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
-/**
- * @deprecated Use App\Store\Service\SpecificationService - kept for BC
- * @extends BaseService<\App\Store\Entity\Specification>
- */
+/** @extends BaseService<\App\Store\Entity\Specification> */
 final class SpecificationService extends BaseService implements SpecificationServiceInterface
 {
     public function __construct(
-        ContainerInterface $container,
+        \Symfony\Component\DependencyInjection\ContainerInterface $container,
     ) {
         parent::__construct($container, Specification::class);
     }

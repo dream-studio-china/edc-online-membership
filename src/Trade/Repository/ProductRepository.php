@@ -4,38 +4,17 @@ declare(strict_types=1);
 
 namespace App\Trade\Repository;
 
-use App\Trade\Entity\Product;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use App\Store\Entity\Product;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @extends \Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository<\App\Trade\Entity\Product>
+ * @deprecated Use App\Store\Repository\ProductRepository - kept for BC during Store catalog migration
+ * @extends \App\Store\Repository\ProductRepository
  */
-class ProductRepository extends ServiceEntityRepository
+class ProductRepository extends \App\Store\Repository\ProductRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, Product::class);
-    }
-
-    public function findById(int $id): ?Product
-    {
-        return $this->find($id);
-    }
-
-    /**
-     * @return list<Product>
-     */
-    public function findNotDeleted(): array
-    {
-        return $this->findBy(['isDeleted' => false]);
-    }
-
-    /**
-     * @return list<Product>
-     */
-    public function findActive(): array
-    {
-        return $this->findBy(['status' => Product::STATUS_ACTIVE, 'isDeleted' => false]);
+        parent::__construct($registry);
     }
 }

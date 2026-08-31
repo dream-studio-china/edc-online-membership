@@ -1,9 +1,6 @@
 # Store Catalog Model
 
-> **Status: approved target architecture; not implemented yet.** The current Product and
-> Specification entities remain in `Trade`. This document defines their planned ownership
-> transfer and the invariants that must be implemented before the transfer is considered
-> complete.
+> **Status: implemented.** Product and Specification are owned by `Store` (`src/Store/Entity/Product.php`, `src/Store/Entity/Specification.php`, tables `trade_product`/`trade_specification` retained). `Product.store` is nullable: `NULL` = shared/global, `Store` = store-private. The invariants below are enforced.
 
 ## 1. Purpose
 
@@ -82,20 +79,10 @@ Catalog Product -> Store Listing -> Store-specific price and availability
 
 Do not add that layer until those differing Store-level semantics are required.
 
-## 6. Implementation Migration
+## 6. Implementation Notes
 
-1. Add nullable `Product.store_id` with a local Store FK and index; backfill no value so
-   existing products remain shared/global.
-2. Resolve and require Store context for catalog reads, quotes, and new orders; enforce
-   the visibility predicate in the pricing path.
-3. Replace `Trade\OrderItem`'s Doctrine Specification relation with a scalar catalog
-   Specification UUID plus the existing immutable snapshots. This is required before the
-   entity moves because Trade must not retain a cross-module Doctrine association to Store.
-4. Move Product and Specification ownership from `Trade` to `Store` in a follow-up
-   mechanical refactor. Keep the existing table names and UUIDs initially to avoid a
-   data-table rename.
-5. Update Store-scoped authorization, tests, OpenAPI descriptions, and event consumers.
-
-The namespace move is not a database migration by itself. The `store_id` relation,
-checkout visibility enforcement, and Trade's replacement of the Specification FK are the
-behavior-changing parts.
+1. `Product.store_id` (`store` ManyToOne, nullable, `ON DELETE SET NULL`, index `idx_trade_product_store`) was added via `Version20260902000000`. Existing rows remain `NULL` (shared/global).
+2. Catalog reads (`App\Store\Controller\App\ProductController`) and pricing (`Trade\Service\Pricing\BasePriceCalculator`) enforce `product.store IS NULL OR product.store = currentStore`. Store-private specs are rejected without a matching Store context.
+3. Manage API (`App\Store\Controller\Manage\ProductController`) accepts `store` (UUID or null) and resolves via `StoreRepository`.
+4. Tables `trade_product`/`trade_specification` are retained; only the PHP namespaces moved to `App\Store\Entity`. `Trade\Entity\Product/Specification` remain as deprecated BC aliases.
+5. `Trade\Entity\OrderItem.specification` now points to `App\Store\Entity\Specification` (same table, cross-module) but the long-term target is a scalar `specificationUuid` plus snapshots per §3. `Trade` still owns orders and pricing orchestration.

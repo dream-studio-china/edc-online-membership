@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Trade\Entity;
 
 use App\Core\Utils\UUID;
+use App\Store\Entity\Specification;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: \App\Trade\Repository\OrderItemRepository::class)]

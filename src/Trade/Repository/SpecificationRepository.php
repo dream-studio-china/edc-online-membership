@@ -4,56 +4,17 @@ declare(strict_types=1);
 
 namespace App\Trade\Repository;
 
-use App\Trade\Entity\Specification;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\DBAL\LockMode;
+use App\Store\Entity\Specification;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @extends \Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository<\App\Trade\Entity\Specification>
+ * @deprecated Use App\Store\Repository\SpecificationRepository - kept for BC during Store catalog migration
+ * @extends \App\Store\Repository\SpecificationRepository
  */
-class SpecificationRepository extends ServiceEntityRepository
+class SpecificationRepository extends \App\Store\Repository\SpecificationRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, Specification::class);
-    }
-
-    public function findById(int $id): ?Specification
-    {
-        return $this->find($id);
-    }
-
-    /**
-     * @return list<Specification>
-     */
-    public function findByProduct(int $productId): array
-    {
-        return $this->findBy([
-            'product' => $productId,
-            'isDeleted' => false,
-        ], ['sort' => 'ASC']);
-    }
-
-    /**
-     * @return list<Specification>
-     */
-    public function findActiveByProduct(int $productId): array
-    {
-        return $this->findBy([
-            'product' => $productId,
-            'status' => Specification::STATUS_ACTIVE,
-            'isDeleted' => false,
-        ], ['sort' => 'ASC']);
-    }
-
-    public function findByIdForUpdate(int $id): ?Specification
-    {
-        return $this->createQueryBuilder('s')
-            ->where('s.id = :id')
-            ->setParameter('id', $id)
-            ->getQuery()
-            ->setLockMode(LockMode::PESSIMISTIC_WRITE)
-            ->getOneOrNullResult();
+        parent::__construct($registry);
     }
 }

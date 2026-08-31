@@ -8,8 +8,8 @@ use App\Tests\Integration\DatabaseBootstrapTrait;
 use App\Tests\Integration\IntegrationWebTestCase;
 use App\Trade\Entity\Order;
 use App\Trade\Entity\OrderItem;
-use App\Trade\Entity\Product;
-use App\Trade\Entity\Specification;
+use App\Store\Entity\Product;
+use App\Store\Entity\Specification;
 use App\Trade\Repository\OrderItemRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\Group;
@@ -30,8 +30,8 @@ final class OrderItemControllerTest extends IntegrationWebTestCase
 
         $this->em->createQuery('DELETE FROM App\\Trade\\Entity\\OrderItem')->execute();
         $this->em->createQuery('DELETE FROM App\\Trade\\Entity\\Order')->execute();
-        $this->em->createQuery('DELETE FROM App\\Trade\\Entity\\Specification')->execute();
-        $this->em->createQuery('DELETE FROM App\\Trade\\Entity\\Product')->execute();
+        $this->em->createQuery('DELETE FROM App\\Store\\Entity\\Specification')->execute();
+        $this->em->createQuery('DELETE FROM App\\Store\\Entity\\Product')->execute();
         self::ensureKernelShutdown();
     }
 

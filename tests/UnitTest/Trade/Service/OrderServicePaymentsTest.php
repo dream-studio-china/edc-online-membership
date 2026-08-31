@@ -165,9 +165,9 @@ final class OrderServicePaymentsTest extends TestCase
 
     public function testCreateOrderPersistsItemSnapshotData(): void
     {
-        $product = new \App\Trade\Entity\Product();
+        $product = new \App\Store\Entity\Product();
         $product->setName('Phone');
-        $spec = new \App\Trade\Entity\Specification();
+        $spec = new \App\Store\Entity\Specification();
         $spec->setProduct($product);
         $spec->setName('Red');
 

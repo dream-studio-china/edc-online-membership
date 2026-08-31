@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace App\Tests\UnitTest\Trade\Pricing;
 
-use App\Trade\Entity\Product;
-use App\Trade\Entity\Specification;
+use App\Store\Entity\Product;
+use App\Store\Entity\Specification;
+use App\Store\Service\SpecificationServiceInterface;
 use App\Trade\Exception\SpecificationNotFoundException;
 use App\Trade\Service\Pricing\BasePriceCalculator;
 use App\Trade\Service\Pricing\PriceCalculationContext;
@@ -13,7 +14,6 @@ use App\Trade\Service\Pricing\PriceCalculationResult;
 use App\Trade\Service\Pricing\PriceCalculatorInterface;
 use App\Trade\Service\Pricing\QuantityCalculator;
 use App\Trade\Service\Pricing\TotalAggregator;
-use App\Trade\Service\SpecificationServiceInterface;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 

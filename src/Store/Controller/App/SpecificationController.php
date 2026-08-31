@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace App\Trade\Controller\App;
+namespace App\Store\Controller\App;
 
 use App\Core\Controller\RestController;
 use App\Core\View\ApiView;
 use App\Core\View\DetailApiViewMixin;
 use App\Core\View\ListApiViewMixin;
-use App\Trade\Service\SpecificationServiceInterface;
+use App\Store\Service\SpecificationServiceInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;

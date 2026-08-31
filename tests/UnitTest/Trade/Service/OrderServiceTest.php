@@ -6,14 +6,14 @@ namespace App\Tests\UnitTest\Trade\Service;
 
 use App\Identity\Entity\User;
 use App\Trade\Entity\Order;
-use App\Trade\Entity\Product;
-use App\Trade\Entity\Specification;
+use App\Store\Entity\Product;
+use App\Store\Entity\Specification;
 use App\Trade\Service\OrderService;
 use App\Trade\Service\Pricing\BasePriceCalculator;
 use App\Trade\Service\Pricing\PriceCalculationResult;
 use App\Trade\Service\Pricing\QuantityCalculator;
 use App\Trade\Service\Pricing\TotalAggregator;
-use App\Trade\Service\SpecificationServiceInterface;
+use App\Store\Service\SpecificationServiceInterface;
 use App\Wallet\Entity\Transaction;
 use App\Wallet\Entity\Wallet;
 use App\Wallet\Repository\WalletRepository;

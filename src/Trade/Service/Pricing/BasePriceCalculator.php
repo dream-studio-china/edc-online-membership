@@ -4,16 +4,18 @@ declare(strict_types=1);
 
 namespace App\Trade\Service\Pricing;
 
-use App\Trade\Entity\Specification;
+use App\Store\Entity\Specification;
+use App\Store\Repository\StoreRepository;
+use App\Store\Service\SpecificationServiceInterface as StoreSpecificationServiceInterface;
 use App\Trade\Exception\SpecificationNotFoundException;
-use App\Trade\Service\SpecificationServiceInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
 #[AutoconfigureTag('trade.price_calculator')]
 class BasePriceCalculator implements PriceCalculatorInterface
 {
     public function __construct(
-        private readonly SpecificationServiceInterface $specificationService,
+        private readonly StoreSpecificationServiceInterface $specificationService,
+        private readonly ?StoreRepository $storeRepository = null,
     ) {
     }
 
@@ -47,6 +49,25 @@ class BasePriceCalculator implements PriceCalculatorInterface
             if ($product === null || $product->getIsDeleted() || !$product->isActive()) {
                 throw new SpecificationNotFoundException(
                     sprintf('Product for specification #%d is not available.', $specificationId)
+                );
+            }
+
+            // Store visibility: global (store IS NULL) OR owned by resolved Store
+            $storeCode = $context->storeCode;
+            if ($storeCode !== null && $storeCode !== '' && $this->storeRepository !== null) {
+                $store = $this->storeRepository->findOneByCode($storeCode);
+                $productStore = $product->getStore();
+                if ($productStore !== null) {
+                    if ($store === null || $productStore->getId() !== $store->getId()) {
+                        throw new SpecificationNotFoundException(
+                            sprintf('Specification #%d is not available for store %s.', $specificationId, $storeCode)
+                        );
+                    }
+                }
+            } elseif ($product->getStore() !== null) {
+                // No Store context but product is store-private
+                throw new SpecificationNotFoundException(
+                    sprintf('Specification #%d is not available without store context.', $specificationId)
                 );
             }
 
