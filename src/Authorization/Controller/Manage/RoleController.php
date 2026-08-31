@@ -49,7 +49,11 @@ class RoleController extends RestController
     ) {
     }
 
-    protected function processCreateContent(array $content, $entity): array
+    /**
+     * @param array<string, mixed> $content
+     * @return array<string, mixed>
+     */
+    protected function processCreateContent(array $content, object $entity): array
     {
         $code = trim((string) ($content['code'] ?? ''));
         $name = trim((string) ($content['name'] ?? ''));
@@ -68,7 +72,7 @@ class RoleController extends RestController
         return $content;
     }
 
-    protected function afterCreated($entity)
+    protected function afterCreated(object|false $entity): mixed
     {
         if (!$entity instanceof Role) {
             return $entity;
@@ -80,7 +84,11 @@ class RoleController extends RestController
         return $entity;
     }
 
-    protected function processUpdateContent(array $content, $entity): array
+    /**
+     * @param array<string, mixed> $content
+     * @return array<string, mixed>
+     */
+    protected function processUpdateContent(array $content, ?object $entity = null): array
     {
         if (!$entity instanceof Role) {
             return $content;
@@ -98,7 +106,7 @@ class RoleController extends RestController
         return $content;
     }
 
-    protected function afterUpdated($entity)
+    protected function afterUpdated(object|false $entity): mixed
     {
         if (!$entity instanceof Role) {
             return $entity;

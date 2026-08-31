@@ -28,9 +28,11 @@ class AuditLog
     #[ORM\Column(type: 'string', length: 36, nullable: true)]
     private ?string $targetUuid = null;
 
+    /** @var array<string, mixed>|null */
     #[ORM\Column(type: 'json', nullable: true)]
     private ?array $beforeData = null;
 
+    /** @var array<string, mixed>|null */
     #[ORM\Column(type: 'json', nullable: true)]
     private ?array $afterData = null;
 
@@ -102,11 +104,13 @@ class AuditLog
         return $this;
     }
 
+    /** @return array<string, mixed>|null */
     public function getBeforeData(): ?array
     {
         return $this->beforeData;
     }
 
+    /** @param array<string, mixed>|null $beforeData */
     public function setBeforeData(?array $beforeData): self
     {
         $this->beforeData = $beforeData;
@@ -114,11 +118,13 @@ class AuditLog
         return $this;
     }
 
+    /** @return array<string, mixed>|null */
     public function getAfterData(): ?array
     {
         return $this->afterData;
     }
 
+    /** @param array<string, mixed>|null $afterData */
     public function setAfterData(?array $afterData): self
     {
         $this->afterData = $afterData;

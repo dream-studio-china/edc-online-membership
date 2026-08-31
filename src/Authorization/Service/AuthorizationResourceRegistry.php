@@ -58,6 +58,7 @@ final class AuthorizationResourceRegistry
         return $this->resources;
     }
 
+    /** @param list<string> $fields */
     public function assertValidFields(string $resource, string $action, array $fields): void
     {
         $allowed = $this->getAllowedFields($resource, $action);

@@ -35,7 +35,15 @@ class MyAuthorizationController extends RestController
 
         // Field grants: collect per permission? We need to map resource:action -> fields
         $assignments = $this->assignmentRepository->findActiveByUser($user->getUuid());
-        $roleIds = array_values(array_unique(array_map(static fn ($a) => $a->getRole()->getId(), $assignments)));
+        /** @var list<int> $roleIds */
+        $roleIds = [];
+        foreach ($assignments as $assignment) {
+            $roleId = $assignment->getRole()->getId();
+            if ($roleId !== null) {
+                $roleIds[] = $roleId;
+            }
+        }
+        $roleIds = array_values(array_unique($roleIds));
         $fieldGrants = [];
         if ($roleIds !== []) {
             $grants = $this->fieldGrantRepository->findByRoleIds($roleIds);

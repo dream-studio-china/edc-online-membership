@@ -48,7 +48,11 @@ class AssignmentController extends RestController
     ) {
     }
 
-    protected function listFilter($filter = null)
+    /**
+     * @param array<string, mixed>|\Doctrine\ORM\QueryBuilder|\App\Core\Query\DqlExpression|null $filter
+     * @return array<string, mixed>|\Doctrine\ORM\QueryBuilder|\App\Core\Query\DqlExpression|null
+     */
+    protected function listFilter(array|\Doctrine\ORM\QueryBuilder|\App\Core\Query\DqlExpression|null $filter = null): array|\Doctrine\ORM\QueryBuilder|\App\Core\Query\DqlExpression|null
     {
         $request = $this->getRequestStack()->getCurrentRequest();
         if ($request === null) {
@@ -122,6 +126,9 @@ class AssignmentController extends RestController
         ];
     }
 
+    /**
+     * @param array{userUuid: string, roleUuid: string, scopeType: string, scopeUuid: ?string} $content
+     */
     protected function processEntity(array $content, object $entity): object
     {
         $role = $this->resolveRole($content['roleUuid']);

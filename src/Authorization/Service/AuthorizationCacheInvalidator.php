@@ -14,6 +14,7 @@ final class AuthorizationCacheInvalidator
     ) {
     }
 
+    /** @param list<string> $userUuids */
     public function invalidateUsers(array $userUuids): void
     {
         foreach ($userUuids as $uuid) {
