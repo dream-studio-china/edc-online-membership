@@ -737,11 +737,13 @@ Additional mandatory rules:
    management APIs, self-service endpoint, and seed command.
 2. Add the Access service configuration, route import, OpenAPI entries, translations,
    and MkDocs links.
-3. Add Common migration for nullable `Content.storeUuid` and nullable `metadata`.
-4. Add Store-scoped Content staff routes using the existing View mixins plus a reusable
+3. Add the Core `DqlExpression` row-scope foundation defined in section 15 before
+   introducing Store-scoped Content routes.
+4. Add Common migration for nullable `Content.storeUuid` and nullable `metadata`.
+5. Add Store-scoped Content staff routes using the existing View mixins plus a reusable
    Access scope trait/service adapter.
-5. Add static Content schema fields and strict `FieldAccessService` enforcement.
-6. Preserve all existing Manage controller `ROLE_ADMIN` guards and existing User roles.
+6. Add static Content schema fields and strict `FieldAccessService` enforcement.
+7. Preserve all existing Manage controller `ROLE_ADMIN` guards and existing User roles.
 
 ### Phase 2: Incremental Action Migration
 
@@ -822,3 +824,330 @@ The Access foundation is complete when:
   remain compatible throughout Phase 1.
 - [ ] The Content pilot tests prove User A cannot update `metadata`, User B can, and
   neither can mutate another Store's Content.
+
+---
+
+## 15. DqlExpression Row-Scope Foundation
+
+### 15.1 Purpose And Boundary
+
+`commonFilter()` already accepts array criteria and Doctrine `QueryBuilder` instances.
+Those mechanisms are sufficient to enforce row-level authorization, but policy intent
+is often obscured by aliases, joins, and parameter plumbing. `DqlExpression` is a
+small Core value object that lets a controller declare a server-owned row policy using
+the existing Expression-to-DQL syntax:
+
+```php
+use App\Core\Query\DqlExpression;
+
+protected function commonFilter(): DqlExpression
+{
+    return new DqlExpression(
+        'entity.getUser() == this.getUser()',
+    );
+}
+```
+
+It is a declarative representation of a SQL-enforced row scope. It is not a generic
+ABAC policy engine, a user-provided query feature, or a replacement for QueryBuilder.
+
+| Filter type | Appropriate use |
+|---|---|
+| Array criteria | Simple equality such as `['user' => $user]` |
+| `DqlExpression` | Readable server-owned ownership, Store, status, or tenant rules using current expression syntax |
+| QueryBuilder | `IN`, aggregation, subqueries, database functions, or performance-sensitive custom SQL shape |
+
+The current parser does not support an `in` operator. Multi-Store lists therefore
+continue to use QueryBuilder in this narrow first implementation. Adding grammar is
+out of scope for `DqlExpression`.
+
+### 15.2 Non-Negotiable Rules
+
+- Only PHP code may construct a `DqlExpression`. HTTP parameters, database records,
+  and administrator-managed Access data MUST NOT provide the expression source.
+- Variables are supplied only through the constructor values array and always bind as
+  Doctrine query parameters. They are never interpolated into DQL.
+- In an `ApiView::commonFilter()` only, `this` is an internal, read-only context
+  variable bound to the current controller. `this.getUser()` is therefore shorthand
+  for explicitly passing `['user' => $this->getUser()]` and referring to `user`.
+  It is never available to request `@filter` expressions or direct service calls.
+- Compilation, Doctrine metadata validation, parameter binding, or criteria validation
+  failure is a server configuration error. It returns HTTP 500 and rejects the request.
+- `DqlExpression` NEVER uses `LegacyEvaluator`, in-memory filtering, or an unfiltered
+  fallback. A security scope must fail closed.
+- The expression is combined with mixin-generated `id`/`uuid` lookup criteria using
+  `AND`, so detail, update, delete, and batch-update paths cannot bypass the scope.
+- It does not change authorization of creation. A create operation has no existing row
+  to filter; the controller/service must set user/store ownership from trusted context.
+
+### 15.3 Minimal Runtime Change Set
+
+The implementation intentionally avoids changing `BaseServiceInterface`,
+`ExpressionServiceInterface`, `ExpressionService`, `QueryBuilderFactory`, or the
+existing public `@filter` behavior. It has ten required Core source changes plus
+tests.
+
+| File | Change | Reason |
+|---|---|---|
+| `src/Core/Query/DqlExpression.php` | New immutable value object | Carries expression, bound variables, internal controller context, and mixin-added criteria |
+| `src/Core/Parser/ExpressionDqlParser.php` | Add variable-node compilation | The current parser compiles `entity.getUser() == user` with an empty right operand |
+| `src/Core/Service/Concern/BaseServiceReadListTrait.php` | Recognize and compile `DqlExpression` in `get()` and `list()` | Single service-layer enforcement point |
+| `src/Core/View/ApiView.php` | Bind controller `this`; merge ID/UUID criteria into a `DqlExpression` | Preserves controller context and scope for detail/update/delete/batch lookup |
+| `src/Core/View/ListApiViewMixin.php` | Widen hook type only | Allows list filter to receive the value object |
+| `src/Core/View/DetailApiViewMixin.php` | Widen hook type only | Allows detail filter to receive the value object |
+| `src/Core/View/DeleteApiViewMixin.php` | Widen hook type only | Allows deletion filter to receive the value object |
+| `src/Core/View/SingleDetailApiViewMixin.php` | Resolve the common filter through `ApiView` | Binds `this` for singleton detail |
+| `src/Core/View/SingleCreateAndUpdateApiViewMixin.php` | Resolve the common filter through `ApiView` | Binds `this` for singleton lookup/update |
+
+`ScopedListApiViewMixin` and `ScopedDetailApiViewMixin` remain unchanged in the first
+release. They already require each scope controller to build an explicit filter and
+can adopt `DqlExpression` only when an actual scoped resource needs it.
+
+### 15.4 Value Object Contract
+
+```php
+final readonly class DqlExpression
+{
+    /**
+     * @param array<string, mixed> $values
+     * @param array<string, mixed> $criteria
+     */
+    public function __construct(
+        public string $expression,
+        public array $values = [],
+        private array $criteria = [],
+        private ?object $context = null,
+    ) {}
+
+    public function withContext(object $context): self;
+
+    /** @param array<string, mixed> $criteria */
+    public function withCriteria(array $criteria): self;
+
+    /** @return array<string, mixed> */
+    public function criteria(): array;
+}
+```
+
+Constructor validation:
+
+- `expression` must be non-empty.
+- Every variable name in `values` must match `[A-Za-z_][A-Za-z0-9_]*`.
+- `entity` and `this` are reserved. They cannot be supplied in `values`.
+- `withCriteria()` never overwrites an existing criterion; duplicate keys are rejected
+  as a configuration error rather than weakening the original expression.
+- `withContext()` is idempotent for the same object and rejects a different object. It
+  adds an internal `this` binding only during `ApiView` filter resolution.
+
+`criteria` is not a public controller input feature. `ApiView::mixToCommonFilter()`
+uses it internally for keys such as `id` and `uuid`.
+
+### 15.5 Controller `this` Binding
+
+There is no ambient controller `this` in Symfony ExpressionLanguage. The existing
+expression compiler receives only `entity` and explicitly supplied values. In
+particular, BaseService's `$this` is the service instance, not the controller, so it
+must never be used for this feature.
+
+`ApiView` introduces one private resolver:
+
+```php
+protected function resolvedCommonFilter(): array|QueryBuilder|DqlExpression
+{
+    $filter = $this->commonFilter();
+
+    return $filter instanceof DqlExpression
+        ? $filter->withContext($this)
+        : $filter;
+}
+```
+
+All existing Core mixins that obtain `commonFilter()` directly use this resolver:
+
+```text
+ListApiViewMixin
+SingleDetailApiViewMixin
+SingleCreateAndUpdateApiViewMixin
+ApiView::mixToCommonFilter() for detail/update/delete/batch paths
+```
+
+This preserves the desired concise controller code:
+
+```php
+return new DqlExpression('entity.getUser() == this.getUser()');
+```
+
+and makes it equivalent to:
+
+```php
+return new DqlExpression(
+    'entity.getUser() == user',
+    ['user' => $this->getUser()],
+);
+```
+
+The first form is available only as a `commonFilter()` return value. A direct
+`BaseService::list(new DqlExpression(...))` call has no controller context and must
+use explicit values instead.
+
+### 15.6 Parser Change: Bind Variables Safely
+
+`ExpressionDqlParser` currently handles constants and getter chains but falls through
+for Symfony ExpressionLanguage variable nodes. For this expression:
+
+```text
+entity.getUser() == user
+```
+
+the current compiler produces an invalid fragment equivalent to:
+
+```sql
+filter_entity.user =
+```
+
+The narrow change adds explicit handling for `NameNode`:
+
+1. Read its name.
+2. Reject `entity`, undeclared values, and any reserved/internal name.
+3. Allocate the next existing `filter_parameter_N` name.
+4. Add `new Parameter($name, $this->values[$variableName])`.
+5. Return `:$name` to the DQL fragment.
+
+This retains the parser's existing getter-chain compilation, Doctrine metadata
+validation, and parameter namespace. Objects such as an Identity User bind as Doctrine
+association parameters; scalar Store UUIDs and statuses bind as scalar parameters.
+
+When it sees a `this.getX()` getter chain, the parser accepts it only when `this` was
+bound internally by `ApiView`, evaluates the no-argument getter once during server-side
+compilation, and binds the returned value as the same generated Doctrine parameter.
+It does not expose an arbitrary expression `this` variable to HTTP input.
+
+No new operators, functions, dynamic property access, or expression evaluation are
+introduced.
+
+### 15.7 BaseService Enforcement
+
+`BaseServiceReadListTrait` is the only runtime compiler integration point. It creates
+the normal root QueryBuilder (`entity`), compiles the expression against the service's
+managed entity class, validates fragments through Doctrine metadata, and applies the
+fragments directly using the existing:
+
+```php
+ExpressionQueryBuilderAssembler::applyToQueryBuilder($qb, $parser)
+```
+
+This direct application is preferable to the current public `@filter` implementation,
+which wraps a second filter query in `entity.id IN (subquery)`. A row scope is a
+mandatory part of the main query and should retain normal joins and pagination.
+
+After expression fragments are applied, the trait adds `criteria` predicates with a
+private helper:
+
+1. Get the root alias.
+2. Confirm each criterion key is a mapped field or association on the managed entity.
+3. Generate an internal unique parameter name such as
+   `_common_filter_criterion_1`.
+4. Append `rootAlias.field = :parameter` using the validated mapping name.
+5. Bind the value.
+
+Field names are never concatenated before metadata validation. This matters because
+the batch-update `@basis` path can ultimately pass a client-selected basis key into
+`mixToCommonFilter()`.
+
+`get(DqlExpression)` reuses the same QueryBuilder construction and retains the
+existing `NoResultException` / `NonUniqueResultException` behavior. `list()` accepts
+the same object and otherwise preserves all array and QueryBuilder branches exactly.
+
+Any exception from this server-owned compilation path is rethrown as a descriptive
+`LogicException` (for example, `Invalid server DQL common filter: ...`). Existing API
+exception handling turns it into HTTP 500. Unlike request `@filter`, there is no catch
+that can enable in-memory evaluation.
+
+### 15.8 ApiView Composition
+
+`ApiView::mixToCommonFilter()` resolves and binds its common filter before it merges
+scalar criteria for detail/update/delete lookups. Its new branch is deliberately small:
+
+```php
+if ($base instanceof DqlExpression) {
+    return $base->withCriteria($data);
+}
+```
+
+For example, Detail obtains:
+
+```text
+commonFilter(): entity.getUser() == user
+route:          {id}=42
+effective SQL:  entity.user = :user AND entity.id = :id
+```
+
+This means the row scope remains enforced without changing every controller or adding
+separate authorization calls to CRUD actions.
+
+The existing array behavior remains unchanged, including its deny-all convention:
+
+```php
+return ['id' => -1];
+```
+
+Existing controllers that return a QueryBuilder remain unchanged.
+
+### 15.9 Why ExpressionService Is Not Changed Now
+
+`ExpressionService::buildFilter()` has a cache path that stores parameter values under
+a key made only from entity class and expression source. A user-dependent expression
+could therefore reuse a previously cached parameter value for a different user.
+
+`DqlExpression` must not use that path in this narrow implementation. It constructs
+`ExpressionDqlParser` directly with no cache and applies it through the existing
+assembler. This makes user/store parameter binding request-local and correct while
+avoiding an unrelated refactor of public `@filter` behavior.
+
+The existing `@filter` cache issue remains separate technical debt and must be fixed
+before `ExpressionService` is reused for server-owned authorization filters.
+
+### 15.10 Required Tests
+
+| Layer | Cases |
+|---|---|
+| Parser unit | `entity.getUser() == user` compiles to a bound parameter; missing variable is rejected; reserved `entity`/`this` values are rejected |
+| Value object unit | Empty source, invalid variable names, immutable criteria composition, context binding idempotency, duplicate criterion rejection |
+| Base service unit | `list()` and `get()` recognize the value object and propagate a compilation error rather than falling back |
+| Core integration | Persist two Users and two User-owned entities; list/detail/update/delete for User A never return or mutate User B's entity |
+| Core integration | `this.getUser()` and explicit `user` syntax produce identical scoped results through list and singleton mixins |
+| Core integration | Getter chain plus scalar variable, e.g. Store UUID/status, validates and applies on the root QueryBuilder |
+| Regression | Existing array criteria and direct QueryBuilder common filters retain their current output |
+
+The integration test must exercise the normal View mixins, not only `BaseService`, so
+it proves `mixIdToCommonFilter()` adds the ID criterion on detail, update, and delete.
+
+### 15.11 Adoption Examples
+
+```php
+// Existing, preferred for a simple equality scope.
+protected function commonFilter(): array
+{
+    return ['user' => $this->getUser()];
+}
+
+// DqlExpression, preferred when the policy itself benefits from a readable rule.
+protected function commonFilter(): DqlExpression
+{
+return new DqlExpression(
+        'entity.getUser() == this.getUser() && entity.getStatus() != archived',
+        ['archived' => 'archived'],
+    );
+}
+
+// Continue to use QueryBuilder for a variable-size Store set.
+protected function commonFilter(): QueryBuilder
+{
+    return $this->storeScopeQueryBuilder($allowedStoreUuids);
+}
+```
+
+No existing controller is migrated as part of the Core feature. The first migration
+must be a small user-owned resource with list/detail/update/delete integration tests.
+Only then may Access use `DqlExpression` as its readable single-Store/ownership scope
+primitive.
