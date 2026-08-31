@@ -37,8 +37,8 @@ one Messenger bus, but they must behave as if they were independent services.
 | `Core` | Framework abstractions: `RestController`, `BaseService`, View mixins, Expression query engine, serialization |
 | `Common` | CMS primitives: Category, Tag, Content, Comment, Page, Media, Picture, Setting |
 | `Identity` | Authentication & accounts: User, Profile, RefreshToken, JWT/OTP flows |
-| `Trade` | E-commerce core: Product, Specification, Order, OrderItem, pricing pipeline |
-| `Store` | Multi-store operations: Store, Membership, StoreOrder distribution |
+| `Trade` | E-commerce transactions: Order, OrderItem, pricing pipeline, payment orchestration |
+| `Store` | Multi-store operations: Store, Membership, StoreOrder distribution; approved target owner of shared/private Product and Specification catalog ([Store Catalog Model](../design/store-catalog.md)) |
 | `Inventory` | Stock, materials, recipes, reservations, ledger |
 | `Payment` | Invoice lifecycle, gateway abstraction, webhooks, events |
 | `Wallet` | Balances, atomic transfers, deposits/withdrawals, vouchers, deductions |
@@ -177,7 +177,7 @@ Cross-module writes never call the target module synchronously:
 |---------|-------|
 | UUID identity on aggregates | Cross-module references are UUIDs (`Core\Utils\UUID`); durable keys never cross a boundary as plain integer IDs |
 | Optimistic locking on Wallet | `Wallet` carries an integer `version` column; concurrent balance updates detect conflicts instead of overwriting |
-| Soft delete | `Product` / `Specification` use an `isDeleted` flag (`Trade\Entity`) so pricing and history can still reference removed records |
+| Soft delete | `Product` / `Specification` use an `isDeleted` flag; the approved target moves catalog ownership to Store while retaining immutable order snapshots |
 | Token rotation | Refresh tokens are stored hashed (HMAC-SHA256) and rotated on every use with reuse detection (`Identity\Security\TokenManager`) |
 | Exact-money settlement | `QuantumAmount` (`Settlement\Service\Money`) is a base-10 integer quantum of fixed scale (default 18, `brick/math`), avoiding float error; `AllocationRoundingService` handles remainder distribution (largest-remainder) |
 | Registry pattern | `PaymentGatewayRegistry`, `PaymentAdjustmentRegistry`, `DepositProviderRegistry`, `WithdrawProviderRegistry`, `MediaStorageRegistry`, `SettlementContextResolverRegistry` |
