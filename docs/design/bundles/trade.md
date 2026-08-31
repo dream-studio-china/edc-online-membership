@@ -1,8 +1,10 @@
 # Trade Bundle Design
 
-> The Trade bundle (`src/Trade/`) is the e-commerce module. It implements products, specifications,
-> orders, order items with a pluggable price calculation pipeline and Symfony Workflow-based
-> order state machine.
+> The Trade bundle (`src/Trade/`) owns orders, order items, price calculation, and the
+> Symfony Workflow-based order state machine. Product and Specification currently live in
+> Trade, but their approved target owner is Store; see [Store Catalog Model](../store-catalog.md).
+> This document describes the current implementation unless a section explicitly says
+> "target".
 
 ---
 
@@ -10,7 +12,7 @@
 
 Trade provides a complete order management system:
 
-- **Products** with multiple **Specifications** (SKU-like variants with pricing)
+- Current catalog integration with **Products** and multiple **Specifications** (SKU-like variants with pricing)
 - **Orders** with a state machine lifecycle (draft -> completed)
 - **Order Items** with price snapshots for historical accuracy
 - **Price Calculation Pipeline**: pluggable calculators with priority ordering
@@ -18,7 +20,19 @@ Trade provides a complete order management system:
 - **UUID v4**: external identifiers for orders and items
 - **Store integration**: Store-scoped orders write a local Outbox event and await Store acceptance
 
-### 1.1 Entities
+### 1.1 Catalog Ownership Target
+
+The approved target keeps Trade as the commercial-order owner while moving the catalog
+to Store. `Product.store = NULL` denotes a shared/global catalog product;
+`Product.store = Store` denotes a Store-private product. A resolved Store is mandatory
+for quotes and orders, and pricing must accept only a Specification whose Product is
+shared or belongs to that Store. See [Store Catalog Model](../store-catalog.md) for the
+complete invariant and migration plan. Before the entity move is complete, Trade must
+replace `OrderItem`'s Specification Doctrine relation with a scalar catalog
+Specification UUID and immutable snapshots; a permanent Trade-to-Store entity relation
+would violate the system cross-module contract.
+
+### 1.2 Entities
 
 | Entity | Table | Purpose |
 |--------|-------|---------|

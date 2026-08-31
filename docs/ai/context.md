@@ -10,7 +10,7 @@
 - **PHP 8.4+**, Doctrine ORM 3.6, MySQL 8 (Docker), SQLite (tests)
 - JWT authentication (RS256), OTP/SMS login, WeChat Mini Program / Official Account login
 - Expression-based dynamic query engine (`@filter`, `@sort`, `@dql`) + server-owned row-scope `DqlExpression` (`entity.getUser() == this.getUser()`, `in`/`not in` with empty-collection safety)
-- Modular architecture: **Core** (framework + DqlExpression), **Common** (CMS + Content `metadata` field-grant pilot), **Authorization** (independent RBAC — scoped Store grants, strict field grants, audit, `AuthorizationVoter`), **Promotion** (DSL-driven promotions), **Identity** (auth), **Trade** (commercial orders), **Store** (multi-store operations), **Payment** (invoices), **Wallet** (balances), **Inventory** (stock & reservation), **Wechat** (login + pay), **Storage** (file upload drivers)
+- Modular architecture: **Core** (framework + DqlExpression), **Common** (CMS + Content `metadata` field-grant pilot), **Authorization** (independent RBAC — scoped Store grants, strict field grants, audit, `AuthorizationVoter`), **Promotion** (DSL-driven promotions), **Identity** (auth), **Trade** (commercial orders), **Store** (multi-store operations and approved shared/private catalog target), **Payment** (invoices), **Wallet** (balances), **Inventory** (stock & reservation), **Wechat** (login + pay), **Storage** (file upload drivers)
 - EasyWeChat 6.x integration (Mini Program, Official Account OAuth, WeChat Pay V3)
 - NelmioApiDoc (Swagger at `/api/doc`), PHPUnit 12.5, Docker Compose (7 services: app, worker, scheduler, nginx, MySQL, Redis, Mailpit)
 - MkDocs Material + GitHub Pages documentation (**mermaid diagram rendering enabled** via CDN + `pymdownx.superfences` custom fence)
@@ -182,6 +182,17 @@
     ├── migrations.yml            # CI: MySQL 8.4 migration chain validation
     └── docs.yml                  # GitHub Pages deploy
 ```
+
+### Approved Catalog Target (Not Implemented)
+
+`docs/design/store-catalog.md` defines the approved catalog ownership transition:
+Product and Specification move from Trade to Store; `Product.store = null` means a
+shared/global catalog record, while a non-null Store relation means a Store-private
+record. A resolved active Store remains mandatory for every quote and order. Pricing
+must allow only shared Products or Products owned by that Store; Inventory remains
+keyed by Store UUID and Specification UUID, and Payment remains independent of catalog
+entities. Do not describe this target as the current implementation until the migration,
+Store-scoped catalog APIs, and pricing checks are merged.
 
 ## 3. Request Lifecycle
 
@@ -891,7 +902,7 @@ covered by concurrency tests. The disabled schema/module may be deployed safely.
 |--------|---------|
 | `Material` | Raw material or finished good. code is unique, immutably frozen upon stock mutation |
 | `Stock` | Per-store per-material balance with onHandQuantity, reservedQuantity, allowNegativeStock flag |
-| `SpecificationRecipe` | One active recipe per Trade Specification UUID; stores material BOM lines |
+| `SpecificationRecipe` | One active recipe per catalog Specification UUID; stores material BOM lines |
 | `RecipeLine` | Quantity of a material required per unit of the parent Specification |
 | `Reservation` | Idempotent reservation aggregate with status: requested, confirmed, rejected, released, consumed |
 | `ReservationLine` | Immutable snapshot of material demand and reserved quantity per reservation |
