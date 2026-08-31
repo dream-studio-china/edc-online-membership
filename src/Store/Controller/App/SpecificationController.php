@@ -45,7 +45,7 @@ class SpecificationController extends RestController
 
         if ($storeContext === null || $this->storeRepository === null) {
             return new DqlExpression(
-                'entity.status = :specStatus AND entity.isDeleted = :specIsDeleted AND entity.product.status = :productStatus AND entity.product.isDeleted = :productIsDeleted AND entity.product.store IS NULL',
+                'entity.getStatus() == specStatus && entity.getIsDeleted() == specIsDeleted && entity.getProduct().getStatus() == productStatus && entity.getProduct().getIsDeleted() == productIsDeleted && !entity.getProduct().getStore()',
                 $baseValues
             );
         }
@@ -54,18 +54,18 @@ class SpecificationController extends RestController
             $store = $this->storeRepository->findOneBy(['uuid' => $storeContext->storeUuid]);
             if ($store === null) {
                 return new DqlExpression(
-                    'entity.status = :specStatus AND entity.isDeleted = :specIsDeleted AND entity.product.status = :productStatus AND entity.product.isDeleted = :productIsDeleted AND entity.product.store IS NULL',
+                    'entity.getStatus() == specStatus && entity.getIsDeleted() == specIsDeleted && entity.getProduct().getStatus() == productStatus && entity.getProduct().getIsDeleted() == productIsDeleted && !entity.getProduct().getStore()',
                     $baseValues
                 );
             }
 
             return new DqlExpression(
-                'entity.status = :specStatus AND entity.isDeleted = :specIsDeleted AND entity.product.status = :productStatus AND entity.product.isDeleted = :productIsDeleted AND (entity.product.store IS NULL OR entity.product.store = :store)',
+                'entity.getStatus() == specStatus && entity.getIsDeleted() == specIsDeleted && entity.getProduct().getStatus() == productStatus && entity.getProduct().getIsDeleted() == productIsDeleted && (!entity.getProduct().getStore() || entity.getProduct().getStore() == store)',
                 array_merge($baseValues, ['store' => $store])
             );
         } catch (\Throwable) {
             return new DqlExpression(
-                'entity.status = :specStatus AND entity.isDeleted = :specIsDeleted AND entity.product.status = :productStatus AND entity.product.isDeleted = :productIsDeleted AND entity.product.store IS NULL',
+                'entity.getStatus() == specStatus && entity.getIsDeleted() == specIsDeleted && entity.getProduct().getStatus() == productStatus && entity.getProduct().getIsDeleted() == productIsDeleted && !entity.getProduct().getStore()',
                 $baseValues
             );
         }

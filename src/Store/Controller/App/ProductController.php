@@ -30,25 +30,38 @@ class ProductController extends RestController
     {
         $base = ['status' => 'active', 'isDeleted' => false];
 
-        $storeContext = $this->storeContextResolver?->resolve();
+        try {
+            $storeContext = $this->storeContextResolver?->resolve();
+        } catch (\Throwable) {
+            $storeContext = null;
+        }
+
         if ($storeContext === null || $this->storeRepository === null) {
-            // No Store context - only global products
-            $base['store'] = null;
-            return $base;
+            // No Store context - only global products (store IS NULL)
+            return new DqlExpression(
+                'entity.getStatus() == status && entity.getIsDeleted() == isDeleted && !entity.getStore()',
+                ['status' => 'active', 'isDeleted' => false]
+            );
         }
 
         // Visible: global (store IS NULL) OR owned by current Store
         try {
             $store = $this->storeRepository->findOneBy(['uuid' => $storeContext->storeUuid]);
             if ($store === null) {
-                return $base + ['store' => null];
+                return new DqlExpression(
+                    'entity.getStatus() == status && entity.getIsDeleted() == isDeleted && !entity.getStore()',
+                    ['status' => 'active', 'isDeleted' => false]
+                );
             }
             return new DqlExpression(
-                '(entity.store IS NULL OR entity.store = :store) AND entity.status = :status AND entity.isDeleted = :isDeleted',
+                '(!entity.getStore() || entity.getStore() == store) && entity.getStatus() == status && entity.getIsDeleted() == isDeleted',
                 ['store' => $store, 'status' => 'active', 'isDeleted' => false]
             );
         } catch (\Throwable) {
-            return $base + ['store' => null];
+            return new DqlExpression(
+                'entity.getStatus() == status && entity.getIsDeleted() == isDeleted && !entity.getStore()',
+                ['status' => 'active', 'isDeleted' => false]
+            );
         }
     }
 }
