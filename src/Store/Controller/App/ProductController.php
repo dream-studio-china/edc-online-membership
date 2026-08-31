@@ -28,8 +28,6 @@ class ProductController extends RestController
     /** @return array<string, mixed>|DqlExpression */
     protected function commonFilter(): array|DqlExpression
     {
-        $base = ['status' => 'active', 'isDeleted' => false];
-
         try {
             $storeContext = $this->storeContextResolver?->resolve();
         } catch (\Throwable) {
@@ -37,31 +35,30 @@ class ProductController extends RestController
         }
 
         if ($storeContext === null || $this->storeRepository === null) {
-            // No Store context - only global products (store IS NULL)
-            return new DqlExpression(
-                'entity.getStatus() == status && entity.getIsDeleted() == isDeleted && !entity.getStore()',
-                ['status' => 'active', 'isDeleted' => false]
-            );
+            return $this->globalProductExpression();
         }
 
-        // Visible: global (store IS NULL) OR owned by current Store
         try {
             $store = $this->storeRepository->findOneBy(['uuid' => $storeContext->storeUuid]);
-            if ($store === null) {
-                return new DqlExpression(
-                    'entity.getStatus() == status && entity.getIsDeleted() == isDeleted && !entity.getStore()',
-                    ['status' => 'active', 'isDeleted' => false]
-                );
-            }
-            return new DqlExpression(
-                '(!entity.getStore() || entity.getStore() == store) && entity.getStatus() == status && entity.getIsDeleted() == isDeleted',
-                ['store' => $store, 'status' => 'active', 'isDeleted' => false]
-            );
         } catch (\Throwable) {
-            return new DqlExpression(
-                'entity.getStatus() == status && entity.getIsDeleted() == isDeleted && !entity.getStore()',
-                ['status' => 'active', 'isDeleted' => false]
-            );
+            return $this->globalProductExpression();
         }
+
+        if ($store === null) {
+            return $this->globalProductExpression();
+        }
+
+        return new DqlExpression(
+            '(!entity.getStore() || entity.getStore() == store) && entity.getStatus() == status && entity.getIsDeleted() == isDeleted',
+            ['store' => $store, 'status' => 'active', 'isDeleted' => false]
+        );
+    }
+
+    private function globalProductExpression(): DqlExpression
+    {
+        return new DqlExpression(
+            'entity.getStatus() == status && entity.getIsDeleted() == isDeleted && !entity.getStore()',
+            ['status' => 'active', 'isDeleted' => false]
+        );
     }
 }
