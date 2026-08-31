@@ -25,10 +25,10 @@ class CategoryController extends RestController
     }
 
     /**
-     * @param array<string, mixed>|\Doctrine\ORM\QueryBuilder|null $filter
-     * @return array<string, mixed>|\Doctrine\ORM\QueryBuilder|null
+     * @param array<string, mixed>|\Doctrine\ORM\QueryBuilder|\App\Core\Query\DqlExpression|null $filter
+     * @return array<string, mixed>|\Doctrine\ORM\QueryBuilder|\App\Core\Query\DqlExpression|null
      */
-    protected function detailFilter(array|\Doctrine\ORM\QueryBuilder|null $filter = null)
+    protected function detailFilter(array|\Doctrine\ORM\QueryBuilder|\App\Core\Query\DqlExpression|null $filter = null)
     {
         if (is_array($filter)) {
             unset($filter['enabled']);

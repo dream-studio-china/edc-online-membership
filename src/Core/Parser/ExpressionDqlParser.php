@@ -10,6 +10,7 @@ use Symfony\Component\ExpressionLanguage\ExpressionLanguage;
 use Symfony\Component\ExpressionLanguage\Node\BinaryNode;
 use Symfony\Component\ExpressionLanguage\Node\ConstantNode;
 use Symfony\Component\ExpressionLanguage\Node\GetAttrNode;
+use Symfony\Component\ExpressionLanguage\Node\NameNode;
 use Symfony\Component\ExpressionLanguage\Node\Node;
 use Symfony\Component\ExpressionLanguage\Node\UnaryNode;
 use Symfony\Component\ExpressionLanguage\SyntaxError;
@@ -291,6 +292,18 @@ class ExpressionDqlParser
             }
 
             $out .= sprintf(self::OPERATORS[$op], $left, $right);
+        } elseif ($node instanceof NameNode) {
+            $varName = $node->attributes['name'] ?? '';
+            if ($varName === self::EXPRESSION_SIGNATURE) {
+                throw new ValidatorException('Standalone entity variable is not allowed.');
+            }
+            if (!in_array($varName, $this->names, true) || !array_key_exists($varName, $this->values)) {
+                throw new ValidatorException(sprintf('Undefined variable "%s" in expression.', $varName));
+            }
+            $idx = $this->parameters->count() + 1;
+            $paramName = self::PARAM_PREFIX . $idx;
+            $this->parameters->add(new Parameter($paramName, $this->values[$varName]));
+            $out .= ':' . $paramName;
         } elseif ($node instanceof ConstantNode) {
             $idx = $this->parameters->count() + 1;
             $name = self::PARAM_PREFIX . $idx;

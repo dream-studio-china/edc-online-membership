@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Core\Service;
 
+use App\Core\Query\DqlExpression;
 use Doctrine\ORM\QueryBuilder;
 
 /**
@@ -13,7 +14,7 @@ interface BaseServiceInterface
 {
     /**
      * Find entity by id or criteria or execute a QueryBuilder to return single result.
-     * @param TEntity|int|string|array<string, mixed>|QueryBuilder $object
+     * @param TEntity|int|string|array<string, mixed>|QueryBuilder|DqlExpression $object
      * @return TEntity|null
      */
     public function get($object, bool $directly = false);
