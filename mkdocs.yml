@@ -59,6 +59,7 @@ nav:
       - Core Framework: manual/core-framework.md
       - Core Usage: manual/core-usage.md
       - Query System: manual/query-system.md
+      - Authorization Setup: manual/authorization.md
       - Development Workflow: manual/development-workflow.md
       - Testing: manual/testing.md
       - API Contracts: manual/api-contracts.md
@@ -91,6 +92,7 @@ nav:
       - Authorization: design/bundles/authorization.md
       - Wechat (Login + Pay): design/bundles/wechat.md
   - Runbooks:
+      - Authorization: runbooks/authorization.md
       - Common: runbooks/common.md
       - Core: runbooks/core.md
       - Exchange: runbooks/exchange.md

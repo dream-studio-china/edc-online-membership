@@ -1,6 +1,6 @@
 # Authorization Bundle Design
 
-> **Status: approved design, not implemented.** The Authorization bundle (`src/Authorization/`) is
+> **Status: Phase 1 implemented — foundation + Content pilot.** The Authorization bundle (`src/Authorization/`) is
 > the authorization boundary for the modular monolith. Identity remains responsible
 > for authentication and user identity. This document is the implementation contract
 > for RBAC, scoped data access, and a deliberately limited field-level extension.
@@ -111,15 +111,14 @@ Authorization therefore has no dependency on Store and cannot form a Store <-> A
 cycle. It neither modifies the membership schema nor duplicates the membership
 lifecycle.
 
-### 2.4 Content Is A Proposed Pilot, Not An Existing Store Resource
+### 2.4 Content Is The Field-Level Pilot
 
-`Common\Entity\Content` currently has `id`, `title`, `body`, Category, Tags, and
-timestamps. It does **not** have `storeUuid` or `metadata`. The existing App Content
-endpoint is readable by ordinary authenticated API users through the default firewall;
-the Manage Content controller is `ROLE_ADMIN` CRUD.
+`Common\Entity\Content` has `id`, `title`, `body`, Category, Tags, `metadata` (nullable JSON), and
+timestamps. It does **not** have `storeUuid` — Store association is not part of the Content model. The existing App Content
+endpoint is readable by ordinary authenticated API users; the Manage Content controller is `ROLE_ADMIN` CRUD and now
+accepts `metadata` as a whitelisted field to demonstrate strict field-grant enforcement.
 
-Therefore, Store-scoped Content requires a separate Common migration and explicit
-controller changes. It cannot be enabled merely by adding Authorization records.
+Field-level Authorization for Content is provided by `common:content` `create`/`update` field grants (`metadata` vs non-`metadata` roles). Store-scoped Content routes (`/store/stores/{storeUuid}/contents`) do **not** exist in this phase; Store scope is still used for other resources (e.g. `store:order:*`) but Content is scoped only by the field grant, not by Store row scope.
 
 ### 2.5 Constraints Discovered During Audit
 
@@ -145,9 +144,9 @@ controller changes. It cannot be enabled merely by adding Authorization records.
 ```mermaid
 flowchart LR
     identity["Identity<br/>User UUID, JWT, authentication"] --> authorization["Authorization<br/>role and permission decisions"]
-    store["Store<br/>membership and store lifecycle"] --> access
-    common["Common<br/>Content scope enforcement"] --> access
-    trade["Trade / Wallet / Payment<br/>future consumers"] --> access
+    store["Store<br/>membership and store lifecycle"] --> authorization
+    common["Common<br/>Content scope enforcement"] --> authorization
+    trade["Trade / Wallet / Payment<br/>future consumers"] --> authorization
 ```
 
 The arrows denote service-interface dependencies only. Authorization stores Identity and
@@ -256,7 +255,7 @@ it. For example, both roles below need `common:content:update`:
 
 The effective fields are the union of matching active role grants for the request's
 scope, then intersected with the controller's static schema allow-list. Unknown or
-server-owned fields such as `id`, `storeUuid`, ownership, status, and timestamps are
+server-owned fields such as `id`, ownership, status, and timestamps are
 never made writable by an Authorization grant.
 
 The first release uses **strict denial**: if a request includes any accepted schema
@@ -337,7 +336,8 @@ authorization_assignment
   user_uuid       varchar(36) NOT NULL
   role_id         int NOT NULL FK authorization_role(id) ON DELETE RESTRICT
   scope_type      varchar(20) NOT NULL  # global | store
-  scope_uuid      varchar(36) NULL
+  scope_uuid      varchar(36) NULL      # normalized; NULL remains readable
+  scope_key       varchar(36) NOT NULL  # '' for global, Store UUID for store — portable UNIQUE key
   granted_by_uuid varchar(36) NULL
   createdAt       datetime_immutable NOT NULL
   revokedAt       datetime_immutable NULL
@@ -345,10 +345,7 @@ authorization_assignment
 
 Indexes and constraints:
 
-- Unique active grant is enforced by service logic plus a database uniqueness strategy
-  appropriate to MySQL, PostgreSQL, and SQLite. A portable first implementation uses
-  `UNIQUE(user_uuid, role_id, scope_type, scope_uuid)` and reactivates a revoked row
-  rather than inserting a duplicate.
+- Portable uniqueness: `UNIQUE(user_uuid, role_id, scope_type, scope_key)` where `scope_key` is `COALESCE(scope_uuid,'')`. This preserves revoked-row reactivation without relying on `NULL` semantics in `UNIQUE` (MySQL/PostgreSQL/SQLite allow duplicate `NULL`). Doctrine validates `global→scope_uuid IS NULL` / `store→valid UUID` at the application layer.
 - Index `(user_uuid, revoked_at)` supports effective-permission lookup.
 - Index `(scope_type, scope_uuid, revoked_at)` supports Store scope lookups.
 - `scope_type=global` requires `scope_uuid IS NULL`; `scope_type=store` requires a
@@ -407,7 +404,7 @@ request bodies.
 src/Authorization/
 |-- Controller/
 |   |-- App/MyAuthorizationController.php
-|   `-- Manage/{Permission,Role,Assignment,AuditLog}Controller.php
+|   `-- Manage/{Permission,Role,Assignment,AuditLog}Controller.php  # Assignment: List/Detail/Create/Update/Delete via ApiView mixins
 |-- Entity/{Permission,Role,Assignment,RoleFieldGrant,AuditLog}.php
 |-- Repository/{Permission,Role,Assignment,RoleFieldGrant,AuditLog}Repository.php
 |-- Security/AuthorizationVoter.php
@@ -415,8 +412,10 @@ src/Authorization/
 |   |-- AuthorizationService.php / AuthorizationServiceInterface.php
 |   |-- FieldAuthorizationService.php / FieldAuthorizationServiceInterface.php
 |   |-- AuthorizationResourceRegistry.php
-|   `-- AuthorizationAuditService.php
-|-- Command/SeedPermissionsCommand.php
+|   |-- AuthorizationAuditService.php / AuthorizationCacheInvalidator.php
+|   |-- AuthorizationScope.php / ScopedResourceInterface.php
+|   `-- {Permission,Role,Assignment,AuditLog}Service.php
+|-- Command/SeedAuthorizationCommand.php   # app:authorization:seed (idempotent, registry-validated)
 `-- Resources/config/services_authorization.yaml
 ```
 
@@ -507,18 +506,18 @@ delete, and batch-update lookup bases. A mutation is allowed only when the row i
 visible through that filter. Where disclosure is undesirable, an out-of-scope record
 returns 404 rather than 403.
 
-### 7.3 Safe Create Scope
+### 7.3 Safe Create Scope (When Store-Scoped)
 
-Create routes include Store scope in the route, not in the request body:
+When a resource is Store-scoped, create routes include Store scope in the route, not in the request body:
 
 ```text
-POST /api/v1/store/stores/{storeUuid}/contents
+POST /api/v1/store/stores/{storeUuid}/orders
 ```
 
-The controller requires `common:content:create` for `{storeUuid}` and sets
-`Content.storeUuid` from the route only. `storeUuid` is absent from accepted client
+The controller requires the relevant permission (e.g. `store:order:create`) for `{storeUuid}` and sets
+the Store association from the route only. The Store identifier is absent from accepted client
 properties. This prevents a client from selecting another Store by sending a different
-JSON field.
+JSON field. Content is **not** Store-scoped in this phase (only `metadata` field-grant pilot).
 
 ### 7.4 Field Filtering
 
@@ -537,62 +536,54 @@ Resource-specific validation stays in the business service/controller hook.
 
 ---
 
-## 8. Content Pilot Contract
+## 8. Content Pilot Contract (Field-Grant Only)
 
 ### 8.1 Required Common Migration
 
 The pilot requires a Common-owned migration and entity change:
 
 ```text
-common_content.store_uuid  varchar(36) NULL, indexed
 common_content.metadata    json NULL
 ```
 
-`store_uuid` is a scalar Store UUID and has no Store foreign key. `NULL` denotes a
-platform/global Content record. Existing rows remain `NULL`; no historical Store
-assignment is fabricated.
+No `store_uuid` column or Store foreign key is added. Content is not Store-scoped in this phase; `metadata` is the field used to demonstrate strict field-grant enforcement.
 
 Content's static allowed fields become:
 
 ```text
 create/update: title, body, category, tags, metadata
-server only:    storeUuid, id, createdAt, updatedAt
+server only:    id, createdAt, updatedAt
 ```
 
 ### 8.2 API Shape
 
 | Method | Path | Permission | Scope | Notes |
 |---|---|---|---|---|
-| GET | `/api/v1/app/contents` | `ROLE_USER` | none | Existing ordinary-user list; returns global and Store Content visible to all authenticated users |
+| GET | `/api/v1/app/contents` | `ROLE_USER` | none | Existing ordinary-user list |
 | GET | `/api/v1/app/contents/{id}` | `ROLE_USER` | none | Existing ordinary-user detail |
-| GET | `/api/v1/store/stores/{storeUuid}/contents` | `common:content:read` | Store | Staff work list, scope-filtered |
-| POST | `/api/v1/store/stores/{storeUuid}/contents` | `common:content:create` | Store | Server writes `storeUuid` from route |
-| PUT | `/api/v1/store/stores/{storeUuid}/contents/{id}` | `common:content:update` | Store + row | Scope filter prevents cross-Store write |
-| DELETE | `/api/v1/store/stores/{storeUuid}/contents/{id}` | `common:content:delete` | Store + row | Same scope behavior |
+| GET | `/api/v1/manage/contents` | `ROLE_ADMIN` | none | Admin CRUD (now accepts `metadata`) |
+| POST | `/api/v1/manage/contents` | `ROLE_ADMIN` | none | Same; `metadata` whitelisted |
+| PUT | `/api/v1/manage/contents/{id}` | `ROLE_ADMIN` | none | Same |
 | GET | `/api/v1/app/authorization/me` | authenticated | own user | Returns UI capability summary only |
 
-The existing `/api/v1/manage/contents` endpoints remain platform administration and
-remain protected by `ROLE_ADMIN` in Phase 1. A later migration may replace their
-coarse role annotation with Authorization permissions after all administration routes have
-an explicit capability mapping.
+Field-level enforcement for `common:content` is validated via `FieldAuthorizationService` (union of `RoleFieldGrant` intersected with controller `accepted*Properties`, strict 403). The `store:order:*` permissions remain the example of Store-scoped decisions; Store Content routes (`/store/stores/{storeUuid}/contents`) are **not** implemented in this phase.
 
-### 8.3 Example Decisions
+### 8.3 Example Decisions (Field-Level)
 
 ```text
-User A: store_content_editor at Store X
-  PUT Store X Content -> title/body/category/tags allowed
-  PUT Store X Content -> metadata denied (403)
-  PUT Store Y Content -> 404 (out of scope)
+User A: store_content_editor at Store X (has common:content:update, fields title/body/category/tags)
+  PUT Content with title/body -> allowed
+  PUT Content with metadata   -> 403 (field outside grant), no mutation
 
-User B: store_content_metadata_editor at Store X
-  PUT Store X Content -> title/body/category/tags/metadata allowed
+User B: store_content_metadata_editor at Store X (same permissions + metadata)
+  PUT Content with metadata   -> allowed
 
 User C: no assignment
-  GET ordinary-user Content -> allowed
-  POST Store X Content -> 403
+  GET App Content             -> allowed (ordinary-user read)
+  PUT Content                 -> 403 (missing common:content:update)
 
 Platform administrator (ROLE_ADMIN)
-  Manage Content and Store Content -> allowed during compatibility period
+  Manage Content              -> allowed during compatibility period (admin bypass)
 ```
 
 ### 8.4 My Authorization Response
@@ -628,18 +619,25 @@ All Authorization management endpoints remain `ROLE_ADMIN` during Phase 1. They 
 break-glass administration APIs and must not be delegated through the roles they
 manage.
 
-| Method | Path | Purpose |
-|---|---|---|
-| GET | `/api/v1/manage/authorization/permissions` | List catalogue |
-| GET | `/api/v1/manage/authorization/roles` | List roles |
-| POST | `/api/v1/manage/authorization/roles` | Create non-system role |
-| PUT | `/api/v1/manage/authorization/roles/{uuid}` | Rename/update non-system role |
-| POST | `/api/v1/manage/authorization/roles/{uuid}/permissions` | Replace concrete role permissions |
-| PUT | `/api/v1/manage/authorization/roles/{uuid}/field-grants/{resource}/{action}` | Replace a role field grant |
-| GET | `/api/v1/manage/authorization/assignments` | Search current/revoked grants |
-| POST | `/api/v1/manage/authorization/assignments` | Grant or reactivate a role |
-| DELETE | `/api/v1/manage/authorization/assignments/{uuid}` | Revoke assignment; no hard delete |
-| GET | `/api/v1/manage/authorization/audit` | Paginated immutable audit history |
+| Method | Path | Purpose | Notes |
+|---|---|---|---|
+| GET | `/api/v1/manage/permissions` | List permission catalogue (seeded) | Read-only; no HTTP create/update/delete |
+| GET | `/api/v1/manage/permissions/{id}` | Permission detail | Same |
+| GET | `/api/v1/manage/roles` | List roles | — |
+| GET | `/api/v1/manage/roles/{id}` | Role detail | — |
+| POST | `/api/v1/manage/roles` | Create non-system role | `code` `[a-z0-9_]+`, `name`, `scopeType` |
+| PUT | `/api/v1/manage/roles/{id}` | Update non-system role | System → 403 |
+| DELETE | `/api/v1/manage/roles/{id}` | Delete non-system role | System → 403 |
+| POST | `/api/v1/manage/roles/{uuid}/permissions` | Replace role permissions | Non-system only; system → 403 |
+| PUT | `/api/v1/manage/roles/{uuid}/field-grants/{resource}/{action}` | Replace field grant | Registry-validated; system → 403 |
+| GET | `/api/v1/manage/assignments` | Search assignments (`userUuid/scopeType/scopeUuid/includeRevoked` filters) | — |
+| GET | `/api/v1/manage/assignments/{id}` | Assignment detail | — |
+| POST | `/api/v1/manage/assignments` | Grant or reactivate role | Idempotent; `roleUuid` accepts uuid/id/code; batch array supported |
+| PUT | `/api/v1/manage/assignments/{id}` | Update assignment | Re-validates `role↔scope`; deduped; audited `assignment.updated` |
+| DELETE | `/api/v1/manage/assignments/{id}` | Revoke assignment (soft `revokedAt`) | Idempotent 204; audited |
+| GET | `/api/v1/manage/audit-logs` | Paginated audit history (`targetType/actorUuid`) | — |
+| GET | `/api/v1/manage/audit-logs/{id}` | Audit log detail | — |
+| GET | `/api/v1/app/authorization/me` | Self-service effective permissions | UI-only; `ROLE_USER` |
 
 Permission catalogue rows are seeded, not created by normal HTTP CRUD. This prevents
 an administrator from creating names that are not implemented by any endpoint.
@@ -731,18 +729,16 @@ Additional mandatory rules:
 
 ## 12. Implementation Phases
 
-### Phase 1: Authorization Foundation And Content Pilot
+### Phase 1: Authorization Foundation And Content Pilot (Field-Grant)
 
 1. Create Authorization migration, entities, repositories, services, Voter, cache invalidator,
    management APIs, self-service endpoint, and seed command.
 2. Add the Authorization service configuration, route import, OpenAPI entries, translations,
    and MkDocs links.
-3. Add the Core `DqlExpression` row-scope foundation defined in section 15 before
-   introducing Store-scoped Content routes.
-4. Add Common migration for nullable `Content.storeUuid` and nullable `metadata`.
-5. Add Store-scoped Content staff routes using the existing View mixins plus a reusable
-   Authorization scope trait/service adapter.
-6. Add static Content schema fields and strict `FieldAuthorizationService` enforcement.
+3. Add the Core `DqlExpression` row-scope foundation defined in section 15.
+4. Add Common migration for nullable `Content.metadata` (no `storeUuid`).
+5. Keep `Common/Controller/Manage/ContentController` accepting `metadata` to demonstrate strict `FieldAuthorizationService` enforcement; Store-scoped Content routes are intentionally **not** added.
+6. Add static Content schema fields and strict `FieldAuthorizationService` enforcement (field-grant pilot).
 7. Preserve all existing Manage controller `ROLE_ADMIN` guards and existing User roles.
 
 ### Phase 2: Incremental Action Migration
@@ -786,8 +782,7 @@ resource, scope, and environment attributes. It MUST NOT reuse client-provided
 | Create role, bind permission, grant Store scope | Effective decision succeeds only for that Store |
 | Revoke assignment | Next request is denied after cache invalidation |
 | Store membership revoked while assignment remains | Store action is denied |
-| Content list/detail/update/delete at another Store | No record disclosure or mutation |
-| Basic editor submits `metadata` | 403 and unchanged database row |
+| Basic editor submits `metadata` via field-grant check | 403 and unchanged database row |
 | Metadata editor submits `metadata` | 200 and field persists |
 | Ordinary-user Content read | Unchanged legacy behavior |
 | Authorization management mutation | Corresponding immutable audit record is written |
@@ -822,8 +817,7 @@ The Authorization foundation is complete when:
   records in their successful transaction.
 - [ ] Existing `ROLE_ADMIN`, Identity authentication, and ordinary-user Content read behavior
   remain compatible throughout Phase 1.
-- [ ] The Content pilot tests prove User A cannot update `metadata`, User B can, and
-  neither can mutate another Store's Content.
+- [ ] The Content pilot tests prove User A cannot write `metadata` (field-grant 403) and User B can.
 
 ---
 

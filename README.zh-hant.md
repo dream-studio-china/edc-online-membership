@@ -17,7 +17,7 @@ flowchart TB
     Core["<b>Core 框架</b><br/>BaseService · View Mixins · Expression→DQL"]
 
     Identity["Identity<br/>鑑權 · JWT · OTP · User"]
-    Authorization["Authorization（設計）<br/>RBAC · 範圍 · 欄位授權"]
+    Authorization["Authorization<br/>RBAC · 範圍 · 欄位授權"]
     Common["Common<br/>CMS · 內容"]
     Storage["Storage<br/>媒體驅動"]
     Promotion["Promotion<br/>定價規則"]
@@ -37,7 +37,7 @@ flowchart TB
     Identity --> Authorization
     Identity --> Wechat
     Common --> Storage
-    Common -. "Content pilot" .-> Authorization
+    Common -. "metadata field-grant pilot" .-> Authorization
     Promotion --> Trade
     Trade --> Fulfilment
     Trade --> Payments --> Settlement
@@ -159,7 +159,7 @@ CRUD Skeleton 面向那些需要超越生成式 CRUD、但暫時不需要分散�
 - **交易性電商工作流**：訂單、庫存預留、發票、支付網關、錢包抵扣與結算分帳。
 - **財務可審計性**：冪等轉帳、憑證背書的存款與取款、內部餘額校驗與對帳，以及版本化結算規則。
 - **可擴充的整合**：JWT 與 OTP 鑑權、微信登入與支付、本機或七牛媒體儲存，以及促銷規則 DSL。
-- **存取控制與審計**：`ROLE_ADMIN` 保護的管理端點、特權動態查詢的防護，以及變更請求的有界審計日誌。獨立的範圍化 RBAC 與欄位授權的 Authorization 模組已設計但尚未實作。
+- **存取控制與審計**：`ROLE_ADMIN` 保護的管理端點，外加獨立 **Authorization** 模組（`global|store` 範圍化 RBAC、可移植 `UNIQUE(user,role,scope_type,scope_key)`、嚴格欄位授權、追加寫審計、`AuthorizationVoter`）。權限目錄由 `app:authorization:seed` 種子化且唯讀；Content `metadata` 欄位授權試點（`common:content:metadata`，無 `store_uuid`）經 `FieldAuthorizationService` 強制；`Assignment.scopeKey` 為內部衍生欄位（`scopeUuid ?? ''`，`getScopeKey()`/`syncScopeKey()`，無公開 setter）。
 - **可靠的非同步處理**：Messenger worker 與跨模組事件的 outbox/inbox 模式。
 - **生產診斷**：OpenAPI 文件、就緒與存活探針、Prometheus 指標與端點限流。
 - **強制的品質檢查**：PHPUnit、PHPStan Level 8、Rector 型別規則，以及 CI 中 90% 的行覆蓋率門檻。
@@ -183,7 +183,7 @@ CRUD Skeleton 面向那些需要超越生成式 CRUD、但暫時不需要分散�
 
 ## 專案結構
 
-倉庫是一個模組化單體：`src/` 存放應用程式碼（Core 框架以及 Common、Identity、Trade、Payment、Wallet、Storage 等業務模組），旁邊是 `config/`、`migrations/`、`tests/`、`docs/` 以及 Docker/Compose 檔案。已設計的 `src/Authorization/` 模組已單獨文件化，尚未在運行時中實作。
+倉庫是一個模組化單體：`src/` 存放應用程式碼（Core 框架以及 Common、Identity、Trade、Payment、Wallet、Storage、Authorization 等業務模組），旁邊是 `config/`、`migrations/`、`tests/`、`docs/` 以及 Docker/Compose 檔案。`src/Authorization/` 的種子化與運維見 [Authorization Setup](docs/manual/authorization.md)。
 
 完整的詳細目錄樹（到每個模組的控制器、服務、實體、倉庫層級），請參閱
 **[專案結構 — 開發手冊](docs/manual/project-structure.md)**。
@@ -238,7 +238,7 @@ Docker 開發環境無需建立 env 檔案即可啟動。本機 PHP/Symfony 執�
 | **Settlement** | 分帳與終態 | 版本化規則、可審計分帳與錢包入帳 |
 | **Promotion** | 定價規則 | 促銷 DSL、計算策略與活動路由 |
 | **Identity** | 鑑權 | JWT、OTP、註冊、使用者資料與管理 |
-| **Authorization** *(設計)* | 授權 | 範圍化 RBAC、門店範圍授權、嚴格欄位授權與授權審計設計；尚未實作 |
+| **Authorization** | 授權 | 範圍化 RBAC（`global`/`store`）、門店範圍授權、嚴格欄位授權、審計日誌、基於快取的 `AuthorizationService` |
 | **Storage** | 媒體上傳 | 本機與七牛 Kodo 儲存驅動 |
 | **Wechat** | 微信整合 | 登入與微信支付 V3 |
 | **Exchange** *(設計)* | 點數經濟 | 匯率與流動性池設計；尚未實作 |

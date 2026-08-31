@@ -46,7 +46,7 @@ one Messenger bus, but they must behave as if they were independent services.
 | `Settlement` | Rule-driven funding allocation and settlement finality |
 | `Storage` | Media storage abstraction (local / Qiniu) |
 | `Wechat` | WeChat login (Mini Program / Official Account) and WeChat Pay V3 gateway |
-| `Authorization` *(design — not yet runtime)* | Row-level and scoped RBAC design: `DqlExpression`, Store-scoped grants, field grants, audit log (see `docs/design/bundles/authorization.md`) |
+| `Authorization` | Scoped RBAC (`global`/`store`), `DqlExpression` row scopes, Store-scoped grants, strict field grants, audit log, `AuthorizationVoter` (see `docs/design/bundles/authorization.md` and `manual/authorization.md`) |
 
 ## Layer Architecture
 
