@@ -12,7 +12,6 @@ use App\Payment\DTO\PaymentResult;
 use App\Payment\Entity\Invoice;
 use App\Payment\Service\InvoiceServiceInterface;
 use App\Trade\DTO\StoreContext;
-use App\Store\Entity\Specification;
 use App\Trade\Entity\Order;
 use App\Trade\Entity\OrderItem;
 use App\Trade\Service\Pricing\PriceCalculationContext;
@@ -90,7 +89,7 @@ final class OrderService extends BaseService implements OrderServiceInterface
                 $orderItem = new OrderItem();
                 if (isset($item['specificationUuid']) && is_string($item['specificationUuid'])) {
                     $orderItem->setSpecificationUuid($item['specificationUuid']);
-                } elseif (isset($item['specification']) && $item['specification'] instanceof Specification) {
+                } elseif (isset($item['specification']) && is_object($item['specification']) && method_exists($item['specification'], 'getUuid')) {
                     $orderItem->setSpecificationUuid($item['specification']->getUuid());
                 } elseif (isset($item['specSnapshot']['uuid']) && is_string($item['specSnapshot']['uuid'])) {
                     $orderItem->setSpecificationUuid($item['specSnapshot']['uuid']);
