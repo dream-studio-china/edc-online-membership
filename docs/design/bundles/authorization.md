@@ -1,6 +1,6 @@
-# Access Bundle Design
+# Authorization Bundle Design
 
-> **Status: approved design, not implemented.** The Access bundle (`src/Access/`) is
+> **Status: approved design, not implemented.** The Authorization bundle (`src/Authorization/`) is
 > the authorization boundary for the modular monolith. Identity remains responsible
 > for authentication and user identity. This document is the implementation contract
 > for RBAC, scoped data access, and a deliberately limited field-level extension.
@@ -11,14 +11,14 @@
 
 ### 1.1 Decision
 
-Create an independent `Access` module rather than adding authorization tables and
+Create an independent `Authorization` module rather than adding authorization tables and
 logic to `Identity`.
 
 ```text
 Identity: authenticate a principal
-Access:   decide what an authenticated principal may do
+Authorization:   decide what an authenticated principal may do
 Store:    own store membership and operational facts
-Business: own resources and enforce their data scope through Access
+Business: own resources and enforce their data scope through Authorization
 ```
 
 This preserves Identity as an authentication module (User, password, JWT, refresh
@@ -30,11 +30,11 @@ resources and actions.
 - Replace the global `ROLE_ADMIN`-only authorization model incrementally with
   permission codes in the form `module:resource:action`.
 - Assign roles globally or in a Store scope without cross-module foreign keys.
-- Centralize permission decisions in a Symfony Voter and `AccessServiceInterface`.
+- Centralize permission decisions in a Symfony Voter and `AuthorizationServiceInterface`.
 - Provide reusable scope and field filtering hooks so controllers do not duplicate
   authorization business logic.
 - Keep `Store\Entity\Membership` as the authoritative Store membership record; Store
-  combines that membership check with Access authorization.
+  combines that membership check with Authorization authorization.
 - Preserve existing `User.roles` and `ROLE_ADMIN` behavior during migration.
 - Record authorization administration changes in an append-only audit log.
 
@@ -44,7 +44,7 @@ The first implementation MUST NOT:
 
 - Replace authentication, JWT signing, refresh token rotation, or the Identity user
   UUID contract.
-- Move Store membership rows into Access or make Access the owner of Store roles.
+- Move Store membership rows into Authorization or make Authorization the owner of Store roles.
 - Introduce a generic policy language, Casbin, OPA, or user-authored expressions.
 - Turn every field into a permission code such as `common:content:metadata:update`.
 - Add foreign keys to `users`, `store`, Trade, Payment, Wallet, or other module
@@ -89,7 +89,7 @@ deletionFilter() -> service.get() -> service.remove()
 
 Controllers use these hooks for ownership filters such as `['user' => $user]` and
 the deny-all sentinel `['id' => -1]`. QueryBuilder filters are available for more
-complex predicates. Access MUST use these existing enforcement points; it MUST NOT
+complex predicates. Authorization MUST use these existing enforcement points; it MUST NOT
 bypass `BaseService` or query a repository directly from a controller.
 
 ### 2.3 Store Has A Separate, Correct Domain Boundary
@@ -106,8 +106,8 @@ This is a valid Store-domain authorization implementation, but it has two limits
   Store membership details.
 
 Store keeps membership checks in `MembershipServiceInterface`. Store Staff controllers
-will compose that check with `AccessServiceInterface` through a Store-owned helper.
-Access therefore has no dependency on Store and cannot form a Store <-> Access module
+will compose that check with `AuthorizationServiceInterface` through a Store-owned helper.
+Authorization therefore has no dependency on Store and cannot form a Store <-> Authorization module
 cycle. It neither modifies the membership schema nor duplicates the membership
 lifecycle.
 
@@ -119,7 +119,7 @@ endpoint is readable by ordinary authenticated API users through the default fir
 the Manage Content controller is `ROLE_ADMIN` CRUD.
 
 Therefore, Store-scoped Content requires a separate Common migration and explicit
-controller changes. It cannot be enabled merely by adding Access records.
+controller changes. It cannot be enabled merely by adding Authorization records.
 
 ### 2.5 Constraints Discovered During Audit
 
@@ -127,13 +127,13 @@ controller changes. It cannot be enabled merely by adding Access records.
   authorization code MUST obtain the current user at request time where a long-lived
   service could otherwise retain stale request state.
 - Dynamic query privileges (`@dql`, `@sort`, `@hints`) currently check literal
-  `ROLE_ADMIN`. They are outside the first Access migration and remain platform-admin
+  `ROLE_ADMIN`. They are outside the first Authorization migration and remain platform-admin
   only until a dedicated Core contract replaces this check.
 - The generic Create/Update mixins run static accepted-property filtering before
   `processCreateContent()` and `processUpdateContent()`. Dynamic field permissions
   belong in those hooks after the static schema allow-list has removed unknown fields.
 - `@filter`, `@select`, and `@display` are user query features, not authorization
-  policies. They MUST NOT be used to store or evaluate administrator-defined Access
+  policies. They MUST NOT be used to store or evaluate administrator-defined Authorization
   rules.
 
 ---
@@ -144,29 +144,29 @@ controller changes. It cannot be enabled merely by adding Access records.
 
 ```mermaid
 flowchart LR
-    identity["Identity<br/>User UUID, JWT, authentication"] --> access["Access<br/>role and permission decisions"]
+    identity["Identity<br/>User UUID, JWT, authentication"] --> authorization["Authorization<br/>role and permission decisions"]
     store["Store<br/>membership and store lifecycle"] --> access
     common["Common<br/>Content scope enforcement"] --> access
     trade["Trade / Wallet / Payment<br/>future consumers"] --> access
 ```
 
-The arrows denote service-interface dependencies only. Access stores Identity and
+The arrows denote service-interface dependencies only. Authorization stores Identity and
 Store references as UUID strings. It MUST NOT import Store entities, repositories, or
-services. Business modules consume `AccessServiceInterface`; they MUST NOT import
-Access repositories or entities.
+services. Business modules consume `AuthorizationServiceInterface`; they MUST NOT import
+Authorization repositories or entities.
 
 ### 3.2 Responsibility Matrix
 
-| Concern | Owner | Access responsibility |
+| Concern | Owner | Authorization responsibility |
 |---|---|---|
 | User identity, credentials, roles JSON, JWT | Identity | Read User UUID and invalidate authorization sessions when needed |
 | Platform-break-glass administrator | Identity `ROLE_ADMIN` | Recognize as an unconditional compatibility override |
-| Store membership lifecycle | Store | Require active membership before its Store-scoped Access decision |
-| Permission catalogue and role grants | Access | Authoritative |
-| Global/store role assignment | Access | Authoritative |
+| Store membership lifecycle | Store | Require active membership before its Store-scoped Authorization decision |
+| Permission catalogue and role grants | Authorization | Authoritative |
+| Global/store role assignment | Authorization | Authoritative |
 | Resource ownership and lifecycle | Business module | Supply scope attribute and enforce returned filter |
-| HTTP authorization decision | Access Voter | Authoritative for declared Access permissions |
-| Field mutation allow-list | Access role grant + business controller schema limit | Return effective permitted fields |
+| HTTP authorization decision | Authorization Voter | Authoritative for declared Authorization permissions |
+| Field mutation allow-list | Authorization role grant + business controller schema limit | Return effective permitted fields |
 
 ### 3.3 Terminology
 
@@ -195,8 +195,8 @@ All codes use lowercase ASCII segments:
 Examples:
 
 ```text
-access:role:manage
-access:assignment:manage
+authorization:role:manage
+authorization:assignment:manage
 common:content:read
 common:content:create
 common:content:update
@@ -209,7 +209,7 @@ wallet:voucher:manual
 ```
 
 `*:*` and wildcard matching are NOT persisted permission codes. The compatibility
-override for `ROLE_ADMIN` is implemented in the Access decision service, not as a
+override for `ROLE_ADMIN` is implemented in the Authorization decision service, not as a
 database record. System roles may contain every seeded concrete permission.
 
 ### 4.2 RBAC Decision Rules
@@ -224,9 +224,9 @@ For a requested permission `P`, authenticated user `U`, and optional Store UUID 
    allowed.
 5. Otherwise the request is denied.
 
-For a Store operation, Store's `StoreAccessService` first requires active membership
-using `MembershipServiceInterface`, then calls Access for the scoped permission. An
-Access assignment alone must never create Store membership.
+For a Store operation, Store's `StoreAuthorizationService` first requires active membership
+using `MembershipServiceInterface`, then calls Authorization for the scoped permission. An
+Authorization assignment alone must never create Store membership.
 
 An allow in one Store MUST NOT grant access in another Store. A global content editor
 may be introduced later as an explicit global role; it is not inferred from a
@@ -257,7 +257,7 @@ it. For example, both roles below need `common:content:update`:
 The effective fields are the union of matching active role grants for the request's
 scope, then intersected with the controller's static schema allow-list. Unknown or
 server-owned fields such as `id`, `storeUuid`, ownership, status, and timestamps are
-never made writable by an Access grant.
+never made writable by an Authorization grant.
 
 The first release uses **strict denial**: if a request includes any accepted schema
 field that is outside its effective field grant, the API returns `403` and performs
@@ -274,21 +274,21 @@ becoming writable accidentally.
 
 ### 5.1 Tables
 
-Access owns six tables. All timestamps are UTC `datetime_immutable` values.
+Authorization owns six tables. All timestamps are UTC `datetime_immutable` values.
 
 | Table | Purpose |
 |---|---|
-| `access_permission` | Stable permission catalogue |
-| `access_role` | Named global or Store-scoped role |
-| `access_role_permission` | Role to permission join |
-| `access_assignment` | User UUID to role grant in a scope |
-| `access_role_field_grant` | Field allow-list for a role/resource/action |
-| `access_audit_log` | Append-only authorization administration audit |
+| `authorization_permission` | Stable permission catalogue |
+| `authorization_role` | Named global or Store-scoped role |
+| `authorization_role_permission` | Role to permission join |
+| `authorization_assignment` | User UUID to role grant in a scope |
+| `authorization_role_field_grant` | Field allow-list for a role/resource/action |
+| `authorization_audit_log` | Append-only authorization administration audit |
 
 ### 5.2 Permission
 
 ```text
-access_permission
+authorization_permission
   id              int PK
   code            varchar(120) UNIQUE NOT NULL
   module          varchar(60) NOT NULL
@@ -308,7 +308,7 @@ them, and code changes require a migration plus a new code.
 ### 5.3 Role And Permission Join
 
 ```text
-access_role
+authorization_role
   id              int PK
   uuid            varchar(36) UNIQUE NOT NULL
   code            varchar(80) UNIQUE NOT NULL
@@ -318,24 +318,24 @@ access_role
   createdAt       datetime_immutable NOT NULL
   updatedAt       datetime_immutable NULL
 
-access_role_permission
-  role_id         int NOT NULL FK access_role(id) ON DELETE CASCADE
-  permission_id   int NOT NULL FK access_permission(id) ON DELETE RESTRICT
+authorization_role_permission
+  role_id         int NOT NULL FK authorization_role(id) ON DELETE CASCADE
+  permission_id   int NOT NULL FK authorization_permission(id) ON DELETE RESTRICT
   PRIMARY KEY (role_id, permission_id)
 ```
 
-`access_role_permission` is Access-local and may use foreign keys. System roles and
+`authorization_role_permission` is Authorization-local and may use foreign keys. System roles and
 permissions cannot be modified or deleted through normal Manage CRUD; only a versioned
 seed command may reconcile them.
 
 ### 5.4 Assignment
 
 ```text
-access_assignment
+authorization_assignment
   id              int PK
   uuid            varchar(36) UNIQUE NOT NULL
   user_uuid       varchar(36) NOT NULL
-  role_id         int NOT NULL FK access_role(id) ON DELETE RESTRICT
+  role_id         int NOT NULL FK authorization_role(id) ON DELETE RESTRICT
   scope_type      varchar(20) NOT NULL  # global | store
   scope_uuid      varchar(36) NULL
   granted_by_uuid varchar(36) NULL
@@ -362,9 +362,9 @@ Assignments are revoked, never hard-deleted, to retain the authorization history
 ### 5.5 Role Field Grant
 
 ```text
-access_role_field_grant
+authorization_role_field_grant
   id              int PK
-  role_id         int NOT NULL FK access_role(id) ON DELETE CASCADE
+  role_id         int NOT NULL FK authorization_role(id) ON DELETE CASCADE
   resource        varchar(80) NOT NULL       # common:content
   action          varchar(60) NOT NULL       # create | update
   fields          json NOT NULL               # ordered unique field names
@@ -381,7 +381,7 @@ resource schema before persistence; it does not accept arbitrary strings.
 ### 5.6 Audit Log
 
 ```text
-access_audit_log
+authorization_audit_log
   id              bigint PK
   actor_uuid      varchar(36) NULL
   action          varchar(120) NOT NULL
@@ -404,33 +404,33 @@ request bodies.
 ## 6. Module Structure And Public Contracts
 
 ```text
-src/Access/
+src/Authorization/
 |-- Controller/
-|   |-- App/MyAccessController.php
+|   |-- App/MyAuthorizationController.php
 |   `-- Manage/{Permission,Role,Assignment,AuditLog}Controller.php
 |-- Entity/{Permission,Role,Assignment,RoleFieldGrant,AuditLog}.php
 |-- Repository/{Permission,Role,Assignment,RoleFieldGrant,AuditLog}Repository.php
-|-- Security/AccessVoter.php
+|-- Security/AuthorizationVoter.php
 |-- Service/
-|   |-- AccessService.php / AccessServiceInterface.php
-|   |-- FieldAccessService.php / FieldAccessServiceInterface.php
-|   |-- AccessResourceRegistry.php
-|   `-- AccessAuditService.php
+|   |-- AuthorizationService.php / AuthorizationServiceInterface.php
+|   |-- FieldAuthorizationService.php / FieldAuthorizationServiceInterface.php
+|   |-- AuthorizationResourceRegistry.php
+|   `-- AuthorizationAuditService.php
 |-- Command/SeedPermissionsCommand.php
-`-- Resources/config/services_access.yaml
+`-- Resources/config/services_authorization.yaml
 ```
 
-`AccessServiceInterface` is the only authorization contract exported to other
-business modules. It evaluates Access-owned assignment data only. It provides methods
+`AuthorizationServiceInterface` is the only authorization contract exported to other
+business modules. It evaluates Authorization-owned assignment data only. It provides methods
 equivalent to:
 
 ```php
-can(User $user, string $permission, ?AccessScope $scope = null): bool;
-require(User $user, string $permission, ?AccessScope $scope = null): void;
+can(User $user, string $permission, ?AuthorizationScope $scope = null): bool;
+require(User $user, string $permission, ?AuthorizationScope $scope = null): void;
 allowedStoreUuids(User $user, string $permission): list<string>;
 ```
 
-`FieldAccessServiceInterface` provides:
+`FieldAuthorizationServiceInterface` provides:
 
 ```php
 filterWritableFields(
@@ -439,15 +439,15 @@ filterWritableFields(
     string $action,
     array $input,
     array $schemaFields,
-    ?AccessScope $scope,
+    ?AuthorizationScope $scope,
 ): array;
 ```
 
-It throws an Access exception when the input contains an unauthorized accepted field.
+It throws an Authorization exception when the input contains an unauthorized accepted field.
 Controllers translate this to the project's existing 403 response envelope.
 
-`AccessResourceRegistry` is code-owned configuration, not administrator-editable
-metadata. It maps an Access resource to valid writable schema fields:
+`AuthorizationResourceRegistry` is code-owned configuration, not administrator-editable
+metadata. It maps an Authorization resource to valid writable schema fields:
 
 ```php
 'common:content' => [
@@ -469,8 +469,8 @@ server-owned property merely by editing a JSON field grant.
 sequenceDiagram
     participant C as Client
     participant J as JwtAuthenticator
-    participant V as AccessVoter
-    participant A as AccessService
+    participant V as AuthorizationVoter
+    participant A as AuthorizationService
     participant B as Business Controller
 
     C->>J: Bearer JWT + request
@@ -482,12 +482,12 @@ sequenceDiagram
     B->>A: obtain allowed Store UUIDs / field filter
 ```
 
-The Voter performs the Access-owned action-level gate. It must receive an explicit
-`AccessScope` or a subject that implements a small `ScopedResourceInterface`; it MUST
+The Voter performs the Authorization-owned action-level gate. It must receive an explicit
+`AuthorizationScope` or a subject that implements a small `ScopedResourceInterface`; it MUST
 NOT infer a Store from client body data. After this gate, Store endpoints call a
-Store-owned `StoreAccessService` that checks active membership and obtains the
-Access-derived data filter. The request cannot read or mutate a Store row without both
-checks, while module dependency remains one-way: `Store -> Access`.
+Store-owned `StoreAuthorizationService` that checks active membership and obtains the
+Authorization-derived data filter. The request cannot read or mutate a Store row without both
+checks, while module dependency remains one-way: `Store -> Authorization`.
 
 ### 7.2 Data Scope Enforcement
 
@@ -527,12 +527,12 @@ For create and update, the order is:
 ```text
 static controller schema allow-list
   -> server-owned scope defaults
-  -> FieldAccessService strict field validation
+  -> FieldAuthorizationService strict field validation
   -> processCreateContent/processUpdateContent
   -> service.update()
 ```
 
-The Access field grant narrows the static controller schema; it never expands it.
+The Authorization field grant narrows the static controller schema; it never expands it.
 Resource-specific validation stays in the business service/controller hook.
 
 ---
@@ -569,11 +569,11 @@ server only:    storeUuid, id, createdAt, updatedAt
 | POST | `/api/v1/store/stores/{storeUuid}/contents` | `common:content:create` | Store | Server writes `storeUuid` from route |
 | PUT | `/api/v1/store/stores/{storeUuid}/contents/{id}` | `common:content:update` | Store + row | Scope filter prevents cross-Store write |
 | DELETE | `/api/v1/store/stores/{storeUuid}/contents/{id}` | `common:content:delete` | Store + row | Same scope behavior |
-| GET | `/api/v1/app/access/me` | authenticated | own user | Returns UI capability summary only |
+| GET | `/api/v1/app/authorization/me` | authenticated | own user | Returns UI capability summary only |
 
 The existing `/api/v1/manage/contents` endpoints remain platform administration and
 remain protected by `ROLE_ADMIN` in Phase 1. A later migration may replace their
-coarse role annotation with Access permissions after all administration routes have
+coarse role annotation with Authorization permissions after all administration routes have
 an explicit capability mapping.
 
 ### 8.3 Example Decisions
@@ -595,7 +595,7 @@ Platform administrator (ROLE_ADMIN)
   Manage Content and Store Content -> allowed during compatibility period
 ```
 
-### 8.4 My Access Response
+### 8.4 My Authorization Response
 
 The self-service endpoint is informational only. The server remains authoritative.
 
@@ -624,29 +624,29 @@ security token or rely on it to authorize a request.
 
 ### 9.1 Management Endpoints
 
-All Access management endpoints remain `ROLE_ADMIN` during Phase 1. They are
+All Authorization management endpoints remain `ROLE_ADMIN` during Phase 1. They are
 break-glass administration APIs and must not be delegated through the roles they
 manage.
 
 | Method | Path | Purpose |
 |---|---|---|
-| GET | `/api/v1/manage/access/permissions` | List catalogue |
-| GET | `/api/v1/manage/access/roles` | List roles |
-| POST | `/api/v1/manage/access/roles` | Create non-system role |
-| PUT | `/api/v1/manage/access/roles/{uuid}` | Rename/update non-system role |
-| POST | `/api/v1/manage/access/roles/{uuid}/permissions` | Replace concrete role permissions |
-| PUT | `/api/v1/manage/access/roles/{uuid}/field-grants/{resource}/{action}` | Replace a role field grant |
-| GET | `/api/v1/manage/access/assignments` | Search current/revoked grants |
-| POST | `/api/v1/manage/access/assignments` | Grant or reactivate a role |
-| DELETE | `/api/v1/manage/access/assignments/{uuid}` | Revoke assignment; no hard delete |
-| GET | `/api/v1/manage/access/audit` | Paginated immutable audit history |
+| GET | `/api/v1/manage/authorization/permissions` | List catalogue |
+| GET | `/api/v1/manage/authorization/roles` | List roles |
+| POST | `/api/v1/manage/authorization/roles` | Create non-system role |
+| PUT | `/api/v1/manage/authorization/roles/{uuid}` | Rename/update non-system role |
+| POST | `/api/v1/manage/authorization/roles/{uuid}/permissions` | Replace concrete role permissions |
+| PUT | `/api/v1/manage/authorization/roles/{uuid}/field-grants/{resource}/{action}` | Replace a role field grant |
+| GET | `/api/v1/manage/authorization/assignments` | Search current/revoked grants |
+| POST | `/api/v1/manage/authorization/assignments` | Grant or reactivate a role |
+| DELETE | `/api/v1/manage/authorization/assignments/{uuid}` | Revoke assignment; no hard delete |
+| GET | `/api/v1/manage/authorization/audit` | Paginated immutable audit history |
 
 Permission catalogue rows are seeded, not created by normal HTTP CRUD. This prevents
 an administrator from creating names that are not implemented by any endpoint.
 
 ### 9.2 Seed Command
 
-`app:access:seed` is idempotent and source-controlled. It creates missing system
+`app:authorization:seed` is idempotent and source-controlled. It creates missing system
 permissions, system roles, their joins, and the Content pilot roles. It never removes
 or widens existing grants automatically. It reports changed records and exits nonzero
 on an incompatible system-role definition.
@@ -657,7 +657,7 @@ Initial system roles:
 |---|---|---|
 | `store_content_editor` | Store | Content read/create/update/delete without metadata mutation |
 | `store_content_metadata_editor` | Store | Store Content editor with metadata field grant |
-| `access_administrator` | Global | Reserved future Access administration role; not used to replace Phase 1 `ROLE_ADMIN` |
+| `authorization_administrator` | Global | Reserved future Authorization administration role; not used to replace Phase 1 `ROLE_ADMIN` |
 
 ---
 
@@ -665,11 +665,11 @@ Initial system roles:
 
 ### 10.1 First Release Decision
 
-Authorization is resolved server-side from Access tables and cache. JWTs continue to
+Authorization is resolved server-side from Authorization tables and cache. JWTs continue to
 contain Identity claims (`sub`, username, email, roles, time claims, JTI, issuer) only.
 Permissions and Store scopes are **not** added to JWT in Phase 1.
 
-This makes assignment revocation effective after Access-cache invalidation without
+This makes assignment revocation effective after Authorization-cache invalidation without
 waiting for a 7200-second access-token expiry, and avoids large tokens for users with
 many Store assignments.
 
@@ -678,7 +678,7 @@ many Store assignments.
 Cache key:
 
 ```text
-access:effective:{userUuid}
+authorization:effective:{userUuid}
 ```
 
 Cached value contains only effective permission codes, Store scope UUIDs, field grants,
@@ -694,7 +694,7 @@ that did not persist.
 ### 10.3 High-Risk Revocation
 
 Revoking an Assignment removes permissions on the next request after cache eviction.
-It does not require revoking Identity refresh tokens because the JWT carries no Access
+It does not require revoking Identity refresh tokens because the JWT carries no Authorization
 permissions. Store membership revocation is independently effective because Store
 checks it on every Store operation. If a future version embeds permissions in JWT
 claims, it MUST additionally revoke active access and refresh tokens or introduce an
@@ -720,8 +720,8 @@ Additional mandatory rules:
 
 - Permission codes, role codes, Store UUIDs, and field names are validated as bounded
   ASCII strings; no user expression is evaluated.
-- `ROLE_ADMIN` bypass is logged for sensitive Store/Access mutations.
-- Access audit lists are admin-only and must not expose unnecessary user profile data.
+- `ROLE_ADMIN` bypass is logged for sensitive Store/Authorization mutations.
+- Authorization audit lists are admin-only and must not expose unnecessary user profile data.
 - Store scope comes from a route parameter or a persisted target entity, never a client
   body field or `X-Store-Code` without trusted Store context resolution.
 - Field grants cannot grant serialization visibility. Serializer groups/`#[Ignore]`
@@ -731,18 +731,18 @@ Additional mandatory rules:
 
 ## 12. Implementation Phases
 
-### Phase 1: Access Foundation And Content Pilot
+### Phase 1: Authorization Foundation And Content Pilot
 
-1. Create Access migration, entities, repositories, services, Voter, cache invalidator,
+1. Create Authorization migration, entities, repositories, services, Voter, cache invalidator,
    management APIs, self-service endpoint, and seed command.
-2. Add the Access service configuration, route import, OpenAPI entries, translations,
+2. Add the Authorization service configuration, route import, OpenAPI entries, translations,
    and MkDocs links.
 3. Add the Core `DqlExpression` row-scope foundation defined in section 15 before
    introducing Store-scoped Content routes.
 4. Add Common migration for nullable `Content.storeUuid` and nullable `metadata`.
 5. Add Store-scoped Content staff routes using the existing View mixins plus a reusable
-   Access scope trait/service adapter.
-6. Add static Content schema fields and strict `FieldAccessService` enforcement.
+   Authorization scope trait/service adapter.
+6. Add static Content schema fields and strict `FieldAuthorizationService` enforcement.
 7. Preserve all existing Manage controller `ROLE_ADMIN` guards and existing User roles.
 
 ### Phase 2: Incremental Action Migration
@@ -750,7 +750,7 @@ Additional mandatory rules:
 1. Define each module's explicit permission catalogue in source code.
 2. Replace class-wide `ROLE_ADMIN` annotations only where every route has a tested
    permission mapping.
-3. Migrate direct Store Staff `MembershipService` action checks behind the Access Voter
+3. Migrate direct Store Staff `MembershipService` action checks behind the Authorization Voter
    while retaining Membership as the Store fact source.
 4. Add data-scope adapters for Store-owned resources one module at a time.
 5. Replace wallet manual provider `ROLE_ADMIN` checks only after a dedicated
@@ -772,10 +772,10 @@ resource, scope, and environment attributes. It MUST NOT reuse client-provided
 
 | Component | Required cases |
 |---|---|
-| `AccessVoter` | anonymous deny; ROLE_ADMIN override; global allow; Store allow; wrong Store deny; missing Membership deny |
-| `AccessService` | active/revoked grants; role scope mismatch; union across roles; no cross-Store leakage |
-| `FieldAccessService` | static schema intersection; basic vs metadata role; forbidden field causes 403; unknown grant field rejected |
-| `AccessResourceRegistry` | only code-owned resources/fields are accepted |
+| `AuthorizationVoter` | anonymous deny; ROLE_ADMIN override; global allow; Store allow; wrong Store deny; missing Membership deny |
+| `AuthorizationService` | active/revoked grants; role scope mismatch; union across roles; no cross-Store leakage |
+| `FieldAuthorizationService` | static schema intersection; basic vs metadata role; forbidden field causes 403; unknown grant field rejected |
+| `AuthorizationResourceRegistry` | only code-owned resources/fields are accepted |
 | Seed command | idempotent create; no automatic privilege widening/removal |
 | Cache invalidator | assignment/role mutation evicts every affected user only after commit |
 
@@ -790,31 +790,31 @@ resource, scope, and environment attributes. It MUST NOT reuse client-provided
 | Basic editor submits `metadata` | 403 and unchanged database row |
 | Metadata editor submits `metadata` | 200 and field persists |
 | Ordinary-user Content read | Unchanged legacy behavior |
-| Access management mutation | Corresponding immutable audit record is written |
+| Authorization management mutation | Corresponding immutable audit record is written |
 
 ### 13.3 Regression And Static Analysis
 
 - Run the default UnitTest + Integration suite and keep the 90% coverage gate.
-- Add the Access migration to MySQL migration-chain validation.
+- Add the Authorization migration to MySQL migration-chain validation.
 - Exercise SQLite and PostgreSQL semantics for assignment uniqueness and nullable scope
   fields; do not rely on partial unique indexes unsupported by one target database.
 - Run PHPStan Level 8 and Rector type-rule dry-run.
-- Do not unskip documented tests unrelated to Access.
+- Do not unskip documented tests unrelated to Authorization.
 
 ---
 
 ## 14. Acceptance Criteria
 
-The Access foundation is complete when:
+The Authorization foundation is complete when:
 
-- [ ] Access is a standalone module and no Access entity has a foreign key to another
+- [ ] Authorization is a standalone module and no Authorization entity has a foreign key to another
   business module.
 - [ ] Permission, role, assignment, field grant, and audit records have the stated
   integrity constraints and lifecycle rules.
-- [ ] Store-scoped decisions require both an Access grant and active Store membership.
+- [ ] Store-scoped decisions require both an Authorization grant and active Store membership.
 - [ ] A controller can declare an action permission without duplicating permission
   lookup logic.
-- [ ] Every Store-scoped lookup uses an Access-derived scope filter for list, detail,
+- [ ] Every Store-scoped lookup uses an Authorization-derived scope filter for list, detail,
   update, delete, and batch mutation paths.
 - [ ] Store scope is server-derived from route/record, never accepted from JSON input.
 - [ ] Field grants are strict, registry-validated, and cannot widen controller schema.
@@ -869,7 +869,7 @@ An empty `in` collection compiles to `1 = 0` (no rows, fail-closed); an empty `n
 ### 15.2 Non-Negotiable Rules
 
 - Only PHP code may construct a `DqlExpression`. HTTP parameters, database records,
-  and administrator-managed Access data MUST NOT provide the expression source.
+  and administrator-managed Authorization data MUST NOT provide the expression source.
 - Variables are supplied only through the constructor values array and always bind as
   Doctrine query parameters. They are never interpolated into DQL.
 - In an `ApiView::commonFilter()` only, `this` is an internal, read-only context
@@ -1154,5 +1154,5 @@ protected function commonFilter(): QueryBuilder
 
 No existing controller is migrated as part of the Core feature. The first migration
 must be a small user-owned resource with list/detail/update/delete integration tests.
-Only then may Access use `DqlExpression` as its readable single-Store/ownership scope
+Only then may Authorization use `DqlExpression` as its readable single-Store/ownership scope
 primitive.

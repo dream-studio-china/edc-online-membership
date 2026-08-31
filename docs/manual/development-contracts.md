@@ -221,7 +221,7 @@ inconsistent prefixes inside a module, non-mirrored controller/service names.
   `new DqlExpression('entity.getStoreUuid() in storeUuids', ['storeUuids' => $allowed])`.
   `DqlExpression` shares the `@filter` syntax (including `in`/`not in` with empty-
   collection safety) but is fail-closed and never uses the in-memory fallback. The
-  designed `Access` bundle (`docs/design/bundles/access.md`) will build on this
+  designed `Authorization` bundle (`docs/design/bundles/authorization.md`) will build on this
   primitive for scoped RBAC, Store-scoped grants, field grants, and audit logging.
 - Manage controllers also carry class-level `#[IsGranted('ROLE_ADMIN')]`.
 - Role hierarchy: `ROLE_ADMIN: [ROLE_USER]`.
