@@ -28,6 +28,11 @@ class ProductController extends RestController
     /** @return array<string, mixed>|DqlExpression */
     protected function commonFilter(): array|DqlExpression
     {
+        $global = new DqlExpression(
+            'entity.getStatus() == status && entity.getIsDeleted() == isDeleted && !entity.getStore()',
+            ['status' => 'active', 'isDeleted' => false]
+        );
+
         try {
             $storeContext = $this->storeContextResolver?->resolve();
         } catch (\Throwable) {
@@ -35,30 +40,22 @@ class ProductController extends RestController
         }
 
         if ($storeContext === null || $this->storeRepository === null) {
-            return $this->globalProductExpression();
+            return $global;
         }
 
         try {
             $store = $this->storeRepository->findOneBy(['uuid' => $storeContext->storeUuid]);
         } catch (\Throwable) {
-            return $this->globalProductExpression();
+            return $global;
         }
 
         if ($store === null) {
-            return $this->globalProductExpression();
+            return $global;
         }
 
         return new DqlExpression(
             '(!entity.getStore() || entity.getStore() == store) && entity.getStatus() == status && entity.getIsDeleted() == isDeleted',
             ['store' => $store, 'status' => 'active', 'isDeleted' => false]
-        );
-    }
-
-    private function globalProductExpression(): DqlExpression
-    {
-        return new DqlExpression(
-            'entity.getStatus() == status && entity.getIsDeleted() == isDeleted && !entity.getStore()',
-            ['status' => 'active', 'isDeleted' => false]
         );
     }
 }
