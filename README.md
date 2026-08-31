@@ -15,6 +15,7 @@ flowchart TB
     Core["<b>Core Framework</b><br/>BaseService · View Mixins · Expression→DQL"]
 
     Identity["Identity<br/>Auth · JWT · OTP · User"]
+    Access["Access (design)<br/>RBAC · Store scope · Field grants"]
     Common["Common<br/>CMS (7 entities)"]
     Storage["Storage<br/>Media drivers"]
     Wechat["Wechat<br/>Login + Pay"]
@@ -28,6 +29,8 @@ flowchart TB
     Exchange["Exchange (design)<br/>Rates · Pool · Mint"]
 
     Identity --> Core
+    Access -. "design" .-> Core
+    Access -. "User UUID" .-> Identity
     Common --> Core
     Storage --> Core
     Storage --> Common
@@ -41,6 +44,8 @@ flowchart TB
     Trade --> Payment
     Trade --> Store
     Trade --> Inventory
+    Store -. "scoped decisions" .-> Access
+    Common -. "Content pilot" .-> Access
     Promotion --> Core
     Promotion --> Trade
     Settlement --> Core
@@ -164,7 +169,7 @@ clear extension points for domain-specific behavior.
 - **Transactional commerce workflows**: orders, inventory reservations, invoices, payment gateways, wallet adjustments, and settlement allocation.
 - **Financial auditability**: idempotent transfers, voucher-backed deposits and withdrawals, internal balance verification and reconciliation, and versioned settlement rules.
 - **Extensible integrations**: JWT and OTP authentication, WeChat login and payment, local or Qiniu media storage, and a promotion-rule DSL.
-- **Access control and audit**: role-protected management endpoints, safeguards for privileged dynamic queries, and bounded audit logging for mutating requests.
+- **Access control and audit**: `ROLE_ADMIN`-protected management endpoints, safeguards for privileged dynamic queries, and bounded audit logging for mutating requests. A separate scoped RBAC and field-grant Access module is designed but not yet implemented.
 - **Reliable asynchronous processing**: Messenger workers and an outbox/inbox pattern for cross-module events.
 - **Production diagnostics**: OpenAPI documentation, readiness and liveness probes, Prometheus metrics, and endpoint rate limiting.
 - **Enforced quality checks**: PHPUnit, PHPStan Level 8, Rector type rules, and a 90% line-coverage threshold in CI.
@@ -190,7 +195,9 @@ See `composer.json` for the full dependency list.
 
 The repository is a modular monolith: `src/` holds the application code (Core framework
 plus business modules such as Common, Identity, Trade, Payment, Wallet, Storage, and more),
-alongside `config/`, `migrations/`, `tests/`, `docs/`, and the Docker/Compose files.
+alongside `config/`, `migrations/`, `tests/`, `docs/`, and the Docker/Compose files. The
+planned `src/Access/` module is documented separately and is not present in the runtime
+application yet.
 
 For the full, detailed directory tree (down to controllers, services, entities, and
 repositories for every module), see
@@ -255,6 +262,7 @@ MySQL, Redis, Mailpit). The app runs on the configured local port.
 | **Settlement** | Allocation and finality | Versioned rules, auditable allocations, and wallet posting |
 | **Promotion** | Pricing rules | Promotion DSL, calculation strategies, and campaign routing |
 | **Identity** | Authentication | JWT, OTP, registration, user profiles, and administration |
+| **Access** *(design)* | Authorization | Scoped RBAC, Store-scoped grants, strict field grants, and authorization audit design; not implemented |
 | **Storage** | Media uploads | Local and Qiniu Kodo storage drivers |
 | **Wechat** | WeChat integration | Login and WeChat Pay V3 |
 | **Exchange** *(design)* | Points economy | Exchange-rate and liquidity-pool design; not implemented |
@@ -317,6 +325,7 @@ and **[Core Usage — Development Manual](docs/manual/core-usage.md)** for pract
 - **[Database & Migrations](docs/manual/database-and-migrations.md)** — Doctrine conventions and portable migration workflow
 - **[Integration Events](docs/manual/integration-events.md)** — Transactional outbox/inbox, idempotent consumers, retries, and scheduler operation
 - **[Bundle Design Docs](docs/design/bundles/)** — Design notes for implemented and design-stage modules
+- **[Access Authorization Design](docs/design/bundles/access.md)** — Independent Access module design, migration path, Content pilot, field grants, and acceptance criteria
 - **[Runbooks](docs/runbooks/)** — Per-module operational procedures
 - **[Testing & Production Validation](docs/testing/crud-skeleton-production/README.md)** — Required validation evidence by change type
 - **[OpenAPI Specification](docs/openapi/endpoints.yaml)** and **[Order & Payment Flow](docs/openapi/order-payment-flow.md)** — API reference and consumer workflow
