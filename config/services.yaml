@@ -10,6 +10,7 @@ imports:
     - { resource: '../src/Wechat/Resources/config/services_wechat.yaml', ignore_errors: true }
     - { resource: '../src/Promotion/Resources/config/services_promotion.yaml', ignore_errors: true }
     - { resource: '../src/Settlement/Resources/config/services_settlement.yaml', ignore_errors: true }
+    - { resource: '../src/Authorization/Resources/config/services_authorization.yaml', ignore_errors: true }
 
 services:
     _defaults:

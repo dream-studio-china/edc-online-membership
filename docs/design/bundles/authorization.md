@@ -1,6 +1,6 @@
 # Authorization Bundle Design
 
-> **Status: approved design, not implemented.** The Authorization bundle (`src/Authorization/`) is
+> **Status: Phase 1 implemented — foundation + Content pilot.** The Authorization bundle (`src/Authorization/`) is
 > the authorization boundary for the modular monolith. Identity remains responsible
 > for authentication and user identity. This document is the implementation contract
 > for RBAC, scoped data access, and a deliberately limited field-level extension.
@@ -145,9 +145,9 @@ controller changes. It cannot be enabled merely by adding Authorization records.
 ```mermaid
 flowchart LR
     identity["Identity<br/>User UUID, JWT, authentication"] --> authorization["Authorization<br/>role and permission decisions"]
-    store["Store<br/>membership and store lifecycle"] --> access
-    common["Common<br/>Content scope enforcement"] --> access
-    trade["Trade / Wallet / Payment<br/>future consumers"] --> access
+    store["Store<br/>membership and store lifecycle"] --> authorization
+    common["Common<br/>Content scope enforcement"] --> authorization
+    trade["Trade / Wallet / Payment<br/>future consumers"] --> authorization
 ```
 
 The arrows denote service-interface dependencies only. Authorization stores Identity and
