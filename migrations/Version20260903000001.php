@@ -1,0 +1,65 @@
+<?php
+
+declare(strict_types=1);
+
+namespace DoctrineMigrations;
+
+use Doctrine\DBAL\Schema\Schema;
+use Doctrine\Migrations\AbstractMigration;
+
+final class Version20260903000001 extends AbstractMigration
+{
+    public function getDescription(): string
+    {
+        return 'OrderItem: backfill specification_uuid and drop specification_id FK/column (step 2 of UUID migration)';
+    }
+
+    public function up(Schema $schema): void
+    {
+        // Backfill UUID from existing FK. addSql runs BEFORE schema diff drop,
+        // but specification_uuid already exists from Version20260903000000,
+        // so the UPDATE is safe and executes before the FK/column are dropped.
+        $this->addSql('UPDATE trade_order_item oi SET specification_uuid = (SELECT s.uuid FROM trade_specification s WHERE s.id = oi.specification_id) WHERE oi.specification_id IS NOT NULL AND oi.specification_uuid IS NULL');
+
+        $table = $schema->getTable('trade_order_item');
+
+        if ($table->hasForeignKey('fk_trade_order_item_specification')) {
+            $table->removeForeignKey('fk_trade_order_item_specification');
+        } elseif ($table->hasForeignKey('FK_TRADE_ORDER_ITEM_SPECIFICATION')) {
+            $table->removeForeignKey('FK_TRADE_ORDER_ITEM_SPECIFICATION');
+        }
+        if ($table->hasIndex('idx_trade_order_item_specification')) {
+            $table->dropIndex('idx_trade_order_item_specification');
+        }
+        if ($table->hasIndex('IDX_TRADE_ORDER_ITEM_SPECIFICATION')) {
+            $table->dropIndex('IDX_TRADE_ORDER_ITEM_SPECIFICATION');
+        }
+        if ($table->hasIndex('IDX_7C7944E4908E2FFE')) {
+            $table->dropIndex('IDX_7C7944E4908E2FFE');
+        }
+        if ($table->hasColumn('specification_id')) {
+            $table->dropColumn('specification_id');
+        }
+    }
+
+    public function down(Schema $schema): void
+    {
+        $table = $schema->getTable('trade_order_item');
+
+        if (!$table->hasColumn('specification_id')) {
+            $table->addColumn('specification_id', 'integer', ['notnull' => false]);
+        }
+        if (!$table->hasIndex('idx_trade_order_item_specification')) {
+            $table->addIndex(['specification_id'], 'idx_trade_order_item_specification');
+        }
+        if (!$table->hasForeignKey('fk_trade_order_item_specification')) {
+            $table->addForeignKeyConstraint('trade_specification', ['specification_id'], ['id'], ['onDelete' => 'SET NULL'], 'fk_trade_order_item_specification');
+        }
+        if ($table->hasColumn('specification_uuid')) {
+            $table->dropColumn('specification_uuid');
+        }
+        if ($table->hasIndex('idx_trade_order_item_spec_uuid')) {
+            $table->dropIndex('idx_trade_order_item_spec_uuid');
+        }
+    }
+}

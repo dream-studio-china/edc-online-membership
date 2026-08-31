@@ -123,24 +123,6 @@ class OrderItem
     {
         if (is_string($spec)) {
             $this->specificationUuid = $spec;
-        } elseif (is_object($spec) && method_exists($spec, 'getUuid')) {
-            $this->specificationUuid = $spec->getUuid();
-            if (method_exists($spec, 'getName')) {
-                $this->specificationTitle = $spec->getName();
-            }
-            $this->specSnapshot = [
-                'id' => method_exists($spec, 'getId') ? $spec->getId() : null,
-                'uuid' => $spec->getUuid(),
-                'name' => method_exists($spec, 'getName') ? $spec->getName() : null,
-                'productId' => method_exists($spec, 'getProduct') && $spec->getProduct() ? $spec->getProduct()->getId() : null,
-            ];
-            if (method_exists($spec, 'getProduct') && $spec->getProduct()) {
-                $product = $spec->getProduct();
-                $this->productSnapshot = [
-                    'id' => method_exists($product, 'getId') ? $product->getId() : null,
-                    'name' => method_exists($product, 'getName') ? $product->getName() : null,
-                ];
-            }
         }
         return $this;
     }

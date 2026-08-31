@@ -25,6 +25,7 @@ class ProductController extends RestController
     ) {
     }
 
+    /** @return array<string, mixed>|DqlExpression */
     protected function commonFilter(): array|DqlExpression
     {
         $base = ['status' => 'active', 'isDeleted' => false];

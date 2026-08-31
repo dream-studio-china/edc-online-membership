@@ -11,6 +11,7 @@ use App\Core\View\DeleteApiViewMixin;
 use App\Core\View\DetailApiViewMixin;
 use App\Core\View\ListApiViewMixin;
 use App\Core\View\UpdateApiViewMixin;
+use App\Store\Entity\Product;
 use App\Store\Entity\Store;
 use App\Store\Service\ProductServiceInterface;
 use Symfony\Component\Routing\Attribute\Route;
@@ -44,7 +45,9 @@ class ProductController extends RestController
     {
         if (array_key_exists('store', $content)) {
             $store = $this->resolveStore($content['store']);
-            $entity->setStore($store);
+            if ($entity instanceof Product) {
+                $entity->setStore($store);
+            }
             unset($content['store']);
         }
         return $content;
@@ -58,7 +61,7 @@ class ProductController extends RestController
     {
         if (array_key_exists('store', $content)) {
             $store = $this->resolveStore($content['store']);
-            if ($entity !== null && method_exists($entity, 'setStore')) {
+            if ($entity instanceof Product) {
                 $entity->setStore($store);
             }
             unset($content['store']);
