@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace App\Trade\Entity;
 
 use App\Core\Utils\UUID;
-use App\Store\Entity\Specification;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: \App\Trade\Repository\OrderItemRepository::class)]
 #[ORM\Table(name: 'trade_order_item')]
 #[ORM\HasLifecycleCallbacks]
 #[ORM\UniqueConstraint(name: 'uniq_trade_order_item_uuid', columns: ['uuid'])]
+#[ORM\Index(name: 'idx_trade_order_item_spec_uuid', columns: ['specification_uuid'])]
 class OrderItem
 {
     #[ORM\Id]
@@ -26,9 +26,8 @@ class OrderItem
     #[ORM\JoinColumn(name: 'order_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     private ?Order $order = null;
 
-    #[ORM\ManyToOne(targetEntity: Specification::class)]
-    #[ORM\JoinColumn(name: 'specification_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
-    private ?Specification $specification = null;
+    #[ORM\Column(type: 'string', length: 36, nullable: true)]
+    private ?string $specificationUuid = null;
 
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private ?string $specificationTitle = null;
@@ -96,14 +95,53 @@ class OrderItem
         return $this;
     }
 
-    public function getSpecification(): ?Specification
+    public function getSpecificationUuid(): ?string
     {
-        return $this->specification;
+        return $this->specificationUuid;
     }
 
-    public function setSpecification(?Specification $specification): self
+    public function setSpecificationUuid(?string $specificationUuid): self
     {
-        $this->specification = $specification;
+        $this->specificationUuid = $specificationUuid;
+        return $this;
+    }
+
+    // BC: keep deprecated alias for older code, delegates to UUID
+    /**
+     * @deprecated Use getSpecificationUuid
+     */
+    public function getSpecification(): ?object
+    {
+        return null;
+    }
+
+    /**
+     * @deprecated Use setSpecificationUuid + snapshots
+     * @param mixed $spec
+     */
+    public function setSpecification(mixed $spec): self
+    {
+        if (is_string($spec)) {
+            $this->specificationUuid = $spec;
+        } elseif (is_object($spec) && method_exists($spec, 'getUuid')) {
+            $this->specificationUuid = $spec->getUuid();
+            if (method_exists($spec, 'getName')) {
+                $this->specificationTitle = $spec->getName();
+            }
+            $this->specSnapshot = [
+                'id' => method_exists($spec, 'getId') ? $spec->getId() : null,
+                'uuid' => $spec->getUuid(),
+                'name' => method_exists($spec, 'getName') ? $spec->getName() : null,
+                'productId' => method_exists($spec, 'getProduct') && $spec->getProduct() ? $spec->getProduct()->getId() : null,
+            ];
+            if (method_exists($spec, 'getProduct') && $spec->getProduct()) {
+                $product = $spec->getProduct();
+                $this->productSnapshot = [
+                    'id' => method_exists($product, 'getId') ? $product->getId() : null,
+                    'name' => method_exists($product, 'getName') ? $product->getName() : null,
+                ];
+            }
+        }
         return $this;
     }
 
@@ -240,21 +278,10 @@ class OrderItem
             $this->createdAt = new \DateTimeImmutable();
         }
 
-        if ($this->specification !== null) {
-            $this->specificationTitle = $this->specification->getName();
-            $this->specSnapshot = [
-                'id' => $this->specification->getId(),
-                'name' => $this->specification->getName(),
-                'productId' => $this->specification->getProduct()?->getId(),
-            ];
-
-            $product = $this->specification->getProduct();
-            if ($product !== null) {
-                $this->productSnapshot = [
-                    'id' => $product->getId(),
-                    'name' => $product->getName(),
-                ];
-            }
+        // Snapshots and title are set explicitly by OrderService/BasePriceCalculator;
+        // keep prePersist as price calc only for historical data safety.
+        if ($this->specificationTitle === null && is_array($this->specSnapshot) && isset($this->specSnapshot['name'])) {
+            $this->specificationTitle = (string) $this->specSnapshot['name'];
         }
 
         $this->price = $this->unitPrice * $this->quantity;

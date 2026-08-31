@@ -88,8 +88,17 @@ final class OrderService extends BaseService implements OrderServiceInterface
 
             foreach ($calculatedItems as $item) {
                 $orderItem = new OrderItem();
-                if (isset($item['specification']) && $item['specification'] instanceof Specification) {
-                    $orderItem->setSpecification($item['specification']);
+                if (isset($item['specificationUuid']) && is_string($item['specificationUuid'])) {
+                    $orderItem->setSpecificationUuid($item['specificationUuid']);
+                } elseif (isset($item['specification']) && $item['specification'] instanceof Specification) {
+                    $orderItem->setSpecificationUuid($item['specification']->getUuid());
+                } elseif (isset($item['specSnapshot']['uuid']) && is_string($item['specSnapshot']['uuid'])) {
+                    $orderItem->setSpecificationUuid($item['specSnapshot']['uuid']);
+                }
+                if (isset($item['specificationName']) && is_string($item['specificationName'])) {
+                    $orderItem->setSpecificationTitle($item['specificationName']);
+                } elseif (isset($item['specSnapshot']['name']) && is_string($item['specSnapshot']['name'])) {
+                    $orderItem->setSpecificationTitle($item['specSnapshot']['name']);
                 }
                 $orderItem->setQuantity($item['quantity']);
                 $orderItem->setUnitPrice($item['unitPrice']);
@@ -125,7 +134,7 @@ final class OrderService extends BaseService implements OrderServiceInterface
                     'totalAmount' => $order->getTotalAmount(),
                     'items' => array_map(static fn (OrderItem $item): array => [
                         'lineId' => $item->getUuid(),
-                        'catalogReference' => $item->getSpecification()?->getUuid() ?? '',
+                        'catalogReference' => $item->getSpecificationUuid() ?? $item->getSpecSnapshot()['uuid'] ?? '',
                         'quantity' => $item->getQuantity(),
                         'unitPrice' => $item->getUnitPrice(),
                         'lineAmount' => $item->getPrice(),

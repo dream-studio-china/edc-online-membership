@@ -33,7 +33,7 @@ Product and Specification are `Store` entities (`Product.store` nullable). `Stor
 | `Store\Product` | `trade_product` | Sellable product with name, description, status, nullable `store` |
 | `Store\Specification` | `trade_specification` | Product variant (name, price in cents, status) |
 | `Order` | `trade_order` | Purchase order with state machine, total, currency |
-| `OrderItem` | `trade_order_item` | Line item with snapshot, quantity, unit price, `ManyToOne` `Store\Specification` (same table) |
+| `OrderItem` | `trade_order_item` | Line item with `specificationUuid` (scalar), `specificationTitle`, snapshots, quantity, unit price |
 | `TradeOutboxMessage` | `trade_outbox_message` | Transactional integration event relay record |
 
 ### 1.2 Store-Scoped Orders

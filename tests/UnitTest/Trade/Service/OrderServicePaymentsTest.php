@@ -193,7 +193,7 @@ final class OrderServicePaymentsTest extends TestCase
         $items = $order->getItems();
         self::assertCount(1, $items);
         $item = $items->first();
-        self::assertSame($spec, $item->getSpecification());
+        self::assertSame($spec->getUuid(), $item->getSpecificationUuid());
         self::assertSame(['name' => 'Red'], $item->getSpecSnapshot());
         self::assertSame(['name' => 'Phone'], $item->getProductSnapshot());
     }

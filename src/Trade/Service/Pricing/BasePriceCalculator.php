@@ -74,8 +74,9 @@ class BasePriceCalculator implements PriceCalculatorInterface
             $unitPrice = $specification->getPrice();
 
             $context->items[] = [
-                'specification' => $specification,
+                'specification' => $specification, // deprecated, kept for BC
                 'specificationId' => $specification->getId(),
+                'specificationUuid' => $specification->getUuid(),
                 'specificationName' => $specification->getName(),
                 'quantity' => $quantity,
                 'unitPrice' => $unitPrice,
@@ -88,6 +89,7 @@ class BasePriceCalculator implements PriceCalculatorInterface
                 ],
                 'productSnapshot' => [
                     'id' => $product->getId(),
+                    'uuid' => $product->getUuid(),
                     'name' => $product->getName(),
                 ],
             ];
