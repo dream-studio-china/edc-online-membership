@@ -222,8 +222,12 @@ field transform), `@mode` (`mixed` upsert / `strict` update), `@basis` (upsert m
 fields).
 
 Filter expression operators: `==`, `!=`, `>`, `<`, `>=`, `<=`, `&&`, `||`, `!`,
-`matches` (literal substring or `/regex/flags/`), and chained attribute access
-(`entity.getCategory().getName()`).
+`in` / `not in` (collection membership, e.g. `entity.getStoreUuid() in storeUuids`;
+empty `in []` → `1 = 0`, empty `not in []` → `1 = 1`), `matches` (literal substring or
+`/regex/flags/`), and chained attribute access (`entity.getCategory().getName()`).
+The same operator set powers server-owned `DqlExpression` row scopes in
+`commonFilter()` (e.g. `new DqlExpression('entity.getUser() == this.getUser()')`),
+which are fail-closed rather than falling back to in-memory evaluation.
 
 ---
 
