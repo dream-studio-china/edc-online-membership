@@ -6,11 +6,11 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="A production-oriented Symfony microservices platform evolved from modular monolith architecture, featuring DDD, service isolation, and event-driven communication.">
+        <meta name="description" content="Symfony 8.1 API backend skeleton with modular architecture">
       
       
       
-        <link rel="canonical" href="https://immane.github.io/crud-platform/manual/extracting-a-service/">
+        <link rel="canonical" href="https://immane.github.io/crud-skeleton/manual/extracting-a-service/">
       
       
         <link rel="prev" href="../deployment/">
@@ -20,9 +20,9 @@
       
       
         
-          <link rel="alternate" href="/crud-platform/" hreflang="en">
+          <link rel="alternate" href="/crud-skeleton/" hreflang="en">
         
-          <link rel="alternate" href="/crud-platform/zh/" hreflang="zh">
+          <link rel="alternate" href="/crud-skeleton/zh/" hreflang="zh">
         
       
       
@@ -31,7 +31,7 @@
     
     
       
-        <title>Extracting a Service - CRUD Platform</title>
+        <title>Extracting a Service - CRUD Skeleton</title>
       
     
     
@@ -82,7 +82,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#extracting-a-service" class="md-skip">
+        <a href="#extracting-a-service-from-the-monolith" class="md-skip">
           Skip to content
         </a>
       
@@ -98,7 +98,7 @@
 
 <header class="md-header md-header--shadow" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../.." title="CRUD Platform" class="md-header__button md-logo" aria-label="CRUD Platform" data-md-component="logo">
+    <a href="../.." title="CRUD Skeleton" class="md-header__button md-logo" aria-label="CRUD Skeleton" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -112,7 +112,7 @@
       <div class="md-header__ellipsis">
         <div class="md-header__topic">
           <span class="md-ellipsis">
-            CRUD Platform
+            CRUD Skeleton
           </span>
         </div>
         <div class="md-header__topic" data-md-component="header-topic">
@@ -165,13 +165,13 @@
       <ul class="md-select__list">
         
           <li class="md-select__item">
-            <a href="/crud-platform/" hreflang="en" class="md-select__link">
+            <a href="/crud-skeleton/" hreflang="en" class="md-select__link">
               English
             </a>
           </li>
         
           <li class="md-select__item">
-            <a href="/crud-platform/zh/" hreflang="zh" class="md-select__link">
+            <a href="/crud-skeleton/zh/" hreflang="zh" class="md-select__link">
               中文
             </a>
           </li>
@@ -226,7 +226,7 @@
     
     
       <div class="md-header__source">
-        <a href="https://github.com/immane/crud-platform" title="Go to repository" class="md-source" data-md-component="source">
+        <a href="https://github.com/immane/crud-skeleton" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
@@ -262,17 +262,17 @@
 
 <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../.." title="CRUD Platform" class="md-nav__button md-logo" aria-label="CRUD Platform" data-md-component="logo">
+    <a href="../.." title="CRUD Skeleton" class="md-nav__button md-logo" aria-label="CRUD Skeleton" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
 
     </a>
-    CRUD Platform
+    CRUD Skeleton
   </label>
   
     <div class="md-nav__source">
-      <a href="https://github.com/immane/crud-platform" title="Go to repository" class="md-source" data-md-component="source">
+      <a href="https://github.com/immane/crud-skeleton" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
@@ -316,922 +316,6 @@
       
   
   
-  
-  
-    
-    
-    
-    
-      
-        
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
-        
-          
-          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Design Contracts
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Design Contracts
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/system-architecture/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    System Architecture
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/microservice-transition/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Microservice Transition
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/store-extraction-readiness/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Store Extraction Readiness
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/inventory-extraction-readiness/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Inventory Extraction Readiness
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/payment-extraction-readiness/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Payment Extraction Readiness
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/wallet-extraction-readiness.md" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Wallet Extraction Readiness
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/api-design/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    API Design
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/data-model/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Data Model
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/module-design/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Module Design
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/controller-design/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Controller Design
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/api-documentation/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    API Documentation
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/system-contracts/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    System Contracts
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    
-    
-    
-    
-      
-        
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
-        
-          
-          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Bundles
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Bundles
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/bundles/core/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Core Framework
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/bundles/common/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Common (CMS)
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/bundles/trade/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Trade (E-Commerce)
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/bundles/store/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Store (Multi-Store Operations)
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/bundles/inventory/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Inventory
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/bundles/payment/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Payment
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/bundles/wallet/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Wallet
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/bundles/identity/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Identity (Auth)
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/bundles/wechat/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Wechat (Login + Pay)
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    
-    
-    
-    
-      
-        
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
-        
-          
-          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Research
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Research
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../research/easywechat-6.x-usage/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    EasyWeChat 6.x Usage
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../research/huifu-payment-api/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Huifu Payment API
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    
-    
-    
-    
-      
-        
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
-        
-          
-          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Issues
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_5">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Issues
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../issues/architecture-review-2026-06-26/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Architecture Review 2026-06-26
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-    
-      
-      
-  
-  
     
   
   
@@ -1250,10 +334,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
         
           
-          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
             
   
   
@@ -1271,8 +355,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
-          <label class="md-nav__title" for="__nav_6">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1296,35 +380,7 @@
   <span class="md-ellipsis">
     
   
-    Overview
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../architecture/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Architecture
+    Manual Index
   
 
     
@@ -1353,6 +409,34 @@
     
   
     Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
   
 
     
@@ -1465,6 +549,34 @@
     
   
     Query System
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../authorization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authorization Setup
   
 
     
@@ -1741,22 +853,44 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#pre-extraction-checklist" class="md-nav__link">
+  <a href="#1-pre-extraction-rules" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Pre-Extraction Checklist
+        1. Pre-extraction rules
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Pre-Extraction Checklist">
+    <nav class="md-nav" aria-label="1. Pre-extraction rules">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#known-boundary-risks" class="md-nav__link">
+  <a href="#11-no-cross-module-doctrine-associations" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Known Boundary Risks
+        1.1 No cross-module Doctrine associations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12-uuid-references-instead-of-objectid-linkage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2 UUID references instead of object/ID linkage
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#13-scalar-contracts-across-boundaries" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.3 Scalar contracts across boundaries
       
     </span>
   </a>
@@ -1769,34 +903,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#step-1-create-appsname-skeleton" class="md-nav__link">
+  <a href="#2-choose-the-module-and-map-its-boundary" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Step 1: Create apps/{name}/ Skeleton
+        2. Choose the module and map its boundary
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Step 1: Create apps/{name}/ Skeleton">
+    <nav class="md-nav" aria-label="2. Choose the module and map its boundary">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#required-files" class="md-nav__link">
+  <a href="#map-the-dependencies" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Required Files
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Required Files">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#appsnamecomposerjson" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        apps/{name}/composer.json
+        Map the dependencies
       
     </span>
   </a>
@@ -1804,136 +926,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#appsnamesrckernelphp" class="md-nav__link">
+  <a href="#extraction-checklist-per-module" class="md-nav__link">
     <span class="md-ellipsis">
       
-        apps/{name}/src/Kernel.php
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#appsnamebinconsole" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        apps/{name}/bin/console
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#appsnameconfigbundlesphp" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        apps/{name}/config/bundles.php
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#appsnameconfigservicesyaml" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        apps/{name}/config/services.yaml
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#appsnameconfigpackagesdoctrineyaml" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        apps/{name}/config/packages/doctrine.yaml
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#appsnameconfigpackagesframeworkyaml" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        apps/{name}/config/packages/framework.yaml
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#appsnameconfigroutesyaml" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        apps/{name}/config/routes.yaml
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#appsnameenv" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        apps/{name}/.env
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#appsnamephpunitxml" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        apps/{name}/phpunit.xml
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#appsnamedockerfile" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        apps/{name}/Dockerfile
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#appsnamedockercaddyfile" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        apps/{name}/docker/Caddyfile
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#install-dependencies" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Install Dependencies
+        Extraction checklist per module
       
     </span>
   </a>
@@ -1946,10 +942,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#step-2-move-source-code" class="md-nav__link">
+  <a href="#3-create-the-app-skeleton" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Step 2: Move Source Code
+        3. Create the app skeleton
       
     </span>
   </a>
@@ -1957,22 +953,33 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#step-3-create-standalone-migration-baseline" class="md-nav__link">
+  <a href="#4-move-the-code" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Step 3: Create Standalone Migration Baseline
+        4. Move the code
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Step 3: Create Standalone Migration Baseline">
+    <nav class="md-nav" aria-label="4. Move the code">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#example-store-baseline" class="md-nav__link">
+  <a href="#move-the-parts-that-must-follow" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Example (Store baseline)
+        Move the parts that must follow
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#leave-behind" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Leave behind
       
     </span>
   </a>
@@ -1985,10 +992,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#step-4-add-root-composer-path-package" class="md-nav__link">
+  <a href="#5-baseline-migration" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Step 4: Add Root Composer Path Package
+        5. Baseline migration
       
     </span>
   </a>
@@ -1996,22 +1003,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#step-5-update-root-service-wiring" class="md-nav__link">
+  <a href="#6-wiring" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Step 5: Update Root Service Wiring
+        6. Wiring
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Step 5: Update Root Service Wiring">
+    <nav class="md-nav" aria-label="6. Wiring">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#configservicesyaml" class="md-nav__link">
+  <a href="#re-point-the-ports" class="md-nav__link">
     <span class="md-ellipsis">
       
-        config/services.yaml
+        Re-point the ports
       
     </span>
   </a>
@@ -2019,10 +1026,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#configroutesyaml" class="md-nav__link">
+  <a href="#messaging-wiring" class="md-nav__link">
     <span class="md-ellipsis">
       
-        config/routes.yaml
+        Messaging wiring
       
     </span>
   </a>
@@ -2030,10 +1037,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#configpackagesdoctrineyaml" class="md-nav__link">
+  <a href="#scheduler-and-console-commands" class="md-nav__link">
     <span class="md-ellipsis">
       
-        config/packages/doctrine.yaml
+        Scheduler and console commands
       
     </span>
   </a>
@@ -2046,10 +1053,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#step-6-add-standalone-tests" class="md-nav__link">
+  <a href="#7-testing" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Step 6: Add Standalone Tests
+        7. Testing
       
     </span>
   </a>
@@ -2057,10 +1064,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#step-7-update-ci" class="md-nav__link">
+  <a href="#8-ci" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Step 7: Update CI
+        8. CI
       
     </span>
   </a>
@@ -2068,154 +1075,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#step-8-add-docker-compose-service" class="md-nav__link">
+  <a href="#9-docker" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Step 8: Add Docker Compose Service
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Step 8: Add Docker Compose Service">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#composeyaml" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        compose.yaml
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#composeoverrideyaml-for-dev" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        compose.override.yaml (for dev)
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#step-9-verification-checklist" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 9: Verification Checklist
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Step 9: Verification Checklist">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#91-phpunit" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        9.1 PHPUnit
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#92-container-lint" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        9.2 Container Lint
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#93-phpstan" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        9.3 PHPStan
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#94-deptrac-if-applicable" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        9.4 Deptrac (if applicable)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#95-docker-build" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        9.5 Docker Build
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#96-migration-smoke" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        9.6 Migration Smoke
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#97-http-smoke" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        9.7 HTTP Smoke
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#98-root-test-suite" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        9.8 Root Test Suite
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#post-extraction-remove-legacy-source" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Post-Extraction: Remove Legacy Source
+        9. Docker
       
     </span>
   </a>
@@ -2223,10 +1086,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#common-pitfalls" class="md-nav__link">
+  <a href="#practice-settlement-vs-wallet" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Common Pitfalls
+        Practice: Settlement vs Wallet
       
     </span>
   </a>
@@ -2257,6 +1120,1688 @@
     
   
     Internationalization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Design Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Design Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/system-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    System Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/api-design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/data-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/module-design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Module Design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/controller-design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Controller Design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/api-documentation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Documentation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/system-contracts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    System Contracts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/naming-convention/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Naming Convention
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bundles
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Bundles
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/core/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core Framework
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/common/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Common (CMS)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/trade/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Trade (E-Commerce)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/store/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Store (Multi-Store Operations)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/store-catalog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Store Catalog (Target)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/inventory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Inventory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/payment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Payment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/wallet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Wallet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/settlement/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Settlement (Allocation + Finality)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/exchange/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Exchange (Pool-backed Economy)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/identity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Identity (Auth)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/authorization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authorization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/wechat/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Wechat (Login + Pay)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Runbooks
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Runbooks
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/authorization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authorization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/common/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Common
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/core/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/exchange/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Exchange
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/identity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Identity
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/inventory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Inventory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/payment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Payment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/promotion/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Promotion
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/settlement/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Settlement
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/storage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Storage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/store/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Store
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/trade/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Trade
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/wallet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Wallet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/wechat/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    WeChat
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Research
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Research
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../research/easywechat-6.x-usage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    EasyWeChat 6.x Usage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../research/huifu-payment-api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Huifu Payment API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Issues
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Issues
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../issues/architecture-review-2026-06-26/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture Review 2026-06-26
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Testing
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../testing/crud-skeleton-production/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Production Validation Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../testing/crud-skeleton-production/TEST_STRATEGY/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Test Strategy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../testing/crud-skeleton-production/SYSTEM_WALKTHROUGH/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    System Walkthrough And Test Seams
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../testing/crud-skeleton-production/TEST_MATRIX/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Test Matrix
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../testing/crud-skeleton-production/BUSINESS_INVARIANTS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Business Invariants
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../testing/crud-skeleton-production/ARCHITECTURE_TEST_MAPPING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture Test Mapping
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../testing/crud-skeleton-production/FAILURE_MODES/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Failure Modes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../testing/crud-skeleton-production/PRODUCTION_VALIDATION/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Release Validation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../testing/crud-skeleton-production/AI_DEVELOPMENT_PROCESS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI Development Process
   
 
     
@@ -2358,22 +2903,44 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#pre-extraction-checklist" class="md-nav__link">
+  <a href="#1-pre-extraction-rules" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Pre-Extraction Checklist
+        1. Pre-extraction rules
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Pre-Extraction Checklist">
+    <nav class="md-nav" aria-label="1. Pre-extraction rules">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#known-boundary-risks" class="md-nav__link">
+  <a href="#11-no-cross-module-doctrine-associations" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Known Boundary Risks
+        1.1 No cross-module Doctrine associations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12-uuid-references-instead-of-objectid-linkage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2 UUID references instead of object/ID linkage
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#13-scalar-contracts-across-boundaries" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.3 Scalar contracts across boundaries
       
     </span>
   </a>
@@ -2386,34 +2953,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#step-1-create-appsname-skeleton" class="md-nav__link">
+  <a href="#2-choose-the-module-and-map-its-boundary" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Step 1: Create apps/{name}/ Skeleton
+        2. Choose the module and map its boundary
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Step 1: Create apps/{name}/ Skeleton">
+    <nav class="md-nav" aria-label="2. Choose the module and map its boundary">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#required-files" class="md-nav__link">
+  <a href="#map-the-dependencies" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Required Files
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Required Files">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#appsnamecomposerjson" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        apps/{name}/composer.json
+        Map the dependencies
       
     </span>
   </a>
@@ -2421,136 +2976,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#appsnamesrckernelphp" class="md-nav__link">
+  <a href="#extraction-checklist-per-module" class="md-nav__link">
     <span class="md-ellipsis">
       
-        apps/{name}/src/Kernel.php
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#appsnamebinconsole" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        apps/{name}/bin/console
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#appsnameconfigbundlesphp" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        apps/{name}/config/bundles.php
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#appsnameconfigservicesyaml" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        apps/{name}/config/services.yaml
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#appsnameconfigpackagesdoctrineyaml" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        apps/{name}/config/packages/doctrine.yaml
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#appsnameconfigpackagesframeworkyaml" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        apps/{name}/config/packages/framework.yaml
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#appsnameconfigroutesyaml" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        apps/{name}/config/routes.yaml
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#appsnameenv" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        apps/{name}/.env
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#appsnamephpunitxml" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        apps/{name}/phpunit.xml
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#appsnamedockerfile" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        apps/{name}/Dockerfile
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#appsnamedockercaddyfile" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        apps/{name}/docker/Caddyfile
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#install-dependencies" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Install Dependencies
+        Extraction checklist per module
       
     </span>
   </a>
@@ -2563,10 +2992,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#step-2-move-source-code" class="md-nav__link">
+  <a href="#3-create-the-app-skeleton" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Step 2: Move Source Code
+        3. Create the app skeleton
       
     </span>
   </a>
@@ -2574,22 +3003,33 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#step-3-create-standalone-migration-baseline" class="md-nav__link">
+  <a href="#4-move-the-code" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Step 3: Create Standalone Migration Baseline
+        4. Move the code
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Step 3: Create Standalone Migration Baseline">
+    <nav class="md-nav" aria-label="4. Move the code">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#example-store-baseline" class="md-nav__link">
+  <a href="#move-the-parts-that-must-follow" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Example (Store baseline)
+        Move the parts that must follow
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#leave-behind" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Leave behind
       
     </span>
   </a>
@@ -2602,10 +3042,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#step-4-add-root-composer-path-package" class="md-nav__link">
+  <a href="#5-baseline-migration" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Step 4: Add Root Composer Path Package
+        5. Baseline migration
       
     </span>
   </a>
@@ -2613,22 +3053,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#step-5-update-root-service-wiring" class="md-nav__link">
+  <a href="#6-wiring" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Step 5: Update Root Service Wiring
+        6. Wiring
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Step 5: Update Root Service Wiring">
+    <nav class="md-nav" aria-label="6. Wiring">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#configservicesyaml" class="md-nav__link">
+  <a href="#re-point-the-ports" class="md-nav__link">
     <span class="md-ellipsis">
       
-        config/services.yaml
+        Re-point the ports
       
     </span>
   </a>
@@ -2636,10 +3076,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#configroutesyaml" class="md-nav__link">
+  <a href="#messaging-wiring" class="md-nav__link">
     <span class="md-ellipsis">
       
-        config/routes.yaml
+        Messaging wiring
       
     </span>
   </a>
@@ -2647,10 +3087,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#configpackagesdoctrineyaml" class="md-nav__link">
+  <a href="#scheduler-and-console-commands" class="md-nav__link">
     <span class="md-ellipsis">
       
-        config/packages/doctrine.yaml
+        Scheduler and console commands
       
     </span>
   </a>
@@ -2663,10 +3103,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#step-6-add-standalone-tests" class="md-nav__link">
+  <a href="#7-testing" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Step 6: Add Standalone Tests
+        7. Testing
       
     </span>
   </a>
@@ -2674,10 +3114,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#step-7-update-ci" class="md-nav__link">
+  <a href="#8-ci" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Step 7: Update CI
+        8. CI
       
     </span>
   </a>
@@ -2685,154 +3125,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#step-8-add-docker-compose-service" class="md-nav__link">
+  <a href="#9-docker" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Step 8: Add Docker Compose Service
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Step 8: Add Docker Compose Service">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#composeyaml" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        compose.yaml
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#composeoverrideyaml-for-dev" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        compose.override.yaml (for dev)
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#step-9-verification-checklist" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 9: Verification Checklist
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Step 9: Verification Checklist">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#91-phpunit" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        9.1 PHPUnit
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#92-container-lint" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        9.2 Container Lint
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#93-phpstan" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        9.3 PHPStan
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#94-deptrac-if-applicable" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        9.4 Deptrac (if applicable)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#95-docker-build" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        9.5 Docker Build
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#96-migration-smoke" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        9.6 Migration Smoke
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#97-http-smoke" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        9.7 HTTP Smoke
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#98-root-test-suite" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        9.8 Root Test Suite
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#post-extraction-remove-legacy-source" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Post-Extraction: Remove Legacy Source
+        9. Docker
       
     </span>
   </a>
@@ -2840,10 +3136,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#common-pitfalls" class="md-nav__link">
+  <a href="#practice-settlement-vs-wallet" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Common Pitfalls
+        Practice: Settlement vs Wallet
       
     </span>
   </a>
@@ -2870,526 +3166,572 @@
   
 
 
-<h1 id="extracting-a-service">Extracting a Service<a class="headerlink" href="#extracting-a-service" title="Permanent link">&para;</a></h1>
-<p>This guide covers the end-to-end process of extracting a business module from
-the root monolith into its own independently bootable service under <code>apps/</code>.</p>
-<h2 id="pre-extraction-checklist">Pre-Extraction Checklist<a class="headerlink" href="#pre-extraction-checklist" title="Permanent link">&para;</a></h2>
-<p>Before extraction, the module MUST satisfy these boundary rules from
-<a href="../../design/microservice-transition/">Microservice Transition Contract</a>:</p>
+<h1 id="extracting-a-service-from-the-monolith">Extracting a Service from the Monolith<a class="headerlink" href="#extracting-a-service-from-the-monolith" title="Permanent link">&para;</a></h1>
+<p>CRUD Skeleton is a <strong>single modular monolith</strong> — one Symfony app, one composer
+project, one <code>src/</code> tree with namespaced modules (<code>App\Trade</code>, <code>App\Wallet</code>,
+<code>App\Settlement</code>, ...). It is <strong>not</strong> a multi-app monorepo. This guide explains
+how to take one module and turn it into an independent service/app, using the
+existing module boundaries as the blueprint.</p>
+<p>The good news: the codebase was designed so this is possible. The
+Settlement ↔ Wallet relationship is a working example of what a service
+boundary looks like. This guide formalizes the process.</p>
+<hr />
+<h2 id="1-pre-extraction-rules">1. Pre-extraction rules<a class="headerlink" href="#1-pre-extraction-rules" title="Permanent link">&para;</a></h2>
+<p>Before any code moves, the module must already be boundary-clean. The following
+three rules are what make extraction mechanical instead of surgical.</p>
+<h3 id="11-no-cross-module-doctrine-associations">1.1 No cross-module Doctrine associations<a class="headerlink" href="#11-no-cross-module-doctrine-associations" title="Permanent link">&para;</a></h3>
+<p>Entities must <strong>never</strong> hold an ORM association to an entity in another
+module. There are no <code>ManyToOne</code>/<code>OneToMany</code> properties pointing outside the
+module, and no foreign keys between tables owned by different modules.</p>
+<p>Check for violations:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># In the module you intend to extract, grep for cross-module entity imports</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>rg<span class="w"> </span><span class="s2">"use App\\\\(Trade|Payment|Store|Inventory|Identity)\\\\Entity"</span><span class="w"> </span>src/Settlement
+</code></pre></div>
+<p>Every table in the target module must be self-contained. Cross-module lookup
+is done by hand via <strong>UUID or scalar references</strong>, never via join keys.</p>
+<h3 id="12-uuid-references-instead-of-objectid-linkage">1.2 UUID references instead of object/ID linkage<a class="headerlink" href="#12-uuid-references-instead-of-objectid-linkage" title="Permanent link">&para;</a></h3>
+<p>Foreign identity inside an entity is a plain string column holding the remote
+aggregate's UUID, not a DB-level foreign key and not an object reference.</p>
+<p><code>src/Settlement/Entity/SettlementAllocation.php</code> is the canonical example:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="x">#[ORM\Column(name: 'uuid', type: 'string', length: 36)]</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="x">private string $uuid;</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="x">#[ORM\Column(name: 'plan_uuid', type: 'string', length: 36)]</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="x">private string $planUuid;</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="x">#[ORM\Column(name: 'rule_version_uuid', type: 'string', length: 36, nullable: true)]</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="x">private ?string $ruleVersionUuid;</span>
+</code></pre></div>
 <ul>
-<li>[ ] <strong>No cross-service Doctrine associations</strong> — Remove all FK relationships
-  to entities in other services. Replace with UUID references.</li>
-<li>[ ] <strong>No cross-service repository access</strong> — The module does not inject or
-  call repositories from other services.</li>
-<li>[ ] <strong>No cross-service transactions</strong> — The module's database operations
-  are fully self-contained.</li>
-<li>[ ] <strong>UUID identity</strong> — External references use UUIDs, not local integer PKs.</li>
-<li>[ ] <strong>Outbox for cross-service writes</strong> — State-changing integration events
-  are written to an Outbox in the producer's local transaction.</li>
-<li>[ ] <strong>Scalar contracts</strong> — No Doctrine entities, repositories, or Symfony
-  requests/responses pass service boundaries.</li>
-<li>[ ] <strong>No shared Doctrine associations</strong> — <code>Identity\Entity\User</code> is not
-  an ORM target in the module's entity mappings.</li>
-<li>[ ] <strong>Tests exist</strong> — The module has its own test suite with reasonable
-  coverage before extraction.</li>
+<li>Local rows keep integer surrogate keys (<code>id</code>) plus a UUID.</li>
+<li>Remote identity is stored as a <code>string(36)</code> UUID column, indexed for lookup.</li>
+<li>Never assume a referenced row exists; the service layer re-validates.</li>
 </ul>
-<h3 id="known-boundary-risks">Known Boundary Risks<a class="headerlink" href="#known-boundary-risks" title="Permanent link">&para;</a></h3>
-<table>
-<thead>
-<tr>
-<th>Risk</th>
-<th>Description</th>
-<th>Resolution Before Extraction</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Shared <code>User</code> entity</td>
-<td>Other modules have <code>ManyToOne → User</code></td>
-<td>Replace with <code>ownerUuid VARCHAR(36)</code> (as Wallet did)</td>
-</tr>
-<tr>
-<td>Synchronous cross-service calls</td>
-<td>Trade calls Inventory/Payment directly</td>
-<td>Replace with Outbox/Inbox integration events</td>
-</tr>
-<tr>
-<td>PHP-class Messenger contracts</td>
-<td>Legacy <code>App\*\Message</code> wrappers</td>
-<td>Migrate to neutral carriers in <code>packages/integration-contracts/</code></td>
-</tr>
-<tr>
-<td>Plugin contracts exposing Doctrine types</td>
-<td>Payment/Wechat gateways</td>
-<td>Create scalar adapter interfaces</td>
-</tr>
-<tr>
-<td>Shared EntityManager</td>
-<td>Single Doctrine connection</td>
-<td>Configure independent database + EM</td>
-</tr>
-</tbody>
-</table>
-<h2 id="step-1-create-appsname-skeleton">Step 1: Create <code>apps/{name}/</code> Skeleton<a class="headerlink" href="#step-1-create-appsname-skeleton" title="Permanent link">&para;</a></h2>
-<p>Create the directory structure:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>mkdir<span class="w"> </span>-p<span class="w"> </span>apps/<span class="o">{</span>name<span class="o">}</span>/<span class="o">{</span>bin,config/packages,docker,migrations,public,src,tests<span class="o">}</span>
+<p>Representing the matter with a type/id pair is the pattern used by the
+Settlement contracts — <code>SettlementSubject</code> is <code>type : id</code> as strings:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="x">final readonly class SettlementSubject</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="x">{</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="x">    public function __construct(</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="x">        public string $type,</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="x">        public string $id,</span>
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="x">        public string $version,</span>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="x">    ) { }</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="x">}</span>
 </code></pre></div>
-<h3 id="required-files">Required Files<a class="headerlink" href="#required-files" title="Permanent link">&para;</a></h3>
-<h4 id="appsnamecomposerjson"><code>apps/{name}/composer.json</code><a class="headerlink" href="#appsnamecomposerjson" title="Permanent link">&para;</a></h4>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="p">{</span>
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">    </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"crud-platform/{name}-app"</span><span class="p">,</span>
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">    </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"project"</span><span class="p">,</span>
-<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">    </span><span class="nt">"require"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">        </span><span class="nt">"php"</span><span class="p">:</span><span class="w"> </span><span class="s2">"&gt;=8.4"</span><span class="p">,</span>
-<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">        </span><span class="nt">"crud-platform/platform-kernel"</span><span class="p">:</span><span class="w"> </span><span class="s2">"@dev"</span><span class="p">,</span>
-<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">        </span><span class="nt">"symfony/framework-bundle"</span><span class="p">:</span><span class="w"> </span><span class="s2">"^8.1"</span><span class="p">,</span>
-<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">        </span><span class="nt">"doctrine/doctrine-bundle"</span><span class="p">:</span><span class="w"> </span><span class="s2">"^3.0"</span><span class="p">,</span>
-<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="w">        </span><span class="nt">"doctrine/doctrine-migrations-bundle"</span><span class="p">:</span><span class="w"> </span><span class="s2">"^3.0"</span><span class="p">,</span>
-<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="w">        </span><span class="nt">"doctrine/orm"</span><span class="p">:</span><span class="w"> </span><span class="s2">"^3.6"</span>
-<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="w">    </span><span class="p">},</span>
-<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="w">    </span><span class="nt">"autoload"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="w">        </span><span class="nt">"psr-4"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="w">            </span><span class="nt">"App\\{Module}\\"</span><span class="p">:</span><span class="w"> </span><span class="s2">"src/"</span>
-<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="w">        </span><span class="p">}</span>
-<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a><span class="w">    </span><span class="p">},</span>
-<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a><span class="w">    </span><span class="nt">"autoload-dev"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a><span class="w">        </span><span class="nt">"psr-4"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a><span class="w">            </span><span class="nt">"App\\{Module}\\Tests\\"</span><span class="p">:</span><span class="w"> </span><span class="s2">"tests/"</span>
-<a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a><span class="w">        </span><span class="p">}</span>
-<a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a><span class="w">    </span><span class="p">}</span>
-<a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a><span class="p">}</span>
+<h3 id="13-scalar-contracts-across-boundaries">1.3 Scalar contracts across boundaries<a class="headerlink" href="#13-scalar-contracts-across-boundaries" title="Permanent link">&para;</a></h3>
+<p>Modules interact through <strong>interfaces and immutable DTOs</strong> — never by
+instantiating another module's entities or calling another module's services
+directly. Cross-module contracts live in <code>Contract/</code> (read-only value objects)
+and <code>Port/</code> (interfaces the consumer implements or injects).</p>
+<p>Settlement defines the boundary it needs:</p>
+<ul>
+<li><code>src/Settlement/Contract/*</code> — <code>ConfirmedAllocation</code>, <code>PostedAllocation</code>,
+  <code>ReversalRequest</code>, <code>VoucherPostingReceipt</code>, <code>SettlementSubject</code>, ... all
+  <code>final readonly class</code> DTOs containing only scalars.</li>
+<li><code>src/Settlement/Port/SettlementVoucherPort.php</code> — an interface owned by
+  Settlement, implemented by the host (Wallet):</li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="x">interface SettlementVoucherPort</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="x">{</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="x">    public function post(ConfirmedAllocation $allocation): VoucherPostingReceipt;</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="x">    public function reverse(PostedAllocation $allocation, ReversalRequest $request): VoucherPostingReceipt;</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="x">}</span>
 </code></pre></div>
-<p><strong>Important</strong>: Use <code>@dev</code> for platform-kernel. This ensures the monorepo
-workspace resolves the local package.</p>
-<h4 id="appsnamesrckernelphp"><code>apps/{name}/src/Kernel.php</code><a class="headerlink" href="#appsnamesrckernelphp" title="Permanent link">&para;</a></h4>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="cp">&lt;?php</span>
-<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
-<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="k">declare</span><span class="p">(</span><span class="nx">strict_types</span><span class="o">=</span><span class="mi">1</span><span class="p">);</span>
-<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>
-<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="k">namespace</span> <span class="nx">App\</span><span class="p">{</span><span class="nx">Module</span><span class="p">};</span>
-<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>
-<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="k">use</span> <span class="nx">Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait</span><span class="p">;</span>
-<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="k">use</span> <span class="nx">Symfony\Component\HttpKernel\Kernel</span> <span class="k">as</span> <span class="nx">BaseKernel</span><span class="p">;</span>
-<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>
-<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="k">final</span> <span class="k">class</span> <span class="nc">Kernel</span> <span class="k">extends</span> <span class="nx">BaseKernel</span>
-<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="p">{</span>
-<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>    <span class="k">use</span> <span class="nx">MicroKernelTrait</span><span class="p">;</span>
-<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="p">}</span>
+<p>The implementation lives in the consumer's own namespace:
+<code>src/Wallet/Integration/Settlement/WalletSettlementVoucherPort.php</code>. The host
+module owns the implementation; the consuming module owns the interface.</p>
+<p><strong>Consequence of rule 1.3:</strong> a module that only touches <code>Contract/*</code> and
+<code>Port/*</code> from other modules can be lifted out and pointed at a different host
+implementation (an HTTP client, another service, a fake in tests) without
+changing its own code.</p>
+<hr />
+<h2 id="2-choose-the-module-and-map-its-boundary">2. Choose the module and map its boundary<a class="headerlink" href="#2-choose-the-module-and-map-its-boundary" title="Permanent link">&para;</a></h2>
+<p><code>src/Settlement</code> is the best candidate for a first extraction because it is the
+most self-contained. Its layout is the template:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>src/Settlement/
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>├── Command/          # app:settlement:* console commands (scheduler loop)
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>├── Context/          # SettlementContextResolver registry pattern
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>├── Contract/         # immutable cross-module DTOs (scalar-only)
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>├── Controller/       # API controllers (Manage/ namespace)
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>├── Entity/           # Doctrine entities — self-contained tables
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>├── Exception/        # module exception hierarchy
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>├── Integration/      # Fake/ and Fixture/ test doubles
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>├── Message/          # Messenger message classes (async)
+<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a>├── MessageHandler/   # MessageHandler::__invoke consumers
+<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a>├── Port/             # interfaces the module depends on (implemented elsewhere)
+<a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a>├── Repository/       # Doctrine repositories
+<a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a>├── Resources/config/ # services_settlement.yaml (service wiring)
+<a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a>└── Service/          # domain services + *ServiceInterface aliases
 </code></pre></div>
-<h4 id="appsnamebinconsole"><code>apps/{name}/bin/console</code><a class="headerlink" href="#appsnamebinconsole" title="Permanent link">&para;</a></h4>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="x">#!/usr/bin/env php</span>
-<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="cp">&lt;?php</span>
-<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
-<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="k">declare</span><span class="p">(</span><span class="nx">strict_types</span><span class="o">=</span><span class="mi">1</span><span class="p">);</span>
-<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>
-<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="k">use</span> <span class="nx">App\</span><span class="p">{</span><span class="nx">Module</span><span class="p">}</span><span class="nx">\Kernel</span><span class="p">;</span>
-<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="k">use</span> <span class="nx">Symfony\Bundle\FrameworkBundle\Console\Application</span><span class="p">;</span>
-<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>
-<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="k">require_once</span> <span class="nb">dirname</span><span class="p">(</span><span class="no">__DIR__</span><span class="p">)</span> <span class="o">.</span> <span class="s1">'/vendor/autoload_runtime.php'</span><span class="p">;</span>
-<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>
-<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="k">return</span> <span class="k">function</span> <span class="p">(</span><span class="k">array</span> <span class="nv">$context</span><span class="p">)</span> <span class="p">{</span>
-<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>    <span class="nv">$kernel</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Kernel</span><span class="p">(</span><span class="nv">$context</span><span class="p">[</span><span class="s1">'APP_ENV'</span><span class="p">],</span> <span class="p">(</span><span class="nx">bool</span><span class="p">)</span> <span class="nv">$context</span><span class="p">[</span><span class="s1">'APP_DEBUG'</span><span class="p">]);</span>
-<a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a>    <span class="k">return</span> <span class="k">new</span> <span class="nx">Application</span><span class="p">(</span><span class="nv">$kernel</span><span class="p">);</span>
-<a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a><span class="p">};</span>
-</code></pre></div>
-<h4 id="appsnameconfigbundlesphp"><code>apps/{name}/config/bundles.php</code><a class="headerlink" href="#appsnameconfigbundlesphp" title="Permanent link">&para;</a></h4>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="cp">&lt;?php</span>
-<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
-<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="k">declare</span><span class="p">(</span><span class="nx">strict_types</span><span class="o">=</span><span class="mi">1</span><span class="p">);</span>
-<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>
-<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="k">return</span> <span class="p">[</span>
-<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>    <span class="nx">Symfony\Bundle\FrameworkBundle\FrameworkBundle</span><span class="o">::</span><span class="na">class</span> <span class="o">=&gt;</span> <span class="p">[</span><span class="s1">'all'</span> <span class="o">=&gt;</span> <span class="k">true</span><span class="p">],</span>
-<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>    <span class="nx">Doctrine\Bundle\DoctrineBundle\DoctrineBundle</span><span class="o">::</span><span class="na">class</span> <span class="o">=&gt;</span> <span class="p">[</span><span class="s1">'all'</span> <span class="o">=&gt;</span> <span class="k">true</span><span class="p">],</span>
-<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>    <span class="nx">Doctrine\Bundle\MigrationsBundle\DoctrineMigrationsBundle</span><span class="o">::</span><span class="na">class</span> <span class="o">=&gt;</span> <span class="p">[</span><span class="s1">'all'</span> <span class="o">=&gt;</span> <span class="k">true</span><span class="p">],</span>
-<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>    <span class="c1">// Security bundle only if the app needs auth</span>
-<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a>    <span class="c1">// Symfony\Bundle\SecurityBundle\SecurityBundle::class =&gt; ['all' =&gt; true],</span>
-<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="p">];</span>
-</code></pre></div>
-<h4 id="appsnameconfigservicesyaml"><code>apps/{name}/config/services.yaml</code><a class="headerlink" href="#appsnameconfigservicesyaml" title="Permanent link">&para;</a></h4>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="nt">services</span><span class="p">:</span>
-<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">    </span><span class="nt">_defaults</span><span class="p">:</span>
-<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">        </span><span class="nt">autowire</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">        </span><span class="nt">autoconfigure</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>
-<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">App\{Module}\</span><span class="p p-Indicator">:</span>
-<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="w">        </span><span class="nt">resource</span><span class="p">:</span><span class="w"> </span><span class="s">'../src/'</span>
-<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="w">        </span><span class="nt">exclude</span><span class="p">:</span>
-<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">'../src/Entity/'</span>
-<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">'../src/Kernel.php'</span>
-</code></pre></div>
-<h4 id="appsnameconfigpackagesdoctrineyaml"><code>apps/{name}/config/packages/doctrine.yaml</code><a class="headerlink" href="#appsnameconfigpackagesdoctrineyaml" title="Permanent link">&para;</a></h4>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="nt">doctrine</span><span class="p">:</span>
-<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">    </span><span class="nt">dbal</span><span class="p">:</span>
-<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">        </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="s">'%env(DATABASE_URL)%'</span>
-<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="w">        </span><span class="nt">profiling_collect_backtrace</span><span class="p">:</span><span class="w"> </span><span class="s">'%kernel.debug%'</span>
-<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="w">    </span><span class="nt">orm</span><span class="p">:</span>
-<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="w">        </span><span class="nt">auto_generate_proxy_classes</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="w">        </span><span class="nt">enable_lazy_ghost_objects</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="w">        </span><span class="nt">mappings</span><span class="p">:</span>
-<a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span class="w">            </span><span class="p p-Indicator">{</span><span class="nv">Module</span><span class="p p-Indicator">}:</span>
-<a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span class="w">                </span><span class="nt">dir</span><span class="p">:</span><span class="w"> </span><span class="s">'%kernel.project_dir%/src'</span>
-<a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a><span class="w">                </span><span class="nt">prefix</span><span class="p">:</span><span class="w"> </span><span class="s">'App\{Module}'</span>
-<a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a><span class="w">                </span><span class="nt">alias</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nv">module</span><span class="p p-Indicator">}</span>
-</code></pre></div>
-<h4 id="appsnameconfigpackagesframeworkyaml"><code>apps/{name}/config/packages/framework.yaml</code><a class="headerlink" href="#appsnameconfigpackagesframeworkyaml" title="Permanent link">&para;</a></h4>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="nt">framework</span><span class="p">:</span>
-<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">    </span><span class="nt">secret</span><span class="p">:</span><span class="w"> </span><span class="s">'%env(APP_SECRET)%'</span>
-<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">    </span><span class="nt">session</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
-<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">    </span><span class="nt">php_errors</span><span class="p">:</span>
-<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="w">        </span><span class="nt">log</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>
-<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="nt">when@test</span><span class="p">:</span>
-<a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="w">    </span><span class="nt">framework</span><span class="p">:</span>
-<a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="w">        </span><span class="nt">test</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-</code></pre></div>
-<h4 id="appsnameconfigroutesyaml"><code>apps/{name}/config/routes.yaml</code><a class="headerlink" href="#appsnameconfigroutesyaml" title="Permanent link">&para;</a></h4>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="c1"># Route definitions for the app's controllers</span>
-</code></pre></div>
-<h4 id="appsnameenv"><code>apps/{name}/.env</code><a class="headerlink" href="#appsnameenv" title="Permanent link">&para;</a></h4>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="na">APP_ENV</span><span class="o">=</span><span class="s">dev</span>
-<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="na">APP_SECRET</span><span class="o">=</span><span class="s">dev-secret-change-me</span>
-<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="na">DATABASE_URL</span><span class="o">=</span><span class="s">"mysql://root:password@127.0.0.1:3306/{name}?serverVersion=8.0&amp;charset=utf8mb4"</span>
-</code></pre></div>
-<h4 id="appsnamephpunitxml"><code>apps/{name}/phpunit.xml</code><a class="headerlink" href="#appsnamephpunitxml" title="Permanent link">&para;</a></h4>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="cp">&lt;?xml version="1.0" encoding="UTF-8"?&gt;</span>
-<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="nt">&lt;phpunit</span><span class="w"> </span><span class="na">xmlns:xsi=</span><span class="s">"http://www.w3.org/2001/XMLSchema-instance"</span>
-<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="w">         </span><span class="na">xsi:noNamespaceSchemaLocation=</span><span class="s">"vendor/phpunit/phpunit/phpunit.xsd"</span>
-<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="w">         </span><span class="na">bootstrap=</span><span class="s">"tests/bootstrap.php"</span>
-<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="w">         </span><span class="na">cacheDirectory=</span><span class="s">".phpunit.cache"</span>
-<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span class="w">         </span><span class="na">colors=</span><span class="s">"true"</span><span class="nt">&gt;</span>
-<a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a><span class="w">    </span><span class="nt">&lt;php&gt;</span>
-<a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a><span class="w">        </span><span class="nt">&lt;ini</span><span class="w"> </span><span class="na">name=</span><span class="s">"display_errors"</span><span class="w"> </span><span class="na">value=</span><span class="s">"1"</span><span class="nt">/&gt;</span>
-<a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a><span class="w">        </span><span class="nt">&lt;ini</span><span class="w"> </span><span class="na">name=</span><span class="s">"error_reporting"</span><span class="w"> </span><span class="na">value=</span><span class="s">"-1"</span><span class="nt">/&gt;</span>
-<a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a><span class="w">        </span><span class="nt">&lt;env</span><span class="w"> </span><span class="na">name=</span><span class="s">"APP_ENV"</span><span class="w"> </span><span class="na">value=</span><span class="s">"test"</span><span class="nt">/&gt;</span>
-<a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a><span class="w">        </span><span class="nt">&lt;env</span><span class="w"> </span><span class="na">name=</span><span class="s">"APP_SECRET"</span><span class="w"> </span><span class="na">value=</span><span class="s">"test-secret"</span><span class="nt">/&gt;</span>
-<a id="__codelineno-10-12" name="__codelineno-10-12" href="#__codelineno-10-12"></a><span class="w">        </span><span class="nt">&lt;env</span><span class="w"> </span><span class="na">name=</span><span class="s">"DATABASE_URL"</span><span class="w"> </span><span class="na">value=</span><span class="s">"sqlite:///var/test.db"</span><span class="nt">/&gt;</span>
-<a id="__codelineno-10-13" name="__codelineno-10-13" href="#__codelineno-10-13"></a><span class="w">        </span><span class="nt">&lt;env</span><span class="w"> </span><span class="na">name=</span><span class="s">"KERNEL_CLASS"</span><span class="w"> </span><span class="na">value=</span><span class="s">"App\{Module}\Kernel"</span><span class="nt">/&gt;</span>
-<a id="__codelineno-10-14" name="__codelineno-10-14" href="#__codelineno-10-14"></a><span class="w">    </span><span class="nt">&lt;/php&gt;</span>
-<a id="__codelineno-10-15" name="__codelineno-10-15" href="#__codelineno-10-15"></a><span class="w">    </span><span class="nt">&lt;testsuites&gt;</span>
-<a id="__codelineno-10-16" name="__codelineno-10-16" href="#__codelineno-10-16"></a><span class="w">        </span><span class="nt">&lt;testsuite</span><span class="w"> </span><span class="na">name=</span><span class="s">"{Module} Test Suite"</span><span class="nt">&gt;</span>
-<a id="__codelineno-10-17" name="__codelineno-10-17" href="#__codelineno-10-17"></a><span class="w">            </span><span class="nt">&lt;directory&gt;</span>tests<span class="nt">&lt;/directory&gt;</span>
-<a id="__codelineno-10-18" name="__codelineno-10-18" href="#__codelineno-10-18"></a><span class="w">        </span><span class="nt">&lt;/testsuite&gt;</span>
-<a id="__codelineno-10-19" name="__codelineno-10-19" href="#__codelineno-10-19"></a><span class="w">    </span><span class="nt">&lt;/testsuites&gt;</span>
-<a id="__codelineno-10-20" name="__codelineno-10-20" href="#__codelineno-10-20"></a><span class="w">    </span><span class="nt">&lt;source&gt;</span>
-<a id="__codelineno-10-21" name="__codelineno-10-21" href="#__codelineno-10-21"></a><span class="w">        </span><span class="nt">&lt;include&gt;</span>
-<a id="__codelineno-10-22" name="__codelineno-10-22" href="#__codelineno-10-22"></a><span class="w">            </span><span class="nt">&lt;directory</span><span class="w"> </span><span class="na">suffix=</span><span class="s">".php"</span><span class="nt">&gt;</span>src<span class="nt">&lt;/directory&gt;</span>
-<a id="__codelineno-10-23" name="__codelineno-10-23" href="#__codelineno-10-23"></a><span class="w">        </span><span class="nt">&lt;/include&gt;</span>
-<a id="__codelineno-10-24" name="__codelineno-10-24" href="#__codelineno-10-24"></a><span class="w">    </span><span class="nt">&lt;/source&gt;</span>
-<a id="__codelineno-10-25" name="__codelineno-10-25" href="#__codelineno-10-25"></a><span class="nt">&lt;/phpunit&gt;</span>
-</code></pre></div>
-<h4 id="appsnamedockerfile"><code>apps/{name}/Dockerfile</code><a class="headerlink" href="#appsnamedockerfile" title="Permanent link">&para;</a></h4>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="k">FROM</span><span class="w"> </span><span class="s">dunglas/frankenphp:8.4-alpine</span>
-<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>
-<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="k">RUN</span><span class="w"> </span>install-php-extensions<span class="w"> </span>pdo_mysql<span class="w"> </span>opcache<span class="w"> </span>intl
-<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>
-<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="k">WORKDIR</span><span class="w"> </span><span class="s">/var/www/html</span>
-<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>
-<a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a><span class="k">COPY</span><span class="w"> </span>composer.json<span class="w"> </span>composer.lock<span class="w"> </span>./
-<a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a><span class="k">RUN</span><span class="w"> </span>composer<span class="w"> </span>install<span class="w"> </span>--no-dev<span class="w"> </span>--no-interaction<span class="w"> </span>--no-progress<span class="w"> </span>--optimize-autoloader
-<a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a>
-<a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a><span class="k">COPY</span><span class="w"> </span>.<span class="w"> </span>.
-<a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a><span class="k">COPY</span><span class="w"> </span>docker/Caddyfile<span class="w"> </span>/etc/caddy/Caddyfile
-<a id="__codelineno-11-12" name="__codelineno-11-12" href="#__codelineno-11-12"></a>
-<a id="__codelineno-11-13" name="__codelineno-11-13" href="#__codelineno-11-13"></a><span class="k">RUN</span><span class="w"> </span>php<span class="w"> </span>bin/console<span class="w"> </span>cache:warmup<span class="w"> </span>--env<span class="o">=</span>prod
-</code></pre></div>
-<h4 id="appsnamedockercaddyfile"><code>apps/{name}/docker/Caddyfile</code><a class="headerlink" href="#appsnamedockercaddyfile" title="Permanent link">&para;</a></h4>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>{
-<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>    frankenphp
-<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>}
-<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>
-<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>:80 {
-<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>    header {
-<a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a>        Access-Control-Allow-Origin *
-<a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a>        Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
-<a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a>        Access-Control-Allow-Headers "Content-Type, Authorization"
-<a id="__codelineno-12-10" name="__codelineno-12-10" href="#__codelineno-12-10"></a>    }
-<a id="__codelineno-12-11" name="__codelineno-12-11" href="#__codelineno-12-11"></a>
-<a id="__codelineno-12-12" name="__codelineno-12-12" href="#__codelineno-12-12"></a>    root * /var/www/html/public/
-<a id="__codelineno-12-13" name="__codelineno-12-13" href="#__codelineno-12-13"></a>    php_server {
-<a id="__codelineno-12-14" name="__codelineno-12-14" href="#__codelineno-12-14"></a>        resolve_root_symlink
-<a id="__codelineno-12-15" name="__codelineno-12-15" href="#__codelineno-12-15"></a>    }
-<a id="__codelineno-12-16" name="__codelineno-12-16" href="#__codelineno-12-16"></a>    encode gzip
-<a id="__codelineno-12-17" name="__codelineno-12-17" href="#__codelineno-12-17"></a>    file_server
-<a id="__codelineno-12-18" name="__codelineno-12-18" href="#__codelineno-12-18"></a>}
-</code></pre></div>
-<h3 id="install-dependencies">Install Dependencies<a class="headerlink" href="#install-dependencies" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="nb">cd</span><span class="w"> </span>apps/<span class="o">{</span>name<span class="o">}</span>
-<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>composer<span class="w"> </span>install
-</code></pre></div>
-<p>Verify boot:
-<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>php<span class="w"> </span>bin/console<span class="w"> </span>about
-</code></pre></div></p>
-<h2 id="step-2-move-source-code">Step 2: Move Source Code<a class="headerlink" href="#step-2-move-source-code" title="Permanent link">&para;</a></h2>
-<p>Move source files from root <code>src/{Module}/</code> to <code>apps/{name}/src/</code>.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="c1"># Example: Moving Store</span>
-<a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>git<span class="w"> </span>mv<span class="w"> </span>src/Store/<span class="w"> </span>apps/store/src/
-</code></pre></div>
-<p><strong>Preserve namespaces</strong>. The namespace becomes <code>App\{Module}\*</code> instead of
-<code>App\{Module}\*</code>. Update all <code>namespace</code> declarations in moved files.</p>
-<p><strong>De-prefix entities</strong> if needed. For example, Store entities were de-prefixed:
-- <code>StoreMembership</code> → <code>Membership</code> (table name kept as <code>store_membership</code> via <code>#[ORM\Table]</code>)
-- <code>StoreOutboxMessage</code> → <code>OutboxMessage</code> (table name kept as <code>store_outbox_message</code>)
-- <code>StoreConsumedEvent</code> → <code>InboxMessage</code></p>
-<h2 id="step-3-create-standalone-migration-baseline">Step 3: Create Standalone Migration Baseline<a class="headerlink" href="#step-3-create-standalone-migration-baseline" title="Permanent link">&para;</a></h2>
-<p>Create a single migration that captures the current schema of all tables owned
-by the service. This is the "baseline" migration — it represents the schema at
-the point of extraction.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="nb">cd</span><span class="w"> </span>apps/<span class="o">{</span>name<span class="o">}</span>
-<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>php<span class="w"> </span>bin/console<span class="w"> </span>doctrine:migrations:generate
-</code></pre></div>
-<p>Edit the generated migration to contain <code>CREATE TABLE</code> statements for all
-service-owned tables. This migration must be idempotent-safe (use <code>CREATE TABLE IF NOT EXISTS</code>).</p>
-<h3 id="example-store-baseline">Example (Store baseline)<a class="headerlink" href="#example-store-baseline" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="x">final class Version20260730000000 extends AbstractMigration</span>
-<a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="x">{</span>
-<a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a><span class="x">    public function up(Schema $schema): void</span>
-<a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a><span class="x">    {</span>
-<a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a><span class="x">        $this-&gt;addSql('CREATE TABLE store (/* ... */)');</span>
-<a id="__codelineno-17-6" name="__codelineno-17-6" href="#__codelineno-17-6"></a><span class="x">        $this-&gt;addSql('CREATE TABLE store_membership (/* ... */)');</span>
-<a id="__codelineno-17-7" name="__codelineno-17-7" href="#__codelineno-17-7"></a><span class="x">        $this-&gt;addSql('CREATE TABLE store_order (/* ... */)');</span>
-<a id="__codelineno-17-8" name="__codelineno-17-8" href="#__codelineno-17-8"></a><span class="x">        $this-&gt;addSql('CREATE TABLE store_inbox_message (/* ... */)');</span>
-<a id="__codelineno-17-9" name="__codelineno-17-9" href="#__codelineno-17-9"></a><span class="x">        $this-&gt;addSql('CREATE TABLE store_outbox_message (/* ... */)');</span>
-<a id="__codelineno-17-10" name="__codelineno-17-10" href="#__codelineno-17-10"></a><span class="x">        $this-&gt;addSql('CREATE TABLE store_trade_order_cancellation (/* ... */)');</span>
-<a id="__codelineno-17-11" name="__codelineno-17-11" href="#__codelineno-17-11"></a><span class="x">    }</span>
-<a id="__codelineno-17-12" name="__codelineno-17-12" href="#__codelineno-17-12"></a><span class="x">}</span>
-</code></pre></div>
-<h2 id="step-4-add-root-composer-path-package">Step 4: Add Root Composer Path Package<a class="headerlink" href="#step-4-add-root-composer-path-package" title="Permanent link">&para;</a></h2>
-<p>Add the new app as a Composer path package so the monolith can load it:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="c1">// root composer.json</span>
-<a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a><span class="p">{</span>
-<a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a><span class="w">    </span><span class="nt">"repositories"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a><span class="w">        </span><span class="p">{</span>
-<a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a><span class="w">            </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"path"</span><span class="p">,</span>
-<a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a><span class="w">            </span><span class="nt">"url"</span><span class="p">:</span><span class="w"> </span><span class="s2">"apps/{name}"</span>
-<a id="__codelineno-18-7" name="__codelineno-18-7" href="#__codelineno-18-7"></a><span class="w">        </span><span class="p">}</span>
-<a id="__codelineno-18-8" name="__codelineno-18-8" href="#__codelineno-18-8"></a><span class="w">    </span><span class="p">],</span>
-<a id="__codelineno-18-9" name="__codelineno-18-9" href="#__codelineno-18-9"></a><span class="w">    </span><span class="nt">"require"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-18-10" name="__codelineno-18-10" href="#__codelineno-18-10"></a><span class="w">        </span><span class="nt">"crud-platform/{name}-app"</span><span class="p">:</span><span class="w"> </span><span class="s2">"@dev"</span>
-<a id="__codelineno-18-11" name="__codelineno-18-11" href="#__codelineno-18-11"></a><span class="w">    </span><span class="p">}</span>
-<a id="__codelineno-18-12" name="__codelineno-18-12" href="#__codelineno-18-12"></a><span class="p">}</span>
-</code></pre></div>
-<p>Run:
-<div class="highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a>composer<span class="w"> </span>update<span class="w"> </span>crud-platform/<span class="o">{</span>name<span class="o">}</span>-app
-</code></pre></div></p>
-<h2 id="step-5-update-root-service-wiring">Step 5: Update Root Service Wiring<a class="headerlink" href="#step-5-update-root-service-wiring" title="Permanent link">&para;</a></h2>
-<h3 id="configservicesyaml"><code>config/services.yaml</code><a class="headerlink" href="#configservicesyaml" title="Permanent link">&para;</a></h3>
-<p>Add an exclusion for the app's source directory (it's loaded via its own
-composer package):</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="nt">services</span><span class="p">:</span>
-<a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a><span class="w">    </span><span class="nt">App\</span><span class="p">:</span>
-<a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a><span class="w">        </span><span class="nt">resource</span><span class="p">:</span><span class="w"> </span><span class="s">'../src/'</span>
-<a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a><span class="w">        </span><span class="nt">exclude</span><span class="p">:</span>
-<a id="__codelineno-20-5" name="__codelineno-20-5" href="#__codelineno-20-5"></a><span class="w">            </span><span class="c1"># ... existing exclusions</span>
-<a id="__codelineno-20-6" name="__codelineno-20-6" href="#__codelineno-20-6"></a><span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">'../src/{Name}/'</span><span class="w">  </span><span class="c1"># Now lives in apps/{name}/</span>
-</code></pre></div>
-<h3 id="configroutesyaml"><code>config/routes.yaml</code><a class="headerlink" href="#configroutesyaml" title="Permanent link">&para;</a></h3>
-<p>If the app has routes that were previously loaded via root <code>routes.yaml</code>,
-add an import for the app's routes:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span class="c1"># config/routes.yaml</span>
-<a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a><span class="p p-Indicator">{</span><span class="nv">name</span><span class="p p-Indicator">}</span><span class="nt">_routes</span><span class="p">:</span>
-<a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a><span class="w">    </span><span class="nt">resource</span><span class="p">:</span>
-<a id="__codelineno-21-4" name="__codelineno-21-4" href="#__codelineno-21-4"></a><span class="w">        </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="s">'../apps/{name}/config/routes.yaml'</span>
-<a id="__codelineno-21-5" name="__codelineno-21-5" href="#__codelineno-21-5"></a><span class="w">    </span><span class="nt">prefix</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/api/v1</span>
-</code></pre></div>
-<h3 id="configpackagesdoctrineyaml"><code>config/packages/doctrine.yaml</code><a class="headerlink" href="#configpackagesdoctrineyaml" title="Permanent link">&para;</a></h3>
-<p>Remove the old entity mapping and add a symlink or reference mapping:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a><span class="nt">doctrine</span><span class="p">:</span>
-<a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a><span class="w">    </span><span class="nt">orm</span><span class="p">:</span>
-<a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a><span class="w">        </span><span class="nt">mappings</span><span class="p">:</span>
-<a id="__codelineno-22-4" name="__codelineno-22-4" href="#__codelineno-22-4"></a><span class="w">            </span><span class="p p-Indicator">{</span><span class="nv">Module</span><span class="p p-Indicator">}:</span>
-<a id="__codelineno-22-5" name="__codelineno-22-5" href="#__codelineno-22-5"></a><span class="w">                </span><span class="nt">dir</span><span class="p">:</span><span class="w"> </span><span class="s">'%kernel.project_dir%/apps/{name}/src'</span>
-<a id="__codelineno-22-6" name="__codelineno-22-6" href="#__codelineno-22-6"></a><span class="w">                </span><span class="nt">prefix</span><span class="p">:</span><span class="w"> </span><span class="s">'App\{Module}'</span>
-</code></pre></div>
-<h2 id="step-6-add-standalone-tests">Step 6: Add Standalone Tests<a class="headerlink" href="#step-6-add-standalone-tests" title="Permanent link">&para;</a></h2>
-<p>Create <code>apps/{name}/tests/bootstrap.php</code>:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a><span class="cp">&lt;?php</span>
-<a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a>
-<a id="__codelineno-23-3" name="__codelineno-23-3" href="#__codelineno-23-3"></a><span class="k">declare</span><span class="p">(</span><span class="nx">strict_types</span><span class="o">=</span><span class="mi">1</span><span class="p">);</span>
-<a id="__codelineno-23-4" name="__codelineno-23-4" href="#__codelineno-23-4"></a>
-<a id="__codelineno-23-5" name="__codelineno-23-5" href="#__codelineno-23-5"></a><span class="k">use</span> <span class="nx">Symfony\Component\Dotenv\Dotenv</span><span class="p">;</span>
-<a id="__codelineno-23-6" name="__codelineno-23-6" href="#__codelineno-23-6"></a>
-<a id="__codelineno-23-7" name="__codelineno-23-7" href="#__codelineno-23-7"></a><span class="k">require</span> <span class="nb">dirname</span><span class="p">(</span><span class="no">__DIR__</span><span class="p">)</span> <span class="o">.</span> <span class="s1">'/vendor/autoload.php'</span><span class="p">;</span>
-<a id="__codelineno-23-8" name="__codelineno-23-8" href="#__codelineno-23-8"></a>
-<a id="__codelineno-23-9" name="__codelineno-23-9" href="#__codelineno-23-9"></a><span class="p">(</span><span class="k">new</span> <span class="nx">Dotenv</span><span class="p">())</span><span class="o">-&gt;</span><span class="na">bootEnv</span><span class="p">(</span><span class="nb">dirname</span><span class="p">(</span><span class="no">__DIR__</span><span class="p">)</span> <span class="o">.</span> <span class="s1">'/.env'</span><span class="p">);</span>
-</code></pre></div>
-<p>Move existing tests from root <code>tests/{Module}/</code> to <code>apps/{name}/tests/</code>:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a>git<span class="w"> </span>mv<span class="w"> </span>tests/<span class="o">{</span>Module<span class="o">}</span>/<span class="w"> </span>apps/<span class="o">{</span>name<span class="o">}</span>/tests/
-</code></pre></div>
-<p>Update test namespace to <code>App\{Module}\Tests\*</code>.</p>
-<p>Verify tests pass independently:
-<div class="highlight"><pre><span></span><code><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a><span class="nb">cd</span><span class="w"> </span>apps/<span class="o">{</span>name<span class="o">}</span>
-<a id="__codelineno-25-2" name="__codelineno-25-2" href="#__codelineno-25-2"></a>php<span class="w"> </span>vendor/bin/phpunit
-</code></pre></div></p>
-<h2 id="step-7-update-ci">Step 7: Update CI<a class="headerlink" href="#step-7-update-ci" title="Permanent link">&para;</a></h2>
-<p>Add a new job to <code>.github/workflows/ci.yml</code>:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a><span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">test-{name}</span><span class="p p-Indicator">:</span>
-<a id="__codelineno-26-2" name="__codelineno-26-2" href="#__codelineno-26-2"></a><span class="w">    </span><span class="nt">runs-on</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ubuntu-latest</span>
-<a id="__codelineno-26-3" name="__codelineno-26-3" href="#__codelineno-26-3"></a><span class="w">    </span><span class="nt">steps</span><span class="p">:</span>
-<a id="__codelineno-26-4" name="__codelineno-26-4" href="#__codelineno-26-4"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">actions/checkout@v4</span>
-<a id="__codelineno-26-5" name="__codelineno-26-5" href="#__codelineno-26-5"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">php-actions/composer@v6</span>
-<a id="__codelineno-26-6" name="__codelineno-26-6" href="#__codelineno-26-6"></a><span class="w">        </span><span class="nt">with</span><span class="p">:</span>
-<a id="__codelineno-26-7" name="__codelineno-26-7" href="#__codelineno-26-7"></a><span class="w">          </span><span class="nt">php_version</span><span class="p">:</span><span class="w"> </span><span class="s">"8.4"</span>
-<a id="__codelineno-26-8" name="__codelineno-26-8" href="#__codelineno-26-8"></a><span class="w">          </span><span class="nt">working_dir</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">apps/{name}</span>
-<a id="__codelineno-26-9" name="__codelineno-26-9" href="#__codelineno-26-9"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">cd apps/{name} &amp;&amp; vendor/bin/phpunit --coverage-clover ../../build/coverage/{name}.xml</span>
-</code></pre></div>
-<h2 id="step-8-add-docker-compose-service">Step 8: Add Docker Compose Service<a class="headerlink" href="#step-8-add-docker-compose-service" title="Permanent link">&para;</a></h2>
-<h3 id="composeyaml"><code>compose.yaml</code><a class="headerlink" href="#composeyaml" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a><span class="w">  </span><span class="p p-Indicator">{</span><span class="nv">name</span><span class="p p-Indicator">}</span><span class="nt">-app</span><span class="p">:</span>
-<a id="__codelineno-27-2" name="__codelineno-27-2" href="#__codelineno-27-2"></a><span class="w">    </span><span class="nt">build</span><span class="p">:</span>
-<a id="__codelineno-27-3" name="__codelineno-27-3" href="#__codelineno-27-3"></a><span class="w">      </span><span class="nt">context</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">apps/{name}</span>
-<a id="__codelineno-27-4" name="__codelineno-27-4" href="#__codelineno-27-4"></a><span class="w">      </span><span class="nt">dockerfile</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Dockerfile</span>
-<a id="__codelineno-27-5" name="__codelineno-27-5" href="#__codelineno-27-5"></a><span class="w">    </span><span class="nt">restart</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">unless-stopped</span>
-<a id="__codelineno-27-6" name="__codelineno-27-6" href="#__codelineno-27-6"></a><span class="w">    </span><span class="nt">environment</span><span class="p">:</span>
-<a id="__codelineno-27-7" name="__codelineno-27-7" href="#__codelineno-27-7"></a><span class="w">      </span><span class="nt">APP_ENV</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${APP_ENV:-prod}</span>
-<a id="__codelineno-27-8" name="__codelineno-27-8" href="#__codelineno-27-8"></a><span class="w">      </span><span class="nt">APP_DEBUG</span><span class="p">:</span><span class="w"> </span><span class="s">"0"</span>
-<a id="__codelineno-27-9" name="__codelineno-27-9" href="#__codelineno-27-9"></a><span class="w">      </span><span class="nt">APP_SECRET</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${{NAME}_APP_SECRET:?required}</span>
-<a id="__codelineno-27-10" name="__codelineno-27-10" href="#__codelineno-27-10"></a><span class="w">      </span><span class="nt">DATABASE_URL</span><span class="p">:</span><span class="w"> </span><span class="s">"mysql://${NAME}_MYSQL_USER:-app}:${NAME}_MYSQL_PASSWORD:-!ChangeMe!}@{name}-database:3306/${NAME}_MYSQL_DATABASE:-app}?serverVersion=8.0&amp;charset=utf8mb4"</span>
-<a id="__codelineno-27-11" name="__codelineno-27-11" href="#__codelineno-27-11"></a><span class="w">    </span><span class="nt">volumes</span><span class="p">:</span>
-<a id="__codelineno-27-12" name="__codelineno-27-12" href="#__codelineno-27-12"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./apps/{name}/var:/var/www/html/var</span>
-<a id="__codelineno-27-13" name="__codelineno-27-13" href="#__codelineno-27-13"></a><span class="w">    </span><span class="nt">depends_on</span><span class="p">:</span>
-<a id="__codelineno-27-14" name="__codelineno-27-14" href="#__codelineno-27-14"></a><span class="w">      </span><span class="p p-Indicator">{</span><span class="nv">name</span><span class="p p-Indicator">}</span><span class="nt">-database</span><span class="p">:</span>
-<a id="__codelineno-27-15" name="__codelineno-27-15" href="#__codelineno-27-15"></a><span class="w">        </span><span class="nt">condition</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">service_healthy</span>
-<a id="__codelineno-27-16" name="__codelineno-27-16" href="#__codelineno-27-16"></a>
-<a id="__codelineno-27-17" name="__codelineno-27-17" href="#__codelineno-27-17"></a><span class="w">  </span><span class="p p-Indicator">{</span><span class="nv">name</span><span class="p p-Indicator">}</span><span class="nt">-database</span><span class="p">:</span>
-<a id="__codelineno-27-18" name="__codelineno-27-18" href="#__codelineno-27-18"></a><span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mysql:8.4</span>
-<a id="__codelineno-27-19" name="__codelineno-27-19" href="#__codelineno-27-19"></a><span class="w">    </span><span class="nt">restart</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">unless-stopped</span>
-<a id="__codelineno-27-20" name="__codelineno-27-20" href="#__codelineno-27-20"></a><span class="w">    </span><span class="nt">environment</span><span class="p">:</span>
-<a id="__codelineno-27-21" name="__codelineno-27-21" href="#__codelineno-27-21"></a><span class="w">      </span><span class="nt">MYSQL_ROOT_PASSWORD</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${NAME}_MYSQL_ROOT_PASSWORD:-root}</span>
-<a id="__codelineno-27-22" name="__codelineno-27-22" href="#__codelineno-27-22"></a><span class="w">      </span><span class="nt">MYSQL_DATABASE</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${NAME}_MYSQL_DATABASE:-app}</span>
-<a id="__codelineno-27-23" name="__codelineno-27-23" href="#__codelineno-27-23"></a><span class="w">      </span><span class="nt">MYSQL_USER</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${NAME}_MYSQL_USER:-app}</span>
-<a id="__codelineno-27-24" name="__codelineno-27-24" href="#__codelineno-27-24"></a><span class="w">      </span><span class="nt">MYSQL_PASSWORD</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${NAME}_MYSQL_PASSWORD:-!ChangeMe!}</span>
-<a id="__codelineno-27-25" name="__codelineno-27-25" href="#__codelineno-27-25"></a><span class="w">    </span><span class="nt">volumes</span><span class="p">:</span>
-<a id="__codelineno-27-26" name="__codelineno-27-26" href="#__codelineno-27-26"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nv">name</span><span class="p p-Indicator">}</span><span class="l l-Scalar l-Scalar-Plain">-db-data:/var/lib/mysql</span>
-<a id="__codelineno-27-27" name="__codelineno-27-27" href="#__codelineno-27-27"></a><span class="w">    </span><span class="nt">healthcheck</span><span class="p">:</span>
-<a id="__codelineno-27-28" name="__codelineno-27-28" href="#__codelineno-27-28"></a><span class="w">      </span><span class="nt">test</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">"CMD"</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">"mysqladmin"</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">"ping"</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">"-h"</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">"localhost"</span><span class="p p-Indicator">]</span>
-<a id="__codelineno-27-29" name="__codelineno-27-29" href="#__codelineno-27-29"></a><span class="w">      </span><span class="nt">interval</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10s</span>
-<a id="__codelineno-27-30" name="__codelineno-27-30" href="#__codelineno-27-30"></a><span class="w">      </span><span class="nt">timeout</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5s</span>
-<a id="__codelineno-27-31" name="__codelineno-27-31" href="#__codelineno-27-31"></a><span class="w">      </span><span class="nt">retries</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span>
-</code></pre></div>
-<h3 id="composeoverrideyaml-for-dev"><code>compose.override.yaml</code> (for dev)<a class="headerlink" href="#composeoverrideyaml-for-dev" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a><span class="w">  </span><span class="p p-Indicator">{</span><span class="nv">name</span><span class="p p-Indicator">}</span><span class="nt">-app</span><span class="p">:</span>
-<a id="__codelineno-28-2" name="__codelineno-28-2" href="#__codelineno-28-2"></a><span class="w">    </span><span class="nt">environment</span><span class="p">:</span>
-<a id="__codelineno-28-3" name="__codelineno-28-3" href="#__codelineno-28-3"></a><span class="w">      </span><span class="nt">APP_ENV</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">dev</span>
-<a id="__codelineno-28-4" name="__codelineno-28-4" href="#__codelineno-28-4"></a><span class="w">      </span><span class="nt">APP_DEBUG</span><span class="p">:</span><span class="w"> </span><span class="s">"1"</span>
-<a id="__codelineno-28-5" name="__codelineno-28-5" href="#__codelineno-28-5"></a><span class="w">    </span><span class="nt">volumes</span><span class="p">:</span>
-<a id="__codelineno-28-6" name="__codelineno-28-6" href="#__codelineno-28-6"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./apps/{name}:/var/www/html</span><span class="w">  </span><span class="c1"># Source mount for live reload</span>
-<a id="__codelineno-28-7" name="__codelineno-28-7" href="#__codelineno-28-7"></a><span class="w">    </span><span class="nt">ports</span><span class="p">:</span>
-<a id="__codelineno-28-8" name="__codelineno-28-8" href="#__codelineno-28-8"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">"${NAME}_PORT:-8xxx}:80"</span>
-</code></pre></div>
-<h2 id="step-9-verification-checklist">Step 9: Verification Checklist<a class="headerlink" href="#step-9-verification-checklist" title="Permanent link">&para;</a></h2>
-<p>Run these checks in order. All must pass before extraction is considered
-complete.</p>
-<h3 id="91-phpunit">9.1 PHPUnit<a class="headerlink" href="#91-phpunit" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a><span class="nb">cd</span><span class="w"> </span>apps/<span class="o">{</span>name<span class="o">}</span>
-<a id="__codelineno-29-2" name="__codelineno-29-2" href="#__codelineno-29-2"></a>php<span class="w"> </span>vendor/bin/phpunit
-<a id="__codelineno-29-3" name="__codelineno-29-3" href="#__codelineno-29-3"></a><span class="c1"># All tests must pass</span>
-</code></pre></div>
-<h3 id="92-container-lint">9.2 Container Lint<a class="headerlink" href="#92-container-lint" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-30-1" name="__codelineno-30-1" href="#__codelineno-30-1"></a><span class="nb">cd</span><span class="w"> </span>apps/<span class="o">{</span>name<span class="o">}</span>
-<a id="__codelineno-30-2" name="__codelineno-30-2" href="#__codelineno-30-2"></a>php<span class="w"> </span>bin/console<span class="w"> </span>lint:container
-<a id="__codelineno-30-3" name="__codelineno-30-3" href="#__codelineno-30-3"></a><span class="c1"># Must compile without errors or deprecation warnings</span>
-</code></pre></div>
-<h3 id="93-phpstan">9.3 PHPStan<a class="headerlink" href="#93-phpstan" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-31-1" name="__codelineno-31-1" href="#__codelineno-31-1"></a><span class="nb">cd</span><span class="w"> </span>apps/<span class="o">{</span>name<span class="o">}</span>
-<a id="__codelineno-31-2" name="__codelineno-31-2" href="#__codelineno-31-2"></a>php<span class="w"> </span>vendor/bin/phpstan<span class="w"> </span>analyze
-<a id="__codelineno-31-3" name="__codelineno-31-3" href="#__codelineno-31-3"></a><span class="c1"># Must pass at the app's configured level (target: Level 8)</span>
-</code></pre></div>
-<h3 id="94-deptrac-if-applicable">9.4 Deptrac (if applicable)<a class="headerlink" href="#94-deptrac-if-applicable" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-32-1" name="__codelineno-32-1" href="#__codelineno-32-1"></a><span class="c1"># Ensure no new cross-module violations</span>
-<a id="__codelineno-32-2" name="__codelineno-32-2" href="#__codelineno-32-2"></a>composer<span class="w"> </span>deptrac
-</code></pre></div>
-<h3 id="95-docker-build">9.5 Docker Build<a class="headerlink" href="#95-docker-build" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-33-1" name="__codelineno-33-1" href="#__codelineno-33-1"></a>docker<span class="w"> </span>compose<span class="w"> </span>build<span class="w"> </span><span class="o">{</span>name<span class="o">}</span>-app
-<a id="__codelineno-33-2" name="__codelineno-33-2" href="#__codelineno-33-2"></a><span class="c1"># Must build successfully</span>
-</code></pre></div>
-<h3 id="96-migration-smoke">9.6 Migration Smoke<a class="headerlink" href="#96-migration-smoke" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-34-1" name="__codelineno-34-1" href="#__codelineno-34-1"></a>docker<span class="w"> </span>compose<span class="w"> </span>up<span class="w"> </span>-d<span class="w"> </span><span class="o">{</span>name<span class="o">}</span>-database
-<a id="__codelineno-34-2" name="__codelineno-34-2" href="#__codelineno-34-2"></a>docker<span class="w"> </span>compose<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span><span class="o">{</span>name<span class="o">}</span>-app<span class="w"> </span>php<span class="w"> </span>bin/console<span class="w"> </span>doctrine:migrations:migrate<span class="w"> </span>--no-interaction
-<a id="__codelineno-34-3" name="__codelineno-34-3" href="#__codelineno-34-3"></a><span class="c1"># Must complete without errors</span>
-</code></pre></div>
-<h3 id="97-http-smoke">9.7 HTTP Smoke<a class="headerlink" href="#97-http-smoke" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-35-1" name="__codelineno-35-1" href="#__codelineno-35-1"></a>docker<span class="w"> </span>compose<span class="w"> </span>up<span class="w"> </span>-d<span class="w"> </span><span class="o">{</span>name<span class="o">}</span>-app
-<a id="__codelineno-35-2" name="__codelineno-35-2" href="#__codelineno-35-2"></a>curl<span class="w"> </span>http://localhost:<span class="o">{</span>PORT<span class="o">}</span>/
-<a id="__codelineno-35-3" name="__codelineno-35-3" href="#__codelineno-35-3"></a><span class="c1"># Should return a response (200 or 404, not connection refused)</span>
-</code></pre></div>
-<h3 id="98-root-test-suite">9.8 Root Test Suite<a class="headerlink" href="#98-root-test-suite" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-36-1" name="__codelineno-36-1" href="#__codelineno-36-1"></a>php<span class="w"> </span>vendor/bin/phpunit
-<a id="__codelineno-36-2" name="__codelineno-36-2" href="#__codelineno-36-2"></a><span class="c1"># Root test suite must still pass (service is loaded as path package)</span>
-</code></pre></div>
-<h2 id="post-extraction-remove-legacy-source">Post-Extraction: Remove Legacy Source<a class="headerlink" href="#post-extraction-remove-legacy-source" title="Permanent link">&para;</a></h2>
-<p>After all verification passes and the service has been running stably in the
-monorepo:</p>
+<p>Other modules follow the same shape (Wallet, Trade, Inventory, Store, ...),
+each with the same sub-namespaces. The only differences are details — e.g.
+Wallet splits <code>Service/</code> into <code>Deposit/</code>, <code>Withdraw/</code>, <code>Transfer/</code>,
+<code>Payment/</code> feature folders and has App <code>Controller/</code> and Manage <code>Controller/</code>.</p>
+<h3 id="map-the-dependencies">Map the dependencies<a class="headerlink" href="#map-the-dependencies" title="Permanent link">&para;</a></h3>
+<p>For each module, two lists:</p>
 <ol>
-<li>Remove legacy source from <code>src/{Module}/</code> (if not already done via <code>git mv</code>)</li>
-<li>Remove legacy root migrations for the now-extracted tables (keep historical
-   baseline; new migrations go in <code>apps/{name}/migrations/</code>)</li>
-<li>Update <code>deptrac-baseline.yaml</code> to remove legacy violations</li>
-<li>Remove any temporary <code>Bridge/</code> adapters once Gateway routing is ready</li>
+<li><strong>What it depends on from others</strong> — contracts, ports, and messages it
+   imports. For Settlement these are <strong>none</strong>; it only depends on its own
+   <code>Contract/</code>/<code>Port/</code>. (Wallet is the opposite: it implements
+   <code>SettlementVoucherPort</code> and consumes <code>App\Settlement\Contract\*</code>.)</li>
+<li><strong>What others depend on from it</strong> — who implements its ports
+   (<code>App\Wallet\Integration\Settlement\WalletSettlementVoucherPort</code>), who
+   consumes its contracts, and which of its messages are routed in
+   <code>config/packages/messenger.yaml</code>.</li>
 </ol>
-<p><strong>Do not remove legacy code until the service runs independently in production.</strong>
-The monolith remains the production host during transition.</p>
-<h2 id="common-pitfalls">Common Pitfalls<a class="headerlink" href="#common-pitfalls" title="Permanent link">&para;</a></h2>
+<p>A module whose "depends on others" list is empty (or only contracts) is
+extractable as-is. A module that a port points at (Settlement ← Wallet) keeps
+its domain and swaps the port implementation at wiring time.</p>
+<h3 id="extraction-checklist-per-module">Extraction checklist per module<a class="headerlink" href="#extraction-checklist-per-module" title="Permanent link">&para;</a></h3>
+<ul>
+<li>[ ] No <code>use App\...\Entity</code> cross-module imports inside the module</li>
+<li>[ ] All cross-module references are <code>Contract/*</code> and <code>Port/*</code></li>
+<li>[ ] Every outbound event is an <code>OutboxMessage</code> row + Messenger message</li>
+<li>[ ] Every inbound event is consumed from an inbox/consumed-event table</li>
+<li>[ ] Command names follow <code>app:{module}:{...}</code> and are listed in <code>compose.yaml</code></li>
+<li>[ ] <code>Resources/config/services_{module}.yaml</code> holds all module wiring</li>
+<li>[ ] <code>config/services.yaml</code> <code>App\|:</code> autowiring excludes only infra classes</li>
+</ul>
+<hr />
+<h2 id="3-create-the-app-skeleton">3. Create the app skeleton<a class="headerlink" href="#3-create-the-app-skeleton" title="Permanent link">&para;</a></h2>
+<p>Create a new standalone Symfony app (or a new composer package in a monorepo
+top-level) that will host the module:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>composer<span class="w"> </span>create-project<span class="w"> </span>symfony/skeleton<span class="w"> </span>settlement-service
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="nb">cd</span><span class="w"> </span>settlement-service
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>composer<span class="w"> </span>require<span class="w"> </span>symfony/orm-pack<span class="w"> </span>symfony/messenger<span class="w"> </span>symfony/translation
+</code></pre></div>
+<p>What you are reproducing, in order:</p>
+<ol>
+<li><code>src/Kernel.php</code> — the MicroKernel bootstrap.</li>
+<li><code>composer.json</code> — the autoload PSR-4 map: <code>"App\\": "src/"</code>.</li>
+<li><code>config/services.yaml</code> — imports the module config + global autowiring.</li>
+<li>Module config wiring (see <a href="#6-wiring">Wiring</a>).</li>
+</ol>
+<p>The skeleton is deliberately minimal: no <code>templates/</code>, no webpack, nothing the
+API skeleton had beyond the pieces the module actually uses.</p>
+<hr />
+<h2 id="4-move-the-code">4. Move the code<a class="headerlink" href="#4-move-the-code" title="Permanent link">&para;</a></h2>
+<p>Physically move the module's directory into the new app:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="c1"># Inside the new app</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>mkdir<span class="w"> </span>-p<span class="w"> </span>src
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>mv<span class="w"> </span>../crud-skeleton/src/Settlement<span class="w"> </span>src/Settlement
+</code></pre></div>
+<p>Because modules are namespace-isolated (<code>App\Settlement\...</code>), the namespace
+stays valid with zero renames. Keep it <code>App\Settlement</code> unless you want to
+rename the root namespace of the new service; if you do, a namespace rename is
+a mechanical find/replace.</p>
+<h3 id="move-the-parts-that-must-follow">Move the parts that must follow<a class="headerlink" href="#move-the-parts-that-must-follow" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
 <tr>
-<th>Pitfall</th>
-<th>Symptom</th>
-<th>Fix</th>
+<th>Ship with the module</th>
+<th>Example (Settlement)</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><strong>Shared User FK</strong></td>
-<td><code>Doctrine\ORM\Mapping\MappingException</code></td>
-<td>Replace <code>ManyToOne User</code> with <code>ownerUuid VARCHAR(36)</code></td>
+<td>Entities + repositories</td>
+<td><code>Entity/*</code>, <code>Repository/*</code></td>
 </tr>
 <tr>
-<td><strong>Missing autoload</strong></td>
-<td><code>Class not found</code> in monolith</td>
-<td>Add path package to root <code>composer.json</code></td>
+<td>Domain services</td>
+<td><code>Service/*</code>, <code>Service/Money/*</code></td>
 </tr>
 <tr>
-<td><strong>Namespace mismatch</strong></td>
-<td><code>App\{Module}\*</code> vs <code>App\{Module}\*</code></td>
-<td>Update namespace in all moved files</td>
+<td>Service interfaces + aliases</td>
+<td><code>*ServiceInterface</code> + <code>services_settlement.yaml</code></td>
 </tr>
 <tr>
-<td><strong>Doctrine mapping collision</strong></td>
-<td>Two <code>doctrine.yaml</code> files mapping same namespace</td>
-<td>Remove old mapping from root config</td>
+<td>Controllers</td>
+<td><code>Controller/Manage/*</code></td>
 </tr>
 <tr>
-<td><strong>Test DB mismatch</strong></td>
-<td>Tests fail on SQLite features</td>
-<td>Use <code>VARCHAR</code> instead of <code>ENUM</code>, test on SQLite</td>
+<td>Console commands</td>
+<td><code>Command/PublishOutboxCommand.php</code>, <code>RequeueDuePostingCommand.php</code></td>
 </tr>
 <tr>
-<td><strong>Missing env vars</strong></td>
-<td>Container fails to boot</td>
-<td>Add required env vars to <code>compose.yaml</code> with <code>${VAR:?required}</code></td>
+<td>Messages + handlers</td>
+<td><code>Message/*</code>, <code>MessageHandler/*</code></td>
 </tr>
 <tr>
-<td><strong>Port conflict</strong></td>
-<td><code>bind: address already in use</code></td>
-<td>Assign unique port in <code>compose.yaml</code> and <code>compose.override.yaml</code></td>
+<td>Contracts &amp; ports</td>
+<td><code>Contract/*</code>, <code>Port/*</code></td>
 </tr>
 <tr>
-<td><strong>Migration baseline missing</strong></td>
-<td>Fresh DB has no tables</td>
-<td>Create standalone baseline migration with all <code>CREATE TABLE</code> DDL</td>
+<td>Test doubles</td>
+<td><code>Integration/Fake/*</code>, <code>Integration/Fixture/*</code></td>
 </tr>
 <tr>
-<td><strong>Worker/scheduler depends on monolith</strong></td>
-<td>Jobs fail in isolation</td>
-<td>Ensure worker transport config is self-contained in app config</td>
-</tr>
-<tr>
-<td><strong>Hardcoded monolith paths</strong></td>
-<td><code>%kernel.project_dir%/var</code> points wrong</td>
-<td>Use app-relative paths in app config</td>
+<td>Module migration files</td>
+<td><code>migrations/Version2026...*.php</code> (Settlement tables)</td>
 </tr>
 </tbody>
 </table>
+<h3 id="leave-behind">Leave behind<a class="headerlink" href="#leave-behind" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Port implementations owned by other modules.</strong> Wallet's
+  <code>WalletSettlementVoucherPort</code> stays in the monolith (or becomes a small
+  adapter in the extraction upstream). Settlement never imports it directly;
+  it depends on the interface <code>App\Settlement\Port\SettlementVoucherPort</code>.</li>
+<li><strong>Any global autowiring that is not module-specific</strong> (<code>config/services.yaml</code>
+  <code>App\:</code> block, <code>_instanceof</code> tag rules). These move only in the form the new
+  app needs for its own modules.</li>
+</ul>
+<hr />
+<h2 id="5-baseline-migration">5. Baseline migration<a class="headerlink" href="#5-baseline-migration" title="Permanent link">&para;</a></h2>
+<p>The module's tables currently live inside the monolith's single migration
+history. Before extraction, produce a <strong>baseline</strong> so the new service can
+start with only its own schema.</p>
+<ol>
+<li><strong>Squash</strong> all migrations that create/modify the module's tables into one
+   new <code>Version{time}BaselineSettlement.php</code> inside the new app:</li>
+</ol>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="x">final class Version20260820000000BaselineSettlement extends AbstractMigration</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="x">{</span>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="x">    public function up(Schema $schema): void</span>
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="x">    {</span>
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="x">        // CREATE TABLE settlement_plan (...)</span>
+<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="x">        // CREATE TABLE settlement_rule (...)</span>
+<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="x">        // CREATE TABLE settlement_allocation (...)</span>
+<a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="x">        // ... module tables only</span>
+<a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="x">    }</span>
+<a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a><span class="x">}</span>
+</code></pre></div>
+<ol>
+<li>
+<p><strong>Remove</strong> the module's table statements from the monolith migration
+   history <em>after</em> the cutover migration that exports the data. Keep the
+   monolith's history linear: the extraction release ships one migration that
+   migrates data out, the new service ships one baseline migration.</p>
+</li>
+<li>
+<p>Set <code>version_control</code> on from the first deploy of the new service:
+   <code>doctrine:migrations:version --add --all</code> after the baseline is applied, or
+   <code>latest_as_of</code> in the migrations config, so the standalone history matches
+   the baked-in schema.</p>
+</li>
+<li>
+<p>Validate with the same job pattern as <code>.github/workflows/migrations.yml</code>:
+   apply the chain from scratch against a fresh MySQL 8.4 and assert
+   <code>doctrine:migrations:status</code> reports the baseline as the latest.</p>
+</li>
+</ol>
+<h2 id="6-wiring">6. Wiring<a class="headerlink" href="#6-wiring" title="Permanent link">&para;</a></h2>
+<p>Reproduce the module's service wiring in the new app. Every module owns one
+config file that already contains its dependency graph:</p>
+<ul>
+<li><code>src/Core/Resources/config/services.yaml</code></li>
+<li><code>src/Identity/Resources/config/services_identity.yaml</code></li>
+<li><code>src/Settlement/Resources/config/services_settlement.yaml</code></li>
+<li>... one per module</li>
+</ul>
+<p><code>src/Settlement/Resources/config/services_settlement.yaml</code> shows the pattern:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="nt">services</span><span class="p">:</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="w">    </span><span class="nt">_defaults</span><span class="p">:</span>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="w">        </span><span class="nt">autowire</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="w">        </span><span class="nt">autoconfigure</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>
+<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="w">    </span><span class="nt">App\Settlement\Service\SettlementServiceInterface</span><span class="p">:</span>
+<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="w">        </span><span class="nt">alias</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">App\Settlement\Service\SettlementService</span>
+<a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>
+<a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a><span class="w">    </span><span class="c1"># ...</span>
+<a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a>
+<a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a><span class="w">    </span><span class="nt">App\Settlement\Port\ClockInterface</span><span class="p">:</span>
+<a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a><span class="w">        </span><span class="nt">alias</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">App\Settlement\Service\SystemClock</span>
+<a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a>
+<a id="__codelineno-8-14" name="__codelineno-8-14" href="#__codelineno-8-14"></a><span class="w">    </span><span class="nt">App\Settlement\Port\SettlementVoucherPort</span><span class="p">:</span>
+<a id="__codelineno-8-15" name="__codelineno-8-15" href="#__codelineno-8-15"></a><span class="w">        </span><span class="nt">alias</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">App\Wallet\Integration\Settlement\WalletSettlementVoucherPort</span><span class="w">   </span><span class="c1"># &lt;-- host impl</span>
+<a id="__codelineno-8-16" name="__codelineno-8-16" href="#__codelineno-8-16"></a>
+<a id="__codelineno-8-17" name="__codelineno-8-17" href="#__codelineno-8-17"></a><span class="w">    </span><span class="nt">when@test</span><span class="p">:</span>
+<a id="__codelineno-8-18" name="__codelineno-8-18" href="#__codelineno-8-18"></a><span class="w">        </span><span class="nt">services</span><span class="p">:</span>
+<a id="__codelineno-8-19" name="__codelineno-8-19" href="#__codelineno-8-19"></a><span class="w">            </span><span class="nt">App\Settlement\Integration\Fake\InMemorySettlementVoucherPort</span><span class="p">:</span>
+<a id="__codelineno-8-20" name="__codelineno-8-20" href="#__codelineno-8-20"></a><span class="w">                </span><span class="nt">public</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<a id="__codelineno-8-21" name="__codelineno-8-21" href="#__codelineno-8-21"></a><span class="w">            </span><span class="nt">App\Settlement\Port\SettlementVoucherPort</span><span class="p">:</span>
+<a id="__codelineno-8-22" name="__codelineno-8-22" href="#__codelineno-8-22"></a><span class="w">                </span><span class="nt">alias</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">App\Settlement\Integration\Fake\InMemorySettlementVoucherPort</span>
+</code></pre></div>
+<p>Import it from <code>config/services.yaml</code>:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="nt">imports</span><span class="p">:</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt"> resource</span><span class="p">:</span><span class="w"> </span><span class="s">'../src/Settlement/Resources/config/services_settlement.yaml'</span><span class="p p-Indicator">,</span><span class="nt"> ignore_errors</span><span class="p">:</span><span class="w"> </span><span class="nv">true</span><span class="w"> </span><span class="p p-Indicator">}</span>
+</code></pre></div>
+<h3 id="re-point-the-ports">Re-point the ports<a class="headerlink" href="#re-point-the-ports" title="Permanent link">&para;</a></h3>
+<p>In the monolith, <code>SettlementVoucherPort</code> is aliased to
+<code>App\Wallet\Integration\Settlement\WalletSettlementVoucherPort</code>. In the new
+service, the port must resolve to an implementation you ship with the service:</p>
+<ul>
+<li><strong>In-process</strong> during migration: keep the Wallet adapter if you also move it
+  into the new app (it pulls in Wallet entities/services — de-facto a Wallet
+  extraction too).</li>
+<li><strong>Independent service</strong>: implement the port against the new service's own
+  storage or an outbound HTTP call to the Wallet service:</li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="x">final class HttpSettlementVoucherPort implements SettlementVoucherPort</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="x">{</span>
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="x">    public function post(ConfirmedAllocation $allocation): VoucherPostingReceipt { /* POST to wallet.svc /api/... */ }</span>
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="x">    public function reverse(PostedAllocation $allocation, ReversalRequest $request): VoucherPostingReceipt { /* ... */ }</span>
+<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="x">}</span>
+</code></pre></div>
+<p>and change the alias in <code>services_settlement.yaml</code>. No Settlement code
+  changes — that is the entire point of the port indirection.</p>
+<h3 id="messaging-wiring">Messaging wiring<a class="headerlink" href="#messaging-wiring" title="Permanent link">&para;</a></h3>
+<p>Move the module's entries in <code>config/packages/messenger.yaml</code> to the new app
+(e.g. <code>routing: App\Settlement\Message\SettlementFundingConfirmedMessage: async</code>).
+In the monolith, delete those routes and, if the module's messages are now
+delivered out-of-process, replace the remaining consumers with integration
+points (webhook/HTTP dispatch or a shared transport).</p>
+<h3 id="scheduler-and-console-commands">Scheduler and console commands<a class="headerlink" href="#scheduler-and-console-commands" title="Permanent link">&para;</a></h3>
+<p>The commands already exported (<code>app:settlement:...</code>) are run by the
+<code>scheduler</code> service in <code>compose.yaml</code>. In the new deployment:</p>
+<ul>
+<li>Remove the Settlement lines from the monolith's <code>scheduler</code> loop.</li>
+<li>Add a <code>scheduler</code> (or host cron) in the new service that runs
+  <code>app:settlement:outbox:publish</code> and
+  <code>app:settlement:allocations:requeue-due</code> on the same loop pattern:</li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="k">while</span><span class="w"> </span>:<span class="p">;</span><span class="w"> </span><span class="k">do</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="w">  </span>php<span class="w"> </span>bin/console<span class="w"> </span>app:settlement:outbox:publish<span class="w"> </span>--no-interaction
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="w">  </span>php<span class="w"> </span>bin/console<span class="w"> </span>app:settlement:allocations:requeue-due<span class="w"> </span>--no-interaction
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="w">  </span>sleep<span class="w"> </span><span class="s2">"</span><span class="si">${</span><span class="nv">OUTBOX_PUBLISH_INTERVAL</span><span class="k">:-</span><span class="nv">5</span><span class="si">}</span><span class="s2">"</span>
+<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="k">done</span>
+</code></pre></div>
+<h2 id="7-testing">7. Testing<a class="headerlink" href="#7-testing" title="Permanent link">&para;</a></h2>
+<p>The module already ships its own test doubles, so the new service can test the
+module in complete isolation:</p>
+<ul>
+<li><code>App\Settlement\Integration\Fake\InMemorySettlementVoucherPort</code> — implements
+  the host port with no database.</li>
+<li><code>App\Settlement\Integration\Fixture\FundingSnapshotContextResolver</code> — a
+  tagged <code>settlement.context_resolver</code> fixture for integration tests.</li>
+</ul>
+<p>Reuse the monolith's testing conventions (see <code>docs/design/system-contracts.md</code>
+§7 and <code>docs/testing/crud-skeleton-production/</code>):</p>
+<table>
+<thead>
+<tr>
+<th>Contract</th>
+<th>Requirement</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Coverage</td>
+<td>≥ 90% line coverage, enforced in CI</td>
+</tr>
+<tr>
+<td>Test DB</td>
+<td>Clean schema per test, built by schema tool</td>
+</tr>
+<tr>
+<td>Unit tests</td>
+<td><code>PHPUnit\Framework\TestCase</code> — no kernel</td>
+</tr>
+<tr>
+<td>Kernel tests</td>
+<td><code>IntegrationKernelTestCase</code> — booted kernel</td>
+</tr>
+<tr>
+<td>Web tests</td>
+<td><code>IntegrationWebTestCase</code> — full HTTP cycle</td>
+</tr>
+<tr>
+<td><code>when@test</code> wiring</td>
+<td>Ports/fakes + <code>when@test</code> sections in the module config</td>
+</tr>
+</tbody>
+</table>
+<p>Copy the relevant test files from <code>tests/UnitTest/Settlement</code> and
+<code>tests/Integration</code> that exercise the module, then delete them from the
+monolith. Static analysis stays identical:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>composer<span class="w"> </span>phpstan<span class="w">            </span><span class="c1"># Level 8, isolated SQLite DATABASE_URL</span>
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>composer<span class="w"> </span>rector:types:check<span class="w"> </span><span class="c1"># Rector type rules dry-run</span>
+</code></pre></div>
+<h2 id="8-ci">8. CI<a class="headerlink" href="#8-ci" title="Permanent link">&para;</a></h2>
+<p>The monolith's CI is three jobs in <code>.github/workflows/*</code>. Re-produce them in
+the new repo:</p>
+<table>
+<thead>
+<tr>
+<th>Job</th>
+<th>Source workflow</th>
+<th>Command</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Static analysis</td>
+<td><code>ci.yml</code> → <code>phpstan</code></td>
+<td><code>composer phpstan</code> (PHP 8.4, SQLite DB URL)</td>
+</tr>
+<tr>
+<td>Rector</td>
+<td><code>ci.yml</code> → <code>rector</code></td>
+<td><code>composer rector:types:check</code> (SQLite DB URL)</td>
+</tr>
+<tr>
+<td>Tests</td>
+<td><code>ci.yml</code> → <code>tests</code></td>
+<td>Paratest with coverage ≥ 90%, PostgreSQL 16</td>
+</tr>
+<tr>
+<td>Migrations</td>
+<td><code>migrations.yml</code></td>
+<td>Fresh MySQL 8.4 chain apply + status</td>
+</tr>
+</tbody>
+</table>
+<p>Reference <code>DATABASE_URL</code> values used by CI:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a># phpstan / rector (no DB server needed)
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>DATABASE_URL="sqlite:///%kernel.project_dir%/var/phpstan.db"
+<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>
+<a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a># tests matrix
+<a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a>DATABASE_URL="postgresql://app:app_secret@127.0.0.1:5432/app_test?serverVersion=16&amp;charset=utf8"
+<a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a>PARATEST_DATABASE_URL_TEMPLATE="postgresql://app:app_secret@127.0.0.1:5432/app_test_{token}?serverVersion=16&amp;charset=utf8"
+<a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a>
+<a id="__codelineno-13-8" name="__codelineno-13-8" href="#__codelineno-13-8"></a># migrations
+<a id="__codelineno-13-9" name="__codelineno-13-9" href="#__codelineno-13-9"></a>DATABASE_URL="mysql://app:app@127.0.0.1:3306/...?serverVersion=8.4&amp;charset=utf8mb4"
+</code></pre></div>
+<h2 id="9-docker">9. Docker<a class="headerlink" href="#9-docker" title="Permanent link">&para;</a></h2>
+<p>Re-use the existing <code>Dockerfile</code> and compose layout as the template for the new
+service. The production picture after extraction:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="c1"># monolith compose.yaml — Settlement lines removed from scheduler's loop,</span>
+<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="c1"># Settlement messages removed from messenger routing</span>
+<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="nt">scheduler</span><span class="p">:</span>
+<a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="w">  </span><span class="nt">command</span><span class="p">:</span>
+<a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/bin/sh</span>
+<a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">-ec</span>
+<a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">|</span>
+<a id="__codelineno-14-8" name="__codelineno-14-8" href="#__codelineno-14-8"></a><span class="w">      </span><span class="no">while :; do</span>
+<a id="__codelineno-14-9" name="__codelineno-14-9" href="#__codelineno-14-9"></a><span class="w">        </span><span class="no">php bin/console app:trade:outbox:publish --no-interaction</span>
+<a id="__codelineno-14-10" name="__codelineno-14-10" href="#__codelineno-14-10"></a><span class="w">        </span><span class="no">php bin/console app:store:outbox:publish --no-interaction</span>
+<a id="__codelineno-14-11" name="__codelineno-14-11" href="#__codelineno-14-11"></a><span class="w">        </span><span class="no">php bin/console app:inventory:outbox:publish --no-interaction</span>
+<a id="__codelineno-14-12" name="__codelineno-14-12" href="#__codelineno-14-12"></a><span class="w">        </span><span class="no">php bin/console app:inventory:reservations:release-expired --no-interaction</span>
+<a id="__codelineno-14-13" name="__codelineno-14-13" href="#__codelineno-14-13"></a><span class="w">        </span><span class="no">sleep "${OUTBOX_PUBLISH_INTERVAL:-5}"</span>
+<a id="__codelineno-14-14" name="__codelineno-14-14" href="#__codelineno-14-14"></a><span class="w">      </span><span class="no">done</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="c1"># settlement-service compose.yaml — same shapes, own database volume</span>
+<a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="nt">services</span><span class="p">:</span>
+<a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="w">  </span><span class="nt">app</span><span class="p">:</span>
+<a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="w">    </span><span class="nt">build</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">.</span><span class="w">                     </span><span class="c1"># same Dockerfile style</span>
+<a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a><span class="w">    </span><span class="nt">environment</span><span class="p">:</span><span class="w"> </span><span class="nl">&amp;app-env</span>
+<a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a><span class="w">      </span><span class="nt">APP_ENV</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">prod</span>
+<a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a><span class="w">      </span><span class="nt">APP_SECRET</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${APP_SECRET:?required}</span>
+<a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a><span class="w">      </span><span class="nt">DATABASE_URL</span><span class="p">:</span><span class="w"> </span><span class="s">"mysql://...@settlement-db:3306/..."</span>
+<a id="__codelineno-15-9" name="__codelineno-15-9" href="#__codelineno-15-9"></a><span class="w">      </span><span class="nt">MESSENGER_TRANSPORT_DSN</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${MESSENGER_TRANSPORT_DSN:?required}</span><span class="w">   </span><span class="c1"># shared/broker</span>
+<a id="__codelineno-15-10" name="__codelineno-15-10" href="#__codelineno-15-10"></a><span class="w">    </span><span class="nt">volumes</span><span class="p">:</span>
+<a id="__codelineno-15-11" name="__codelineno-15-11" href="#__codelineno-15-11"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./var:/var/www/html/var</span><span class="w">   </span><span class="c1"># JWT keys + cache, persisted</span>
+<a id="__codelineno-15-12" name="__codelineno-15-12" href="#__codelineno-15-12"></a>
+<a id="__codelineno-15-13" name="__codelineno-15-13" href="#__codelineno-15-13"></a><span class="w">  </span><span class="nt">worker</span><span class="p">:</span>
+<a id="__codelineno-15-14" name="__codelineno-15-14" href="#__codelineno-15-14"></a><span class="w">    </span><span class="nt">extends</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt"> service</span><span class="p">:</span><span class="w"> </span><span class="nv">app</span><span class="w"> </span><span class="p p-Indicator">}</span>
+<a id="__codelineno-15-15" name="__codelineno-15-15" href="#__codelineno-15-15"></a><span class="w">    </span><span class="nt">command</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">"php"</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">"bin/console"</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">"messenger:consume"</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">"async"</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">"--time-limit=3600"</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">"--memory-limit=256M"</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">"--no-interaction"</span><span class="p p-Indicator">]</span>
+<a id="__codelineno-15-16" name="__codelineno-15-16" href="#__codelineno-15-16"></a>
+<a id="__codelineno-15-17" name="__codelineno-15-17" href="#__codelineno-15-17"></a><span class="w">  </span><span class="nt">scheduler</span><span class="p">:</span>
+<a id="__codelineno-15-18" name="__codelineno-15-18" href="#__codelineno-15-18"></a><span class="w">    </span><span class="nt">extends</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt"> service</span><span class="p">:</span><span class="w"> </span><span class="nv">app</span><span class="w"> </span><span class="p p-Indicator">}</span>
+<a id="__codelineno-15-19" name="__codelineno-15-19" href="#__codelineno-15-19"></a><span class="w">    </span><span class="nt">command</span><span class="p">:</span>
+<a id="__codelineno-15-20" name="__codelineno-15-20" href="#__codelineno-15-20"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/bin/sh</span>
+<a id="__codelineno-15-21" name="__codelineno-15-21" href="#__codelineno-15-21"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">-ec</span>
+<a id="__codelineno-15-22" name="__codelineno-15-22" href="#__codelineno-15-22"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">|</span>
+<a id="__codelineno-15-23" name="__codelineno-15-23" href="#__codelineno-15-23"></a><span class="w">        </span><span class="no">while :; do</span>
+<a id="__codelineno-15-24" name="__codelineno-15-24" href="#__codelineno-15-24"></a><span class="w">          </span><span class="no">php bin/console app:settlement:outbox:publish --no-interaction</span>
+<a id="__codelineno-15-25" name="__codelineno-15-25" href="#__codelineno-15-25"></a><span class="w">          </span><span class="no">php bin/console app:settlement:allocations:requeue-due --no-interaction</span>
+<a id="__codelineno-15-26" name="__codelineno-15-26" href="#__codelineno-15-26"></a><span class="w">          </span><span class="no">sleep "${OUTBOX_PUBLISH_INTERVAL:-5}"</span>
+<a id="__codelineno-15-27" name="__codelineno-15-27" href="#__codelineno-15-27"></a><span class="w">        </span><span class="no">done</span>
+<a id="__codelineno-15-28" name="__codelineno-15-28" href="#__codelineno-15-28"></a>
+<a id="__codelineno-15-29" name="__codelineno-15-29" href="#__codelineno-15-29"></a><span class="w">  </span><span class="nt">nginx</span><span class="p">:</span>
+<a id="__codelineno-15-30" name="__codelineno-15-30" href="#__codelineno-15-30"></a><span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nginx:alpine</span>
+<a id="__codelineno-15-31" name="__codelineno-15-31" href="#__codelineno-15-31"></a><span class="w">    </span><span class="nt">ports</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">"${APP_PORT:-8081}:80"</span><span class="p p-Indicator">]</span><span class="w">      </span><span class="c1"># separate port from the monolith</span>
+<a id="__codelineno-15-32" name="__codelineno-15-32" href="#__codelineno-15-32"></a><span class="w">    </span><span class="nt">volumes</span><span class="p">:</span>
+<a id="__codelineno-15-33" name="__codelineno-15-33" href="#__codelineno-15-33"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./public:/var/www/html/public:ro</span>
+<a id="__codelineno-15-34" name="__codelineno-15-34" href="#__codelineno-15-34"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro</span>
+<a id="__codelineno-15-35" name="__codelineno-15-35" href="#__codelineno-15-35"></a><span class="w">    </span><span class="nt">healthcheck</span><span class="p">:</span>
+<a id="__codelineno-15-36" name="__codelineno-15-36" href="#__codelineno-15-36"></a><span class="w">      </span><span class="nt">test</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">"CMD"</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">"wget"</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">"-q"</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">"-O"</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">"/dev/null"</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">"http://localhost/health/ready"</span><span class="p p-Indicator">]</span>
+<a id="__codelineno-15-37" name="__codelineno-15-37" href="#__codelineno-15-37"></a>
+<a id="__codelineno-15-38" name="__codelineno-15-38" href="#__codelineno-15-38"></a><span class="w">  </span><span class="nt">settlement-db</span><span class="p">:</span>
+<a id="__codelineno-15-39" name="__codelineno-15-39" href="#__codelineno-15-39"></a><span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mysql:${MYSQL_VERSION:-8.4}</span>
+<a id="__codelineno-15-40" name="__codelineno-15-40" href="#__codelineno-15-40"></a><span class="w">    </span><span class="nt">environment</span><span class="p">:</span>
+<a id="__codelineno-15-41" name="__codelineno-15-41" href="#__codelineno-15-41"></a><span class="w">      </span><span class="nt">MYSQL_DATABASE</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${MYSQL_DATABASE:-settlement}</span>
+<a id="__codelineno-15-42" name="__codelineno-15-42" href="#__codelineno-15-42"></a><span class="w">      </span><span class="nt">MYSQL_USER</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${MYSQL_USER:-app}</span>
+<a id="__codelineno-15-43" name="__codelineno-15-43" href="#__codelineno-15-43"></a><span class="w">      </span><span class="nt">MYSQL_PASSWORD</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${MYSQL_PASSWORD:?required}</span>
+<a id="__codelineno-15-44" name="__codelineno-15-44" href="#__codelineno-15-44"></a><span class="w">      </span><span class="nt">MYSQL_ROOT_PASSWORD</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${MYSQL_ROOT_PASSWORD:?required}</span>
+<a id="__codelineno-15-45" name="__codelineno-15-45" href="#__codelineno-15-45"></a><span class="w">    </span><span class="nt">volumes</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">settlement_db_data</span><span class="p p-Indicator">:</span><span class="nv">/var/lib/mysql</span><span class="p p-Indicator">]</span>
+<a id="__codelineno-15-46" name="__codelineno-15-46" href="#__codelineno-15-46"></a>
+<a id="__codelineno-15-47" name="__codelineno-15-47" href="#__codelineno-15-47"></a><span class="w">  </span><span class="nt">redis</span><span class="p">:</span>
+<a id="__codelineno-15-48" name="__codelineno-15-48" href="#__codelineno-15-48"></a><span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">redis:7-alpine</span>
+<a id="__codelineno-15-49" name="__codelineno-15-49" href="#__codelineno-15-49"></a>
+<a id="__codelineno-15-50" name="__codelineno-15-50" href="#__codelineno-15-50"></a><span class="w">  </span><span class="nt">mailer</span><span class="p">:</span>
+<a id="__codelineno-15-51" name="__codelineno-15-51" href="#__codelineno-15-51"></a><span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">axllent/mailpit</span>
+<a id="__codelineno-15-52" name="__codelineno-15-52" href="#__codelineno-15-52"></a>
+<a id="__codelineno-15-53" name="__codelineno-15-53" href="#__codelineno-15-53"></a><span class="nt">networks</span><span class="p">:</span>
+<a id="__codelineno-15-54" name="__codelineno-15-54" href="#__codelineno-15-54"></a><span class="w">  </span><span class="nt">internal</span><span class="p">:</span>
+<a id="__codelineno-15-55" name="__codelineno-15-55" href="#__codelineno-15-55"></a>
+<a id="__codelineno-15-56" name="__codelineno-15-56" href="#__codelineno-15-56"></a><span class="nt">volumes</span><span class="p">:</span>
+<a id="__codelineno-15-57" name="__codelineno-15-57" href="#__codelineno-15-57"></a><span class="w">  </span><span class="nt">settlement_db_data</span><span class="p">:</span>
+</code></pre></div>
+<p>Key points carried over unchanged:</p>
+<ul>
+<li>The entrypoint (JWT key bootstrap + prod validation) and healthcheck
+  endpoints (<code>/health/live</code>, <code>/health/ready</code>) move with the app — they live in
+  <code>src/Core</code>, so copy <code>src/Core</code> (or at least the parts the module uses) with
+  the extraction.</li>
+<li><code>nginx</code> publishes on its own host port and health-checks through
+  <code>/health/ready</code>.</li>
+<li>Cross-service messaging is the only genuinely new piece: the two services
+  either share a transport (same <code>MESSENGER_TRANSPORT_DSN</code> broker) or the
+  consuming service calls a port implementation via HTTP.</li>
+<li>Production rollout is additive: deploy the new service, migrate the data
+  (one cutover migration on the monolith, one baseline on the new service),
+  then remove the module's scheduler lines, messenger routes, and tables.</li>
+</ul>
+<h2 id="practice-settlement-vs-wallet">Practice: Settlement vs Wallet<a class="headerlink" href="#practice-settlement-vs-wallet" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Concern</th>
+<th>Settlement (extract first)</th>
+<th>Wallet (currently the host)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Owns contracts</td>
+<td><code>Contract/*</code>, <code>Port/SettlementVoucherPort</code></td>
+<td>consumes <code>App\Settlement\Contract\*</code></td>
+</tr>
+<tr>
+<td>Implements ports</td>
+<td>—</td>
+<td><code>Integration/Settlement/WalletSettlementVoucherPort</code></td>
+</tr>
+<tr>
+<td>DB tables</td>
+<td><code>settlement_*</code> only, no FKs out</td>
+<td><code>wallet_*</code>, <code>voucher_*</code>, <code>transaction_*</code>, ...</td>
+</tr>
+<tr>
+<td>Cross-module refs</td>
+<td>UUID columns (<code>plan_uuid</code>, <code>rule_version_uuid</code>)</td>
+<td><code>deposit('settlement', ...)</code> + voucher fields</td>
+</tr>
+<tr>
+<td>Async edges</td>
+<td>outbox publish + <code>SettlementFundingConfirmedMessage</code>, <code>SettlementAllocationPostingMessage</code></td>
+<td>consumes settlement postings synchronously via port</td>
+</tr>
+<tr>
+<td>Test seams</td>
+<td><code>InMemorySettlementVoucherPort</code>, <code>FundingSnapshotContextResolver</code></td>
+<td>— (it provides them)</td>
+</tr>
+</tbody>
+</table>
+<p>Extracting Settlement = taking the domain, contracts, commands, and test
+doubles, implementing <code>SettlementVoucherPort</code> as an HTTP/queue adapter, and
+shipping its baseline migration + CI + compose. Because Wallet only ever touches
+Settlement through <code>Contract/*</code> and <code>Port/SettlementVoucherPort</code>, the monolith
+side needs no business-logic changes — only the alias in
+<code>services_settlement.yaml</code> (which leaves the monolith) and the messenger routing
+entries (which leave the monolith).</p>
+<p>Extracting Wallet (a later step) then uses the identical recipe, with the extra
+step that the module that hosted its port (Settlement) must now call it
+remotely.</p>
 
 
 
@@ -3449,6 +3791,10 @@ The monolith remains the production host during transition.</p>
     
     
       <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+      
+        <script src="../../javascripts/mermaid-init.js"></script>
       
     
   </body>

@@ -6,23 +6,23 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="A production-oriented Symfony microservices platform evolved from modular monolith architecture, featuring DDD, service isolation, and event-driven communication.">
+        <meta name="description" content="Symfony 8.1 API backend skeleton with modular architecture">
       
       
       
-        <link rel="canonical" href="https://immane.github.io/crud-platform/manual/i18n/">
+        <link rel="canonical" href="https://immane.github.io/crud-skeleton/manual/i18n/">
       
       
         <link rel="prev" href="../extracting-a-service/">
       
       
-        <link rel="next" href="../../ai/context/">
+        <link rel="next" href="../../design/system-architecture/">
       
       
         
-          <link rel="alternate" href="/crud-platform/" hreflang="en">
+          <link rel="alternate" href="/crud-skeleton/" hreflang="en">
         
-          <link rel="alternate" href="/crud-platform/zh/" hreflang="zh">
+          <link rel="alternate" href="/crud-skeleton/zh/" hreflang="zh">
         
       
       
@@ -31,7 +31,7 @@
     
     
       
-        <title>Internationalization - CRUD Platform</title>
+        <title>Internationalization - CRUD Skeleton</title>
       
     
     
@@ -98,7 +98,7 @@
 
 <header class="md-header md-header--shadow" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../.." title="CRUD Platform" class="md-header__button md-logo" aria-label="CRUD Platform" data-md-component="logo">
+    <a href="../.." title="CRUD Skeleton" class="md-header__button md-logo" aria-label="CRUD Skeleton" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -112,7 +112,7 @@
       <div class="md-header__ellipsis">
         <div class="md-header__topic">
           <span class="md-ellipsis">
-            CRUD Platform
+            CRUD Skeleton
           </span>
         </div>
         <div class="md-header__topic" data-md-component="header-topic">
@@ -165,13 +165,13 @@
       <ul class="md-select__list">
         
           <li class="md-select__item">
-            <a href="/crud-platform/" hreflang="en" class="md-select__link">
+            <a href="/crud-skeleton/" hreflang="en" class="md-select__link">
               English
             </a>
           </li>
         
           <li class="md-select__item">
-            <a href="/crud-platform/zh/" hreflang="zh" class="md-select__link">
+            <a href="/crud-skeleton/zh/" hreflang="zh" class="md-select__link">
               中文
             </a>
           </li>
@@ -226,7 +226,7 @@
     
     
       <div class="md-header__source">
-        <a href="https://github.com/immane/crud-platform" title="Go to repository" class="md-source" data-md-component="source">
+        <a href="https://github.com/immane/crud-skeleton" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
@@ -262,17 +262,17 @@
 
 <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../.." title="CRUD Platform" class="md-nav__button md-logo" aria-label="CRUD Platform" data-md-component="logo">
+    <a href="../.." title="CRUD Skeleton" class="md-nav__button md-logo" aria-label="CRUD Skeleton" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
 
     </a>
-    CRUD Platform
+    CRUD Skeleton
   </label>
   
     <div class="md-nav__source">
-      <a href="https://github.com/immane/crud-platform" title="Go to repository" class="md-source" data-md-component="source">
+      <a href="https://github.com/immane/crud-skeleton" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
@@ -316,922 +316,6 @@
       
   
   
-  
-  
-    
-    
-    
-    
-      
-        
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
-        
-          
-          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Design Contracts
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Design Contracts
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/system-architecture/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    System Architecture
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/microservice-transition/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Microservice Transition
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/store-extraction-readiness/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Store Extraction Readiness
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/inventory-extraction-readiness/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Inventory Extraction Readiness
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/payment-extraction-readiness/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Payment Extraction Readiness
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/wallet-extraction-readiness.md" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Wallet Extraction Readiness
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/api-design/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    API Design
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/data-model/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Data Model
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/module-design/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Module Design
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/controller-design/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Controller Design
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/api-documentation/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    API Documentation
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/system-contracts/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    System Contracts
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    
-    
-    
-    
-      
-        
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
-        
-          
-          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Bundles
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Bundles
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/bundles/core/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Core Framework
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/bundles/common/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Common (CMS)
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/bundles/trade/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Trade (E-Commerce)
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/bundles/store/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Store (Multi-Store Operations)
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/bundles/inventory/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Inventory
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/bundles/payment/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Payment
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/bundles/wallet/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Wallet
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/bundles/identity/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Identity (Auth)
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/bundles/wechat/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Wechat (Login + Pay)
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    
-    
-    
-    
-      
-        
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
-        
-          
-          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Research
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Research
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../research/easywechat-6.x-usage/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    EasyWeChat 6.x Usage
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../research/huifu-payment-api/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Huifu Payment API
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    
-    
-    
-    
-      
-        
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
-        
-          
-          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Issues
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_5">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Issues
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../issues/architecture-review-2026-06-26/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Architecture Review 2026-06-26
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-    
-      
-      
-  
-  
     
   
   
@@ -1250,10 +334,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
         
           
-          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
             
   
   
@@ -1271,8 +355,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
-          <label class="md-nav__title" for="__nav_6">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1296,35 +380,7 @@
   <span class="md-ellipsis">
     
   
-    Overview
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../architecture/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Architecture
+    Manual Index
   
 
     
@@ -1353,6 +409,34 @@
     
   
     Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
   
 
     
@@ -1465,6 +549,34 @@
     
   
     Query System
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../authorization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authorization Setup
   
 
     
@@ -1769,33 +881,22 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#1-translation-architecture" class="md-nav__link">
+  <a href="#1-runtime-translations-api-messages" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. Translation Architecture
+        1. Runtime translations (API messages)
       
     </span>
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#2-translation-file-structure" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        2. Translation File Structure
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="2. Translation File Structure">
+    <nav class="md-nav" aria-label="1. Runtime translations (API messages)">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#chinese-example-messageszhyaml" class="md-nav__link">
+  <a href="#11-configuration" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Chinese Example (messages.zh.yaml)
+        1.1 Configuration
       
     </span>
   </a>
@@ -1803,10 +904,32 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#japanese-example-messagesjayaml" class="md-nav__link">
+  <a href="#12-supported-locales" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Japanese Example (messages.ja.yaml)
+        1.2 Supported locales
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#13-key-convention-english-strings-are-the-keys" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.3 Key convention — English strings are the keys
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#14-where-translation-happens" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.4 Where translation happens
       
     </span>
   </a>
@@ -1819,22 +942,33 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#3-adding-new-translation-keys" class="md-nav__link">
+  <a href="#2-locale-detection" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. Adding New Translation Keys
+        2. Locale detection
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="3. Adding New Translation Keys">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-adding-keys-a-new-language" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Adding keys / a new language
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Adding keys / a new language">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#step-1-add-to-english-file" class="md-nav__link">
+  <a href="#31-add-a-new-key-to-existing-locales" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Step 1: Add to English File
+        3.1 Add a new key to existing locales
       
     </span>
   </a>
@@ -1842,32 +976,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#step-2-add-to-other-locales" class="md-nav__link">
+  <a href="#32-add-a-new-language" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Step 2: Add to Other Locales
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#step-3-use-in-code" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 3: Use in Code
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#step-4-clear-translation-cache" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 4: Clear Translation Cache
+        3.2 Add a new language
       
     </span>
   </a>
@@ -1880,22 +992,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#4-translation-flow" class="md-nav__link">
+  <a href="#4-translated-documentation-pipeline" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. Translation Flow
+        4. Translated documentation pipeline
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="4. Translation Flow">
+    <nav class="md-nav" aria-label="4. Translated documentation pipeline">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#exception-interceptor" class="md-nav__link">
+  <a href="#41-scriptstranslate-docspy" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Exception Interceptor
+        4.1 scripts/translate-docs.py
       
     </span>
   </a>
@@ -1903,10 +1015,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#controller-warnings" class="md-nav__link">
+  <a href="#42-scriptsbuild-docssh" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Controller Warnings
+        4.2 scripts/build-docs.sh
       
     </span>
   </a>
@@ -1914,32 +1026,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#auth-errors" class="md-nav__link">
+  <a href="#43-translated-readmes" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Auth Errors
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#jwt-failures" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        JWT Failures
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#entity-field-names" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Entity Field Names
+        4.3 Translated READMEs
       
     </span>
   </a>
@@ -1952,154 +1042,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#5-locale-detection" class="md-nav__link">
+  <a href="#summary" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5. Locale Detection
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="5. Locale Detection">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#1-_locale-query-parameter-highest-priority" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        1. ?_locale= Query Parameter (Highest Priority)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#2-accept-language-header" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        2. Accept-Language Header
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#3-configuration-fallback" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        3. Configuration Fallback
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#sub-requests" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Sub-Requests
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#6-adding-a-new-locale" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        6. Adding a New Locale
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="6. Adding a New Locale">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#step-1-create-translation-file" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 1: Create Translation File
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#step-2-translate-all-keys" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 2: Translate All Keys
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#step-3-add-locale-mapping-if-needed" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 3: Add Locale Mapping (if needed)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#step-4-add-to-validated-locales" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 4: Add to Validated Locales
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#step-5-add-readme-translation-optional" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 5: Add README Translation (Optional)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#step-6-clear-cache-and-test" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 6: Clear Cache and Test
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#7-translation-best-practices" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        7. Translation Best Practices
+        Summary
       
     </span>
   </a>
@@ -2110,6 +1056,1688 @@
   
 </nav>
       
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Design Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Design Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/system-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    System Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/api-design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/data-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/module-design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Module Design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/controller-design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Controller Design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/api-documentation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Documentation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/system-contracts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    System Contracts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/naming-convention/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Naming Convention
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bundles
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Bundles
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/core/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core Framework
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/common/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Common (CMS)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/trade/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Trade (E-Commerce)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/store/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Store (Multi-Store Operations)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/store-catalog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Store Catalog (Target)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/inventory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Inventory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/payment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Payment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/wallet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Wallet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/settlement/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Settlement (Allocation + Finality)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/exchange/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Exchange (Pool-backed Economy)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/identity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Identity (Auth)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/authorization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authorization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/wechat/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Wechat (Login + Pay)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Runbooks
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Runbooks
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/authorization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authorization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/common/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Common
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/core/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/exchange/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Exchange
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/identity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Identity
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/inventory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Inventory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/payment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Payment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/promotion/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Promotion
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/settlement/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Settlement
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/storage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Storage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/store/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Store
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/trade/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Trade
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/wallet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Wallet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/wechat/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    WeChat
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Research
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Research
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../research/easywechat-6.x-usage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    EasyWeChat 6.x Usage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../research/huifu-payment-api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Huifu Payment API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Issues
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Issues
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../issues/architecture-review-2026-06-26/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture Review 2026-06-26
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Testing
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../testing/crud-skeleton-production/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Production Validation Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../testing/crud-skeleton-production/TEST_STRATEGY/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Test Strategy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../testing/crud-skeleton-production/SYSTEM_WALKTHROUGH/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    System Walkthrough And Test Seams
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../testing/crud-skeleton-production/TEST_MATRIX/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Test Matrix
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../testing/crud-skeleton-production/BUSINESS_INVARIANTS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Business Invariants
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../testing/crud-skeleton-production/ARCHITECTURE_TEST_MAPPING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture Test Mapping
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../testing/crud-skeleton-production/FAILURE_MODES/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Failure Modes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../testing/crud-skeleton-production/PRODUCTION_VALIDATION/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Release Validation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../testing/crud-skeleton-production/AI_DEVELOPMENT_PROCESS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI Development Process
+  
+
+    
+  </span>
+  
+  
+
+      </a>
     </li>
   
 
@@ -2203,33 +2831,22 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#1-translation-architecture" class="md-nav__link">
+  <a href="#1-runtime-translations-api-messages" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. Translation Architecture
+        1. Runtime translations (API messages)
       
     </span>
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#2-translation-file-structure" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        2. Translation File Structure
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="2. Translation File Structure">
+    <nav class="md-nav" aria-label="1. Runtime translations (API messages)">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#chinese-example-messageszhyaml" class="md-nav__link">
+  <a href="#11-configuration" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Chinese Example (messages.zh.yaml)
+        1.1 Configuration
       
     </span>
   </a>
@@ -2237,10 +2854,32 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#japanese-example-messagesjayaml" class="md-nav__link">
+  <a href="#12-supported-locales" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Japanese Example (messages.ja.yaml)
+        1.2 Supported locales
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#13-key-convention-english-strings-are-the-keys" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.3 Key convention — English strings are the keys
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#14-where-translation-happens" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.4 Where translation happens
       
     </span>
   </a>
@@ -2253,22 +2892,33 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#3-adding-new-translation-keys" class="md-nav__link">
+  <a href="#2-locale-detection" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. Adding New Translation Keys
+        2. Locale detection
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="3. Adding New Translation Keys">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-adding-keys-a-new-language" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Adding keys / a new language
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Adding keys / a new language">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#step-1-add-to-english-file" class="md-nav__link">
+  <a href="#31-add-a-new-key-to-existing-locales" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Step 1: Add to English File
+        3.1 Add a new key to existing locales
       
     </span>
   </a>
@@ -2276,32 +2926,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#step-2-add-to-other-locales" class="md-nav__link">
+  <a href="#32-add-a-new-language" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Step 2: Add to Other Locales
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#step-3-use-in-code" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 3: Use in Code
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#step-4-clear-translation-cache" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 4: Clear Translation Cache
+        3.2 Add a new language
       
     </span>
   </a>
@@ -2314,22 +2942,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#4-translation-flow" class="md-nav__link">
+  <a href="#4-translated-documentation-pipeline" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. Translation Flow
+        4. Translated documentation pipeline
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="4. Translation Flow">
+    <nav class="md-nav" aria-label="4. Translated documentation pipeline">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#exception-interceptor" class="md-nav__link">
+  <a href="#41-scriptstranslate-docspy" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Exception Interceptor
+        4.1 scripts/translate-docs.py
       
     </span>
   </a>
@@ -2337,10 +2965,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#controller-warnings" class="md-nav__link">
+  <a href="#42-scriptsbuild-docssh" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Controller Warnings
+        4.2 scripts/build-docs.sh
       
     </span>
   </a>
@@ -2348,32 +2976,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#auth-errors" class="md-nav__link">
+  <a href="#43-translated-readmes" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Auth Errors
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#jwt-failures" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        JWT Failures
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#entity-field-names" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Entity Field Names
+        4.3 Translated READMEs
       
     </span>
   </a>
@@ -2386,154 +2992,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#5-locale-detection" class="md-nav__link">
+  <a href="#summary" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5. Locale Detection
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="5. Locale Detection">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#1-_locale-query-parameter-highest-priority" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        1. ?_locale= Query Parameter (Highest Priority)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#2-accept-language-header" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        2. Accept-Language Header
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#3-configuration-fallback" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        3. Configuration Fallback
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#sub-requests" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Sub-Requests
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#6-adding-a-new-locale" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        6. Adding a New Locale
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="6. Adding a New Locale">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#step-1-create-translation-file" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 1: Create Translation File
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#step-2-translate-all-keys" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 2: Translate All Keys
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#step-3-add-locale-mapping-if-needed" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 3: Add Locale Mapping (if needed)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#step-4-add-to-validated-locales" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 4: Add to Validated Locales
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#step-5-add-readme-translation-optional" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 5: Add README Translation (Optional)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#step-6-clear-cache-and-test" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 6: Clear Cache and Test
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#7-translation-best-practices" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        7. Translation Best Practices
+        Summary
       
     </span>
   </a>
@@ -2561,379 +3023,282 @@
 
 
 <h1 id="internationalization-i18n">Internationalization (i18n)<a class="headerlink" href="#internationalization-i18n" title="Permanent link">&para;</a></h1>
-<h2 id="1-translation-architecture">1. Translation Architecture<a class="headerlink" href="#1-translation-architecture" title="Permanent link">&para;</a></h2>
-<p>The platform uses <strong>Symfony Translation</strong> component with 4 supported locales.
-All user-facing messages — errors, success messages, entity/field names, enum
-values, and JWT/WeChat error strings — pass through the translator.</p>
+<p>The project uses Symfony's Translation component for user-facing strings and
+automatically translates the documentation into Chinese via a build pipeline.
+This document covers both systems.</p>
+<hr />
+<h2 id="1-runtime-translations-api-messages">1. Runtime translations (API messages)<a class="headerlink" href="#1-runtime-translations-api-messages" title="Permanent link">&para;</a></h2>
+<h3 id="11-configuration">1.1 Configuration<a class="headerlink" href="#11-configuration" title="Permanent link">&para;</a></h3>
+<p><code>config/packages/translation.yaml</code>:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nt">framework</span><span class="p">:</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">    </span><span class="nt">default_locale</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">zh</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">    </span><span class="nt">translator</span><span class="p">:</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">        </span><span class="nt">default_path</span><span class="p">:</span><span class="w"> </span><span class="s">'%kernel.project_dir%/translations'</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">        </span><span class="nt">providers</span><span class="p">:</span>
+</code></pre></div>
+<ul>
+<li>Translations are loaded from <code>translations/</code>.</li>
+<li><code>default_locale</code> is <code>zh</code> — a fresh request that carries no locale signal
+  resolves to Simplified Chinese.</li>
+<li>Messages are stored as YAML files named <code>messages.{locale}.yaml</code>.</li>
+</ul>
+<h3 id="12-supported-locales">1.2 Supported locales<a class="headerlink" href="#12-supported-locales" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
 <tr>
 <th>Locale</th>
+<th>File</th>
+<th>Language</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>en</code></td>
+<td><code>translations/messages.en.yaml</code></td>
+<td>English</td>
+</tr>
+<tr>
+<td><code>zh</code></td>
+<td><code>translations/messages.zh.yaml</code></td>
+<td>Chinese (Simplified)</td>
+</tr>
+<tr>
+<td><code>zh_Hant</code></td>
+<td><code>translations/messages.zh_Hant.yaml</code></td>
+<td>Chinese (Traditional)</td>
+</tr>
+<tr>
+<td><code>ja</code></td>
+<td><code>translations/messages.ja.yaml</code></td>
+<td>Japanese</td>
+</tr>
+</tbody>
+</table>
+<p>These four codes are the canonical <code>SUPPORTED_LOCALES</code> in
+<code>src/Core/EventListener/LocaleListener.php</code>.</p>
+<h3 id="13-key-convention-english-strings-are-the-keys">1.3 Key convention — English strings are the keys<a class="headerlink" href="#13-key-convention-english-strings-are-the-keys" title="Permanent link">&para;</a></h3>
+<p>Translation keys are the <strong>original English message strings</strong> themselves, not
+symbolic ids:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># translations/messages.en.yaml</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="s">"Wallet"</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="s">"Wallet"</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="c1"># translations/messages.zh.yaml</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="s">"Wallet"</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="s">"钱包"</span>
+</code></pre></div>
+<p><code>messages.en.yaml</code> is therefore mostly documentation — it maps each key to
+itself — because Symfony's translator falls back to returning the key when no
+translation is found. The file documents every translatable string:</p>
+<ul>
+<li>Entity names (<code>Category</code>, <code>Order</code>, <code>Transaction</code>, ...)</li>
+<li>Entity field names (<code>Id</code>, <code>Uuid</code>, <code>Name</code>, <code>Slug</code>, camelCase → plain text)</li>
+<li>Error / status messages used as exception keys</li>
+</ul>
+<h3 id="14-where-translation-happens">1.4 Where translation happens<a class="headerlink" href="#14-where-translation-happens" title="Permanent link">&para;</a></h3>
+<p>The framework reads a message through <code>$translator-&gt;trans($key)</code> at these
+points:</p>
+<table>
+<thead>
+<tr>
+<th>Site</th>
+<th>Mechanism</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Exception responses</td>
+<td><code>ExceptionInterceptor</code> — every uncaught exception on <code>/api/*</code> is routed through <code>$this-&gt;translator-&gt;trans($exception-&gt;getMessage())</code>; the exception message is the key</td>
+</tr>
+<tr>
+<td>Controller errors</td>
+<td><code>RestController::warning()</code>, <code>AuthController::error()</code>, <code>OtpController::error()</code>, <code>LoginController::error()</code> all pass through the translator</td>
+</tr>
+<tr>
+<td>JWT failures</td>
+<td><code>JwtAuthenticator::onAuthenticationFailure()</code> translates the error before returning JSON</td>
+</tr>
+<tr>
+<td>Entity metadata</td>
+<td><code>/system/entities/{entityName}</code> translates field descriptions (e.g. <code>createdAt</code> → <code>创建时间</code>)</td>
+</tr>
+</tbody>
+</table>
+<p>So a service throwing <code>new \RuntimeException('Insufficient funds')</code> is rendered
+in the request locale if <code>"Insufficient funds"</code> exists in the corresponding
+locale file.</p>
+<h2 id="2-locale-detection">2. Locale detection<a class="headerlink" href="#2-locale-detection" title="Permanent link">&para;</a></h2>
+<p><code>src/Core/EventListener/LocaleListener.php</code> runs at <code>kernel.request</code> (priority
+20) and applies the following resolution order:</p>
+<pre class="mermaid"><code>flowchart TD
+    A[Request] --&gt; B{_locale query param?}
+    B -- yes, supported --&gt; C[setLocale canonical]
+    B -- yes, unsupported --&gt; D[silently ignored&lt;br/&gt;request keeps default locale]
+    B -- no --&gt; E{Accept-Language header?}
+    E -- yes --&gt; F[parse by q-weight,&lt;br/&gt;highest supported wins]
+    E -- no --&gt; G[request keeps default_locale `zh`]</code></pre>
+<ol>
+<li><strong><code>?_locale=</code> query parameter</strong> — highest priority. A supported value
+   (<code>en</code>, <code>zh</code>, <code>zh_Hant</code>, <code>ja</code>) is applied directly; an unsupported one is
+   ignored (the request keeps its existing locale). This also short-circuits
+   the header check.</li>
+<li><strong><code>Accept-Language</code> header</strong> — parsed (q-weight respected, highest first)
+   and mapped to a canonical locale:</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Header value</th>
+<th>Canonical</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>zh-CN</code>, <code>zh-Hans</code></td>
+<td><code>zh</code></td>
+</tr>
+<tr>
+<td><code>zh-TW</code>, <code>zh-HK</code>, <code>zh-Hant</code>, <code>zh-Hant-TW</code></td>
+<td><code>zh_Hant</code></td>
+</tr>
+<tr>
+<td><code>en-US</code>, <code>en-GB</code></td>
+<td><code>en</code></td>
+</tr>
+<tr>
+<td><code>ja-JP</code>, <code>ja_JP</code></td>
+<td><code>ja</code></td>
+</tr>
+</tbody>
+</table>
+<p>A bare <code>zh</code>/<code>en</code>/<code>ja</code>/<code>zh_Hant</code> also resolves (they are in
+   <code>SUPPORTED_LOCALES</code> directly). The mapping table is <code>LOCALE_MAP</code> in the
+   listener.
+3. <strong>Fallback</strong> — if nothing matches, the request keeps the framework
+   <code>default_locale</code>, configured as <code>zh</code>.</p>
+<blockquote>
+<p>Note: the listener's PHPDoc and the README (§"Internationalization") say the
+fallback is <code>en</code>. The actual runtime config in
+<code>config/packages/translation.yaml</code> sets <code>default_locale: zh</code>, so unsupported
+or absent locale signals currently resolve to <strong>Simplified Chinese</strong>, not
+English. If you change <code>default_locale</code>, update both the config and the
+comment to stay consistent.</p>
+</blockquote>
+<p>Only main requests are processed (<code>$event-&gt;isMainRequest()</code>); subrequests
+(ESI etc.) are left untouched.</p>
+<h2 id="3-adding-keys-a-new-language">3. Adding keys / a new language<a class="headerlink" href="#3-adding-keys-a-new-language" title="Permanent link">&para;</a></h2>
+<h3 id="31-add-a-new-key-to-existing-locales">3.1 Add a new key to existing locales<a class="headerlink" href="#31-add-a-new-key-to-existing-locales" title="Permanent link">&para;</a></h3>
+<ol>
+<li>Use the English string as the key in <code>messages.en.yaml</code> (key = value).</li>
+<li>Add the same key with the translated value to <code>messages.zh.yaml</code>,
+   <code>messages.zh_Hant.yaml</code>, <code>messages.ja.yaml</code>.</li>
+<li>Throw the exception / return the message from the service layer; the
+   existing interceptor/controller paths translate it for you.</li>
+</ol>
+<h3 id="32-add-a-new-language">3.2 Add a new language<a class="headerlink" href="#32-add-a-new-language" title="Permanent link">&para;</a></h3>
+<ol>
+<li>Create <code>translations/messages.{locale}.yaml</code>. Symfony auto-discovers files
+   in the <code>translations/</code> directory — no config registration is required.</li>
+<li>Add the locale code to <code>SUPPORTED_LOCALES</code> and, if you want verbose codes
+   like <code>xx-XX</code> to map to it, add an entry to <code>LOCALE_MAP</code> in
+   <code>src/Core/EventListener/LocaleListener.php</code>.</li>
+</ol>
+<h2 id="4-translated-documentation-pipeline">4. Translated documentation pipeline<a class="headerlink" href="#4-translated-documentation-pipeline" title="Permanent link">&para;</a></h2>
+<p>The docs (<code>docs/</code>, English Markdown) are mirrored to <code>docs-zh/</code> (Chinese) by a
+script, and both are built into a bilingual static site with mkdocs.</p>
+<h3 id="41-scriptstranslate-docspy">4.1 <code>scripts/translate-docs.py</code><a class="headerlink" href="#41-scriptstranslate-docspy" title="Permanent link">&para;</a></h3>
+<p>Mirrors <code>docs/</code> → <code>docs-zh/</code> using the free <code>deep-translator</code> Google endpoint
+(no API key).</p>
+<ul>
+<li><strong>Prerequisite:</strong> <code>pip install deep-translator</code></li>
+<li><strong>Usage:</strong>
+  <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>python<span class="w"> </span>scripts/translate-docs.py<span class="w">                          </span><span class="c1"># full mirror</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>python<span class="w"> </span>scripts/translate-docs.py<span class="w"> </span>design/bundles/payment.md<span class="w"> </span><span class="c1"># single file</span>
+</code></pre></div></li>
+<li>Skips the <code>research/</code> and <code>ai/</code> directories.</li>
+<li>Preserves: YAML frontmatter, fenced code blocks, inline code, HTML comments,
+  images, and links — each is "stashed" before translation and restored after,
+  so code and URLs are never mangled.</li>
+<li>Splits the body into paragraphs and translates in chunks (&lt; 4500 chars to
+  respect the free API limit). A failed chunk is kept as the original English
+  with a <code>WARN</code> line.</li>
+</ul>
+<h3 id="42-scriptsbuild-docssh">4.2 <code>scripts/build-docs.sh</code><a class="headerlink" href="#42-scriptsbuild-docssh" title="Permanent link">&para;</a></h3>
+<p>Full bilingual build (<code>bash scripts/build-docs.sh</code>). It:</p>
+<ol>
+<li>Runs <code>translate-docs.py</code> (docs → docs-zh).</li>
+<li>Copies the binary/text assets that should not be translated (<code>assets/</code>,
+   <code>research/</code>, <code>openapi/</code>, <code>ai/</code>, <code>javascripts/</code>) from <code>docs/</code> to <code>docs-zh/</code>.</li>
+<li>Generates <strong>two</strong> mkdocs configs from the single <code>mkdocs.yml</code>:</li>
+<li><code>mkdocs-en.yml</code> — English, <code>site_dir: site</code>, adds language <code>alternate</code>
+     links (<code>/crud-skeleton/</code> ↔ <code>/crud-skeleton/zh/</code>).</li>
+<li><code>mkdocs-zh.yml</code> — <code>docs_dir: docs-zh</code>, <code>site_dir: site/zh</code>,
+     theme <code>language: zh</code>, nav labels translated via a static <code>MAP</code>
+     (<code>Home</code> → <code>首页</code>, <code>Wallet</code> → <code>Wallet (钱包)</code>, ...) with a
+     Google-translator fallback for unknown short labels.</li>
+<li>Builds both, <code>mkdocs build -f ... --clean</code>.</li>
+</ol>
+<p>Output:</p>
+<table>
+<thead>
+<tr>
+<th>Site</th>
+<th>Config</th>
+<th>URL (local preview)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>English</td>
+<td><code>mkdocs-en.yml</code></td>
+<td><code>site/index.html</code></td>
+</tr>
+<tr>
+<td>Chinese</td>
+<td><code>mkdocs-zh.yml</code></td>
+<td><code>site/zh/index.html</code></td>
+</tr>
+</tbody>
+</table>
+<p>The source of truth for topics/nav is <code>mkdocs.yml</code>
+(<code>site_name: CRUD Skeleton</code>, Material theme, Mermaid support via
+<code>extra_javascript</code>). The generated <code>mkdocs-en.yml</code> / <code>mkdocs-zh.yml</code> are
+build artifacts — edit <code>mkdocs.yml</code> (and the <code>MAP</code> in <code>build-docs.sh</code>) and
+re-run the script.</p>
+<h3 id="43-translated-readmes">4.3 Translated READMEs<a class="headerlink" href="#43-translated-readmes" title="Permanent link">&para;</a></h3>
+<p>The repo also ships hand-maintained translated README variants (see README
+§"Internationalization"):</p>
+<table>
+<thead>
+<tr>
 <th>Language</th>
 <th>File</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>en</code></td>
-<td>English (default, identity mapping)</td>
-<td><code>translations/messages.en.yaml</code></td>
-</tr>
-<tr>
-<td><code>zh</code></td>
 <td>Chinese (Simplified)</td>
-<td><code>translations/messages.zh.yaml</code></td>
+<td><code>README.zh-cn.md</code></td>
 </tr>
 <tr>
-<td><code>zh_Hant</code></td>
 <td>Chinese (Traditional)</td>
-<td><code>translations/messages.zh_Hant.yaml</code></td>
+<td><code>README.zh-hant.md</code></td>
 </tr>
 <tr>
-<td><code>ja</code></td>
 <td>Japanese</td>
-<td><code>translations/messages.ja.yaml</code></td>
+<td><code>README.ja.md</code></td>
 </tr>
 </tbody>
 </table>
-<p><strong>~280 translation keys</strong> per locale.</p>
-<h2 id="2-translation-file-structure">2. Translation File Structure<a class="headerlink" href="#2-translation-file-structure" title="Permanent link">&para;</a></h2>
-<p>All translation files are YAML-based under <code>translations/</code>:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># translations/messages.en.yaml</span>
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="c1"># Entity names (19 keys)</span>
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="nt">Category</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Category</span>
-<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="nt">Tag</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Tag</span>
-<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="nt">Content</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Content</span>
-<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="nt">Comment</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Comment</span>
-<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="nt">Page</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Page</span>
-<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="nt">Media</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Media</span>
-<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="nt">Setting</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Setting</span>
-<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="nt">Picture</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Picture</span>
-<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="nt">Product</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Product</span>
-<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="nt">Specification</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Specification</span>
-<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="nt">Order</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Order</span>
-<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="nt">Wallet</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Wallet</span>
-<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a><span class="nt">Invoice</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Invoice</span>
-<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a><span class="nt">Material</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Material</span>
-<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a><span class="nt">Promotion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Promotion</span>
-<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a><span class="c1"># ... etc</span>
-<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>
-<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a><span class="c1"># Field names (96 keys)</span>
-<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a><span class="s">"Name"</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Name</span>
-<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a><span class="s">"Title"</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Title</span>
-<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a><span class="s">"Price"</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Price</span>
-<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a><span class="s">"Status"</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Status</span>
-<a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a><span class="s">"Created</span><span class="nv"> </span><span class="s">At"</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Created At</span>
-<a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a><span class="s">"Updated</span><span class="nv"> </span><span class="s">At"</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Updated At</span>
-<a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a><span class="c1"># ... etc</span>
-<a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a>
-<a id="__codelineno-0-30" name="__codelineno-0-30" href="#__codelineno-0-30"></a><span class="c1"># Status/enum values (17 keys)</span>
-<a id="__codelineno-0-31" name="__codelineno-0-31" href="#__codelineno-0-31"></a><span class="s">"Active"</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Active</span>
-<a id="__codelineno-0-32" name="__codelineno-0-32" href="#__codelineno-0-32"></a><span class="s">"Inactive"</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Inactive</span>
-<a id="__codelineno-0-33" name="__codelineno-0-33" href="#__codelineno-0-33"></a><span class="s">"Draft"</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Draft</span>
-<a id="__codelineno-0-34" name="__codelineno-0-34" href="#__codelineno-0-34"></a><span class="s">"Pending"</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Pending</span>
-<a id="__codelineno-0-35" name="__codelineno-0-35" href="#__codelineno-0-35"></a><span class="s">"Paid"</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Paid</span>
-<a id="__codelineno-0-36" name="__codelineno-0-36" href="#__codelineno-0-36"></a><span class="s">"Refunded"</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Refunded</span>
-<a id="__codelineno-0-37" name="__codelineno-0-37" href="#__codelineno-0-37"></a><span class="c1"># ... etc</span>
-<a id="__codelineno-0-38" name="__codelineno-0-38" href="#__codelineno-0-38"></a>
-<a id="__codelineno-0-39" name="__codelineno-0-39" href="#__codelineno-0-39"></a><span class="c1"># Auth/JWT messages</span>
-<a id="__codelineno-0-40" name="__codelineno-0-40" href="#__codelineno-0-40"></a><span class="s">"Invalid</span><span class="nv"> </span><span class="s">credentials."</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Invalid credentials.</span>
-<a id="__codelineno-0-41" name="__codelineno-0-41" href="#__codelineno-0-41"></a><span class="s">"Account</span><span class="nv"> </span><span class="s">is</span><span class="nv"> </span><span class="s">disabled."</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Account is disabled.</span>
-<a id="__codelineno-0-42" name="__codelineno-0-42" href="#__codelineno-0-42"></a><span class="s">"Token</span><span class="nv"> </span><span class="s">has</span><span class="nv"> </span><span class="s">expired."</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Token has expired.</span>
-<a id="__codelineno-0-43" name="__codelineno-0-43" href="#__codelineno-0-43"></a><span class="s">"Token</span><span class="nv"> </span><span class="s">is</span><span class="nv"> </span><span class="s">invalid."</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Token is invalid.</span>
-<a id="__codelineno-0-44" name="__codelineno-0-44" href="#__codelineno-0-44"></a>
-<a id="__codelineno-0-45" name="__codelineno-0-45" href="#__codelineno-0-45"></a><span class="c1"># Core framework messages</span>
-<a id="__codelineno-0-46" name="__codelineno-0-46" href="#__codelineno-0-46"></a><span class="s">"Entity</span><span class="nv"> </span><span class="s">is</span><span class="nv"> </span><span class="s">not</span><span class="nv"> </span><span class="s">found"</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Entity is not found</span>
-<a id="__codelineno-0-47" name="__codelineno-0-47" href="#__codelineno-0-47"></a><span class="s">"Success"</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Success</span>
-<a id="__codelineno-0-48" name="__codelineno-0-48" href="#__codelineno-0-48"></a><span class="s">"Invalid</span><span class="nv"> </span><span class="s">JSON"</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Invalid JSON</span>
-<a id="__codelineno-0-49" name="__codelineno-0-49" href="#__codelineno-0-49"></a><span class="s">"Property</span><span class="nv"> </span><span class="s">{property}</span><span class="nv"> </span><span class="s">is</span><span class="nv"> </span><span class="s">required"</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Property {property} is required</span>
-<a id="__codelineno-0-50" name="__codelineno-0-50" href="#__codelineno-0-50"></a>
-<a id="__codelineno-0-51" name="__codelineno-0-51" href="#__codelineno-0-51"></a><span class="c1"># Wallet messages</span>
-<a id="__codelineno-0-52" name="__codelineno-0-52" href="#__codelineno-0-52"></a><span class="s">"Insufficient</span><span class="nv"> </span><span class="s">funds"</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Insufficient funds</span>
-<a id="__codelineno-0-53" name="__codelineno-0-53" href="#__codelineno-0-53"></a><span class="s">"Cannot</span><span class="nv"> </span><span class="s">transfer</span><span class="nv"> </span><span class="s">to</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">same</span><span class="nv"> </span><span class="s">wallet"</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Cannot transfer to the same wallet</span>
-<a id="__codelineno-0-54" name="__codelineno-0-54" href="#__codelineno-0-54"></a><span class="s">"Wallet</span><span class="nv"> </span><span class="s">is</span><span class="nv"> </span><span class="s">frozen"</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Wallet is frozen</span>
-<a id="__codelineno-0-55" name="__codelineno-0-55" href="#__codelineno-0-55"></a>
-<a id="__codelineno-0-56" name="__codelineno-0-56" href="#__codelineno-0-56"></a><span class="c1"># Payment messages</span>
-<a id="__codelineno-0-57" name="__codelineno-0-57" href="#__codelineno-0-57"></a><span class="s">"Payment</span><span class="nv"> </span><span class="s">gateway</span><span class="nv"> </span><span class="s">not</span><span class="nv"> </span><span class="s">found"</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Payment gateway not found</span>
-<a id="__codelineno-0-58" name="__codelineno-0-58" href="#__codelineno-0-58"></a><span class="s">"Payment</span><span class="nv"> </span><span class="s">already</span><span class="nv"> </span><span class="s">processed"</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Payment already processed</span>
-<a id="__codelineno-0-59" name="__codelineno-0-59" href="#__codelineno-0-59"></a><span class="s">"Invoice</span><span class="nv"> </span><span class="s">is</span><span class="nv"> </span><span class="s">not</span><span class="nv"> </span><span class="s">in</span><span class="nv"> </span><span class="s">payable</span><span class="nv"> </span><span class="s">state"</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Invoice is not in payable state</span>
-<a id="__codelineno-0-60" name="__codelineno-0-60" href="#__codelineno-0-60"></a>
-<a id="__codelineno-0-61" name="__codelineno-0-61" href="#__codelineno-0-61"></a><span class="c1"># Media/Storage messages</span>
-<a id="__codelineno-0-62" name="__codelineno-0-62" href="#__codelineno-0-62"></a><span class="s">"File</span><span class="nv"> </span><span class="s">is</span><span class="nv"> </span><span class="s">too</span><span class="nv"> </span><span class="s">large"</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">File is too large</span>
-<a id="__codelineno-0-63" name="__codelineno-0-63" href="#__codelineno-0-63"></a><span class="s">"Unsupported</span><span class="nv"> </span><span class="s">file</span><span class="nv"> </span><span class="s">type"</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Unsupported file type</span>
-<a id="__codelineno-0-64" name="__codelineno-0-64" href="#__codelineno-0-64"></a><span class="s">"Category</span><span class="nv"> </span><span class="s">is</span><span class="nv"> </span><span class="s">not</span><span class="nv"> </span><span class="s">found"</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Category is not found</span>
-<a id="__codelineno-0-65" name="__codelineno-0-65" href="#__codelineno-0-65"></a>
-<a id="__codelineno-0-66" name="__codelineno-0-66" href="#__codelineno-0-66"></a><span class="c1"># Expression parser messages</span>
-<a id="__codelineno-0-67" name="__codelineno-0-67" href="#__codelineno-0-67"></a><span class="s">"Unexpected</span><span class="nv"> </span><span class="s">token"</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Unexpected token</span>
-<a id="__codelineno-0-68" name="__codelineno-0-68" href="#__codelineno-0-68"></a><span class="s">"Unknown</span><span class="nv"> </span><span class="s">operator"</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Unknown operator</span>
-</code></pre></div>
-<h3 id="chinese-example-messageszhyaml">Chinese Example (<code>messages.zh.yaml</code>)<a class="headerlink" href="#chinese-example-messageszhyaml" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nt">Category</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">分类</span>
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="nt">Tag</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">标签</span>
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="nt">Content</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">内容</span>
-<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="nt">Comment</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">评论</span>
-<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="s">"Insufficient</span><span class="nv"> </span><span class="s">funds"</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">余额不足</span>
-<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="s">"Invalid</span><span class="nv"> </span><span class="s">credentials."</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">用户名或密码错误</span>
-<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="s">"Token</span><span class="nv"> </span><span class="s">has</span><span class="nv"> </span><span class="s">expired."</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">令牌已过期</span>
-<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="c1"># ... 280+ keys</span>
-</code></pre></div>
-<h3 id="japanese-example-messagesjayaml">Japanese Example (<code>messages.ja.yaml</code>)<a class="headerlink" href="#japanese-example-messagesjayaml" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nt">Category</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">カテゴリ</span>
-<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="nt">Tag</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">タグ</span>
-<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="nt">Content</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">コンテンツ</span>
-<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="nt">Comment</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">コメント</span>
-<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="s">"Insufficient</span><span class="nv"> </span><span class="s">funds"</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">残高不足</span>
-<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="s">"Invalid</span><span class="nv"> </span><span class="s">credentials."</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ログイン情報が無効です</span>
-<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="s">"Token</span><span class="nv"> </span><span class="s">has</span><span class="nv"> </span><span class="s">expired."</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">トークンの有効期限が切れています</span>
-<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="c1"># ... 280+ keys</span>
-</code></pre></div>
-<h2 id="3-adding-new-translation-keys">3. Adding New Translation Keys<a class="headerlink" href="#3-adding-new-translation-keys" title="Permanent link">&para;</a></h2>
-<h3 id="step-1-add-to-english-file">Step 1: Add to English File<a class="headerlink" href="#step-1-add-to-english-file" title="Permanent link">&para;</a></h3>
-<p>Add the key to <code>translations/messages.en.yaml</code>. English keys usually mirror the
-message value (identity mapping):</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># New key</span>
-<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="s">"Order</span><span class="nv"> </span><span class="s">cannot</span><span class="nv"> </span><span class="s">be</span><span class="nv"> </span><span class="s">cancelled</span><span class="nv"> </span><span class="s">in</span><span class="nv"> </span><span class="s">current</span><span class="nv"> </span><span class="s">status"</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Order cannot be cancelled in current status</span>
-</code></pre></div>
-<h3 id="step-2-add-to-other-locales">Step 2: Add to Other Locales<a class="headerlink" href="#step-2-add-to-other-locales" title="Permanent link">&para;</a></h3>
-<p>Add translations to all other locale files:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c1"># messages.zh.yaml</span>
-<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="s">"Order</span><span class="nv"> </span><span class="s">cannot</span><span class="nv"> </span><span class="s">be</span><span class="nv"> </span><span class="s">cancelled</span><span class="nv"> </span><span class="s">in</span><span class="nv"> </span><span class="s">current</span><span class="nv"> </span><span class="s">status"</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">当前状态的订单无法取消</span>
-<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>
-<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="c1"># messages.zh_Hant.yaml</span>
-<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="s">"Order</span><span class="nv"> </span><span class="s">cannot</span><span class="nv"> </span><span class="s">be</span><span class="nv"> </span><span class="s">cancelled</span><span class="nv"> </span><span class="s">in</span><span class="nv"> </span><span class="s">current</span><span class="nv"> </span><span class="s">status"</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">當前狀態的訂單無法取消</span>
-<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>
-<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="c1"># messages.ja.yaml</span>
-<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="s">"Order</span><span class="nv"> </span><span class="s">cannot</span><span class="nv"> </span><span class="s">be</span><span class="nv"> </span><span class="s">cancelled</span><span class="nv"> </span><span class="s">in</span><span class="nv"> </span><span class="s">current</span><span class="nv"> </span><span class="s">status"</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">現在のステータスでは注文をキャンセルできません</span>
-</code></pre></div>
-<h3 id="step-3-use-in-code">Step 3: Use in Code<a class="headerlink" href="#step-3-use-in-code" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="x">// In a service (throw exception — translated by ExceptionInterceptor)</span>
-<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="x">throw new \RuntimeException('Order cannot be cancelled in current status');</span>
-<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>
-<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="x">// In a controller (warning — translated by RestController)</span>
-<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="x">return $this-&gt;warning('Order cannot be cancelled in current status');</span>
-</code></pre></div>
-<h3 id="step-4-clear-translation-cache">Step 4: Clear Translation Cache<a class="headerlink" href="#step-4-clear-translation-cache" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>php<span class="w"> </span>bin/console<span class="w"> </span>cache:clear
-</code></pre></div>
-<h2 id="4-translation-flow">4. Translation Flow<a class="headerlink" href="#4-translation-flow" title="Permanent link">&para;</a></h2>
-<p>All user-facing messages pass through the translator at specific integration
-points:</p>
-<h3 id="exception-interceptor">Exception Interceptor<a class="headerlink" href="#exception-interceptor" title="Permanent link">&para;</a></h3>
-<p><code>packages/platform-kernel/src/EventListener/ExceptionInterceptor.php</code></p>
-<p>Uncaught exceptions on API routes are caught and their messages are translated:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="x">final class ExceptionInterceptor</span>
-<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="x">{</span>
-<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="x">    public function __construct(</span>
-<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="x">        private TranslatorInterface $translator,</span>
-<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="x">    ) {}</span>
-<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>
-<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="x">    public function onKernelException(ExceptionEvent $event): void</span>
-<a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="x">    {</span>
-<a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="x">        $exception = $event-&gt;getThrowable();</span>
-<a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a><span class="x">        $translatedMessage = $this-&gt;translator-&gt;trans($exception-&gt;getMessage());</span>
-<a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a>
-<a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a><span class="x">        $response = new JsonResponse([</span>
-<a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a><span class="x">            'code' =&gt; 500,</span>
-<a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a><span class="x">            'message' =&gt; $translatedMessage,</span>
-<a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a><span class="x">        ], 500);</span>
-<a id="__codelineno-7-16" name="__codelineno-7-16" href="#__codelineno-7-16"></a><span class="x">        $event-&gt;setResponse($response);</span>
-<a id="__codelineno-7-17" name="__codelineno-7-17" href="#__codelineno-7-17"></a><span class="x">    }</span>
-<a id="__codelineno-7-18" name="__codelineno-7-18" href="#__codelineno-7-18"></a><span class="x">}</span>
-</code></pre></div>
-<h3 id="controller-warnings">Controller Warnings<a class="headerlink" href="#controller-warnings" title="Permanent link">&para;</a></h3>
-<p><code>packages/platform-kernel/src/Controller/RestController.php</code></p>
-<p>Controller warning/error methods translate messages:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="x">class RestController</span>
-<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="x">{</span>
-<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="x">    #[Required]</span>
-<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="x">    public function setTranslator(TranslatorInterface $translator): void</span>
-<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="x">    {</span>
-<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="x">        $this-&gt;translator = $translator;</span>
-<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="x">    }</span>
-<a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>
-<a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a><span class="x">    protected function warning(string $message, int $code = 400, array $data = []): JsonResponse</span>
-<a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a><span class="x">    {</span>
-<a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a><span class="x">        return new JsonResponse([</span>
-<a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a><span class="x">            'code' =&gt; $code,</span>
-<a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a><span class="x">            'message' =&gt; $this-&gt;translator-&gt;trans($message),</span>
-<a id="__codelineno-8-14" name="__codelineno-8-14" href="#__codelineno-8-14"></a><span class="x">            'data' =&gt; $data,</span>
-<a id="__codelineno-8-15" name="__codelineno-8-15" href="#__codelineno-8-15"></a><span class="x">        ], $code);</span>
-<a id="__codelineno-8-16" name="__codelineno-8-16" href="#__codelineno-8-16"></a><span class="x">    }</span>
-<a id="__codelineno-8-17" name="__codelineno-8-17" href="#__codelineno-8-17"></a><span class="x">}</span>
-</code></pre></div>
-<h3 id="auth-errors">Auth Errors<a class="headerlink" href="#auth-errors" title="Permanent link">&para;</a></h3>
-<p><code>apps/identity/src/Main/Controller/AuthController.php</code></p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="x">class AuthController extends RestController</span>
-<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="x">{</span>
-<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="x">    private function error(string $message, int $code = 400): JsonResponse</span>
-<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="x">    {</span>
-<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="x">        return new JsonResponse([</span>
-<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="x">            'code' =&gt; $code,</span>
-<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="x">            'message' =&gt; $this-&gt;translator-&gt;trans($message),</span>
-<a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a><span class="x">        ], $code);</span>
-<a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a><span class="x">    }</span>
-<a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a><span class="x">}</span>
-</code></pre></div>
-<h3 id="jwt-failures">JWT Failures<a class="headerlink" href="#jwt-failures" title="Permanent link">&para;</a></h3>
-<p><code>apps/identity/src/Main/Security/JwtAuthenticator.php</code></p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="x">class JwtAuthenticator extends AbstractAuthenticator</span>
-<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="x">{</span>
-<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="x">    public function onAuthenticationFailure(Request $request, AuthenticationException $exception): ?Response</span>
-<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="x">    {</span>
-<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="x">        $messageKey = match ($exception-&gt;getMessageKey()) {</span>
-<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span class="x">            'Expired JWT Token' =&gt; 'Token has expired.',</span>
-<a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a><span class="x">            default =&gt; 'Invalid credentials.',</span>
-<a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a><span class="x">        };</span>
-<a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a>
-<a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a><span class="x">        return new JsonResponse([</span>
-<a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a><span class="x">            'code' =&gt; 401,</span>
-<a id="__codelineno-10-12" name="__codelineno-10-12" href="#__codelineno-10-12"></a><span class="x">            'message' =&gt; $this-&gt;translator-&gt;trans($messageKey),</span>
-<a id="__codelineno-10-13" name="__codelineno-10-13" href="#__codelineno-10-13"></a><span class="x">        ], 401);</span>
-<a id="__codelineno-10-14" name="__codelineno-10-14" href="#__codelineno-10-14"></a><span class="x">    }</span>
-<a id="__codelineno-10-15" name="__codelineno-10-15" href="#__codelineno-10-15"></a><span class="x">}</span>
-</code></pre></div>
-<h3 id="entity-field-names">Entity Field Names<a class="headerlink" href="#entity-field-names" title="Permanent link">&para;</a></h3>
-<p><code>packages/platform-kernel/src/Controller/System/EntityController.php</code></p>
-<p>The system introspection endpoint translates field names:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="x">class EntityController</span>
-<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="x">{</span>
-<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="x">    #[Route('/system/entities/{entityName}', methods: ['GET'])]</span>
-<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="x">    public function detail(string $entityName): JsonResponse</span>
-<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="x">    {</span>
-<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a><span class="x">        // ...</span>
-<a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a><span class="x">        $field['name'] = $this-&gt;translator-&gt;trans($field-&gt;getName());</span>
-<a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a><span class="x">        // ...</span>
-<a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a><span class="x">    }</span>
-<a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a><span class="x">}</span>
-</code></pre></div>
-<h2 id="5-locale-detection">5. Locale Detection<a class="headerlink" href="#5-locale-detection" title="Permanent link">&para;</a></h2>
-<p><code>packages/platform-kernel/src/EventListener/LocaleListener.php</code></p>
-<p>Registered at <code>kernel.request</code> priority 20. Detection priority:</p>
-<h3 id="1-_locale-query-parameter-highest-priority">1. <code>?_locale=</code> Query Parameter (Highest Priority)<a class="headerlink" href="#1-_locale-query-parameter-highest-priority" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>GET /api/v1/app/products?_locale=ja
-</code></pre></div>
-<p>Explicit override. Takes precedence over everything else.</p>
-<h3 id="2-accept-language-header">2. <code>Accept-Language</code> Header<a class="headerlink" href="#2-accept-language-header" title="Permanent link">&para;</a></h3>
-<p>Browser-sent header with quality factor ordering:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>Accept-Language: ja-JP,ja;q=0.9,zh-CN;q=0.8,en-US;q=0.5
-</code></pre></div>
-<p>Mapping rules:
-| Header Value | Locale |
-|-------------|--------|
-| <code>zh-CN</code>, <code>zh-Hans</code>, <code>zh</code> | <code>zh</code> |
-| <code>zh-TW</code>, <code>zh-HK</code>, <code>zh-Hant</code> | <code>zh_Hant</code> |
-| <code>ja-JP</code>, <code>ja</code> | <code>ja</code> |
-| <code>en-US</code>, <code>en-GB</code>, <code>en</code> | <code>en</code> |</p>
-<h3 id="3-configuration-fallback">3. Configuration Fallback<a class="headerlink" href="#3-configuration-fallback" title="Permanent link">&para;</a></h3>
-<p><code>config/packages/translation.yaml</code>:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="nt">framework</span><span class="p">:</span>
-<a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="w">    </span><span class="nt">default_locale</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">en</span>
-<a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="w">    </span><span class="nt">translator</span><span class="p">:</span>
-<a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="w">        </span><span class="nt">default_path</span><span class="p">:</span><span class="w"> </span><span class="s">'%kernel.project_dir%/translations'</span>
-<a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a><span class="w">        </span><span class="nt">fallbacks</span><span class="p">:</span>
-<a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a><span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">en</span>
-</code></pre></div>
-<p>If neither query param nor Accept-Language header matches, <code>en</code> is used.</p>
-<h3 id="sub-requests">Sub-Requests<a class="headerlink" href="#sub-requests" title="Permanent link">&para;</a></h3>
-<p>Sub-requests (ESI, fragments) are ignored by LocaleListener — they inherit
-the master request locale.</p>
-<h2 id="6-adding-a-new-locale">6. Adding a New Locale<a class="headerlink" href="#6-adding-a-new-locale" title="Permanent link">&para;</a></h2>
-<h3 id="step-1-create-translation-file">Step 1: Create Translation File<a class="headerlink" href="#step-1-create-translation-file" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="c1"># Example: Adding Korean</span>
-<a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>cp<span class="w"> </span>translations/messages.en.yaml<span class="w"> </span>translations/messages.ko.yaml
-</code></pre></div>
-<h3 id="step-2-translate-all-keys">Step 2: Translate All Keys<a class="headerlink" href="#step-2-translate-all-keys" title="Permanent link">&para;</a></h3>
-<p>Translate all ~280 keys in the new file. Start by copying the English file
-and replacing each value with the target language translation.</p>
-<h3 id="step-3-add-locale-mapping-if-needed">Step 3: Add Locale Mapping (if needed)<a class="headerlink" href="#step-3-add-locale-mapping-if-needed" title="Permanent link">&para;</a></h3>
-<p>If the new locale requires special <code>Accept-Language</code> header parsing, update
-<code>LocaleListener.php</code>:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="x">// packages/platform-kernel/src/EventListener/LocaleListener.php</span>
-<a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="x">class LocaleListener</span>
-<a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="x">{</span>
-<a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="x">    private function detectLocale(Request $request): string</span>
-<a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a><span class="x">    {</span>
-<a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a><span class="x">        // 1. Query parameter</span>
-<a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a><span class="x">        if ($locale = $request-&gt;query-&gt;get('_locale')) {</span>
-<a id="__codelineno-16-8" name="__codelineno-16-8" href="#__codelineno-16-8"></a><span class="x">            if (in_array($locale, ['en', 'zh', 'zh_Hant', 'ja', 'ko'])) {</span>
-<a id="__codelineno-16-9" name="__codelineno-16-9" href="#__codelineno-16-9"></a><span class="x">                return $locale;</span>
-<a id="__codelineno-16-10" name="__codelineno-16-10" href="#__codelineno-16-10"></a><span class="x">            }</span>
-<a id="__codelineno-16-11" name="__codelineno-16-11" href="#__codelineno-16-11"></a><span class="x">        }</span>
-<a id="__codelineno-16-12" name="__codelineno-16-12" href="#__codelineno-16-12"></a>
-<a id="__codelineno-16-13" name="__codelineno-16-13" href="#__codelineno-16-13"></a><span class="x">        // 2. Accept-Language header</span>
-<a id="__codelineno-16-14" name="__codelineno-16-14" href="#__codelineno-16-14"></a><span class="x">        $lang = $request-&gt;getPreferredLanguage();</span>
-<a id="__codelineno-16-15" name="__codelineno-16-15" href="#__codelineno-16-15"></a><span class="x">        return match (true) {</span>
-<a id="__codelineno-16-16" name="__codelineno-16-16" href="#__codelineno-16-16"></a><span class="x">            str_starts_with($lang, 'ko') =&gt; 'ko',</span>
-<a id="__codelineno-16-17" name="__codelineno-16-17" href="#__codelineno-16-17"></a><span class="x">            str_starts_with($lang, 'ja') =&gt; 'ja',</span>
-<a id="__codelineno-16-18" name="__codelineno-16-18" href="#__codelineno-16-18"></a><span class="x">            str_starts_with($lang, 'zh') =&gt; match (true) {</span>
-<a id="__codelineno-16-19" name="__codelineno-16-19" href="#__codelineno-16-19"></a><span class="x">                in_array($lang, ['zh-TW', 'zh-HK', 'zh-Hant']) =&gt; 'zh_Hant',</span>
-<a id="__codelineno-16-20" name="__codelineno-16-20" href="#__codelineno-16-20"></a><span class="x">                default =&gt; 'zh',</span>
-<a id="__codelineno-16-21" name="__codelineno-16-21" href="#__codelineno-16-21"></a><span class="x">            },</span>
-<a id="__codelineno-16-22" name="__codelineno-16-22" href="#__codelineno-16-22"></a><span class="x">            default =&gt; 'en',</span>
-<a id="__codelineno-16-23" name="__codelineno-16-23" href="#__codelineno-16-23"></a><span class="x">        };</span>
-<a id="__codelineno-16-24" name="__codelineno-16-24" href="#__codelineno-16-24"></a><span class="x">    }</span>
-<a id="__codelineno-16-25" name="__codelineno-16-25" href="#__codelineno-16-25"></a><span class="x">}</span>
-</code></pre></div>
-<h3 id="step-4-add-to-validated-locales">Step 4: Add to Validated Locales<a class="headerlink" href="#step-4-add-to-validated-locales" title="Permanent link">&para;</a></h3>
-<p>If there's a list of validated/supported locales, add the new locale:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="x">private const SUPPORTED_LOCALES = ['en', 'zh', 'zh_Hant', 'ja', 'ko'];</span>
-</code></pre></div>
-<h3 id="step-5-add-readme-translation-optional">Step 5: Add README Translation (Optional)<a class="headerlink" href="#step-5-add-readme-translation-optional" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>cp<span class="w"> </span>README.md<span class="w"> </span>README.ko.md
-<a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a><span class="c1"># Translate content</span>
-</code></pre></div>
-<h3 id="step-6-clear-cache-and-test">Step 6: Clear Cache and Test<a class="headerlink" href="#step-6-clear-cache-and-test" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a>php<span class="w"> </span>bin/console<span class="w"> </span>cache:clear
-<a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a>
-<a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a><span class="c1"># Test with query parameter</span>
-<a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a>curl<span class="w"> </span><span class="s1">'http://localhost:8080/api/v1/app/products?_locale=ko'</span>
-</code></pre></div>
-<h2 id="7-translation-best-practices">7. Translation Best Practices<a class="headerlink" href="#7-translation-best-practices" title="Permanent link">&para;</a></h2>
-<ol>
-<li>
-<p><strong>Use sentence case for messages</strong> — "Order cannot be cancelled" not
-   "ORDER_CANNOT_BE_CANCELLED".</p>
-</li>
-<li>
-<p><strong>Include parameters in messages</strong> — Use Symfony's <code>%param%</code> or <code>{param}</code>
-   syntax:
-   <div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="s">"Property</span><span class="nv"> </span><span class="s">{property}</span><span class="nv"> </span><span class="s">is</span><span class="nv"> </span><span class="s">required"</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Property {property} is required</span>
-</code></pre></div>
-   <div class="highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span class="x">$this-&gt;translator-&gt;trans('Property {property} is required', ['{property}' =&gt; 'name']);</span>
-</code></pre></div></p>
-</li>
-<li>
-<p><strong>Don't translate technical strings</strong> — Error codes, log messages, and
-   debug output should stay in English.</p>
-</li>
-<li>
-<p><strong>Keep English keys simple</strong> — The English key is usually the English
-   message itself. Use quotes for keys with spaces or special characters.</p>
-</li>
-<li>
-<p><strong>Run translation lint</strong>:
-   <div class="highlight"><pre><span></span><code><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a>php<span class="w"> </span>bin/console<span class="w"> </span>lint:translations
-</code></pre></div></p>
-</li>
-<li>
-<p><strong>Extract missing keys</strong>:
-   <div class="highlight"><pre><span></span><code><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a>php<span class="w"> </span>bin/console<span class="w"> </span>translation:extract<span class="w"> </span>--force<span class="w"> </span>en
-</code></pre></div></p>
-</li>
-<li>
-<p><strong>Always add all 4 locales</strong> — When adding a new key, add it to all locale
-   files in the same commit. Missing translations fall back to the English key.</p>
-</li>
-<li>
-<p><strong>Test each locale</strong> — Verify translations display correctly:
-   <div class="highlight"><pre><span></span><code><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a>curl<span class="w"> </span>-H<span class="w"> </span><span class="s1">'Accept-Language: ja'</span><span class="w"> </span>http://localhost:8080/api/auth/login<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-24-2" name="__codelineno-24-2" href="#__codelineno-24-2"></a><span class="w">  </span>-H<span class="w"> </span><span class="s1">'Content-Type: application/json'</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-24-3" name="__codelineno-24-3" href="#__codelineno-24-3"></a><span class="w">  </span>-d<span class="w"> </span><span class="s1">'{"username":"test","password":"wrong"}'</span>
-<a id="__codelineno-24-4" name="__codelineno-24-4" href="#__codelineno-24-4"></a><span class="c1"># Error message should be in Japanese</span>
-</code></pre></div></p>
-</li>
-</ol>
+<p>These are independent of the <code>docs-zh/</code> machine translation and are maintained
+manually.</p>
+<hr />
+<h2 id="summary">Summary<a class="headerlink" href="#summary" title="Permanent link">&para;</a></h2>
+<ul>
+<li>API strings: keys are English message strings in <code>translations/messages.*.yaml</code>;
+  four locales (<code>en</code>, <code>zh</code>, <code>zh_Hant</code>, <code>ja</code>), default <code>zh</code>.</li>
+<li>Detection: <code>?_locale=</code> → <code>Accept-Language</code> (q-weighted, mapped via
+  <code>LOCALE_MAP</code>) → framework <code>default_locale</code>.</li>
+<li>Docs: <code>docs/</code> → <code>docs-zh/</code> via <code>translate-docs.py</code>; bilingual site built by
+  <code>build-docs.sh</code> into <code>site/</code> and <code>site/zh/</code>.</li>
+</ul>
 
 
 
@@ -2993,6 +3358,10 @@ and replacing each value with the target language translation.</p>
     
     
       <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+      
+        <script src="../../javascripts/mermaid-init.js"></script>
       
     
   </body>

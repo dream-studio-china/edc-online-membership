@@ -6,11 +6,11 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="A production-oriented Symfony microservices platform evolved from modular monolith architecture, featuring DDD, service isolation, and event-driven communication.">
+        <meta name="description" content="Symfony 8.1 API backend skeleton with modular architecture">
       
       
       
-        <link rel="canonical" href="https://immane.github.io/crud-platform/manual/development-contracts/">
+        <link rel="canonical" href="https://immane.github.io/crud-skeleton/manual/development-contracts/">
       
       
         <link rel="prev" href="../api-contracts/">
@@ -20,9 +20,9 @@
       
       
         
-          <link rel="alternate" href="/crud-platform/" hreflang="en">
+          <link rel="alternate" href="/crud-skeleton/" hreflang="en">
         
-          <link rel="alternate" href="/crud-platform/zh/" hreflang="zh">
+          <link rel="alternate" href="/crud-skeleton/zh/" hreflang="zh">
         
       
       
@@ -31,7 +31,7 @@
     
     
       
-        <title>Development Contracts - CRUD Platform</title>
+        <title>Development Contracts - CRUD Skeleton</title>
       
     
     
@@ -98,7 +98,7 @@
 
 <header class="md-header md-header--shadow" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../.." title="CRUD Platform" class="md-header__button md-logo" aria-label="CRUD Platform" data-md-component="logo">
+    <a href="../.." title="CRUD Skeleton" class="md-header__button md-logo" aria-label="CRUD Skeleton" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -112,7 +112,7 @@
       <div class="md-header__ellipsis">
         <div class="md-header__topic">
           <span class="md-ellipsis">
-            CRUD Platform
+            CRUD Skeleton
           </span>
         </div>
         <div class="md-header__topic" data-md-component="header-topic">
@@ -165,13 +165,13 @@
       <ul class="md-select__list">
         
           <li class="md-select__item">
-            <a href="/crud-platform/" hreflang="en" class="md-select__link">
+            <a href="/crud-skeleton/" hreflang="en" class="md-select__link">
               English
             </a>
           </li>
         
           <li class="md-select__item">
-            <a href="/crud-platform/zh/" hreflang="zh" class="md-select__link">
+            <a href="/crud-skeleton/zh/" hreflang="zh" class="md-select__link">
               中文
             </a>
           </li>
@@ -226,7 +226,7 @@
     
     
       <div class="md-header__source">
-        <a href="https://github.com/immane/crud-platform" title="Go to repository" class="md-source" data-md-component="source">
+        <a href="https://github.com/immane/crud-skeleton" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
@@ -262,17 +262,17 @@
 
 <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../.." title="CRUD Platform" class="md-nav__button md-logo" aria-label="CRUD Platform" data-md-component="logo">
+    <a href="../.." title="CRUD Skeleton" class="md-nav__button md-logo" aria-label="CRUD Skeleton" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
 
     </a>
-    CRUD Platform
+    CRUD Skeleton
   </label>
   
     <div class="md-nav__source">
-      <a href="https://github.com/immane/crud-platform" title="Go to repository" class="md-source" data-md-component="source">
+      <a href="https://github.com/immane/crud-skeleton" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
@@ -316,6 +316,873 @@
       
   
   
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Development Manual
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Development Manual
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Manual Index
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../project-structure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project Structure
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../core-framework/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core Framework
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../core-usage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core Usage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../query-system/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Query System
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../authorization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authorization Setup
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../development-workflow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Development Workflow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api-contracts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Contracts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Development Contracts
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Development Contracts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-layer-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Layer Rules
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. Layer Rules">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#transaction-contract" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Transaction contract
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#where-exceptions-are-thrown-and-caught" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Where exceptions are thrown and caught
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-cross-module-communication" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Cross-Module Communication
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Cross-Module Communication">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#messenger-routing-async-transport" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Messenger routing (async transport)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#registries-for-cross-cutting-extension-instead-of-direct-wiring" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Registries for cross-cutting extension instead of direct wiring
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-service-boundaries" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Service Boundaries
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Service Boundaries">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#service-shape" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Service shape
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#repository-shape" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Repository shape
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#controller-shape" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Controller shape
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-naming-conventions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Naming Conventions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Naming Conventions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#protected-cross-module-conflict-groups-never-drop-the-prefix" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Protected cross-module conflict groups (never drop the prefix)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-code-style" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Code Style
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-performance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Performance
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-security" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Security
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Security">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#authentication" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Authentication
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#authorization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Authorization
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#validation-order" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Validation order
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rate-limiting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rate limiting
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#logging-hygiene" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Logging hygiene
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#money-and-identity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Money and identity
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-breaking-change-policy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Breaking-Change Policy
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-see-also" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. See Also
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../integration-events/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Integration Events
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../database-and-migrations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Database & Migrations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../deployment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../extracting-a-service/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Extracting a Service
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../i18n/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Internationalization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
   
   
     
@@ -334,10 +1201,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
         
           
-          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
             
   
   
@@ -355,8 +1222,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -381,146 +1248,6 @@
     
   
     System Architecture
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/microservice-transition/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Microservice Transition
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/store-extraction-readiness/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Store Extraction Readiness
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/inventory-extraction-readiness/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Inventory Extraction Readiness
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/payment-extraction-readiness/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Payment Extraction Readiness
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/wallet-extraction-readiness.md" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Wallet Extraction Readiness
   
 
     
@@ -702,6 +1429,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/naming-convention/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Naming Convention
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -731,10 +1486,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
         
           
-          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
             
   
   
@@ -752,8 +1507,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -882,6 +1637,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../design/store-catalog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Store Catalog (Target)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../design/bundles/inventory/" class="md-nav__link">
         
   
@@ -966,6 +1749,62 @@
   
   
     <li class="md-nav__item">
+      <a href="../../design/bundles/settlement/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Settlement (Allocation + Finality)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/exchange/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Exchange (Pool-backed Economy)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../design/bundles/identity/" class="md-nav__link">
         
   
@@ -974,6 +1813,34 @@
     
   
     Identity (Auth)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/authorization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authorization
   
 
     
@@ -1044,10 +1911,463 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
         
           
-          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Runbooks
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Runbooks
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/authorization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authorization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/common/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Common
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/core/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/exchange/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Exchange
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/identity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Identity
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/inventory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Inventory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/payment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Payment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/promotion/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Promotion
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/settlement/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Settlement
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/storage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Storage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/store/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Store
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/trade/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Trade
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/wallet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Wallet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/wechat/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    WeChat
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
             
   
   
@@ -1065,8 +2385,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1161,10 +2481,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
         
           
-          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
             
   
   
@@ -1182,8 +2502,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_5">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1232,8 +2552,6 @@
       
   
   
-    
-  
   
   
     
@@ -1246,275 +2564,17 @@
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
       
         
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
         
           
-          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Development Manual
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
-          <label class="md-nav__title" for="__nav_6">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Development Manual
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../" class="md-nav__link">
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
         
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Overview
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="">
             
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../architecture/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Architecture
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../getting-started/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Getting Started
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../project-structure/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Project Structure
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../core-framework/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Core Framework
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../core-usage/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Core Usage
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../query-system/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Query System
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../development-workflow/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Development Workflow
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../testing/" class="md-nav__link">
-        
   
   
   <span class="md-ellipsis">
@@ -1528,11 +2588,19 @@
   
   
 
-      </a>
-    </li>
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Testing
   
 
-              
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
             
               
                 
@@ -1541,655 +2609,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../api-contracts/" class="md-nav__link">
+      <a href="../../testing/crud-skeleton-production/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    API Contracts
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-    
-  
-  
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Development Contracts
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Development Contracts
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#1-layer-rules" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        1. Layer Rules
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#2-cross-module-communication" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        2. Cross-Module Communication
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="2. Cross-Module Communication">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#21-allowed" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        2.1 Allowed
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#22-forbidden" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        2.2 Forbidden
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#23-cross-boundary-identity" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        2.3 Cross-Boundary Identity
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#3-service-boundary-rules" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        3. Service Boundary Rules
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#4-namespace-conventions" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        4. Namespace Conventions
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#5-file-naming" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        5. File Naming
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#6-class-conventions" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        6. Class Conventions
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="6. Class Conventions">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#61-required" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        6.1 Required
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#62-phpdoc" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        6.2 PHPDoc
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#63-visibility" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        6.3 Visibility
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#7-code-style" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        7. Code Style
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="7. Code Style">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#71-psr-12" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        7.1 PSR-12
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#72-phpstan-level-8" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        7.2 PHPStan Level 8
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#73-deptrac-architecture-boundaries" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        7.3 Deptrac Architecture Boundaries
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#74-rector-type-rules" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        7.4 Rector Type Rules
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#75-naming-conventions" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        7.5 Naming Conventions
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#8-testing-contracts" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        8. Testing Contracts
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="8. Testing Contracts">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#81-unit-vs-integration" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        8.1 Unit vs Integration
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#82-test-naming" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        8.2 Test Naming
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#83-coverage-requirements" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        8.3 Coverage Requirements
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#84-test-database" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        8.4 Test Database
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#9-git-workflow" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        9. Git Workflow
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="9. Git Workflow">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#91-feature-branches" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        9.1 Feature Branches
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#92-conventional-commits" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        9.2 Conventional Commits
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#93-pr-template" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        9.3 PR Template
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#94-review-requirements" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        9.4 Review Requirements
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#10-breaking-changes" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        10. Breaking Changes
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="10. Breaking Changes">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#101-what-constitutes-a-breaking-change" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        10.1 What Constitutes a Breaking Change
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#102-migration-compatibility" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        10.2 Migration Compatibility
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#11-documentation-requirements" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        11. Documentation Requirements
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="11. Documentation Requirements">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#111-when-adding-a-module" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        11.1 When Adding a Module
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#112-when-adding-a-service" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        11.2 When Adding a Service
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#113-when-adding-an-endpoint" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        11.3 When Adding an Endpoint
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#12-performance-guidelines" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        12. Performance Guidelines
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="12. Performance Guidelines">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#121-n1-prevention" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        12.1 N+1 Prevention
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#122-query-optimization" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        12.2 Query Optimization
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#123-caching" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        12.3 Caching
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#13-security-rules" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        13. Security Rules
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="13. Security Rules">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#131-safe-select" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        13.1 Safe Select
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#132-privileged-parameters" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        13.2 Privileged Parameters
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#133-commonfilter" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        13.3 commonFilter
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#134-csrf-xss" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        13.4 CSRF / XSS
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../integration-events/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Integration Events
+    Production Validation Overview
   
 
     
@@ -2210,14 +2637,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../database-and-migrations/" class="md-nav__link">
+      <a href="../../testing/crud-skeleton-production/TEST_STRATEGY/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Database & Migrations
+    Test Strategy
   
 
     
@@ -2238,14 +2665,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../deployment/" class="md-nav__link">
+      <a href="../../testing/crud-skeleton-production/SYSTEM_WALKTHROUGH/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Deployment
+    System Walkthrough And Test Seams
   
 
     
@@ -2266,14 +2693,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../extracting-a-service/" class="md-nav__link">
+      <a href="../../testing/crud-skeleton-production/TEST_MATRIX/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Extracting a Service
+    Test Matrix
   
 
     
@@ -2294,14 +2721,126 @@
   
   
     <li class="md-nav__item">
-      <a href="../i18n/" class="md-nav__link">
+      <a href="../../testing/crud-skeleton-production/BUSINESS_INVARIANTS/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Internationalization
+    Business Invariants
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../testing/crud-skeleton-production/ARCHITECTURE_TEST_MAPPING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture Test Mapping
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../testing/crud-skeleton-production/FAILURE_MODES/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Failure Modes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../testing/crud-skeleton-production/PRODUCTION_VALIDATION/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Release Validation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../testing/crud-skeleton-production/AI_DEVELOPMENT_PROCESS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI Development Process
   
 
     
@@ -2411,6 +2950,34 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="1. Layer Rules">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#transaction-contract" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Transaction contract
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#where-exceptions-are-thrown-and-caught" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Where exceptions are thrown and caught
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -2426,10 +2993,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#21-allowed" class="md-nav__link">
+  <a href="#messenger-routing-async-transport" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2.1 Allowed
+        Messenger routing (async transport)
       
     </span>
   </a>
@@ -2437,21 +3004,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#22-forbidden" class="md-nav__link">
+  <a href="#registries-for-cross-cutting-extension-instead-of-direct-wiring" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2.2 Forbidden
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#23-cross-boundary-identity" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        2.3 Cross-Boundary Identity
+        Registries for cross-cutting extension instead of direct wiring
       
     </span>
   </a>
@@ -2464,55 +3020,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#3-service-boundary-rules" class="md-nav__link">
+  <a href="#3-service-boundaries" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. Service Boundary Rules
+        3. Service Boundaries
       
     </span>
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#4-namespace-conventions" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        4. Namespace Conventions
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#5-file-naming" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        5. File Naming
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#6-class-conventions" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        6. Class Conventions
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="6. Class Conventions">
+    <nav class="md-nav" aria-label="3. Service Boundaries">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#61-required" class="md-nav__link">
+  <a href="#service-shape" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6.1 Required
+        Service shape
       
     </span>
   </a>
@@ -2520,10 +3043,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#62-phpdoc" class="md-nav__link">
+  <a href="#repository-shape" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6.2 PHPDoc
+        Repository shape
       
     </span>
   </a>
@@ -2531,10 +3054,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#63-visibility" class="md-nav__link">
+  <a href="#controller-shape" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6.3 Visibility
+        Controller shape
       
     </span>
   </a>
@@ -2547,66 +3070,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#7-code-style" class="md-nav__link">
+  <a href="#4-naming-conventions" class="md-nav__link">
     <span class="md-ellipsis">
       
-        7. Code Style
+        4. Naming Conventions
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="7. Code Style">
+    <nav class="md-nav" aria-label="4. Naming Conventions">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#71-psr-12" class="md-nav__link">
+  <a href="#protected-cross-module-conflict-groups-never-drop-the-prefix" class="md-nav__link">
     <span class="md-ellipsis">
       
-        7.1 PSR-12
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#72-phpstan-level-8" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        7.2 PHPStan Level 8
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#73-deptrac-architecture-boundaries" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        7.3 Deptrac Architecture Boundaries
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#74-rector-type-rules" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        7.4 Rector Type Rules
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#75-naming-conventions" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        7.5 Naming Conventions
+        Protected cross-module conflict groups (never drop the prefix)
       
     </span>
   </a>
@@ -2619,22 +3098,44 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#8-testing-contracts" class="md-nav__link">
+  <a href="#5-code-style" class="md-nav__link">
     <span class="md-ellipsis">
       
-        8. Testing Contracts
+        5. Code Style
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="8. Testing Contracts">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-performance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Performance
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-security" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Security
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Security">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#81-unit-vs-integration" class="md-nav__link">
+  <a href="#authentication" class="md-nav__link">
     <span class="md-ellipsis">
       
-        8.1 Unit vs Integration
+        Authentication
       
     </span>
   </a>
@@ -2642,10 +3143,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#82-test-naming" class="md-nav__link">
+  <a href="#authorization" class="md-nav__link">
     <span class="md-ellipsis">
       
-        8.2 Test Naming
+        Authorization
       
     </span>
   </a>
@@ -2653,10 +3154,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#83-coverage-requirements" class="md-nav__link">
+  <a href="#validation-order" class="md-nav__link">
     <span class="md-ellipsis">
       
-        8.3 Coverage Requirements
+        Validation order
       
     </span>
   </a>
@@ -2664,10 +3165,32 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#84-test-database" class="md-nav__link">
+  <a href="#rate-limiting" class="md-nav__link">
     <span class="md-ellipsis">
       
-        8.4 Test Database
+        Rate limiting
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#logging-hygiene" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Logging hygiene
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#money-and-identity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Money and identity
       
     </span>
   </a>
@@ -2680,263 +3203,24 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#9-git-workflow" class="md-nav__link">
+  <a href="#8-breaking-change-policy" class="md-nav__link">
     <span class="md-ellipsis">
       
-        9. Git Workflow
+        8. Breaking-Change Policy
       
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="9. Git Workflow">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#91-feature-branches" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        9.1 Feature Branches
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#92-conventional-commits" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        9.2 Conventional Commits
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#93-pr-template" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        9.3 PR Template
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#94-review-requirements" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        9.4 Review Requirements
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#10-breaking-changes" class="md-nav__link">
+  <a href="#9-see-also" class="md-nav__link">
     <span class="md-ellipsis">
       
-        10. Breaking Changes
+        9. See Also
       
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="10. Breaking Changes">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#101-what-constitutes-a-breaking-change" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        10.1 What Constitutes a Breaking Change
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#102-migration-compatibility" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        10.2 Migration Compatibility
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#11-documentation-requirements" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        11. Documentation Requirements
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="11. Documentation Requirements">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#111-when-adding-a-module" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        11.1 When Adding a Module
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#112-when-adding-a-service" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        11.2 When Adding a Service
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#113-when-adding-an-endpoint" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        11.3 When Adding an Endpoint
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#12-performance-guidelines" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        12. Performance Guidelines
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="12. Performance Guidelines">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#121-n1-prevention" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        12.1 N+1 Prevention
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#122-query-optimization" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        12.2 Query Optimization
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#123-caching" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        12.3 Caching
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#13-security-rules" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        13. Security Rules
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="13. Security Rules">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#131-safe-select" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        13.1 Safe Select
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#132-privileged-parameters" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        13.2 Privileged Parameters
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#133-commonfilter" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        13.3 commonFilter
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#134-csrf-xss" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        13.4 CSRF / XSS
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -2961,19 +3245,26 @@
 
 
 <h1 id="development-contracts">Development Contracts<a class="headerlink" href="#development-contracts" title="Permanent link">&para;</a></h1>
-<p>Development rules, conventions, and quality gates that all contributors MUST follow.
-Derived from <code>docs/design/system-architecture.md</code>, <code>docs/design/system-contracts.md</code>,
-and the actual codebase patterns.</p>
+<blockquote>
+<p>The rules that keep the modular monolith coherent: layer boundaries, cross-module
+communication, service boundaries, naming, code style, performance, and security.
+These are the developer-facing companion to the normative design docs
+(<code>docs/design/system-architecture.md</code>, <code>docs/design/system-contracts.md</code>,
+<code>docs/design/module-design.md</code>, <code>docs/design/naming-convention.md</code>).</p>
+</blockquote>
 <hr />
 <h2 id="1-layer-rules">1. Layer Rules<a class="headerlink" href="#1-layer-rules" title="Permanent link">&para;</a></h2>
-<p>Layer dependency table from <code>docs/design/system-architecture.md</code> section 1.1:</p>
+<p>Requests move through a strict, one-directional chain:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>HTTP (Controllers / View mixins)  →  Service  →  Repository  →  Entity  →  Infrastructure
+</code></pre></div>
 <table>
 <thead>
 <tr>
 <th>Rule</th>
 <th>From</th>
 <th>To</th>
-<th>Allowed</th>
+<th>Allowed?</th>
+<th>Why</th>
 </tr>
 </thead>
 <tbody>
@@ -2981,623 +3272,522 @@ and the actual codebase patterns.</p>
 <td>R1</td>
 <td>Controller</td>
 <td>Service</td>
-<td><strong>YES</strong></td>
+<td>YES</td>
+<td>Normal flow</td>
 </tr>
 <tr>
 <td>R2</td>
 <td>Controller</td>
 <td>Entity</td>
-<td><strong>YES</strong> (type hints/returns only)</td>
+<td>YES</td>
+<td>Type hints / returns only</td>
 </tr>
 <tr>
 <td>R3</td>
 <td>Controller</td>
 <td>Repository</td>
-<td><strong>NO</strong> — go through Service</td>
+<td><strong>NO</strong></td>
+<td>Go through Service</td>
 </tr>
 <tr>
 <td>R4</td>
 <td>Controller</td>
 <td>EntityManager</td>
-<td><strong>NO</strong> — go through Service</td>
+<td><strong>NO</strong></td>
+<td>Go through Service</td>
 </tr>
 <tr>
 <td>R5</td>
 <td>Service</td>
 <td>Repository</td>
-<td><strong>YES</strong></td>
+<td>YES</td>
+<td>Data access</td>
 </tr>
 <tr>
 <td>R6</td>
 <td>Service</td>
 <td>Entity</td>
-<td><strong>YES</strong></td>
+<td>YES</td>
+<td>Domain operations</td>
 </tr>
 <tr>
 <td>R7</td>
 <td>Service</td>
 <td>EntityManager</td>
-<td><strong>YES</strong></td>
+<td>YES</td>
+<td>Transactions</td>
 </tr>
 <tr>
 <td>R8</td>
 <td>Service</td>
 <td>Other Services</td>
-<td><strong>YES</strong> (via DI)</td>
+<td>YES</td>
+<td>DI, interface-first</td>
 </tr>
 <tr>
 <td>R9</td>
 <td>Entity</td>
 <td>Repository</td>
 <td><strong>NO</strong></td>
+<td>Entities are pure</td>
 </tr>
 <tr>
 <td>R10</td>
 <td>Entity</td>
 <td>Service</td>
 <td><strong>NO</strong></td>
+<td>No business-logic deps</td>
 </tr>
 <tr>
 <td>R11</td>
 <td>Entity</td>
 <td>EntityManager</td>
 <td><strong>NO</strong></td>
+<td>Persistence is external</td>
 </tr>
 </tbody>
 </table>
-<p><strong>Controllers MUST NOT</strong>:
-- Inject <code>EntityManager</code>
-- Call <code>beginTransaction()</code>, <code>commit()</code>, <code>rollback()</code>
-- Call Repository directly
-- Use <code>$_GET</code>, <code>$_POST</code>, <code>$_REQUEST</code> superglobals
-- Contain business logic (delegate to services)</p>
-<p><strong>Services MUST</strong>:
-- Own all business logic, transactions, validation
-- Use <code>wrapInTransaction()</code> for multi-entity mutations
-- Return entities or DTOs (never raw database results to controllers)</p>
-<hr />
-<h2 id="2-cross-module-communication">2. Cross-Module Communication<a class="headerlink" href="#2-cross-module-communication" title="Permanent link">&para;</a></h2>
-<h3 id="21-allowed">2.1 Allowed<a class="headerlink" href="#21-allowed" title="Permanent link">&para;</a></h3>
-<table>
-<thead>
-<tr>
-<th>From</th>
-<th>To</th>
-<th>Mechanism</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Any Business Module</td>
-<td>Core</td>
-<td>DI (autowire Core services)</td>
-</tr>
-<tr>
-<td>Business Module A</td>
-<td>Business Module B</td>
-<td>DI (autowire B's service <strong>interface</strong>)</td>
-</tr>
-<tr>
-<td>Any Module</td>
-<td>Identity</td>
-<td>Current principal abstraction or exported service</td>
-</tr>
-</tbody>
-</table>
-<h3 id="22-forbidden">2.2 Forbidden<a class="headerlink" href="#22-forbidden" title="Permanent link">&para;</a></h3>
-<table>
-<thead>
-<tr>
-<th>Pattern</th>
-<th>Reason</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Direct cross-module Entity access</td>
-<td>Use explicit module API or scalar reference/snapshot</td>
-</tr>
-<tr>
-<td>Direct cross-module Repository access</td>
-<td>Use service interface</td>
-</tr>
-<tr>
-<td>Circular module dependencies</td>
-<td>Violates layer architecture</td>
-</tr>
-<tr>
-<td>Core importing business modules</td>
-<td>Core is foundational</td>
-</tr>
-</tbody>
-</table>
-<h3 id="23-cross-boundary-identity">2.3 Cross-Boundary Identity<a class="headerlink" href="#23-cross-boundary-identity" title="Permanent link">&para;</a></h3>
-<table>
-<thead>
-<tr>
-<th>Context</th>
-<th>Identifier</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Local Doctrine relation inside one module</td>
-<td>Integer <code>id</code> is allowed</td>
-</tr>
-<tr>
-<td>Public API route/response</td>
-<td>UUID</td>
-</tr>
-<tr>
-<td>Service interface crossing module boundary</td>
-<td>UUID or documented immutable business key</td>
-</tr>
-<tr>
-<td>Integration event aggregate/source/correlation id</td>
-<td>UUID</td>
-</tr>
-<tr>
-<td>Future service database relation</td>
-<td>UUID/business key only; no cross-service FK</td>
-</tr>
-</tbody>
-</table>
-<hr />
-<h2 id="3-service-boundary-rules">3. Service Boundary Rules<a class="headerlink" href="#3-service-boundary-rules" title="Permanent link">&para;</a></h2>
-<p>From <code>docs/design/microservice-transition.md</code>, the 7 rules before extraction:</p>
-<ol>
-<li>A service owns its database and has no cross-service Doctrine association, foreign key,
-   repository access, or transaction.</li>
-<li>Durable cross-service references use UUIDs or documented immutable business keys, never
-   another service's local integer primary key.</li>
-<li>A service boundary accepts scalar commands/queries and emits scalar snapshots. It never
-   exposes Doctrine entities, repositories, EntityManagers, Symfony requests/responses, or
-   mutable in-process contexts.</li>
-<li>A state-changing integration event is written to an Outbox in the producer's local
-   transaction. Consumers use a durable Inbox keyed by <code>eventId</code>.</li>
-<li>Each consumer owns its queue, retry policy, dead-letter handling, worker, and scheduled
-   jobs. A shared Doctrine Messenger queue is not a service boundary.</li>
-<li>Shared packages may provide framework utilities, schemas, and test support. They MUST NOT
-   contain business entities, repositories, or service-specific application logic.</li>
-<li>Public routes remain stable through an API gateway or routing layer while ownership moves
-   between services.</li>
-</ol>
-<p><strong>Pre-Extraction Checklist</strong>:
-- [ ] All cross-module references use UUIDs or immutable business keys
-- [ ] No shared Doctrine associations or cross-module FK
-- [ ] Integration events use Outbox/Inbox pattern
-- [ ] Service has its own <code>composer.json</code>, <code>Kernel.php</code>, <code>config/</code>, <code>migrations/</code>, <code>public/</code>,
-  <code>bin/</code>, <code>tests/</code>, Docker definition
-- [ ] Architecture checks (deptrac) pass without new baseline entries
-- [ ] Legacy test suite remains green</p>
-<hr />
-<h2 id="4-namespace-conventions">4. Namespace Conventions<a class="headerlink" href="#4-namespace-conventions" title="Permanent link">&para;</a></h2>
+<h3 id="transaction-contract">Transaction contract<a class="headerlink" href="#transaction-contract" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Transactions live in the <strong>Service layer only</strong> — controllers never call
+  <code>beginTransaction()</code> / <code>commit()</code> / <code>rollback()</code> (T4).</li>
+<li>Multiple mutations on related entities are wrapped in <code>wrapInTransaction()</code> (T1).</li>
+<li>Wallet transfers use explicit <code>beginTransaction</code>/<code>commit</code>/<code>rollback</code> with entity
+  locks (<code>PESSIMISTIC_WRITE</code>) (T2), and the EntityManager is recovered after a
+  rollback with an <code>$em-&gt;isOpen()</code> guard (T3).</li>
+<li>Mixin-driven mutations (<code>createAction</code>, <code>batchUpdateAction</code>) wrap automatically
+  unless <code>@partial=true</code>. <code>@partial=true</code> processes each item independently; otherwise
+  all items commit or roll back together.</li>
+</ul>
+<h3 id="where-exceptions-are-thrown-and-caught">Where exceptions are thrown and caught<a class="headerlink" href="#where-exceptions-are-thrown-and-caught" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
 <tr>
 <th>Layer</th>
-<th>Namespace</th>
+<th>May throw</th>
+<th>Must catch</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Core Framework</td>
-<td><code>App\Core\*</code> (in <code>packages/platform-kernel/src/</code>)</td>
+<td>Entity</td>
+<td><strong>NO</strong></td>
+<td>—</td>
 </tr>
 <tr>
-<td>Module Controllers</td>
-<td><code>App\{Module}\Controller\Manage\</code> or <code>App\{Module}\Controller\App\</code></td>
+<td>Repository</td>
+<td>Doctrine exceptions only</td>
+<td>—</td>
 </tr>
 <tr>
-<td>Module Entities</td>
-<td><code>App\{Module}\Entity\</code></td>
+<td>Service</td>
+<td>Business exceptions (<code>InsufficientFundsException</code>, <code>OrderInvalidTransitionException</code>, …)</td>
+<td>—</td>
 </tr>
 <tr>
-<td>Module Repositories</td>
-<td><code>App\{Module}\Repository\</code></td>
-</tr>
-<tr>
-<td>Module Services</td>
-<td><code>App\{Module}\Service\</code></td>
-</tr>
-<tr>
-<td>Module Exceptions</td>
-<td><code>App\{Module}\Exception\</code></td>
-</tr>
-<tr>
-<td>Module Event Listeners</td>
-<td><code>App\{Module}\EventListener\</code></td>
-</tr>
-<tr>
-<td>Module Commands</td>
-<td><code>App\{Module}\Command\</code></td>
-</tr>
-<tr>
-<td>Bridge Adapters</td>
-<td><code>App\Bridge\{Module}\</code></td>
-</tr>
-<tr>
-<td>Integration Contracts</td>
-<td><code>App\Contracts\Integration\</code></td>
+<td>Controller</td>
+<td><strong>NO</strong> — convert to <code>warning()</code></td>
+<td>domain exceptions → <code>warning()</code> with 400/404/500</td>
 </tr>
 </tbody>
 </table>
-<p>Route naming: <code>{scope}-{resource}-{action}</code> (e.g., <code>manage-categories-list</code>,
-<code>app-orders-create</code>, <code>system-router-list</code>).</p>
+<p>Unhandled exceptions on <code>/api/*</code> turn into JSON <code>{code, message, class}</code> via the
+<code>ExceptionInterceptor</code> (bypassed in dev).</p>
 <hr />
-<h2 id="5-file-naming">5. File Naming<a class="headerlink" href="#5-file-naming" title="Permanent link">&para;</a></h2>
+<h2 id="2-cross-module-communication">2. Cross-Module Communication<a class="headerlink" href="#2-cross-module-communication" title="Permanent link">&para;</a></h2>
+<p>Modules share one kernel, one EntityManager, one cache, and one Messenger bus — but
+must behave as if they were independent services.</p>
 <table>
 <thead>
 <tr>
+<th>Concern</th>
+<th>Contract</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Doctrine associations</td>
+<td><strong>No cross-module associations.</strong> An entity never references another module's entity as a relation/FK</td>
+</tr>
+<tr>
+<td>Durable references</td>
+<td>Reference aggregates across modules by <strong>UUID</strong> (<code>App\Core\Utils\UUID</code>) or an explicitly documented business key — never a local auto-increment id</td>
+</tr>
+<tr>
+<td>Contracts in, scalar data out</td>
+<td>Cross-module service calls exchange <strong>scalars / snapshots / DTOs only</strong> — never entities, repositories, or an EntityManager</td>
+</tr>
+<tr>
+<td>Writes</td>
+<td><strong>Outbox</strong>: the publishing module persists a <code>*OutboxMessage</code> entity in the <em>same transaction</em> as the change; a <code>app:{module}:outbox:publish</code> command flushes it to Messenger</td>
+</tr>
+<tr>
+<td>Reads</td>
+<td><strong>Inbox / message handlers</strong>: consuming modules read another module's state through their own <code>MessageHandler/</code> handlers, which enforce integrity and idempotency</td>
+</tr>
+<tr>
+<td>Direct repository reads across modules</td>
+<td><strong>Forbidden</strong></td>
+</tr>
+<tr>
+<td>Dependency direction</td>
+<td>Business modules may autowire <code>Core</code> and (interface-first) each other; <code>Core</code> must never import a business module; circular module dependencies are forbidden</td>
+</tr>
+</tbody>
+</table>
+<h3 id="messenger-routing-async-transport">Messenger routing (async transport)<a class="headerlink" href="#messenger-routing-async-transport" title="Permanent link">&para;</a></h3>
+<p>Registered messages include: Trade order created/cancelled / store accepted/rejected,
+Inventory reservation request/confirm/reject/release, Settlement funding-confirmed and
+allocation-posting. Handlers live in the consuming module's <code>MessageHandler/</code>
+directory (e.g. <code>src/Store/MessageHandler/TradeOrderCreatedHandler.php</code>,
+<code>src/Inventory/MessageHandler</code>). Failure transport is <code>failed</code> with a 3-retry,
+doubling backoff.</p>
+<h3 id="registries-for-cross-cutting-extension-instead-of-direct-wiring">Registries for cross-cutting extension instead of direct wiring<a class="headerlink" href="#registries-for-cross-cutting-extension-instead-of-direct-wiring" title="Permanent link">&para;</a></h3>
+<p>Hot-swappable collaborators are collected with tagged iterators and resolved through a
+registry — not hard-wired: <code>PaymentGatewayRegistry</code> (<code>payment.gateway</code>),
+<code>PaymentAdjustmentRegistry</code>, <code>DepositProviderRegistry</code>, <code>WithdrawProviderRegistry</code>,
+<code>MediaStorageRegistry</code>, <code>SettlementContextResolverRegistry</code>, and the
+<code>trade.price_calculator</code> pricing chain (priority-ordered, Promotion at 60).</p>
+<hr />
+<h2 id="3-service-boundaries">3. Service Boundaries<a class="headerlink" href="#3-service-boundaries" title="Permanent link">&para;</a></h2>
+<h3 id="service-shape">Service shape<a class="headerlink" href="#service-shape" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Every service implements a module interface: <code>{Entity}ServiceInterface extends
+  App\Core\Service\BaseServiceInterface</code>.</li>
+<li>Implementations extend <code>App\Core\Service\BaseService</code>, which composes
+  <code>BaseServiceInfrastructureTrait</code> (container/EM/repository/logger/serializer,
+  transaction wrapper, validators), <code>BaseServiceReadListTrait</code> (<code>get</code>/<code>list</code>,
+  QueryBuilder listing, DQL compilation), and <code>BaseServiceMutationTrait</code>
+  (<code>new</code>/<code>update</code>/<code>remove</code>, relation/date mapping, Serializer + Validator integration).</li>
+<li>Services <strong>must not</strong> return raw HTTP responses (controller's job) and must not touch
+  <code>Request</code> directly — use <code>getCurrentRequest()</code>.</li>
+</ul>
+<h3 id="repository-shape">Repository shape<a class="headerlink" href="#repository-shape" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Repositories extend <code>ServiceEntityRepository</code>, take <code>ManagerRegistry</code> in the
+  constructor, and return entities/arrays/scalars.</li>
+<li>Repositories must <strong>not</strong> return raw <code>QueryBuilder</code> to consumers — that is the
+  service layer's concern — and may expose a <code>*RepositoryInterface</code> when consumed by
+  other modules.</li>
+<li>Doctrine 3.6+ repositories carry the <code>@extends ServiceEntityRepository&lt;...&gt;</code> PHPDoc
+  (enforced by Rector's <code>AddAnnotationToRepositoryRector</code>).</li>
+</ul>
+<h3 id="controller-shape">Controller shape<a class="headerlink" href="#controller-shape" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>App</code> controllers (public read) extend <code>RestController</code> with <code>ApiView</code>,
+  <code>DetailApiViewMixin</code>, <code>ListApiViewMixin</code>; they set <code>$serviceClass</code> and may override
+  <code>commonFilter()</code> for row-level scoping. No create/update/delete.</li>
+<li><code>Manage</code> controllers (admin CRUD) add <code>Create/Update/DeleteApiViewMixin</code> and are
+  guarded <code>#[IsGranted('ROLE_ADMIN')]</code> at class level.</li>
+<li>Controllers declare only module-specific constructor dependencies — <code>RequestStack</code>,
+  <code>SerializerInterface</code>, <code>TranslatorInterface</code>, container arrive via <code>#[Required]</code>
+  setter injection on <code>RestController</code>.</li>
+</ul>
+<hr />
+<h2 id="4-naming-conventions">4. Naming Conventions<a class="headerlink" href="#4-naming-conventions" title="Permanent link">&para;</a></h2>
+<p>The namespace carries the module; the class name carries the domain concept.
+<code>docs/design/naming-convention.md</code> is authoritative; the four rules are:</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
 <th>Rule</th>
-<th>Detail</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>One class per file</td>
-<td>No exceptions</td>
+<td>N1</td>
+<td>Class name = domain concept (bare preferred); ownership lives in the namespace</td>
 </tr>
 <tr>
-<td>File name = class name</td>
-<td><code>CategoryService.php</code> contains <code>class CategoryService</code></td>
+<td>N2</td>
+<td>Add a module prefix only on (a) cross-module collision/ambiguity, or (b) intra-module infrastructure (outbox / registry / gateway / provider)</td>
 </tr>
 <tr>
-<td>Trait files</td>
-<td>Same name as trait</td>
+<td>N3</td>
+<td>Service / Controller / Repository / Event / Exception strictly mirror the entity name: <code>{Entity}Service</code>, <code>{Entity}Controller</code>, <code>{Entity}Repository</code></td>
 </tr>
 <tr>
-<td>Interface files</td>
-<td>Same name as interface</td>
-</tr>
-<tr>
-<td>Tests</td>
-<td><code>{Class}Test.php</code></td>
-</tr>
-<tr>
-<td>PSR-4 autoloading</td>
-<td>Directory mirrors namespace, case-sensitive</td>
+<td>N4</td>
+<td>Prefix policy is consistent within a module — never a mix of prefixed and bare</td>
 </tr>
 </tbody>
 </table>
-<hr />
-<h2 id="6-class-conventions">6. Class Conventions<a class="headerlink" href="#6-class-conventions" title="Permanent link">&para;</a></h2>
-<h3 id="61-required">6.1 Required<a class="headerlink" href="#61-required" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="cp">&lt;?php</span>
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="k">declare</span><span class="p">(</span><span class="nx">strict_types</span><span class="o">=</span><span class="mi">1</span><span class="p">);</span>
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="k">namespace</span> <span class="nx">App\Common\Service</span><span class="p">;</span>
-<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>
-<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="k">use</span> <span class="nx">App\Common\Entity\Category</span><span class="p">;</span>
-<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="k">use</span> <span class="nx">App\Core\Service\BaseService</span><span class="p">;</span>
-<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>
-<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="sd">/** @extends BaseService&lt;\App\Common\Entity\Category&gt; */</span>
-<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="k">class</span> <span class="nc">CategoryService</span> <span class="k">extends</span> <span class="nx">BaseService</span> <span class="k">implements</span> <span class="nx">CategoryServiceInterface</span>
-<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="p">{</span>
-<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>    <span class="k">public</span> <span class="k">function</span> <span class="fm">__construct</span><span class="p">(</span><span class="cm">/* ... */</span><span class="p">)</span> <span class="p">{</span> <span class="cm">/* ... */</span> <span class="p">}</span>
-<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="p">}</span>
-</code></pre></div>
-<ul>
-<li><code>declare(strict_types=1)</code> at the top of every PHP file</li>
-<li><code>final</code> where applicable (prevent unintended extension)</li>
-<li><code>readonly</code> for constructor-injected dependencies where possible</li>
-<li><code>#[ORM\*]</code> PHP attributes for Doctrine mapping (not annotations)</li>
-<li><code>#[OA\*]</code> PHP attributes for OpenAPI documentation</li>
-</ul>
-<h3 id="62-phpdoc">6.2 PHPDoc<a class="headerlink" href="#62-phpdoc" title="Permanent link">&para;</a></h3>
-<ul>
-<li>Required on interfaces and abstract methods (contract documentation)</li>
-<li><code>@extends</code> / <code>@implements</code> for generic types on BaseService subclasses</li>
-<li><code>@param</code> / <code>@return</code> only when types cannot be expressed in native PHP</li>
-<li>No comments on self-documenting code (well-named methods/variables)</li>
-</ul>
-<h3 id="63-visibility">6.3 Visibility<a class="headerlink" href="#63-visibility" title="Permanent link">&para;</a></h3>
-<ul>
-<li>Constructor-injected services: <code>protected readonly</code></li>
-<li>Internal state properties: <code>private</code></li>
-<li>Hook methods: <code>protected</code> (overridable)</li>
-<li>Public methods: only on interfaces and action methods</li>
-</ul>
-<hr />
-<h2 id="7-code-style">7. Code Style<a class="headerlink" href="#7-code-style" title="Permanent link">&para;</a></h2>
-<h3 id="71-psr-12">7.1 PSR-12<a class="headerlink" href="#71-psr-12" title="Permanent link">&para;</a></h3>
-<p>Standard code style. Enforced by convention.</p>
-<h3 id="72-phpstan-level-8">7.2 PHPStan Level 8<a class="headerlink" href="#72-phpstan-level-8" title="Permanent link">&para;</a></h3>
-<p>Run <code>composer phpstan</code>. Configured over <code>src/</code> scope. Level 8 is the strictest level
-(excluding Level 9's <code>mixed</code> checks for now).</p>
-<h3 id="73-deptrac-architecture-boundaries">7.3 Deptrac Architecture Boundaries<a class="headerlink" href="#73-deptrac-architecture-boundaries" title="Permanent link">&para;</a></h3>
-<p>Run <code>composer deptrac</code>. Enforces:
-- Core MUST NOT depend on a business module
-- A module MUST NOT add a dependency on another module's <code>Entity</code> or <code>Repository</code></p>
-<p>The <code>deptrac-baseline.yaml</code> contains reviewed historical violations. New entries require an
-explicit architecture decision.</p>
-<h3 id="74-rector-type-rules">7.4 Rector Type Rules<a class="headerlink" href="#74-rector-type-rules" title="Permanent link">&para;</a></h3>
-<p>Run <code>composer rector:types:check</code> (CI dry-run). Enforces Doctrine <code>Collection</code> /
-<code>Repository</code> PHPDoc generics. Broader Rector (<code>composer rector</code>) is opt-in and must be
-reviewed.</p>
-<h3 id="75-naming-conventions">7.5 Naming Conventions<a class="headerlink" href="#75-naming-conventions" title="Permanent link">&para;</a></h3>
+<h3 id="protected-cross-module-conflict-groups-never-drop-the-prefix">Protected cross-module conflict groups (never drop the prefix)<a class="headerlink" href="#protected-cross-module-conflict-groups-never-drop-the-prefix" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
 <tr>
-<th>Element</th>
-<th>Convention</th>
-<th>Example</th>
+<th>Concept</th>
+<th>Reserved class names</th>
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>Order</td>
+<td><code>Trade\Order</code>, <code>Store\StoreOrder</code></td>
+</tr>
+<tr>
+<td>User</td>
+<td><code>Identity\User</code>, <code>Wechat\WechatUser</code></td>
+</tr>
+<tr>
+<td>OutboxMessage</td>
+<td><code>Trade\TradeOutboxMessage</code>, <code>Store\StoreOutboxMessage</code>, <code>Inventory\InventoryOutboxMessage</code></td>
+</tr>
+<tr>
+<td>ConsumedEvent</td>
+<td><code>Store\StoreConsumedEvent</code>, <code>Inventory\InventoryConsumedEvent</code></td>
+</tr>
+</tbody>
+</table>
+<p>(The 2026-08-15 prefix refactor removed <code>Wallet*</code>/<code>Inventory*</code>/<code>Store*</code> prefixes for
+unique concepts — <code>WalletTransaction→Transaction</code>, <code>InventoryStock→Stock</code>,
+<code>StoreMembership→Membership</code> — with zero migration or API breakage; table names, URLs
+and route names were unchanged.)</p>
+<p>Forbidden: inventing a service suffix (<code>CategoryService</code> for an entity <code>Category</code> is
+fine, but adding an arbitrary <code>XxxService</code> name for a non-service class is not),
+inconsistent prefixes inside a module, non-mirrored controller/service names.</p>
+<hr />
+<h2 id="5-code-style">5. Code Style<a class="headerlink" href="#5-code-style" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Area</th>
+<th>Rule</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PHP</td>
+<td><code>&gt;= 8.4</code>, <code>declare(strict_types=1)</code> in new code</td>
+</tr>
+<tr>
+<td>Properties / returns</td>
+<td>Explicit types, never docblock-only; nullable as <code>?Type</code></td>
+</tr>
+<tr>
+<td>Namespace</td>
+<td>PSR-4 <code>App\</code> under <code>src/</code></td>
+</tr>
+<tr>
+<td>Use statements</td>
+<td>Alphabetically ordered</td>
+</tr>
+<tr>
+<td>Files</td>
+<td>One class/trait/interface per file, filename = classname</td>
+</tr>
 <tr>
 <td>Classes</td>
-<td>PascalCase</td>
-<td><code>CategoryService</code></td>
-</tr>
-<tr>
-<td>Methods</td>
-<td>camelCase</td>
-<td><code>getEnabledCategories()</code></td>
-</tr>
-<tr>
-<td>Properties</td>
-<td>camelCase</td>
-<td><code>$serviceClass</code></td>
-</tr>
-<tr>
-<td>Constants</td>
-<td>UPPER_SNAKE</td>
-<td><code>UNKNOWN_ERROR</code></td>
+<td>PascalCase; methods/properties camelCase; constants <code>UPPER_SNAKE</code></td>
 </tr>
 <tr>
 <td>Interfaces</td>
-<td><code>*Interface</code> suffix</td>
-<td><code>BaseServiceInterface</code></td>
-</tr>
-<tr>
-<td>Abstract classes</td>
-<td><code>Abstract*</code> or <code>Base*</code> prefix</td>
-<td><code>BaseService</code></td>
-</tr>
-<tr>
-<td>Traits</td>
-<td><code>*Trait</code> suffix or descriptive</td>
-<td><code>ListApiViewMixin</code></td>
+<td><code>*Interface</code> suffix; abstracts <code>Abstract*</code> / <code>Base*</code>; traits <code>*Trait</code> or descriptive (<code>ListApiViewMixin</code>)</td>
 </tr>
 <tr>
 <td>Tests</td>
-<td><code>*Test</code> suffix</td>
-<td><code>CategoryTest</code></td>
+<td><code>*Test</code> suffix, namespaced <code>App\Tests\...</code></td>
+</tr>
+<tr>
+<td>Comments</td>
+<td>PHPDoc on interfaces/abstract methods; no comments on self-documenting code; <code>@deprecated</code> + migration notes for removals</td>
 </tr>
 </tbody>
 </table>
 <hr />
-<h2 id="8-testing-contracts">8. Testing Contracts<a class="headerlink" href="#8-testing-contracts" title="Permanent link">&para;</a></h2>
-<h3 id="81-unit-vs-integration">8.1 Unit vs Integration<a class="headerlink" href="#81-unit-vs-integration" title="Permanent link">&para;</a></h3>
+<h2 id="6-performance">6. Performance<a class="headerlink" href="#6-performance" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
-<th>Category</th>
-<th>Extends</th>
-<th>Purpose</th>
+<th>Practice</th>
+<th>Where it shows up</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Unit</td>
-<td><code>PHPUnit\Framework\TestCase</code></td>
-<td>Isolated logic (entities, utils, calculators)</td>
+<td>Paginate every list</td>
+<td><code>RestController::pagination()</code> — default limit 100, Doctrine Paginator for QueryBuilder</td>
 </tr>
 <tr>
-<td>Kernel</td>
-<td><code>IntegrationKernelTestCase</code></td>
-<td>With booted kernel, service access, DB</td>
+<td>Project columns instead of fetching everything</td>
+<td><code>@select</code>, <code>@display</code> (e.g. <code>reduce</code> = id + <code>__toString</code> only)</td>
 </tr>
 <tr>
-<td>Web</td>
-<td><code>IntegrationWebTestCase</code></td>
-<td>Full HTTP request/response cycle</td>
+<td>Push filtering to the database</td>
+<td>Expression DSL compiles to DQL (<code>ExpressionDqlParser</code>); the in-memory fallback is only a fallback</td>
 </tr>
 <tr>
-<td>Regression</td>
-<td>Varies</td>
-<td>API contract stability</td>
+<td>Avoid implicit relation loading</td>
+<td>Relations load lazily; expand relation trees explicitly via <code>@expands</code></td>
+</tr>
+<tr>
+<td>Concurrent writes are guarded</td>
+<td><code>Wallet</code> uses optimistic locking (<code>version</code> column) and pessimistic writes for transfers; token rotation uses reuse detection</td>
+</tr>
+<tr>
+<td>Costly lookup is indexed/short</td>
+<td>UUID/IAM references on aggregates; repositories expose targeted queries</td>
+</tr>
+<tr>
+<td>Bulk admin writes stay transactional</td>
+<td><code>@partial=true</code> for per-item mode, else single-transaction</td>
+</tr>
+<tr>
+<td>Long-running work goes async</td>
+<td>Messenger async transport + outbox publish commands</td>
 </tr>
 </tbody>
 </table>
-<h3 id="82-test-naming">8.2 Test Naming<a class="headerlink" href="#82-test-naming" title="Permanent link">&para;</a></h3>
-<table>
-<thead>
-<tr>
-<th>Pattern</th>
-<th>Example</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>{Class}Test</code></td>
-<td><code>CategoryTest.php</code>, <code>OrderServiceTest.php</code></td>
-</tr>
-<tr>
-<td><code>{Module}ApiRegressionTest</code></td>
-<td><code>CommonModulesApiRegressionTest.php</code></td>
-</tr>
-<tr>
-<td><code>{Module}IntegrationTest</code></td>
-<td><code>WalletApiIntegrationTest.php</code></td>
-</tr>
-</tbody>
-</table>
-<p>Tests in <code>tests/{Module}/</code> mirror the <code>src/{Module}/</code> structure.</p>
-<h3 id="83-coverage-requirements">8.3 Coverage Requirements<a class="headerlink" href="#83-coverage-requirements" title="Permanent link">&para;</a></h3>
+<hr />
+<h2 id="7-security">7. Security<a class="headerlink" href="#7-security" title="Permanent link">&para;</a></h2>
+<h3 id="authentication">Authentication<a class="headerlink" href="#authentication" title="Permanent link">&para;</a></h3>
 <ul>
-<li><strong>Minimum</strong>: 90% line coverage (enforced in CI via PHPUnit)</li>
-<li><strong>Test environment</strong>: <code>APP_ENV=test</code>, SQLite database</li>
-<li>Each test method starts with a clean schema (Doctrine schema tool, not migrations)</li>
-<li>Transactions are wrapped per test and rolled back</li>
+<li><code>JwtAuthenticator</code> extracts and validates the <code>Authorization: Bearer</code> JWT and builds
+  the Passport; <code>TokenManager</code> issues/revokes tokens and manages refresh-token lifecycle.</li>
 </ul>
-<h3 id="84-test-database">8.4 Test Database<a class="headerlink" href="#84-test-database" title="Permanent link">&para;</a></h3>
-<p>The test database schema is created from Doctrine schema tool — not from migrations.
-<code>DatabaseBootstrapTrait</code> handles schema setup. Each test starts with a clean schema.</p>
-<hr />
-<h2 id="9-git-workflow">9. Git Workflow<a class="headerlink" href="#9-git-workflow" title="Permanent link">&para;</a></h2>
-<h3 id="91-feature-branches">9.1 Feature Branches<a class="headerlink" href="#91-feature-branches" title="Permanent link">&para;</a></h3>
-<p>Branch naming: <code>feature/{description}</code>, <code>fix/{description}</code>, <code>refactor/{description}</code>.</p>
-<h3 id="92-conventional-commits">9.2 Conventional Commits<a class="headerlink" href="#92-conventional-commits" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>type(scope): description
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>feat(identity): add phone verification OTP flow
-<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>fix(order): prevent double-submission of payments
-<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>refactor(core): extract QueryBuilderFactory from BaseService
-<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>docs(manual): add API contracts documentation
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Rule</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>S1</td>
+<td>Access tokens: RS256 signed, 7200s TTL</td>
+</tr>
+<tr>
+<td>S2</td>
+<td>Refresh tokens: opaque, HMAC-SHA256-hashed in DB, 1-year TTL</td>
+</tr>
+<tr>
+<td>S3</td>
+<td>Refresh tokens rotate on every use</td>
+</tr>
+<tr>
+<td>S4</td>
+<td>Reuse of a revoked/replaced refresh token revokes ALL the user's tokens</td>
+</tr>
+<tr>
+<td>S5</td>
+<td>Revoked access-token JTIs are blacklisted until natural expiry</td>
+</tr>
+<tr>
+<td>S6</td>
+<td>Private keys are never committed</td>
+</tr>
+<tr>
+<td>S7</td>
+<td>HTTPS in production</td>
+</tr>
+</tbody>
+</table>
+<h3 id="authorization">Authorization<a class="headerlink" href="#authorization" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Access control is centralized in <code>config/packages/security.yaml</code>: <code>/api/v1/manage</code>
+  → <code>ROLE_ADMIN</code>; <code>/api</code> → <code>IS_AUTHENTICATED_FULLY</code>; the public list (auth flows,
+  register, WeChat login, payment notify, docs, <code>GET /api/v1/public</code>) is
+  <code>PUBLIC_ACCESS</code>.</li>
+<li>Row-level scoping is per-controller via <code>commonFilter()</code>/<code>listFilter()</code> overrides
+  (e.g. a user only ever sees their own records; the App-side filter enforces it).
+  <code>commonFilter()</code> may return an array (<code>['user' =&gt; $this-&gt;getUser()]</code>), a
+  <code>QueryBuilder</code>, or a server-owned <code>DqlExpression</code> such as
+  <code>new DqlExpression('entity.getUser() == this.getUser()')</code> or
+  <code>new DqlExpression('entity.getStoreUuid() in storeUuids', ['storeUuids' =&gt; $allowed])</code>.
+  <code>DqlExpression</code> shares the <code>@filter</code> syntax (including <code>in</code>/<code>not in</code> with empty-
+  collection safety) but is fail-closed and never uses the in-memory fallback. The
+  designed <code>Authorization</code> bundle (<code>docs/design/bundles/authorization.md</code>) will build on this
+  primitive for scoped RBAC, Store-scoped grants, field grants, and audit logging.</li>
+<li>Manage controllers also carry class-level <code>#[IsGranted('ROLE_ADMIN')]</code>.</li>
+<li>Role hierarchy: <code>ROLE_ADMIN: [ROLE_USER]</code>.</li>
+</ul>
+<h3 id="validation-order">Validation order<a class="headerlink" href="#validation-order" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>Controller field whitelist ($requiredCreateProperties / $acceptedCreateProperties)
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>  → controller hook validation (processCreateContent / processUpdateContent)
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>    → @transform expression
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>      → Service::update() → Symfony Validator → entity #[Assert\*] constraints
 </code></pre></div>
-<p>Types: <code>feat</code>, <code>fix</code>, <code>refactor</code>, <code>docs</code>, <code>test</code>, <code>ci</code>, <code>chore</code>.</p>
-<h3 id="93-pr-template">9.3 PR Template<a class="headerlink" href="#93-pr-template" title="Permanent link">&para;</a></h3>
-<p>Available in <code>.github/pull_request_template.md</code>. Must include:
-- Summary of changes
-- Testing performed
-- Breaking changes (if any)
-- Checklist (tests pass, static analysis passes, documentation updated)</p>
-<h3 id="94-review-requirements">9.4 Review Requirements<a class="headerlink" href="#94-review-requirements" title="Permanent link">&para;</a></h3>
+<h3 id="rate-limiting">Rate limiting<a class="headerlink" href="#rate-limiting" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Resource</th>
+<th>Limit</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>OTP request (per phone)</td>
+<td>1 per 60s cooldown</td>
+</tr>
+<tr>
+<td>OTP verify (per phone)</td>
+<td>5 attempts max</td>
+</tr>
+</tbody>
+</table>
+<p>Backed by Redis (<code>OTP_REDIS_DSN</code>) or the local-cache fallback (<code>LocalCacheOtpStorage</code>).</p>
+<h3 id="logging-hygiene">Logging hygiene<a class="headerlink" href="#logging-hygiene" title="Permanent link">&para;</a></h3>
 <ul>
-<li>CI must pass (PHPStan Level 8, Rector dry-run, PHPUnit with 90%+ coverage)</li>
-<li>At least one approving review for changes to shared Core classes</li>
-<li>Migration files require explicit review for rollback compatibility</li>
+<li>Request bodies on PUT/POST are logged at INFO with user id, URI, body truncated to
+  1 KB.</li>
+<li><strong>Never log</strong> passwords, tokens, OTP codes in plaintext, or PII in production.</li>
+<li>Channels: <code>app</code>, <code>doctrine</code> (dev), <code>security</code>.</li>
+</ul>
+<h3 id="money-and-identity">Money and identity<a class="headerlink" href="#money-and-identity" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Money is integer-cents or fixed-scale quantum (<code>QuantumAmount</code>, 18-decimal,
+  <code>brick/math</code>) — never floats.</li>
+<li>Aggregate references across modules are UUIDs — never raw FK or auto-increment ids.</li>
 </ul>
 <hr />
-<h2 id="10-breaking-changes">10. Breaking Changes<a class="headerlink" href="#10-breaking-changes" title="Permanent link">&para;</a></h2>
-<h3 id="101-what-constitutes-a-breaking-change">10.1 What Constitutes a Breaking Change<a class="headerlink" href="#101-what-constitutes-a-breaking-change" title="Permanent link">&para;</a></h3>
+<h2 id="8-breaking-change-policy">8. Breaking-Change Policy<a class="headerlink" href="#8-breaking-change-policy" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
 <th>Change</th>
-<th>Breaking?</th>
+<th>Allowed?</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Change hook method signature</td>
-<td><strong>Yes</strong> — major version bump</td>
+<td>New mixin trait / hook with default impl</td>
+<td>Yes, documented</td>
 </tr>
 <tr>
-<td>Remove mixin method</td>
-<td><strong>Yes</strong> — major version bump</td>
+<td>Change a hook signature / remove a mixin method / change the response envelope</td>
+<td><strong>NO</strong> — major version</td>
 </tr>
 <tr>
-<td>Change response envelope format</td>
-<td><strong>Yes</strong> — major version bump</td>
+<td>Add a query parameter</td>
+<td>Yes (backward compatible)</td>
 </tr>
 <tr>
-<td>Remove supported query parameter</td>
-<td><strong>Yes</strong> — deprecation notice + major version bump</td>
+<td>Remove a supported query parameter</td>
+<td><strong>NO</strong> — deprecation + major version</td>
 </tr>
 <tr>
 <td>Change <code>BaseServiceInterface</code></td>
-<td><strong>Yes</strong> — cross-module impact assessment</td>
+<td><strong>NO</strong> — cross-module impact assessment</td>
 </tr>
 <tr>
-<td>Change entity field type</td>
-<td><strong>Yes</strong> — migration required</td>
-</tr>
-<tr>
-<td>Add new mixin trait</td>
-<td><strong>No</strong> — documentation only</td>
-</tr>
-<tr>
-<td>Add new hook method with default impl</td>
-<td><strong>No</strong> — documentation only</td>
-</tr>
-<tr>
-<td>Add query parameter</td>
-<td><strong>No</strong> — backward compatible</td>
-</tr>
-<tr>
-<td>Add new module</td>
-<td><strong>No</strong> — follow module contract</td>
+<td>Add a module</td>
+<td>Yes, following the module checklist (<code>docs/design/module-design.md</code>)</td>
 </tr>
 </tbody>
 </table>
-<h3 id="102-migration-compatibility">10.2 Migration Compatibility<a class="headerlink" href="#102-migration-compatibility" title="Permanent link">&para;</a></h3>
-<ul>
-<li>Schema changes require a backward-compatible migration (old code reads with new schema)</li>
-<li>Irreversible migrations (e.g., column drops) are prohibited without explicit approval</li>
-<li>Migrations organize by module — one migration file per module change set</li>
-</ul>
 <hr />
-<h2 id="11-documentation-requirements">11. Documentation Requirements<a class="headerlink" href="#11-documentation-requirements" title="Permanent link">&para;</a></h2>
-<h3 id="111-when-adding-a-module">11.1 When Adding a Module<a class="headerlink" href="#111-when-adding-a-module" title="Permanent link">&para;</a></h3>
-<table>
-<thead>
-<tr>
-<th>Required Document</th>
-<th>Contents</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Design doc (<code>docs/design/{module}.md</code>)</td>
-<td>Business flow, API design, data model sketch</td>
-</tr>
-<tr>
-<td>Bundle doc (<code>docs/design/bundles/{module}.md</code>)</td>
-<td>Module scope, dependencies, exported interfaces</td>
-</tr>
-<tr>
-<td>OpenAPI spec (code <code>#[OA\*]</code>)</td>
-<td>Auto-generated at <code>/api/doc</code></td>
-</tr>
-</tbody>
-</table>
-<h3 id="112-when-adding-a-service">11.2 When Adding a Service<a class="headerlink" href="#112-when-adding-a-service" title="Permanent link">&para;</a></h3>
+<h2 id="9-see-also">9. See Also<a class="headerlink" href="#9-see-also" title="Permanent link">&para;</a></h2>
 <ul>
-<li>PHPDoc <code>@extends BaseService&lt;EntityClass&gt;</code> on the service class</li>
-<li>Service interface in the same namespace</li>
-<li>Register in module's service configuration if not autowired</li>
-</ul>
-<h3 id="113-when-adding-an-endpoint">11.3 When Adding an Endpoint<a class="headerlink" href="#113-when-adding-an-endpoint" title="Permanent link">&para;</a></h3>
-<ul>
-<li><code>#[Route]</code> attribute with proper <code>name</code> following <code>{scope}-{resource}-{action}</code> convention</li>
-<li><code>#[OA\*]</code> attributes for NelmioApiDoc</li>
-<li><code>#[IsGranted]</code> for authorization</li>
-<li>Update <code>OpenApiEnricherListener::META</code> if endpoint needs custom summary/description</li>
-</ul>
-<hr />
-<h2 id="12-performance-guidelines">12. Performance Guidelines<a class="headerlink" href="#12-performance-guidelines" title="Permanent link">&para;</a></h2>
-<h3 id="121-n1-prevention">12.1 N+1 Prevention<a class="headerlink" href="#121-n1-prevention" title="Permanent link">&para;</a></h3>
-<ul>
-<li>Use <code>@expands</code> to eager-load relations in list endpoints</li>
-<li>Use <code>detailProcessor()</code> to call <code>$entity-&gt;getItems()-&gt;toArray()</code> for detail views</li>
-<li>Avoid <code>@sort</code> (in-memory) — prefer <code>@order</code> (DQL)</li>
-</ul>
-<h3 id="122-query-optimization">12.2 Query Optimization<a class="headerlink" href="#122-query-optimization" title="Permanent link">&para;</a></h3>
-<ul>
-<li>Use <code>@select</code> to project only needed fields</li>
-<li>Use <code>@filter</code> to push filtering to the database</li>
-<li>Avoid <code>@dql</code> subqueries unless necessary (use <code>@filter</code> instead)</li>
-<li>Use Doctrine's <code>indexBy</code> in repositories for eager loading</li>
-</ul>
-<h3 id="123-caching">12.3 Caching<a class="headerlink" href="#123-caching" title="Permanent link">&para;</a></h3>
-<ul>
-<li>ExpressionService can use a PSR-16 cache to avoid re-parsing filters</li>
-<li><code>cache.app</code> is available for application-level caching</li>
-<li>JWT blacklist uses cache (TTL-based)</li>
-</ul>
-<hr />
-<h2 id="13-security-rules">13. Security Rules<a class="headerlink" href="#13-security-rules" title="Permanent link">&para;</a></h2>
-<h3 id="131-safe-select">13.1 Safe Select<a class="headerlink" href="#131-safe-select" title="Permanent link">&para;</a></h3>
-<p><code>@select</code> is block-listed for identity-sensitive fields (<code>user</code>, <code>profile</code>, <code>password</code>,
-<code>roles</code>, <code>email</code>, <code>phone</code>, <code>phoneVerified</code>, <code>refreshToken</code>, <code>sessionKey</code>, <code>rawData</code>) and
-for any query targeting <code>App\Identity\*</code> entities.</p>
-<h3 id="132-privileged-parameters">13.2 Privileged Parameters<a class="headerlink" href="#132-privileged-parameters" title="Permanent link">&para;</a></h3>
-<p><code>@dql</code>, <code>@sort</code>, <code>@hints</code> are restricted to <code>ROLE_ADMIN</code>. <code>@showDQL</code> requires <code>dev</code>
-environment.</p>
-<h3 id="133-commonfilter">13.3 commonFilter<a class="headerlink" href="#133-commonfilter" title="Permanent link">&para;</a></h3>
-<p>Every controller with list/detail mixins MUST override <code>commonFilter()</code> to enforce
-ownership and visibility. For user-scoped endpoints, always return <code>['id' =&gt; -1]</code> as a
-fallback when the user is not authenticated.</p>
-<h3 id="134-csrf-xss">13.4 CSRF / XSS<a class="headerlink" href="#134-csrf-xss" title="Permanent link">&para;</a></h3>
-<ul>
-<li>All API authentication uses JWT Bearer tokens (no session, no cookies)</li>
-<li>JSON responses use <code>Content-Type: application/json</code></li>
-<li>No HTML rendering from API endpoints</li>
-<li>Input sanitization is not performed at the framework level; rely on Doctrine parameter
-  binding for SQL injection prevention</li>
+<li><a href="../development-workflow/">Development Workflow</a> — branches, CI, static analysis gates</li>
+<li><a href="../testing/">Testing</a> — suites, helpers, the 90% coverage gate</li>
+<li><a href="../api-contracts/">API Contracts</a> — envelope, auth, URL, pagination, webhooks</li>
+<li><a href="../architecture/">Architecture</a> — practical overview of the module model and patterns</li>
+<li>Normative contracts: <code>docs/design/system-architecture.md</code>, <code>system-contracts.md</code>,
+  <code>module-design.md</code>, <code>naming-convention.md</code>, <code>controller-design.md</code>, per-module
+  <code>docs/design/bundles/*.md</code></li>
 </ul>
 
 
@@ -3658,6 +3848,10 @@ fallback when the user is not authenticated.</p>
     
     
       <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+      
+        <script src="../../javascripts/mermaid-init.js"></script>
       
     
   </body>

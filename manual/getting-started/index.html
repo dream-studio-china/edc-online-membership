@@ -6,23 +6,23 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="A production-oriented Symfony microservices platform evolved from modular monolith architecture, featuring DDD, service isolation, and event-driven communication.">
+        <meta name="description" content="Symfony 8.1 API backend skeleton with modular architecture">
       
       
       
-        <link rel="canonical" href="https://immane.github.io/crud-platform/manual/getting-started/">
+        <link rel="canonical" href="https://immane.github.io/crud-skeleton/manual/getting-started/">
       
       
-        <link rel="prev" href="../architecture/">
+        <link rel="prev" href="../">
       
       
-        <link rel="next" href="../project-structure/">
+        <link rel="next" href="../architecture/">
       
       
         
-          <link rel="alternate" href="/crud-platform/" hreflang="en">
+          <link rel="alternate" href="/crud-skeleton/" hreflang="en">
         
-          <link rel="alternate" href="/crud-platform/zh/" hreflang="zh">
+          <link rel="alternate" href="/crud-skeleton/zh/" hreflang="zh">
         
       
       
@@ -31,7 +31,7 @@
     
     
       
-        <title>Getting Started - CRUD Platform</title>
+        <title>Getting Started - CRUD Skeleton</title>
       
     
     
@@ -98,7 +98,7 @@
 
 <header class="md-header md-header--shadow" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../.." title="CRUD Platform" class="md-header__button md-logo" aria-label="CRUD Platform" data-md-component="logo">
+    <a href="../.." title="CRUD Skeleton" class="md-header__button md-logo" aria-label="CRUD Skeleton" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -112,7 +112,7 @@
       <div class="md-header__ellipsis">
         <div class="md-header__topic">
           <span class="md-ellipsis">
-            CRUD Platform
+            CRUD Skeleton
           </span>
         </div>
         <div class="md-header__topic" data-md-component="header-topic">
@@ -165,13 +165,13 @@
       <ul class="md-select__list">
         
           <li class="md-select__item">
-            <a href="/crud-platform/" hreflang="en" class="md-select__link">
+            <a href="/crud-skeleton/" hreflang="en" class="md-select__link">
               English
             </a>
           </li>
         
           <li class="md-select__item">
-            <a href="/crud-platform/zh/" hreflang="zh" class="md-select__link">
+            <a href="/crud-skeleton/zh/" hreflang="zh" class="md-select__link">
               中文
             </a>
           </li>
@@ -226,7 +226,7 @@
     
     
       <div class="md-header__source">
-        <a href="https://github.com/immane/crud-platform" title="Go to repository" class="md-source" data-md-component="source">
+        <a href="https://github.com/immane/crud-skeleton" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
@@ -262,17 +262,17 @@
 
 <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../.." title="CRUD Platform" class="md-nav__button md-logo" aria-label="CRUD Platform" data-md-component="logo">
+    <a href="../.." title="CRUD Skeleton" class="md-nav__button md-logo" aria-label="CRUD Skeleton" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
 
     </a>
-    CRUD Platform
+    CRUD Skeleton
   </label>
   
     <div class="md-nav__source">
-      <a href="https://github.com/immane/crud-platform" title="Go to repository" class="md-source" data-md-component="source">
+      <a href="https://github.com/immane/crud-skeleton" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
@@ -316,922 +316,6 @@
       
   
   
-  
-  
-    
-    
-    
-    
-      
-        
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
-        
-          
-          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Design Contracts
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Design Contracts
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/system-architecture/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    System Architecture
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/microservice-transition/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Microservice Transition
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/store-extraction-readiness/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Store Extraction Readiness
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/inventory-extraction-readiness/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Inventory Extraction Readiness
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/payment-extraction-readiness/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Payment Extraction Readiness
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/wallet-extraction-readiness.md" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Wallet Extraction Readiness
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/api-design/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    API Design
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/data-model/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Data Model
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/module-design/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Module Design
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/controller-design/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Controller Design
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/api-documentation/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    API Documentation
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/system-contracts/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    System Contracts
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    
-    
-    
-    
-      
-        
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
-        
-          
-          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Bundles
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Bundles
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/bundles/core/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Core Framework
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/bundles/common/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Common (CMS)
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/bundles/trade/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Trade (E-Commerce)
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/bundles/store/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Store (Multi-Store Operations)
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/bundles/inventory/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Inventory
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/bundles/payment/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Payment
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/bundles/wallet/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Wallet
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/bundles/identity/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Identity (Auth)
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/bundles/wechat/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Wechat (Login + Pay)
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    
-    
-    
-    
-      
-        
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
-        
-          
-          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Research
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Research
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../research/easywechat-6.x-usage/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    EasyWeChat 6.x Usage
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../research/huifu-payment-api/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Huifu Payment API
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    
-    
-    
-    
-      
-        
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
-        
-          
-          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Issues
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_5">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Issues
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../issues/architecture-review-2026-06-26/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Architecture Review 2026-06-26
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-    
-      
-      
-  
-  
     
   
   
@@ -1250,10 +334,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
         
           
-          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
             
   
   
@@ -1271,8 +355,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
-          <label class="md-nav__title" for="__nav_6">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1296,35 +380,7 @@
   <span class="md-ellipsis">
     
   
-    Overview
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../architecture/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Architecture
+    Manual Index
   
 
     
@@ -1405,10 +461,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#1-prerequisites" class="md-nav__link">
+  <a href="#prerequisites" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. Prerequisites
+        Prerequisites
       
     </span>
   </a>
@@ -1416,10 +472,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2-docker-quick-start" class="md-nav__link">
+  <a href="#services-in-composeyaml" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. Docker Quick Start
+        Services in compose.yaml
       
     </span>
   </a>
@@ -1427,10 +483,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#3-port-table" class="md-nav__link">
+  <a href="#docker-quick-start" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. Port Table
+        Docker Quick Start
       
     </span>
   </a>
@@ -1438,44 +494,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#4-native-php-setup-without-docker" class="md-nav__link">
+  <a href="#native-php-setup" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. Native PHP Setup (Without Docker)
+        Native PHP Setup
       
     </span>
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#5-jwt-key-generation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        5. JWT Key Generation
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#6-verifying-the-setup" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        6. Verifying the Setup
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="6. Verifying the Setup">
+    <nav class="md-nav" aria-label="Native PHP Setup">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#health-check" class="md-nav__link">
+  <a href="#generate-the-jwt-key-pair" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Health Check
+        Generate the JWT key pair
       
     </span>
   </a>
@@ -1483,10 +517,21 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#smoke-tests" class="md-nav__link">
+  <a href="#create-the-database-and-run-migrations" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Smoke Tests
+        Create the database and run migrations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#serve-the-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Serve the API
       
     </span>
   </a>
@@ -1499,107 +544,35 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#7-common-troubleshooting" class="md-nav__link">
+  <a href="#jwt-environment-variables" class="md-nav__link">
     <span class="md-ellipsis">
       
-        7. Common Troubleshooting
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="7. Common Troubleshooting">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#could-not-find-driver-database" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        "Could not find driver" (Database)
+        JWT Environment Variables
       
     </span>
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
-  <a href="#jwt-key-permission-denied" class="md-nav__link">
+      
+        <li class="md-nav__item">
+  <a href="#verifying-the-setup" class="md-nav__link">
     <span class="md-ellipsis">
       
-        JWT Key Permission Denied
+        Verifying the Setup
       
     </span>
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
-  <a href="#port-already-in-use" class="md-nav__link">
+      
+        <li class="md-nav__item">
+  <a href="#troubleshooting" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Port Already in Use
+        Troubleshooting
       
     </span>
   </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#container-build-fails" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Container Build Fails
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#migration-errors-on-extracted-apps" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Migration Errors on Extracted Apps
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#php-version-issues-native" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        PHP Version Issues (Native)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#swaggermailpit-not-accessible" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Swagger/Mailpit Not Accessible
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#container-ports-not-exposed" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Container Ports Not Exposed
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -1607,6 +580,34 @@
   
 </nav>
       
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
     </li>
   
 
@@ -1711,6 +712,34 @@
     
   
     Query System
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../authorization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authorization Setup
   
 
     
@@ -1989,6 +1018,1688 @@
   
   
   
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Design Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Design Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/system-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    System Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/api-design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/data-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/module-design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Module Design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/controller-design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Controller Design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/api-documentation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Documentation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/system-contracts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    System Contracts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/naming-convention/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Naming Convention
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bundles
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Bundles
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/core/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core Framework
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/common/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Common (CMS)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/trade/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Trade (E-Commerce)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/store/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Store (Multi-Store Operations)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/store-catalog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Store Catalog (Target)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/inventory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Inventory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/payment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Payment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/wallet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Wallet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/settlement/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Settlement (Allocation + Finality)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/exchange/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Exchange (Pool-backed Economy)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/identity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Identity (Auth)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/authorization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authorization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/wechat/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Wechat (Login + Pay)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Runbooks
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Runbooks
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/authorization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authorization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/common/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Common
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/core/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/exchange/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Exchange
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/identity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Identity
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/inventory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Inventory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/payment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Payment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/promotion/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Promotion
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/settlement/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Settlement
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/storage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Storage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/store/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Store
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/trade/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Trade
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/wallet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Wallet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/wechat/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    WeChat
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Research
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Research
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../research/easywechat-6.x-usage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    EasyWeChat 6.x Usage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../research/huifu-payment-api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Huifu Payment API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Issues
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Issues
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../issues/architecture-review-2026-06-26/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture Review 2026-06-26
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Testing
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../testing/crud-skeleton-production/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Production Validation Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../testing/crud-skeleton-production/TEST_STRATEGY/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Test Strategy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../testing/crud-skeleton-production/SYSTEM_WALKTHROUGH/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    System Walkthrough And Test Seams
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../testing/crud-skeleton-production/TEST_MATRIX/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Test Matrix
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../testing/crud-skeleton-production/BUSINESS_INVARIANTS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Business Invariants
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../testing/crud-skeleton-production/ARCHITECTURE_TEST_MAPPING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture Test Mapping
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../testing/crud-skeleton-production/FAILURE_MODES/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Failure Modes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../testing/crud-skeleton-production/PRODUCTION_VALIDATION/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Release Validation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../testing/crud-skeleton-production/AI_DEVELOPMENT_PROCESS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI Development Process
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
     <li class="md-nav__item">
       <a href="../../ai/context/" class="md-nav__link">
         
@@ -2064,10 +2775,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#1-prerequisites" class="md-nav__link">
+  <a href="#prerequisites" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. Prerequisites
+        Prerequisites
       
     </span>
   </a>
@@ -2075,10 +2786,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2-docker-quick-start" class="md-nav__link">
+  <a href="#services-in-composeyaml" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. Docker Quick Start
+        Services in compose.yaml
       
     </span>
   </a>
@@ -2086,10 +2797,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#3-port-table" class="md-nav__link">
+  <a href="#docker-quick-start" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. Port Table
+        Docker Quick Start
       
     </span>
   </a>
@@ -2097,44 +2808,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#4-native-php-setup-without-docker" class="md-nav__link">
+  <a href="#native-php-setup" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. Native PHP Setup (Without Docker)
+        Native PHP Setup
       
     </span>
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#5-jwt-key-generation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        5. JWT Key Generation
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#6-verifying-the-setup" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        6. Verifying the Setup
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="6. Verifying the Setup">
+    <nav class="md-nav" aria-label="Native PHP Setup">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#health-check" class="md-nav__link">
+  <a href="#generate-the-jwt-key-pair" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Health Check
+        Generate the JWT key pair
       
     </span>
   </a>
@@ -2142,10 +2831,21 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#smoke-tests" class="md-nav__link">
+  <a href="#create-the-database-and-run-migrations" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Smoke Tests
+        Create the database and run migrations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#serve-the-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Serve the API
       
     </span>
   </a>
@@ -2158,107 +2858,35 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#7-common-troubleshooting" class="md-nav__link">
+  <a href="#jwt-environment-variables" class="md-nav__link">
     <span class="md-ellipsis">
       
-        7. Common Troubleshooting
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="7. Common Troubleshooting">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#could-not-find-driver-database" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        "Could not find driver" (Database)
+        JWT Environment Variables
       
     </span>
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
-  <a href="#jwt-key-permission-denied" class="md-nav__link">
+      
+        <li class="md-nav__item">
+  <a href="#verifying-the-setup" class="md-nav__link">
     <span class="md-ellipsis">
       
-        JWT Key Permission Denied
+        Verifying the Setup
       
     </span>
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
-  <a href="#port-already-in-use" class="md-nav__link">
+      
+        <li class="md-nav__item">
+  <a href="#troubleshooting" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Port Already in Use
+        Troubleshooting
       
     </span>
   </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#container-build-fails" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Container Build Fails
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#migration-errors-on-extracted-apps" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Migration Errors on Extracted Apps
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#php-version-issues-native" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        PHP Version Issues (Native)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#swaggermailpit-not-accessible" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Swagger/Mailpit Not Accessible
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#container-ports-not-exposed" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Container Ports Not Exposed
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -2283,275 +2911,290 @@
 
 
 <h1 id="getting-started">Getting Started<a class="headerlink" href="#getting-started" title="Permanent link">&para;</a></h1>
-<h2 id="1-prerequisites">1. Prerequisites<a class="headerlink" href="#1-prerequisites" title="Permanent link">&para;</a></h2>
-<ul>
-<li><strong>Docker</strong> and Docker Compose (recommended)</li>
-<li><strong>PHP 8.4+</strong> for native development (Homebrew PHP 8.5 at <code>/opt/homebrew/opt/php@8.5/bin/php</code> on macOS)</li>
-<li><strong>Composer 2.x</strong></li>
-<li><strong>OpenSSL</strong> (for JWT key generation)</li>
-<li><strong>MySQL 8.0</strong> client (for direct DB access)</li>
-</ul>
-<h2 id="2-docker-quick-start">2. Docker Quick Start<a class="headerlink" href="#2-docker-quick-start" title="Permanent link">&para;</a></h2>
-<p>The repository uses <code>compose.yaml</code> with 22 services covering all 8 applications:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># Clone and start all services</span>
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>git<span class="w"> </span>clone<span class="w"> </span>&lt;repository-url&gt;<span class="w"> </span>crud-platform
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="nb">cd</span><span class="w"> </span>crud-platform
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>docker<span class="w"> </span>compose<span class="w"> </span>up<span class="w"> </span>-d<span class="w"> </span>--build
-<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>
-<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="c1"># Run monolith migrations</span>
-<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>docker<span class="w"> </span>compose<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>app<span class="w"> </span>php<span class="w"> </span>bin/console<span class="w"> </span>doctrine:migrations:migrate<span class="w"> </span>--no-interaction
-<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>
-<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="c1"># Run migrations for each extracted app</span>
-<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>docker<span class="w"> </span>compose<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>store-app<span class="w"> </span>php<span class="w"> </span>bin/console<span class="w"> </span>doctrine:migrations:migrate<span class="w"> </span>--no-interaction
-<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>docker<span class="w"> </span>compose<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>inventory-app<span class="w"> </span>php<span class="w"> </span>bin/console<span class="w"> </span>doctrine:migrations:migrate<span class="w"> </span>--no-interaction
-<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>docker<span class="w"> </span>compose<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>payment-app<span class="w"> </span>php<span class="w"> </span>bin/console<span class="w"> </span>doctrine:migrations:migrate<span class="w"> </span>--no-interaction
-<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>docker<span class="w"> </span>compose<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>wallet-app<span class="w"> </span>php<span class="w"> </span>bin/console<span class="w"> </span>doctrine:migrations:migrate<span class="w"> </span>--no-interaction
-<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>docker<span class="w"> </span>compose<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>identity-app<span class="w"> </span>php<span class="w"> </span>bin/console<span class="w"> </span>doctrine:migrations:migrate<span class="w"> </span>--no-interaction
-<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>docker<span class="w"> </span>compose<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>common-app<span class="w"> </span>php<span class="w"> </span>bin/console<span class="w"> </span>doctrine:migrations:migrate<span class="w"> </span>--no-interaction
-<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>docker<span class="w"> </span>compose<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>trade-app<span class="w"> </span>php<span class="w"> </span>bin/console<span class="w"> </span>doctrine:migrations:migrate<span class="w"> </span>--no-interaction
-<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>
-<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a><span class="c1"># Create an admin user</span>
-<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>docker<span class="w"> </span>compose<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>app<span class="w"> </span>php<span class="w"> </span>bin/console<span class="w"> </span>app:identity:user:create<span class="w"> </span>admin@example.com<span class="w"> </span>admin<span class="w"> </span><span class="s1">'P@ssw0rd'</span><span class="w"> </span>--admin
-</code></pre></div>
-<p>During development, <code>compose.override.yaml</code> loads automatically:
-- Sets <code>APP_ENV=dev</code>, <code>APP_DEBUG=1</code>
-- Mounts source code for live reload
-- Exposes debug ports</p>
-<h2 id="3-port-table">3. Port Table<a class="headerlink" href="#3-port-table" title="Permanent link">&para;</a></h2>
+<p>This page gets the application running and shows you how to verify it works.
+Two paths are supported: <strong>Docker Compose</strong> (recommended, everything included) and
+<strong>native PHP</strong> (uses a locally installed PHP toolchain).</p>
+<h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
-<th>Service</th>
-<th>HTTP Port</th>
-<th>Database</th>
-<th>DB Port (mapped)</th>
+<th>Tool</th>
+<th>Version</th>
+<th>Purpose</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><strong>app</strong> (monolith)</td>
-<td>8080</td>
-<td>database</td>
-<td>33306</td>
+<td>Docker Engine + Compose v2</td>
+<td>latest stable</td>
+<td>Runs the full service stack (<code>compose.yaml</code>)</td>
 </tr>
 <tr>
-<td><strong>store-app</strong></td>
-<td>8081</td>
-<td>store-database</td>
-<td>33307</td>
+<td>PHP</td>
+<td><strong>8.4+</strong> (project constraint <code>&gt;=8.4</code>)</td>
+<td>Native setup; the CLI requires <code>pdo_mysql</code>, <code>openssl</code>, <code>zip</code>, <code>intl</code> extensions</td>
 </tr>
 <tr>
-<td><strong>inventory-app</strong></td>
-<td>8082</td>
-<td>inventory-database</td>
-<td>33308</td>
+<td>Composer</td>
+<td>2.x</td>
+<td>Dependency and autoload management</td>
 </tr>
 <tr>
-<td><strong>payment-app</strong></td>
-<td>8083</td>
-<td>payment-database</td>
-<td>33309</td>
+<td>OpenSSL</td>
+<td>any recent</td>
+<td>Generates the RSA JWT key pair</td>
 </tr>
 <tr>
-<td><strong>wallet-app</strong></td>
-<td>8084</td>
-<td>wallet-database</td>
-<td>33310</td>
-</tr>
-<tr>
-<td><strong>identity-app</strong></td>
-<td>8085</td>
-<td>identity-database</td>
-<td>33311</td>
-</tr>
-<tr>
-<td><strong>common-app</strong></td>
-<td>8086</td>
-<td>common-database</td>
-<td>33312</td>
-</tr>
-<tr>
-<td><strong>trade-app</strong></td>
-<td>8087</td>
-<td>trade-database</td>
-<td>33313</td>
-</tr>
-<tr>
-<td><strong>worker</strong></td>
-<td>— (CLI)</td>
-<td>—</td>
-<td>—</td>
-</tr>
-<tr>
-<td><strong>scheduler</strong></td>
-<td>— (CLI)</td>
-<td>—</td>
-<td>—</td>
-</tr>
-<tr>
-<td><strong>redis</strong></td>
-<td>6379</td>
-<td>—</td>
-<td>—</td>
-</tr>
-<tr>
-<td><strong>mailer</strong> (Mailpit)</td>
-<td>8025 (UI) / 1025 (SMTP)</td>
-<td>—</td>
-<td>—</td>
+<td>MySQL 8 client</td>
+<td>8.x</td>
+<td>Optional — native <code>mysql</code> CLI for inspecting the container database</td>
 </tr>
 </tbody>
 </table>
-<ul>
-<li>Root database port (<code>MYSQL_PORT</code>) defaults to <code>33306</code>; configure via env to avoid
-  host-side MySQL collisions.</li>
-<li>App HTTP ports are configurable via <code>APP_PORT</code>, <code>STORE_PORT</code>, etc. env vars.</li>
-</ul>
-<h2 id="4-native-php-setup-without-docker">4. Native PHP Setup (Without Docker)<a class="headerlink" href="#4-native-php-setup-without-docker" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># Install dependencies</span>
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>composer<span class="w"> </span>install
+<blockquote>
+<p>On macOS with Homebrew this project has been tested against <strong>PHP 8.5</strong>
+(<code>/opt/homebrew/opt/php</code>). PHP 8.4 from Homebrew works too — see
+<a href="#troubleshooting">Troubleshooting</a> if <code>php</code> resolves to an older version.</p>
+</blockquote>
+<h2 id="services-in-composeyaml">Services in <code>compose.yaml</code><a class="headerlink" href="#services-in-composeyaml" title="Permanent link">&para;</a></h2>
+<p><code>docker compose up -d --build</code> starts a single networked stack. Only <code>nginx</code>,
+<code>database</code>, <code>redis</code>, and <code>mailer</code> publish host ports; the PHP containers never do.</p>
+<table>
+<thead>
+<tr>
+<th>Service</th>
+<th>Image / Build</th>
+<th>Purpose</th>
+<th>Host port (default)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>app</code></td>
+<td>built from <code>Dockerfile</code></td>
+<td>PHP-FPM serving the Symfony API</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>worker</code></td>
+<td>same image</td>
+<td>Messenger consumer for the <code>async</code> transport</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>scheduler</code></td>
+<td>same image</td>
+<td>Loop running outbox-publish and reservation/settlement housekeeping</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>nginx</code></td>
+<td><code>nginx:alpine</code></td>
+<td>Reverse proxy to PHP-FPM; serves <code>/</code> → <code>public/</code></td>
+<td><code>${APP_PORT:-8080}:80</code></td>
+</tr>
+<tr>
+<td><code>database</code></td>
+<td><code>mysql:8.4</code></td>
+<td>Primary storage (Doctrine)</td>
+<td><code>3306:3306</code> via <code>compose.override.yaml</code></td>
+</tr>
+<tr>
+<td><code>redis</code></td>
+<td><code>redis:7-alpine</code></td>
+<td>Cache, OTP storage, rate limiter backing</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>mailer</code></td>
+<td><code>axllent/mailpit</code></td>
+<td>Email catcher (Mailpit UI)</td>
+<td><code>${MAILPIT_UI_PORT:-8025}:8025</code></td>
+</tr>
+</tbody>
+</table>
+<p><code>worker</code> and <code>scheduler</code> <code>extends: app</code>, so they share the same image and environment.
+<code>nginx</code> has a full-path readiness probe through to <code>GET /health/ready</code>.</p>
+<h2 id="docker-quick-start">Docker Quick Start<a class="headerlink" href="#docker-quick-start" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># 1. Build images and start every service</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>docker<span class="w"> </span>compose<span class="w"> </span>up<span class="w"> </span>-d<span class="w"> </span>--build
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="c1"># 2. Apply the latest database schema</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>docker<span class="w"> </span>compose<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>app<span class="w"> </span>php<span class="w"> </span>bin/console<span class="w"> </span>doctrine:migrations:migrate<span class="w"> </span>--no-interaction
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="c1"># 3. Create an administrator account (email, screen name, password)</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>docker<span class="w"> </span>compose<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>app<span class="w"> </span>php<span class="w"> </span>bin/console<span class="w"> </span>app:identity:user:create<span class="w"> </span>admin@example.com<span class="w"> </span>admin<span class="w"> </span><span class="s1">'P@ssw0rd'</span><span class="w"> </span>--admin
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>docker<span class="w"> </span>compose<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>app<span class="w"> </span>php<span class="w"> </span>bin/console<span class="w"> </span>app:authorization:seed
+</code></pre></div>
+<p>That is enough to log in and exercise the API. The last line seeds Authorization permissions/roles/field-grants (idempotent; see <a href="../authorization/">Authorization Setup</a>). The JWT key pair is generated
+automatically on first container start by <code>docker/app/entrypoint.sh</code> into
+<code>var/jwt/</code>. No environment file is required for a first run — <code>compose.yaml</code>
+provides safe development defaults.</p>
+<p>Common follow-up commands:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># Tail app logs</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>docker<span class="w"> </span>compose<span class="w"> </span>logs<span class="w"> </span>-f<span class="w"> </span>app
 <a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
-<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="c1"># Set up environment</span>
-<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>cp<span class="w"> </span>.env<span class="w"> </span>.env.local
-<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="c1"># Edit .env.local with your DB connection, JWT paths, etc.</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="c1"># Reset the database (dev only)</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>docker<span class="w"> </span>compose<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>app<span class="w"> </span>php<span class="w"> </span>bin/console<span class="w"> </span>doctrine:schema:drop<span class="w"> </span>--force
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>docker<span class="w"> </span>compose<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>app<span class="w"> </span>php<span class="w"> </span>bin/console<span class="w"> </span>doctrine:migrations:migrate<span class="w"> </span>--no-interaction
 <a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>
-<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="c1"># Generate JWT keys (see section 5)</span>
-<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>
-<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="c1"># Create database and run migrations</span>
-<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>php<span class="w"> </span>bin/console<span class="w"> </span>doctrine:database:create
-<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>php<span class="w"> </span>bin/console<span class="w"> </span>doctrine:migrations:migrate<span class="w"> </span>--no-interaction
-<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>
-<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="c1"># Create admin user</span>
-<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>php<span class="w"> </span>bin/console<span class="w"> </span>app:identity:user:create<span class="w"> </span>admin@example.com<span class="w"> </span>admin<span class="w"> </span><span class="s1">'P@ssw0rd'</span><span class="w"> </span>--admin
-<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>
-<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a><span class="c1"># Start development server</span>
-<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>php<span class="w"> </span>-S<span class="w"> </span>localhost:8000<span class="w"> </span>-t<span class="w"> </span>public/
-<a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a><span class="c1"># Or with FrankenPHP:</span>
-<a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>php<span class="w"> </span>public/index.php
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="c1"># Stop the stack (keep volumes)</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>docker<span class="w"> </span>compose<span class="w"> </span>down
 </code></pre></div>
-<p>For each extracted app (e.g., Store):
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nb">cd</span><span class="w"> </span>apps/store
+<h2 id="native-php-setup">Native PHP Setup<a class="headerlink" href="#native-php-setup" title="Permanent link">&para;</a></h2>
+<p>The optional <code>compose.override.yaml</code> binds the source tree and exposes MySQL and
+Mailpit locally, but you can also run everything directly on the host:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># 1. Install dependencies (Docker is not required for this step)</span>
 <a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>composer<span class="w"> </span>install
-<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>php<span class="w"> </span>bin/console<span class="w"> </span>doctrine:database:create
-<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>php<span class="w"> </span>bin/console<span class="w"> </span>doctrine:migrations:migrate<span class="w"> </span>--no-interaction
-<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>php<span class="w"> </span>-S<span class="w"> </span>localhost:8081<span class="w"> </span>-t<span class="w"> </span>public/
-</code></pre></div></p>
-<h2 id="5-jwt-key-generation">5. JWT Key Generation<a class="headerlink" href="#5-jwt-key-generation" title="Permanent link">&para;</a></h2>
-<p>The platform uses RS256 JWT for authentication. Generate keys:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># Create key directory</span>
-<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>mkdir<span class="w"> </span>-p<span class="w"> </span>var/jwt
-<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
-<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="c1"># Generate private key</span>
-<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>openssl<span class="w"> </span>genpkey<span class="w"> </span>-algorithm<span class="w"> </span>RSA<span class="w"> </span>-out<span class="w"> </span>var/jwt/jwt_private.pem<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">  </span>-pkeyopt<span class="w"> </span>rsa_keygen_bits:4096<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="w">  </span>-aes256<span class="w"> </span>-pass<span class="w"> </span>pass:your_passphrase
-<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>
-<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="c1"># Generate public key</span>
-<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>openssl<span class="w"> </span>rsa<span class="w"> </span>-pubout<span class="w"> </span>-in<span class="w"> </span>var/jwt/jwt_private.pem<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="w">  </span>-out<span class="w"> </span>var/jwt/jwt_public.pem<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span class="w">  </span>-passin<span class="w"> </span>pass:your_passphrase
-<a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a>
-<a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a><span class="c1"># Set permissions</span>
-<a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a>chmod<span class="w"> </span><span class="m">600</span><span class="w"> </span>var/jwt/jwt_private.pem
-<a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a>chmod<span class="w"> </span><span class="m">644</span><span class="w"> </span>var/jwt/jwt_public.pem
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="c1"># 2. Create your local environment file</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>cp<span class="w"> </span>.env<span class="w"> </span>.env.local
 </code></pre></div>
-<p>Set in <code>.env.local</code>:
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="na">JWT_PRIVATE_KEY_PATH</span><span class="o">=</span><span class="s">%kernel.project_dir%/var/jwt/jwt_private.pem</span>
-<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="na">JWT_PUBLIC_KEY_PATH</span><span class="o">=</span><span class="s">%kernel.project_dir%/var/jwt/jwt_public.pem</span>
-<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="na">JWT_PASSPHRASE</span><span class="o">=</span><span class="s">your_passphrase</span>
-<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="na">REFRESH_TOKEN_SECRET</span><span class="o">=</span><span class="s">your-hmac-secret-at-least-32-chars</span>
-</code></pre></div></p>
-<p>In Docker, the dev entrypoint (<code>docker/app/entrypoint.sh</code>) generates dev keys
-automatically under mounted <code>./var/jwt</code> if missing. In production, keys are
-generated on the host and mounted into the container.</p>
-<h2 id="6-verifying-the-setup">6. Verifying the Setup<a class="headerlink" href="#6-verifying-the-setup" title="Permanent link">&para;</a></h2>
-<h3 id="health-check">Health Check<a class="headerlink" href="#health-check" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="c1"># API doc (public)</span>
-<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>curl<span class="w"> </span>http://localhost:8080/api/doc
-<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>
-<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="c1"># Login</span>
-<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8080/api/auth/login<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="w">  </span>-H<span class="w"> </span><span class="s1">'Content-Type: application/json'</span><span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="w">  </span>-d<span class="w"> </span><span class="s1">'{"username":"admin@example.com","password":"P@ssw0rd"}'</span>
+<p>Configure <code>.env.local</code> before the next steps:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>APP_ENV=dev
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>APP_SECRET=your-secret
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>DATABASE_URL="mysql://app:!ChangeMe!@127.0.0.1:3306/app?serverVersion=8.0&amp;charset=utf8mb4"
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>JWT_PRIVATE_KEY_PATH=%kernel.project_dir%/var/jwt/jwt_private.pem
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>JWT_PUBLIC_KEY_PATH=%kernel.project_dir%/var/jwt/jwt_public.pem
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>JWT_PASSPHRASE=
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>REFRESH_TOKEN_SECRET=your-refresh-secret
 </code></pre></div>
-<p>Expected response:
-<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="p">{</span>
-<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">  </span><span class="nt">"data"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">    </span><span class="nt">"access_token"</span><span class="p">:</span><span class="w"> </span><span class="s2">"eyJ..."</span><span class="p">,</span>
-<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="w">    </span><span class="nt">"refresh_token"</span><span class="p">:</span><span class="w"> </span><span class="s2">"..."</span><span class="p">,</span>
-<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="w">    </span><span class="nt">"expires_in"</span><span class="p">:</span><span class="w"> </span><span class="mi">7200</span>
-<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="w">  </span><span class="p">},</span>
-<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="w">  </span><span class="nt">"code"</span><span class="p">:</span><span class="w"> </span><span class="mi">200</span><span class="p">,</span>
-<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="w">  </span><span class="nt">"message"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Success"</span>
-<a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span class="p">}</span>
-</code></pre></div></p>
-<h3 id="smoke-tests">Smoke Tests<a class="headerlink" href="#smoke-tests" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="c1"># Run API smoke tests</span>
-<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>bash<span class="w"> </span>scripts/tests/api-smoke.sh
+<h3 id="generate-the-jwt-key-pair">Generate the JWT key pair<a class="headerlink" href="#generate-the-jwt-key-pair" title="Permanent link">&para;</a></h3>
+<p>The JWT authenticator signs access tokens with RS256, so a private/public RSA pair
+is required. Create it under <code>var/jwt/</code> (<code>.gitignore</code>d):</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>mkdir<span class="w"> </span>-p<span class="w"> </span>var/jwt
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="c1"># Private key (optionally guarded by a passphrase)</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>openssl<span class="w"> </span>genpkey<span class="w"> </span>-algorithm<span class="w"> </span>RSA<span class="w"> </span>-pkeyopt<span class="w"> </span>rsa_keygen_bits:2048<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">  </span>-out<span class="w"> </span>var/jwt/jwt_private.pem
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="c1"># Public key derived from the private key</span>
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>openssl<span class="w"> </span>rsa<span class="w"> </span>-in<span class="w"> </span>var/jwt/jwt_private.pem<span class="w"> </span>-pubout<span class="w"> </span>-out<span class="w"> </span>var/jwt/jwt_public.pem
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>
+<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="c1"># Restrict permissions: the private key must not be world-readable</span>
+<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a>chmod<span class="w"> </span><span class="m">600</span><span class="w"> </span>var/jwt/jwt_private.pem
+</code></pre></div>
+<p>If you set a <code>JWT_PASSPHRASE</code>, re-run the private-key generation with
+<code>-aes256</code> and (optionally) <code>-pass pass:...</code>, and set <code>JWT_PASSPHRASE</code> to the same
+value in <code>.env.local</code>.</p>
+<h3 id="create-the-database-and-run-migrations">Create the database and run migrations<a class="headerlink" href="#create-the-database-and-run-migrations" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>php<span class="w"> </span>bin/console<span class="w"> </span>doctrine:database:create
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>php<span class="w"> </span>bin/console<span class="w"> </span>doctrine:migrations:migrate
+</code></pre></div>
+<h3 id="serve-the-api">Serve the API<a class="headerlink" href="#serve-the-api" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>php<span class="w"> </span>-S<span class="w"> </span>localhost:8000<span class="w"> </span>-t<span class="w"> </span>public/
+</code></pre></div>
+<p>In <code>APP_ENV=dev</code> the built-in server is enough for local work; the app is also fully
+functional behind nginx (see <code>docker/nginx/default.conf</code> for the production shape).</p>
+<h2 id="jwt-environment-variables">JWT Environment Variables<a class="headerlink" href="#jwt-environment-variables" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Default (compose)</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>JWT_PRIVATE_KEY_PATH</code></td>
+<td><code>/var/www/html/var/jwt/jwt_private.pem</code></td>
+<td>Path to the RSA private key (PEM) used for signing access tokens</td>
+</tr>
+<tr>
+<td><code>JWT_PUBLIC_KEY_PATH</code></td>
+<td><code>/var/www/html/var/jwt/jwt_public.pem</code></td>
+<td>Path to the RSA public key (PEM) used for verification</td>
+</tr>
+<tr>
+<td><code>JWT_PASSPHRASE</code></td>
+<td><em>(empty)</em></td>
+<td>Optional passphrase protecting the private key</td>
+</tr>
+<tr>
+<td><code>REFRESH_TOKEN_SECRET</code></td>
+<td><code>dev-refresh-secret-change-me</code></td>
+<td>HMAC secret for refresh-token hashing and rotation</td>
+</tr>
+<tr>
+<td><code>ACCESS_TOKEN_TTL</code></td>
+<td><code>7200</code> (seconds)</td>
+<td>Access-token lifetime</td>
+</tr>
+<tr>
+<td><code>REFRESH_TOKEN_TTL</code></td>
+<td><code>31536000</code> (seconds)</td>
+<td>Refresh-token lifetime</td>
+</tr>
+</tbody>
+</table>
+<p>Related optional variables: <code>OTP_REDIS_DSN</code>, <code>ALIYUN_*</code> (SMS), <code>WECHAT_*</code>
+(WeChat login/pay), <code>MAILER_DSN</code>, <code>MESSENGER_TRANSPORT_DSN</code>, <code>INVENTORY_ENABLED</code>.
+See <code>.env.example</code> for the full reference.</p>
+<h2 id="verifying-the-setup">Verifying the Setup<a class="headerlink" href="#verifying-the-setup" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="c1"># Swagger UI (also available at http://localhost:8000/api/doc natively)</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>curl<span class="w"> </span>-s<span class="w"> </span>http://localhost:8080/api/doc<span class="w"> </span><span class="p">|</span><span class="w"> </span>head<span class="w"> </span>-c<span class="w"> </span><span class="m">200</span>
 <a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>
-<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="c1"># Run Store orchestration smoke</span>
-<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>bash<span class="w"> </span>scripts/tests/store-smoke.sh
-<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>
-<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="c1"># Run Trade workflow demo</span>
-<a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>php<span class="w"> </span>scripts/tests/demo-trade-workflow.php
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="c1"># Health/readiness returns JSON when the app, DB, and Redis are reachable</span>
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>curl<span class="w"> </span>-s<span class="w"> </span>http://localhost:8080/health/ready
 </code></pre></div>
-<h2 id="7-common-troubleshooting">7. Common Troubleshooting<a class="headerlink" href="#7-common-troubleshooting" title="Permanent link">&para;</a></h2>
-<h3 id="could-not-find-driver-database">"Could not find driver" (Database)<a class="headerlink" href="#could-not-find-driver-database" title="Permanent link">&para;</a></h3>
-<p>Ensure the MySQL PDO driver is installed:
-<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="c1"># macOS with Homebrew PHP</span>
-<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>php<span class="w"> </span>-m<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>pdo_mysql
-<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>
-<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="c1"># Docker: verify database container is healthy</span>
-<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>docker<span class="w"> </span>compose<span class="w"> </span>ps<span class="w"> </span>database
-</code></pre></div></p>
-<h3 id="jwt-key-permission-denied">JWT Key Permission Denied<a class="headerlink" href="#jwt-key-permission-denied" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="c1"># Check file permissions</span>
-<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>ls<span class="w"> </span>-la<span class="w"> </span>var/jwt/
-<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>
-<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="c1"># Ensure private key is readable by the PHP process</span>
-<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>chmod<span class="w"> </span><span class="m">644</span><span class="w"> </span>var/jwt/jwt_private.pem<span class="w">  </span><span class="c1"># in Docker (no passphrase by default)</span>
+<p>Log in and capture a token:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>curl<span class="w"> </span>-s<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://localhost:8080/api/auth/login<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="w">  </span>-H<span class="w"> </span><span class="s1">'Content-Type: application/json'</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="w">  </span>-d<span class="w"> </span><span class="s1">'{"email":"admin@example.com","password":"P@ssw0rd"}'</span>
 </code></pre></div>
-<h3 id="port-already-in-use">Port Already in Use<a class="headerlink" href="#port-already-in-use" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="c1"># Check what's using the port</span>
-<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>lsof<span class="w"> </span>-i<span class="w"> </span>:8080
-<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>
-<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="c1"># Configure alternative ports via .env:</span>
-<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">"APP_PORT=9080"</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>.env
-<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">"MYSQL_PORT=43306"</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>.env
+<p>Use the returned <code>token</code> for authenticated calls:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>curl<span class="w"> </span>-s<span class="w"> </span>http://localhost:8080/api/v1/profile<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">  </span>-H<span class="w"> </span><span class="s2">"Authorization: Bearer &lt;token&gt;"</span>
 </code></pre></div>
-<h3 id="container-build-fails">Container Build Fails<a class="headerlink" href="#container-build-fails" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="c1"># Clear build cache</span>
-<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>docker<span class="w"> </span>compose<span class="w"> </span>build<span class="w"> </span>--no-cache
-<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>
-<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="c1"># Check disk space</span>
-<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>docker<span class="w"> </span>system<span class="w"> </span>df
-</code></pre></div>
-<h3 id="migration-errors-on-extracted-apps">Migration Errors on Extracted Apps<a class="headerlink" href="#migration-errors-on-extracted-apps" title="Permanent link">&para;</a></h3>
-<p>Each app has its own database. Ensure the database exists:
-<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>docker<span class="w"> </span>compose<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>store-app<span class="w"> </span>php<span class="w"> </span>bin/console<span class="w"> </span>doctrine:database:create<span class="w"> </span>--if-not-exists
-<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>docker<span class="w"> </span>compose<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>store-app<span class="w"> </span>php<span class="w"> </span>bin/console<span class="w"> </span>doctrine:migrations:migrate<span class="w"> </span>--no-interaction
-</code></pre></div></p>
-<h3 id="php-version-issues-native">PHP Version Issues (Native)<a class="headerlink" href="#php-version-issues-native" title="Permanent link">&para;</a></h3>
-<p>The platform requires PHP 8.4+. On macOS, Homebrew PHP 8.5 is recommended:
-<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="c1"># Check current version</span>
-<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>php<span class="w"> </span>-v
-<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>
-<a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="c1"># Use Homebrew PHP 8.5 explicitly</span>
-<a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a>/opt/homebrew/opt/php@8.5/bin/php<span class="w"> </span>-v
-<a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a>/opt/homebrew/opt/php@8.5/bin/php<span class="w"> </span>bin/console<span class="w"> </span>about
-</code></pre></div></p>
-<h3 id="swaggermailpit-not-accessible">Swagger/Mailpit Not Accessible<a class="headerlink" href="#swaggermailpit-not-accessible" title="Permanent link">&para;</a></h3>
-<ul>
-<li><strong>Swagger UI</strong>: <code>http://localhost:8080/api/doc</code></li>
-<li><strong>Mailpit UI</strong>: <code>http://localhost:8025</code></li>
-<li>Ensure <code>compose.override.yaml</code> is loaded (check <code>docker compose config</code>)</li>
-</ul>
-<h3 id="container-ports-not-exposed">Container Ports Not Exposed<a class="headerlink" href="#container-ports-not-exposed" title="Permanent link">&para;</a></h3>
-<p>Development ports are defined in <code>compose.override.yaml</code>. If they're not
-available, ensure the file is automatically loaded (default behavior) or
-explicitly include it:
-<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>docker<span class="w"> </span>compose<span class="w"> </span>-f<span class="w"> </span>compose.yaml<span class="w"> </span>-f<span class="w"> </span>compose.override.yaml<span class="w"> </span>up<span class="w"> </span>-d
-</code></pre></div></p>
+<h2 id="troubleshooting">Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Symptom</th>
+<th>Likely cause</th>
+<th>Fix</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Doctrine\DBAL\Exception\DriverException: could not find driver</code></td>
+<td>The <code>pdo_mysql</code> PHP extension is missing</td>
+<td>Check <code>php -m \| grep -i mysql</code>. On macOS Homebrew: <code>brew install php</code> bundles it; ensure <code>/opt/homebrew/opt/php/bin/php</code> is first on <code>PATH</code></td>
+</tr>
+<tr>
+<td><code>JWT ... key not found</code> / 401 on protected routes</td>
+<td>JWT keys not generated, or paths mismatch <code>.env.local</code></td>
+<td>Run the openssl commands above and verify <code>JWT_PRIVATE_KEY_PATH</code> / <code>JWT_PUBLIC_KEY_PATH</code> are absolute and point at existing PEM files</td>
+</tr>
+<tr>
+<td><code>Permission denied</code> when the app reads the private key</td>
+<td>Private key mode too open</td>
+<td><code>chmod 600 var/jwt/jwt_private.pem</code> (it is git-ignored)</td>
+</tr>
+<tr>
+<td><code>Address already in use: 8080</code> / <code>8000</code></td>
+<td>Another process occupies the port</td>
+<td><code>docker compose</code> — set <code>APP_PORT=8090 docker compose up -d</code>; native — pick another port, e.g. <code>php -S localhost:8001 -t public/</code></td>
+</tr>
+<tr>
+<td><code>php</code> is an old version (e.g. 7.4) on macOS</td>
+<td>Homebrew <code>php</code> not linked/first</td>
+<td>Run <code>/opt/homebrew/opt/php/bin/php bin/console ...</code> or <code>PATH="/opt/homebrew/opt/php/bin:$PATH" php ...</code></td>
+</tr>
+<tr>
+<td>Migrations fail with <code>Unknown database 'app'</code></td>
+<td>Database not created</td>
+<td><code>docker compose exec app php bin/console doctrine:database:create</code> (native: run the same without <code>exec</code>)</td>
+</tr>
+<tr>
+<td>Mail not arriving</td>
+<td>Mailpit not running or wrong DSN</td>
+<td>Native: start Mailpit (<code>docker compose up -d mailer</code>) and use <code>MAILER_DSN=smtp://127.0.0.1:1025</code>; check the UI at <code>http://localhost:8025</code></td>
+</tr>
+</tbody>
+</table>
 
 
 
@@ -2611,6 +3254,10 @@ explicitly include it:
     
     
       <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+      
+        <script src="../../javascripts/mermaid-init.js"></script>
       
     
   </body>

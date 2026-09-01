@@ -6,23 +6,23 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="A production-oriented Symfony microservices platform evolved from modular monolith architecture, featuring DDD, service isolation, and event-driven communication.">
+        <meta name="description" content="Symfony 8.1 API backend skeleton with modular architecture">
       
       
       
-        <link rel="canonical" href="https://immane.github.io/crud-platform/manual/query-system/">
+        <link rel="canonical" href="https://immane.github.io/crud-skeleton/manual/query-system/">
       
       
         <link rel="prev" href="../core-usage/">
       
       
-        <link rel="next" href="../development-workflow/">
+        <link rel="next" href="../authorization/">
       
       
         
-          <link rel="alternate" href="/crud-platform/" hreflang="en">
+          <link rel="alternate" href="/crud-skeleton/" hreflang="en">
         
-          <link rel="alternate" href="/crud-platform/zh/" hreflang="zh">
+          <link rel="alternate" href="/crud-skeleton/zh/" hreflang="zh">
         
       
       
@@ -31,7 +31,7 @@
     
     
       
-        <title>Query System - CRUD Platform</title>
+        <title>Query System - CRUD Skeleton</title>
       
     
     
@@ -82,7 +82,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#dynamic-query-system-reference" class="md-skip">
+        <a href="#dynamic-query-system-complete-reference" class="md-skip">
           Skip to content
         </a>
       
@@ -98,7 +98,7 @@
 
 <header class="md-header md-header--shadow" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../.." title="CRUD Platform" class="md-header__button md-logo" aria-label="CRUD Platform" data-md-component="logo">
+    <a href="../.." title="CRUD Skeleton" class="md-header__button md-logo" aria-label="CRUD Skeleton" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -112,7 +112,7 @@
       <div class="md-header__ellipsis">
         <div class="md-header__topic">
           <span class="md-ellipsis">
-            CRUD Platform
+            CRUD Skeleton
           </span>
         </div>
         <div class="md-header__topic" data-md-component="header-topic">
@@ -165,13 +165,13 @@
       <ul class="md-select__list">
         
           <li class="md-select__item">
-            <a href="/crud-platform/" hreflang="en" class="md-select__link">
+            <a href="/crud-skeleton/" hreflang="en" class="md-select__link">
               English
             </a>
           </li>
         
           <li class="md-select__item">
-            <a href="/crud-platform/zh/" hreflang="zh" class="md-select__link">
+            <a href="/crud-skeleton/zh/" hreflang="zh" class="md-select__link">
               中文
             </a>
           </li>
@@ -226,7 +226,7 @@
     
     
       <div class="md-header__source">
-        <a href="https://github.com/immane/crud-platform" title="Go to repository" class="md-source" data-md-component="source">
+        <a href="https://github.com/immane/crud-skeleton" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
@@ -262,17 +262,17 @@
 
 <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../.." title="CRUD Platform" class="md-nav__button md-logo" aria-label="CRUD Platform" data-md-component="logo">
+    <a href="../.." title="CRUD Skeleton" class="md-nav__button md-logo" aria-label="CRUD Skeleton" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
 
     </a>
-    CRUD Platform
+    CRUD Skeleton
   </label>
   
     <div class="md-nav__source">
-      <a href="https://github.com/immane/crud-platform" title="Go to repository" class="md-source" data-md-component="source">
+      <a href="https://github.com/immane/crud-skeleton" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
@@ -316,922 +316,6 @@
       
   
   
-  
-  
-    
-    
-    
-    
-      
-        
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
-        
-          
-          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Design Contracts
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Design Contracts
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/system-architecture/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    System Architecture
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/microservice-transition/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Microservice Transition
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/store-extraction-readiness/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Store Extraction Readiness
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/inventory-extraction-readiness/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Inventory Extraction Readiness
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/payment-extraction-readiness/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Payment Extraction Readiness
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/wallet-extraction-readiness.md" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Wallet Extraction Readiness
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/api-design/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    API Design
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/data-model/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Data Model
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/module-design/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Module Design
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/controller-design/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Controller Design
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/api-documentation/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    API Documentation
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/system-contracts/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    System Contracts
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    
-    
-    
-    
-      
-        
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
-        
-          
-          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Bundles
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Bundles
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/bundles/core/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Core Framework
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/bundles/common/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Common (CMS)
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/bundles/trade/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Trade (E-Commerce)
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/bundles/store/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Store (Multi-Store Operations)
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/bundles/inventory/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Inventory
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/bundles/payment/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Payment
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/bundles/wallet/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Wallet
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/bundles/identity/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Identity (Auth)
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/bundles/wechat/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Wechat (Login + Pay)
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    
-    
-    
-    
-      
-        
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
-        
-          
-          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Research
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Research
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../research/easywechat-6.x-usage/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    EasyWeChat 6.x Usage
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../research/huifu-payment-api/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Huifu Payment API
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    
-    
-    
-    
-      
-        
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
-        
-          
-          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Issues
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_5">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Issues
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../issues/architecture-review-2026-06-26/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Architecture Review 2026-06-26
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-    
-      
-      
-  
-  
     
   
   
@@ -1250,10 +334,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
         
           
-          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
             
   
   
@@ -1271,8 +355,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
-          <label class="md-nav__title" for="__nav_6">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1296,35 +380,7 @@
   <span class="md-ellipsis">
     
   
-    Overview
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../architecture/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Architecture
+    Manual Index
   
 
     
@@ -1353,6 +409,34 @@
     
   
     Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
   
 
     
@@ -1517,22 +601,33 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#1-filter-expression-based-filtering" class="md-nav__link">
+  <a href="#1-parameter-reference" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. @filter — Expression-based Filtering
+        1. Parameter Reference
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="1. @filter — Expression-based Filtering">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-core-query-parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Core Query Parameters
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Core Query Parameters">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#11-overview" class="md-nav__link">
+  <a href="#page-limit" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1.1 Overview
+        page / limit
       
     </span>
   </a>
@@ -1540,10 +635,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#12-operators" class="md-nav__link">
+  <a href="#filter" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1.2 Operators
+        @filter
       
     </span>
   </a>
@@ -1551,10 +646,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#13-chained-attributes-dot-path-traversal" class="md-nav__link">
+  <a href="#dql" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1.3 Chained Attributes (Dot-Path Traversal)
+        @dql
       
     </span>
   </a>
@@ -1562,22 +657,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#14-functions" class="md-nav__link">
+  <a href="#order" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1.4 Functions
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="1.4 Functions">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#math" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Math.*
+        @order
       
     </span>
   </a>
@@ -1585,10 +668,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#arraycommon" class="md-nav__link">
+  <a href="#select" class="md-nav__link">
     <span class="md-ellipsis">
       
-        ArrayCommon.*
+        @select
       
     </span>
   </a>
@@ -1596,26 +679,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#filterdatetime" class="md-nav__link">
+  <a href="#groupby" class="md-nav__link">
     <span class="md-ellipsis">
       
-        FilterDateTime.*
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#15-null-handling" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        1.5 NULL Handling
+        @groupBy
       
     </span>
   </a>
@@ -1623,10 +690,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#16-dql-validation" class="md-nav__link">
+  <a href="#hints" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1.6 DQL Validation
+        @hints
       
     </span>
   </a>
@@ -1634,10 +701,21 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#17-in-memory-fallback" class="md-nav__link">
+  <a href="#sort" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1.7 In-Memory Fallback
+        @sort
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#showdql" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        @showDQL
       
     </span>
   </a>
@@ -1650,154 +728,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2-sort-in-memory-sorting" class="md-nav__link">
+  <a href="#3-view-level-parameters" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. @sort — In-Memory Sorting
+        3. View-Level Parameters
       
     </span>
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#3-order-dql-sorting" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        3. @order — DQL Sorting
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#4-dql-raw-dql-sub-query" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        4. @dql — Raw DQL Sub-query
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#5-select-dql-select-projection" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        5. @select — DQL SELECT Projection
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#6-groupby-dql-group-by" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        6. @groupBy — DQL GROUP BY
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#7-expands-nested-eager-loading" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        7. @expands — Nested Eager Loading
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#8-display-response-shaping" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        8. @display — Response Shaping
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#9-transform-field-transformation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        9. @transform — Field Transformation
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#10-showdql-debug-helper" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        10. @showDQL — Debug Helper
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#11-hints-doctrine-query-hints" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        11. @hints — Doctrine Query Hints
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#12-page-limit-pagination" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        12. page &amp; limit — Pagination
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#13-expression-caching" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        13. Expression Caching
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#14-troubleshooting" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        14. Troubleshooting
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="14. Troubleshooting">
+    <nav class="md-nav" aria-label="3. View-Level Parameters">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#common-filter-errors" class="md-nav__link">
+  <a href="#expands" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Common Filter Errors
+        @expands
       
     </span>
   </a>
@@ -1805,10 +751,43 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#performance-tips" class="md-nav__link">
+  <a href="#display" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Performance Tips
+        @display
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#transform" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        @transform
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#partial" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        @partial
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mode-and-basis-batch-update" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        @mode and @basis (batch update)
       
     </span>
   </a>
@@ -1817,6 +796,39 @@
         
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-how-list-workflow-flow-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. How list() Workflow Flow Works
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-security-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Security Summary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-operators-people-notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Operators &amp; People Notes
+      
+    </span>
+  </a>
   
 </li>
       
@@ -1824,6 +836,34 @@
   
 </nav>
       
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../authorization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authorization Setup
+  
+
+    
+  </span>
+  
+  
+
+      </a>
     </li>
   
 
@@ -2094,6 +1134,1688 @@
   
   
   
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Design Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Design Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/system-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    System Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/api-design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/data-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/module-design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Module Design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/controller-design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Controller Design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/api-documentation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Documentation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/system-contracts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    System Contracts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/naming-convention/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Naming Convention
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bundles
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Bundles
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/core/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core Framework
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/common/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Common (CMS)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/trade/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Trade (E-Commerce)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/store/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Store (Multi-Store Operations)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/store-catalog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Store Catalog (Target)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/inventory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Inventory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/payment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Payment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/wallet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Wallet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/settlement/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Settlement (Allocation + Finality)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/exchange/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Exchange (Pool-backed Economy)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/identity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Identity (Auth)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/authorization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authorization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/wechat/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Wechat (Login + Pay)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Runbooks
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Runbooks
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/authorization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authorization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/common/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Common
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/core/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/exchange/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Exchange
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/identity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Identity
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/inventory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Inventory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/payment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Payment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/promotion/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Promotion
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/settlement/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Settlement
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/storage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Storage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/store/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Store
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/trade/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Trade
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/wallet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Wallet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../runbooks/wechat/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    WeChat
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Research
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Research
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../research/easywechat-6.x-usage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    EasyWeChat 6.x Usage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../research/huifu-payment-api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Huifu Payment API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Issues
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Issues
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../issues/architecture-review-2026-06-26/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture Review 2026-06-26
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Testing
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../testing/crud-skeleton-production/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Production Validation Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../testing/crud-skeleton-production/TEST_STRATEGY/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Test Strategy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../testing/crud-skeleton-production/SYSTEM_WALKTHROUGH/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    System Walkthrough And Test Seams
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../testing/crud-skeleton-production/TEST_MATRIX/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Test Matrix
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../testing/crud-skeleton-production/BUSINESS_INVARIANTS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Business Invariants
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../testing/crud-skeleton-production/ARCHITECTURE_TEST_MAPPING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture Test Mapping
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../testing/crud-skeleton-production/FAILURE_MODES/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Failure Modes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../testing/crud-skeleton-production/PRODUCTION_VALIDATION/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Release Validation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../testing/crud-skeleton-production/AI_DEVELOPMENT_PROCESS/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI Development Process
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
     <li class="md-nav__item">
       <a href="../../ai/context/" class="md-nav__link">
         
@@ -2169,22 +2891,33 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#1-filter-expression-based-filtering" class="md-nav__link">
+  <a href="#1-parameter-reference" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. @filter — Expression-based Filtering
+        1. Parameter Reference
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="1. @filter — Expression-based Filtering">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-core-query-parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Core Query Parameters
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Core Query Parameters">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#11-overview" class="md-nav__link">
+  <a href="#page-limit" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1.1 Overview
+        page / limit
       
     </span>
   </a>
@@ -2192,10 +2925,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#12-operators" class="md-nav__link">
+  <a href="#filter" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1.2 Operators
+        @filter
       
     </span>
   </a>
@@ -2203,10 +2936,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#13-chained-attributes-dot-path-traversal" class="md-nav__link">
+  <a href="#dql" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1.3 Chained Attributes (Dot-Path Traversal)
+        @dql
       
     </span>
   </a>
@@ -2214,22 +2947,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#14-functions" class="md-nav__link">
+  <a href="#order" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1.4 Functions
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="1.4 Functions">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#math" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Math.*
+        @order
       
     </span>
   </a>
@@ -2237,10 +2958,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#arraycommon" class="md-nav__link">
+  <a href="#select" class="md-nav__link">
     <span class="md-ellipsis">
       
-        ArrayCommon.*
+        @select
       
     </span>
   </a>
@@ -2248,26 +2969,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#filterdatetime" class="md-nav__link">
+  <a href="#groupby" class="md-nav__link">
     <span class="md-ellipsis">
       
-        FilterDateTime.*
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#15-null-handling" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        1.5 NULL Handling
+        @groupBy
       
     </span>
   </a>
@@ -2275,10 +2980,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#16-dql-validation" class="md-nav__link">
+  <a href="#hints" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1.6 DQL Validation
+        @hints
       
     </span>
   </a>
@@ -2286,10 +2991,21 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#17-in-memory-fallback" class="md-nav__link">
+  <a href="#sort" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1.7 In-Memory Fallback
+        @sort
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#showdql" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        @showDQL
       
     </span>
   </a>
@@ -2302,154 +3018,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2-sort-in-memory-sorting" class="md-nav__link">
+  <a href="#3-view-level-parameters" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. @sort — In-Memory Sorting
+        3. View-Level Parameters
       
     </span>
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#3-order-dql-sorting" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        3. @order — DQL Sorting
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#4-dql-raw-dql-sub-query" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        4. @dql — Raw DQL Sub-query
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#5-select-dql-select-projection" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        5. @select — DQL SELECT Projection
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#6-groupby-dql-group-by" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        6. @groupBy — DQL GROUP BY
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#7-expands-nested-eager-loading" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        7. @expands — Nested Eager Loading
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#8-display-response-shaping" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        8. @display — Response Shaping
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#9-transform-field-transformation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        9. @transform — Field Transformation
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#10-showdql-debug-helper" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        10. @showDQL — Debug Helper
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#11-hints-doctrine-query-hints" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        11. @hints — Doctrine Query Hints
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#12-page-limit-pagination" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        12. page &amp; limit — Pagination
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#13-expression-caching" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        13. Expression Caching
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#14-troubleshooting" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        14. Troubleshooting
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="14. Troubleshooting">
+    <nav class="md-nav" aria-label="3. View-Level Parameters">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#common-filter-errors" class="md-nav__link">
+  <a href="#expands" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Common Filter Errors
+        @expands
       
     </span>
   </a>
@@ -2457,10 +3041,43 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#performance-tips" class="md-nav__link">
+  <a href="#display" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Performance Tips
+        @display
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#transform" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        @transform
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#partial" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        @partial
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mode-and-basis-batch-update" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        @mode and @basis (batch update)
       
     </span>
   </a>
@@ -2469,6 +3086,39 @@
         
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-how-list-workflow-flow-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. How list() Workflow Flow Works
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-security-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Security Summary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-operators-people-notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Operators &amp; People Notes
+      
+    </span>
+  </a>
   
 </li>
       
@@ -2492,414 +3142,445 @@
   
 
 
-<h1 id="dynamic-query-system-reference">Dynamic Query System Reference<a class="headerlink" href="#dynamic-query-system-reference" title="Permanent link">&para;</a></h1>
-<p>Complete reference for the expression-based dynamic query engine used by the <code>list()</code>
-method in <code>BaseServiceReadListTrait</code> and <code>RestController::requestProcess()</code>.</p>
+<h1 id="dynamic-query-system-complete-reference">Dynamic Query System — Complete Reference<a class="headerlink" href="#dynamic-query-system-complete-reference" title="Permanent link">&para;</a></h1>
+<p>The dynamic query system is driven by <code>BaseServiceReadListTrait::list()</code>
+(<code>src/Core/Service/Concern/BaseServiceReadListTrait.php</code>) and the expression
+engine in <code>src/Core/Parser/</code> plus <code>src/Core/Service/ExpressionService.php</code>.
+Any list endpoint built on <code>ListApiViewMixin</code> (or any service called with
+<code>list(..., false)</code> — i.e. <code>$disableRequest = false</code>) accepts these query
+parameters on a <code>GET</code> request.</p>
+<p>The system has two tiers:</p>
+<ol>
+<li><strong>SQL/DQL tier</strong> — <code>@filter</code>, <code>@dql</code>, <code>@order</code>, <code>@select</code>, <code>@groupBy</code>,
+   <code>@hints</code> are compiled into the Doctrine <code>QueryBuilder</code>.</li>
+<li><strong>In-memory tier</strong> — <code>@sort</code> (and <code>@filter</code> when DQL compilation fails for a
+   non-admin) are evaluated in PHP over the already-fetched result set.</li>
+</ol>
 <hr />
-<h2 id="1-filter-expression-based-filtering">1. @filter — Expression-based Filtering<a class="headerlink" href="#1-filter-expression-based-filtering" title="Permanent link">&para;</a></h2>
-<h3 id="11-overview">1.1 Overview<a class="headerlink" href="#11-overview" title="Permanent link">&para;</a></h3>
-<p><code>GET /api/v1/manage/products?@filter=entity.price &gt; 1000 &amp;&amp; entity.enabled == true</code></p>
-<p>The filter expression is parsed by <code>ExpressionService::buildFilter()</code> →
-<code>ExpressionDqlParser</code> → <code>ExpressionQueryBuilderAssembler</code>, then injected as a DQL
-subquery:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">WHERE</span><span class="w"> </span><span class="n">entity</span><span class="p">.</span><span class="n">id</span><span class="w"> </span><span class="k">IN</span><span class="w"> </span><span class="p">(</span>
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">    </span><span class="k">SELECT</span><span class="w"> </span><span class="n">filter_entity</span><span class="p">.</span><span class="n">id</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">Product</span><span class="w"> </span><span class="n">filter_entity</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="n">filter_entity</span><span class="p">.</span><span class="n">price</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">1000</span>
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="p">)</span>
-</code></pre></div>
-<p>On DQL compilation failure, the system falls back to in-memory filtering (admin-only;
-non-admins get <code>AccessDeniedHttpException</code>).</p>
-<h3 id="12-operators">1.2 Operators<a class="headerlink" href="#12-operators" title="Permanent link">&para;</a></h3>
+<h2 id="1-parameter-reference">1. Parameter Reference<a class="headerlink" href="#1-parameter-reference" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
-<th>Operator</th>
-<th>Meaning</th>
+<th>Parameter</th>
+<th>Type</th>
+<th>Tier</th>
+<th>Description</th>
 <th>Example</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>==</code></td>
-<td>Equality</td>
+<td><code>page</code></td>
+<td>int</td>
+<td>SQL</td>
+<td>Page number (1‑based)</td>
+<td><code>2</code></td>
+</tr>
+<tr>
+<td><code>limit</code></td>
+<td>int</td>
+<td>SQL</td>
+<td>Items per page (default <code>100</code> via controller; the paginator honors <code>page</code>/<code>limit</code>)</td>
+<td><code>20</code></td>
+</tr>
+<tr>
+<td><code>@filter</code></td>
+<td>expression</td>
+<td>DQL + fallback</td>
+<td>Expression WHERE clause</td>
 <td><code>entity.status == "active"</code></td>
 </tr>
 <tr>
-<td><code>!=</code></td>
-<td>Not equal</td>
-<td><code>entity.status != "deleted"</code></td>
+<td><code>@dql</code></td>
+<td>DQL</td>
+<td>SQL</td>
+<td>Raw DQL sub-query used as <code>id IN (...)</code></td>
+<td><code>entity.price &gt; 100</code></td>
 </tr>
 <tr>
-<td><code>&gt;</code></td>
-<td>Greater than</td>
-<td><code>entity.price &gt; 1000</code></td>
+<td><code>@order</code></td>
+<td>list</td>
+<td>SQL</td>
+<td>ORDER BY fields</td>
+<td><code>createdAt\|DESC</code></td>
 </tr>
 <tr>
-<td><code>&lt;</code></td>
-<td>Less than</td>
-<td><code>entity.quantity &lt; 10</code></td>
+<td><code>@select</code></td>
+<td>list</td>
+<td>SQL</td>
+<td>SELECT override (projection)</td>
+<td><code>entity.id, entity.name</code></td>
 </tr>
 <tr>
-<td><code>&gt;=</code></td>
-<td>Greater or equal</td>
-<td><code>entity.createdAt &gt;= "2024-01-01"</code></td>
+<td><code>@groupBy</code></td>
+<td>expression</td>
+<td>SQL</td>
+<td>GROUP BY clause</td>
+<td><code>entity.category</code></td>
 </tr>
 <tr>
-<td><code>&lt;=</code></td>
-<td>Less or equal</td>
-<td><code>entity.sortOrder &lt;= 100</code></td>
+<td><code>@hints</code></td>
+<td>JSON</td>
+<td>SQL</td>
+<td>Query hints set on the Doctrine query</td>
+<td><code>{"hint.name": "value"}</code></td>
 </tr>
 <tr>
-<td><code>&amp;&amp;</code>, <code>and</code></td>
-<td>Logical AND</td>
-<td><code>entity.enabled == true &amp;&amp; entity.price &gt; 10</code></td>
+<td><code>@sort</code></td>
+<td>expression</td>
+<td>In-memory</td>
+<td>In-memory comparator (admin-only)</td>
+<td><code>x.getPrice() &lt;=&gt; y.getPrice()</code></td>
 </tr>
 <tr>
-<td><code>\|\|</code>, <code>or</code></td>
-<td>Logical OR</td>
-<td><code>entity.status == "active" \|\| entity.status == "draft"</code></td>
+<td><code>@showDQL</code></td>
+<td>boolean</td>
+<td>Info</td>
+<td>Dump the generated DQL (dev-only)</td>
+<td><code>true</code></td>
 </tr>
 <tr>
-<td><code>!</code></td>
-<td>Logical NOT</td>
-<td><code>!(entity.deletedAt == null)</code></td>
+<td><code>@expands</code></td>
+<td>JSON</td>
+<td>View</td>
+<td>Nested relation expansion (<code>__metadata</code>)</td>
+<td><code>category,tags</code></td>
 </tr>
 <tr>
-<td><code>matches</code></td>
-<td>Regex match</td>
-<td><code>entity.name matches "/^A.*/"</code></td>
+<td><code>@display</code></td>
+<td>string</td>
+<td>View</td>
+<td>Response projection: <code>complex</code>, <code>reduce</code>, JSON projection</td>
+<td><code>reduce</code></td>
 </tr>
 <tr>
-<td><code>+</code>, <code>-</code>, <code>*</code>, <code>/</code></td>
-<td>Arithmetic</td>
-<td><code>entity.price * entity.quantity &gt; 10000</code></td>
+<td><code>@transform</code></td>
+<td>JSON</td>
+<td>View</td>
+<td>Expression-based content transform (create/update actions)</td>
+<td><code>{"category": "Service.get(...)"}</code></td>
 </tr>
 <tr>
-<td><code>in</code></td>
-<td>Value in list</td>
-<td><code>entity.id in [1, 2, 3]</code></td>
+<td><code>@partial</code></td>
+<td>boolean</td>
+<td>View</td>
+<td>Disable the surrounding transaction (create/batch-update)</td>
+<td><code>true</code></td>
 </tr>
 <tr>
-<td><code>not in</code></td>
-<td>Value not in list</td>
-<td><code>entity.id not in [1, 2]</code></td>
+<td><code>@mode</code></td>
+<td>string</td>
+<td>View</td>
+<td>Batch update mode: <code>update</code> / <code>mixed</code> (upsert)</td>
+<td><code>mixed</code></td>
 </tr>
 <tr>
-<td><code>~</code></td>
-<td>Contains (substring)</td>
-<td><code>entity.name ~ "hello"</code></td>
-</tr>
-<tr>
-<td><code>starts with</code></td>
-<td>Prefix match</td>
-<td><code>entity.slug starts with "cat-"</code></td>
-</tr>
-<tr>
-<td><code>ends with</code></td>
-<td>Suffix match</td>
-<td><code>entity.filename ends with ".jpg"</code></td>
-</tr>
-<tr>
-<td><code>&lt;=&gt;</code> (spaceship)</td>
-<td>Three-way comparison</td>
-<td>For sort expressions</td>
-</tr>
-<tr>
-<td><code>=</code>, <code>===</code></td>
-<td>Strict equality</td>
-<td><code>entity.id = 5</code></td>
+<td><code>@basis</code></td>
+<td>list</td>
+<td>View</td>
+<td>Match fields for batch update/upsert</td>
+<td><code>id,sku</code></td>
 </tr>
 </tbody>
 </table>
-<h3 id="13-chained-attributes-dot-path-traversal">1.3 Chained Attributes (Dot-Path Traversal)<a class="headerlink" href="#13-chained-attributes-dot-path-traversal" title="Permanent link">&para;</a></h3>
-<p>Filter across relations using dot notation:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>entity.category.name == "Electronics"
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>entity.tags.name in ["new", "sale"]
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>entity.parent.slug starts with "cat-"
+<blockquote>
+<p>The view-level parameters (<code>@expands</code>, <code>@display</code>, <code>@transform</code>, <code>@partial</code>,
+<code>@mode</code>, <code>@basis</code>) are applied by <code>RestController::success()/requestProcess()</code>
+and the create/update mixins — they are not part of <code>list()</code> itself but
+complement it on CRUD endpoints. This reference covers them for completeness.</p>
+</blockquote>
+<hr />
+<h2 id="2-core-query-parameters">2. Core Query Parameters<a class="headerlink" href="#2-core-query-parameters" title="Permanent link">&para;</a></h2>
+<h3 id="page-limit"><code>page</code> / <code>limit</code><a class="headerlink" href="#page-limit" title="Permanent link">&para;</a></h3>
+<p>Paginate the result set. <code>RestController::pagination()</code> applies them
+server-side (over a <code>QueryBuilder</code> via Doctrine <code>Paginator</code> for an accurate
+total, or over an array/<code>ArrayCollection</code> with <code>array_slice</code>). The generated
+<code>paginator</code> metadata looks like:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="p">{</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="nt">"total"</span><span class="p">:</span><span class="w"> </span><span class="mi">100</span><span class="p">,</span><span class="w"> </span><span class="nt">"page"</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="nt">"limit"</span><span class="p">:</span><span class="w"> </span><span class="mi">20</span><span class="p">,</span><span class="w"> </span><span class="nt">"pages"</span><span class="p">:</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span><span class="nt">"has_previous"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w"> </span><span class="nt">"has_next"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="p">}</span>
 </code></pre></div>
-<p>The parser auto-generates LEFT JOINs for each path segment (e.g., <code>entity_category</code> for
-<code>entity.category</code>).</p>
-<h3 id="14-functions">1.4 Functions<a class="headerlink" href="#14-functions" title="Permanent link">&para;</a></h3>
-<h4 id="math">Math.*<a class="headerlink" href="#math" title="Permanent link">&para;</a></h4>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="x">Math.abs(entity.value)</span>
-<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="x">Math.sqrt(entity.area)</span>
-<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="x">Math.ceil(entity.score)</span>
-<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="x">Math.floor(entity.score)</span>
-<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="x">Math.round(entity.price, 2)</span>
-<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="x">Math.min(entity.x, entity.y)</span>
-<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="x">Math.max(entity.x, entity.y)</span>
-<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="x">Math.pow(entity.base, entity.exp)</span>
-<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="x">Math.log(entity.val)</span>
-<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="x">Math.log10(entity.val)</span>
-<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="x">Math.sin(entity.angle)</span>
-<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="x">Math.cos(entity.angle)</span>
-<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="x">Math.tan(entity.angle)</span>
-<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a><span class="x">Math.random(1, 100)</span>
-<a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a><span class="x">Math.pi()</span>
-<a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a><span class="x">Math.deg2rad(entity.degrees)</span>
-<a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a><span class="x">Math.rad2deg(entity.radians)</span>
-<a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a><span class="x">// and all other static methods on Math class</span>
-</code></pre></div>
-<h4 id="arraycommon">ArrayCommon.*<a class="headerlink" href="#arraycommon" title="Permanent link">&para;</a></h4>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="x">ArrayCommon.count(entity.tags) &gt; 3</span>
-<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="x">ArrayCommon.in_array("new", entity.tags.name)</span>
-<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="x">// filter, map, reduce operate on PHP arrays (in-memory fallback only)</span>
-</code></pre></div>
-<h4 id="filterdatetime">FilterDateTime.*<a class="headerlink" href="#filterdatetime" title="Permanent link">&para;</a></h4>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="x">FilterDateTime.get("2024-01-01")  // creates DateTime in DQL</span>
-<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="x">FilterDateTime.get("now", new \DateTimeZone("UTC"))</span>
-</code></pre></div>
-<h3 id="15-null-handling">1.5 NULL Handling<a class="headerlink" href="#15-null-handling" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="x">entity.deletedAt == null      // IS NULL</span>
-<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="x">entity.deletedAt != null      // IS NOT NULL</span>
-<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="x">entity.deletedAt == true      // evaluates to false for NULL (SQL NULL semantics)</span>
-</code></pre></div>
-<h3 id="16-dql-validation">1.6 DQL Validation<a class="headerlink" href="#16-dql-validation" title="Permanent link">&para;</a></h3>
-<p>After parsing, <code>ExpressionDqlParser::validateFragments($em)</code> validates:
-- All field references exist on the entity's Doctrine metadata
-- All relationships are valid for the join paths
-- No unknown entities or fields appear in the expression</p>
-<h3 id="17-in-memory-fallback">1.7 In-Memory Fallback<a class="headerlink" href="#17-in-memory-fallback" title="Permanent link">&para;</a></h3>
-<p>When DQL compilation fails (e.g., expressions using <code>ArrayCommon.filter</code> or complex
-Symfony ExpressionLanguage features), the system falls back to:
-1. Execute the query without filtering
-2. Filter results in PHP using <code>LegacyEvaluator::evaluateBool()</code> with each entity as
-   the <code>entity</code> variable
-3. Sort results with <code>usort()</code> if <code>@sort</code> is also present</p>
-<p><strong>This fallback is restricted to ROLE_ADMIN</strong> because it loads unfiltered data into memory.</p>
-<hr />
-<h2 id="2-sort-in-memory-sorting">2. @sort — In-Memory Sorting<a class="headerlink" href="#2-sort-in-memory-sorting" title="Permanent link">&para;</a></h2>
-<p><code>GET /api/v1/manage/products?@sort=x.price &gt; y.price</code></p>
-<p>Forces in-memory mode. Evaluates the expression with <code>x</code> and <code>y</code> as the two entities being
-compared. Returns <code>1</code> or <code>-1</code> to <code>usort()</code>. <strong>Admin-only</strong> (enforced by
-<code>assertPrivilegedQueryParameters()</code>).</p>
-<hr />
-<h2 id="3-order-dql-sorting">3. @order — DQL Sorting<a class="headerlink" href="#3-order-dql-sorting" title="Permanent link">&para;</a></h2>
-<p><code>GET /api/v1/manage/products?@order=price|ASC,createdAt|DESC,name|ASC</code></p>
-<p>Syntax: <code>field|ASC</code> or <code>field|DESC</code>, comma-separated for multi-field ordering.</p>
-<p>Multi-field example:
-<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>@order=category.sortOrder|ASC,entity.sortOrder|ASC,entity.name|ASC
-</code></pre></div></p>
-<p>Dot-paths are auto-converted to LEFT JOIN aliases:
-<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>@order=category.name|ASC
-<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>→ LEFT JOIN entity.category entity_category
-<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>→ ORDER BY entity_category.name ASC
-</code></pre></div></p>
-<hr />
-<h2 id="4-dql-raw-dql-sub-query">4. @dql — Raw DQL Sub-query<a class="headerlink" href="#4-dql-raw-dql-sub-query" title="Permanent link">&para;</a></h2>
-<p><code>GET /api/v1/manage/products?@dql=SELECT p.id FROM App\Common\Entity\Product p WHERE p.price &gt; 1000</code></p>
-<p><strong>Admin-only</strong>. The raw DQL is compiled via <code>$em-&gt;createQuery($subDql)</code> and injected as:
-<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="k">WHERE</span><span class="w"> </span><span class="n">entity</span><span class="p">.</span><span class="n">id</span><span class="w"> </span><span class="k">IN</span><span class="w"> </span><span class="p">(</span><span class="k">SELECT</span><span class="w"> </span><span class="n">p</span><span class="p">.</span><span class="n">id</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="p">...)</span>
-</code></pre></div></p>
-<p>Security implications: allows joining across any entity in the database. Always restricted
-to <code>ROLE_ADMIN</code>.</p>
-<hr />
-<h2 id="5-select-dql-select-projection">5. @select — DQL SELECT Projection<a class="headerlink" href="#5-select-dql-select-projection" title="Permanent link">&para;</a></h2>
-<p><code>GET /api/v1/manage/products?@select=entity.id, entity.name, entity.price, entity.category.name as categoryName</code></p>
-<p>Returns partial data instead of full entities. Security restrictions:</p>
-<ul>
-<li><strong>Blocked on <code>App\Identity\*</code> entities</strong> — cannot project identity data</li>
-<li><strong>Identity fields blocked</strong>: <code>user</code>, <code>profile</code>, <code>password</code>, <code>roles</code>, <code>email</code>, <code>phone</code>,
-  <code>phoneVerified</code>, <code>refreshToken</code>, <code>sessionKey</code>, <code>rawData</code></li>
-</ul>
-<p>When <code>@select</code> or <code>@groupBy</code> is present, returns raw query results (not <code>QueryBuilder</code>).</p>
-<hr />
-<h2 id="6-groupby-dql-group-by">6. @groupBy — DQL GROUP BY<a class="headerlink" href="#6-groupby-dql-group-by" title="Permanent link">&para;</a></h2>
-<p><code>GET /api/v1/manage/orders?@groupBy=entity.status&amp;@select=entity.status, COUNT(entity.id) as total</code></p>
-<p>Works with <code>@select</code> for aggregation. Dot-paths auto-joined.</p>
-<hr />
-<h2 id="7-expands-nested-eager-loading">7. @expands — Nested Eager Loading<a class="headerlink" href="#7-expands-nested-eager-loading" title="Permanent link">&para;</a></h2>
-<p><code>GET /api/v1/manage/products?@expands=["entity.category", "entity.tags", "entity.category.parent"]</code></p>
-<p>Syntax: JSON array of dot-paths. Each path traverses getters and injects <code>__metadata</code>:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="p">{</span>
-<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">    </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
-<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="w">    </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Laptop"</span><span class="p">,</span>
-<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="w">    </span><span class="nt">"category"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="w">        </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span>
-<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="w">        </span><span class="nt">"__toString"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Electronics"</span><span class="p">,</span>
-<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="w">        </span><span class="nt">"__metadata"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Electronics"</span><span class="p">,</span><span class="w"> </span><span class="cm">/* full entity */</span><span class="w"> </span><span class="p">},</span>
-<a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a><span class="w">        </span><span class="nt">"parent"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a><span class="w">            </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span>
-<a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a><span class="w">            </span><span class="nt">"__toString"</span><span class="p">:</span><span class="w"> </span><span class="s2">"All Products"</span><span class="p">,</span>
-<a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a><span class="w">            </span><span class="nt">"__metadata"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="cm">/* full entity */</span><span class="w"> </span><span class="p">}</span>
-<a id="__codelineno-9-12" name="__codelineno-9-12" href="#__codelineno-9-12"></a><span class="w">        </span><span class="p">}</span>
-<a id="__codelineno-9-13" name="__codelineno-9-13" href="#__codelineno-9-13"></a><span class="w">    </span><span class="p">},</span>
-<a id="__codelineno-9-14" name="__codelineno-9-14" href="#__codelineno-9-14"></a><span class="w">    </span><span class="nt">"tags"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<a id="__codelineno-9-15" name="__codelineno-9-15" href="#__codelineno-9-15"></a><span class="w">        </span><span class="p">{</span><span class="w"> </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span><span class="w"> </span><span class="nt">"__toString"</span><span class="p">:</span><span class="w"> </span><span class="s2">"new"</span><span class="p">,</span><span class="w"> </span><span class="nt">"__metadata"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="cm">/* full entity */</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span>
-<a id="__codelineno-9-16" name="__codelineno-9-16" href="#__codelineno-9-16"></a><span class="w">    </span><span class="p">]</span>
-<a id="__codelineno-9-17" name="__codelineno-9-17" href="#__codelineno-9-17"></a><span class="p">}</span>
-</code></pre></div>
-<p>The <code>__metadata</code> key contains the full normalized entity, while the parent key shows the
-reduced form. <code>FlatNormalizer</code> handles displaying both.</p>
-<hr />
-<h2 id="8-display-response-shaping">8. @display — Response Shaping<a class="headerlink" href="#8-display-response-shaping" title="Permanent link">&para;</a></h2>
-<p><code>GET /api/v1/manage/products?@display=complex</code> (default)</p>
+<h3 id="filter"><code>@filter</code><a class="headerlink" href="#filter" title="Permanent link">&para;</a></h3>
+<p>An expression evaluated against a root alias of <code>entity</code>. The same syntax is
+usable as a raw <code>QueryBuilder</code> fragment (the DQL tier) and as an in-memory
+predicate (the fallback).</p>
+<p>Supported operators (shared by client <code>@filter</code> and server <code>DqlExpression</code>):</p>
 <table>
 <thead>
 <tr>
-<th>Value</th>
-<th>Behavior</th>
+<th>Operator</th>
+<th>Meaning</th>
+<th>DQL mapping</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>complex</code></td>
-<td>Return collection as-is (serializer handles normalization)</td>
+<td><code>==</code> / <code>!=</code></td>
+<td>equal / not equal</td>
+<td><code>=</code> / <code>!=</code></td>
 </tr>
 <tr>
-<td><code>reduce</code></td>
-<td>Map each entity to <code>{id, __toString}</code> (minimal representation)</td>
+<td><code>&gt;</code> <code>&gt;=</code> <code>&lt;</code> <code>&lt;=</code></td>
+<td>comparison</td>
+<td>same</td>
 </tr>
 <tr>
-<td><code>["name", "price"]</code></td>
-<td>Extract named fields via getters</td>
+<td><code>&amp;&amp;</code> / <code>||</code></td>
+<td>logical AND / OR</td>
+<td><code>AND</code> / <code>OR</code></td>
 </tr>
 <tr>
-<td><code>{"name": "entity.getName()", "upper": "entity.name ~ 'Laptop'", "sqrt": "Math.sqrt(16)"}</code></td>
-<td>Evaluate expressions per entity; <code>entity</code>, <code>Math</code>, <code>ArrayCommon</code> in scope</td>
+<td><code>!</code></td>
+<td>logical NOT (attr check)</td>
+<td><code>prop IS NULL</code> on the child</td>
+</tr>
+<tr>
+<td><code>in</code> / <code>not in</code></td>
+<td>collection membership</td>
+<td><code>IN (:param)</code> / <code>NOT IN (:param)</code> — bound as array parameters; empty <code>in []</code> becomes <code>1 = 0</code>, empty <code>not in []</code> becomes <code>1 = 1</code></td>
+</tr>
+<tr>
+<td><code>matches</code></td>
+<td>regex / LIKE</td>
+<td><code>REGEXP(...) = TRUE</code> or <code>LIKE '%...%'</code></td>
+</tr>
+<tr>
+<td><code>+ - * /</code></td>
+<td>arithmetic</td>
+<td>same</td>
 </tr>
 </tbody>
 </table>
-<p>Expression map example:
-<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>@display={"name": "entity.name", "isExpensive": "entity.price &gt; 1000", "priceFormatted": "Math.round(entity.price / 100, 2)"}
-</code></pre></div></p>
+<p><strong>Field references</strong> are the root alias plus dotted getters, e.g.
+<code>entity.status</code>, <code>entity.getCategory().getName()</code> (chained attribute access
+generates the necessary joins). A bare attribute (no operator) compiles to
+<code>prop IS NOT NULL</code>.</p>
+<p>Examples:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a># Equality
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>@filter=entity.status == "active"
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a># Comparison + logic
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>@filter=entity.price &gt;= 100 &amp;&amp; entity.status != "deleted"
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a># Chained attribute (joins category)
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>@filter=entity.getCategory().getName() == "Electronics"
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a># Regex match
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>@filter=entity.email matches "/@example\.com$/i"
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a># LIKE match (plain string pattern → %...%)
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>@filter=entity.name matches "pro"
+<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>
+<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a># NOT — attr is null
+<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>@filter=!entity.deletedAt
+</code></pre></div>
+<p><strong>Access and fallback</strong>: An <code>@filter</code> that requires in-memory evaluation (e.g.
+when DQL compilation fails or the filter touches non-persistent data) is
+restricted to admins. For non-admins a DQL compilation error raises
+<code>AccessDeniedHttpException</code>; admins fall back to
+<code>LegacyEvaluator::evaluateBool()</code> over each entity.</p>
+<p><strong>Server-owned <code>DqlExpression</code> vs client <code>@filter</code></strong>: <code>DqlExpression</code> reuses the
+same expression compiler, but variables are bound in PHP code (e.g.
+<code>new DqlExpression('entity.getUser() == user', ['user' =&gt; $this-&gt;getUser()])</code>
+or <code>new DqlExpression('entity.getStoreUuid() in this.getAllowedStoreUuids()')</code>
+— the latter is shorthand for explicit binding and is only available inside
+<code>commonFilter()</code> via <code>ApiView::resolvedCommonFilter()</code>). It never uses the
+<code>LegacyEvaluator</code>, never falls back to in-memory filtering, and a compilation
+or metadata-validation failure is a 500 configuration error that rejects the
+request. Like <code>commonFilter()</code> arrays, it is automatically <code>AND</code>ed with the
+<code>id</code>/<code>uuid</code> added by <code>mixIdToCommonFilter</code>, so detail/update/delete cannot be
+bypassed. <code>in</code>/<code>not in</code> with an empty collection is compiled to the constant
+predicates <code>1 = 0</code> / <code>1 = 1</code> rather than an invalid <code>IN ()</code>.</p>
+<h3 id="dql"><code>@dql</code><a class="headerlink" href="#dql" title="Permanent link">&para;</a></h3>
+<p>A raw DQL sub-query whose matching ids are used as <code>id IN (subquery)</code>:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>@dql=SELECT e.id FROM App\Trade\Entity\Product e WHERE e.price &gt; 100
+</code></pre></div>
+<p>Restricted to <code>ROLE_ADMIN</code>.</p>
+<h3 id="order"><code>@order</code><a class="headerlink" href="#order" title="Permanent link">&para;</a></h3>
+<p>ORDER BY fields. Comma-separated <code>field|DIRECTION</code> pairs:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>@order=createdAt|DESC,id|ASC
+</code></pre></div>
+<p>Joins are auto-derived if you order by a chained path (the <code>joiner</code> function
+registers <code>leftJoin</code>s). Non-admin note: <code>@order</code> itself isn't gated, but the
+DQL compilation must be safe.</p>
+<h3 id="select"><code>@select</code><a class="headerlink" href="#select" title="Permanent link">&para;</a></h3>
+<p>Overrides the SELECT clause (projection). Chained paths expand to joins:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>@select=entity.id, entity.name, entity.category.name
+</code></pre></div>
+<p>Guarded by <code>assertSafeSelect()</code>: selecting into <code>App\Identity\*</code> entities or
+any of <code>user|profile|password|roles|email|phone|phoneVerified|refreshToken|sessionKey|rawData</code>
+raises <code>AccessDeniedHttpException</code> ("@select cannot access identity data.").
+When <code>@select</code> (or <code>@groupBy</code>) is present, <code>list()</code> returns query results
+directly rather than a <code>QueryBuilder</code>.</p>
+<h3 id="groupby"><code>@groupBy</code><a class="headerlink" href="#groupby" title="Permanent link">&para;</a></h3>
+<p>Appends a GROUP BY clause:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>@groupBy=entity.category
+</code></pre></div>
+<p>Like <code>@select</code>, chained paths auto-join and using it returns results directly.</p>
+<h3 id="hints"><code>@hints</code><a class="headerlink" href="#hints" title="Permanent link">&para;</a></h3>
+<p>JSON object of Doctrine query hints applied to the executed query:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>@hints={"Doctrine\\ORM\\Query::HINT_FORCE_PARTIAL_LOAD": true}
+</code></pre></div>
+<p>Restricted to <code>ROLE_ADMIN</code>.</p>
+<h3 id="sort"><code>@sort</code><a class="headerlink" href="#sort" title="Permanent link">&para;</a></h3>
+<p>An <strong>in-memory</strong> comparator expression evaluated with <code>x</code> and <code>y</code> as the two
+entities being compared (uses <code>LegacyEvaluator::evaluateBool</code>; a truthy result
+sorts <code>x</code> first). Because it runs in PHP, it is restricted to <code>ROLE_ADMIN</code>.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>@sort=x.getTotalAmount() &gt; y.getTotalAmount()
+</code></pre></div>
+<p>When <code>@sort</code> is present, the DQL-tier filter result is applied but the ordering
+falls back to <code>usort</code> in memory.</p>
+<h3 id="showdql"><code>@showDQL</code><a class="headerlink" href="#showdql" title="Permanent link">&para;</a></h3>
+<p>When truthy, instead of returning results the endpoint throws
+<code>ValidatorException('DQL: ' . $qb-&gt;getDQL())</code>, which surfaces as a JSON error
+showing the generated DQL. Useful for debugging. Only available in the <code>dev</code>
+environment (any environment raises <code>AccessDeniedHttpException</code> otherwise).</p>
 <hr />
-<h2 id="9-transform-field-transformation">9. @transform — Field Transformation<a class="headerlink" href="#9-transform-field-transformation" title="Permanent link">&para;</a></h2>
-<p><code>POST /api/v1/contents?@transform={"category": "Service.get({'name': ':value'}).getId()"}</code></p>
-<p>Used during create/update to resolve referenced entities. Features:</p>
+<h2 id="3-view-level-parameters">3. View-Level Parameters<a class="headerlink" href="#3-view-level-parameters" title="Permanent link">&para;</a></h2>
+<p>Applied after the query, in <code>RestController::success()</code>/<code>requestProcess()</code>, and
+in the create/update mixins.</p>
+<h3 id="expands"><code>@expands</code><a class="headerlink" href="#expands" title="Permanent link">&para;</a></h3>
+<p>JSON array (single quotes allowed, <code>FixJSON</code> handles them) of dotted relation
+chains to expand by attaching a <code>__metadata</code> attribute (the object itself) to
+each related node, so the flat serializer can include it:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a># GET /api/v1/manage/contents?@expands=['category','tags']
+</code></pre></div>
+<h3 id="display"><code>@display</code><a class="headerlink" href="#display" title="Permanent link">&para;</a></h3>
+<p>Controls response projection:</p>
 <ul>
-<li><code>:value</code> placeholder replaced with the raw request value for that field</li>
-<li><code>Service.get($criteria)</code> calls the related entity's service to find the target entity</li>
-<li><code>Service.list($criteria)</code> returns an array of identity wrappers</li>
-<li><code>Service.get().getId()</code> returns the resolved entity ID (for foreign key)</li>
-<li><code>entity</code> variable provides access to the current entity (identity wrapper with <code>.getId()</code>)</li>
-<li><code>Math</code> and <code>ArrayCommon</code> available in expression scope</li>
+<li><strong><code>@display=reduce</code></strong> — each item becomes <code>{id, __toString}</code>.</li>
+<li><strong><code>@display=&lt;json array&gt;</code></strong> — e.g. <code>['id','name','category.name']</code> produces
+  a flat object with the requested fields (dotted paths traversed via getters).</li>
+<li><strong><code>@display=&lt;json object&gt;</code></strong> — keys are output fields, values are
+  <code>ExpressionLanguage</code> expressions evaluated with <code>entity</code>, <code>Math</code>, and
+  <code>ArrayCommon</code>.</li>
+<li>omitted (default <code>complex</code>) — full serialized entity.</li>
 </ul>
-<p>Example: creating content with a category name rather than ID:
-<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="p">{</span>
-<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="w">    </span><span class="nt">"title"</span><span class="p">:</span><span class="w"> </span><span class="s2">"My Article"</span><span class="p">,</span>
-<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="w">    </span><span class="nt">"category"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Tutorials"</span>
-<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="p">}</span>
+<p>Example:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a># GET /api/v1/app/products?@display={"title":"entity.name","score":"Math.round(entity.price/100)"}
 </code></pre></div>
-<code>@transform</code>: <code>{"category": "Service.get({'name': ':value'}).getId()}</code>
-→ Resolves "Tutorials" to the Category entity with ID 5
-→ Sets <code>content.category = 5</code> before save</p>
-<hr />
-<h2 id="10-showdql-debug-helper">10. @showDQL — Debug Helper<a class="headerlink" href="#10-showdql-debug-helper" title="Permanent link">&para;</a></h2>
-<p><code>GET /api/v1/manage/products?@showDQL=true</code></p>
-<p><strong>Dev-only</strong> (throws <code>AccessDeniedHttpException</code> in non-dev environments). Throws a
-<code>ValidatorException</code> containing the fully compiled DQL:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>DQL: SELECT entity FROM App\Common\Entity\Product entity WHERE entity.id IN(SELECT ...)
+<h3 id="transform"><code>@transform</code><a class="headerlink" href="#transform" title="Permanent link">&para;</a></h3>
+<p>Used by <code>CreateApiViewMixin</code>, <code>UpdateApiViewMixin</code>, and <code>Single*</code> mixins. A
+JSON object mapping fields to <code>ExpressionLanguage</code> expressions that rewrite the
+submitted content. <code>:value</code> is substituted with the submitted field value, and
+<code>Service</code> (a gateway to the related entity's service), <code>entity</code>, <code>Math</code>,
+<code>ArrayCommon</code> are available.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a># POST /api/v1/manage/contents
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a># body:    {"title": "Hi", "category": "Test"}
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a># @transform={"category": "Service.get({'name': ':value'}).getId()"}
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>
+<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a># GET /api/v1/manage/contents?@transform={"category":"Service.get({'name':':value'}).getId()"}
+</code></pre></div>
+<p>For a to-one relation on the entity, the matching <code>*Service</code> is auto-resolved by
+convention (<code>Entity</code> → <code>Service</code> in the class name). Returns the related
+entity's id.</p>
+<h3 id="partial"><code>@partial</code><a class="headerlink" href="#partial" title="Permanent link">&para;</a></h3>
+<p>Boolean. On create and batch-update, when <code>false</code> (default) the whole batch is
+wrapped in one transaction; when <code>true</code> each item is handled individually and
+transactional wrappers are skipped (partial-mode batch-update also swallows
+per-item exceptions).</p>
+<h3 id="mode-and-basis-batch-update"><code>@mode</code> and <code>@basis</code> (batch update)<a class="headerlink" href="#mode-and-basis-batch-update" title="Permanent link">&para;</a></h3>
+<p><code>UpdateApiViewMixin::batchUpdateAction</code> (<code>POST /batch-update</code>):</p>
+<ul>
+<li><code>@mode=update</code> — only update existing matches.</li>
+<li><code>@mode=mixed</code> (default) — upsert: create when no matched entity exists.</li>
+<li><code>@basis</code> — comma-separated fields used to match an existing entity for each
+  submitted row (e.g. <code>@basis=id,sku</code>). When empty, no matching occurs (matters
+  for upsert decisions).</li>
+</ul>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a># POST /api/v1/manage/products/batch-update?@basis=sku&amp;@mode=mixed
 </code></pre></div>
 <hr />
-<h2 id="11-hints-doctrine-query-hints">11. @hints — Doctrine Query Hints<a class="headerlink" href="#11-hints-doctrine-query-hints" title="Permanent link">&para;</a></h2>
-<p><code>GET /api/v1/manage/products?@hints={"doctrine.readOnly": true, "doctrine.fetchAll": true}</code></p>
-<p>JSON-decoded and applied via <code>$query-&gt;setHint($key, $value)</code>. <strong>Admin-only</strong>.</p>
+<h2 id="4-how-list-workflow-flow-works">4. How <code>list()</code> Workflow Flow Works<a class="headerlink" href="#4-how-list-workflow-flow-works" title="Permanent link">&para;</a></h2>
+<p>(Abstracted from <code>BaseServiceReadListTrait::list()</code>.)</p>
+<ol>
+<li><strong>Build root</strong> — a <code>QueryBuilder</code> over the service's entity class with root
+   alias <code>entity</code>; an associative <code>$object</code> array becomes <code>entity.key = :value_key</code>
+   conditions; a passed <code>QueryBuilder</code> is used as-is.</li>
+<li><strong><code>@dql</code></strong> — appended as <code>id IN (subDql)</code>.</li>
+<li><strong><code>@filter</code></strong> — compiled by <code>ExpressionService::buildFilter()</code> →
+   <code>ExpressionDqlParser</code> → <code>ExpressionQueryBuilderAssembler</code>; the resulting
+   ids are applied via <code>id IN (filterQb)</code> with parameters merged. On
+   compilation failure, non-admins get <code>AccessDeniedHttpException</code>, admins fall
+   back to in-memory filtering.</li>
+<li><strong><code>@select</code> / <code>@groupBy</code></strong> — applied; the <code>joiner</code> derives <code>leftJoin</code>s for
+   dotted paths.</li>
+<li><strong><code>@order</code></strong> — applied (<code>field|DIRECTION</code>), joins derived as needed.</li>
+<li><strong><code>@hints</code></strong> — set on the executed query.</li>
+<li><strong><code>@showDQL</code></strong> — throws with the generated DQL.</li>
+<li>If <code>@select</code>/<code>@groupBy</code> present → return query results.</li>
+<li>Otherwise return the <code>QueryBuilder</code> (for the controller to paginate) — or,
+   when the filter/order fell back to in-memory, fetch results and apply
+   <code>@filter</code> (<code>evaluateBool</code>) and <code>@sort</code> (<code>usort</code>) over them.</li>
+</ol>
 <hr />
-<h2 id="12-page-limit-pagination">12. page &amp; limit — Pagination<a class="headerlink" href="#12-page-limit-pagination" title="Permanent link">&para;</a></h2>
-<p><code>GET /api/v1/manage/products?page=2&amp;limit=50</code></p>
+<h2 id="5-security-summary">5. Security Summary<a class="headerlink" href="#5-security-summary" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
 <th>Parameter</th>
-<th>Default</th>
-<th>Description</th>
+<th>Requires <code>ROLE_ADMIN</code></th>
+<th>Notes</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>page</code></td>
-<td><code>1</code></td>
-<td>Page number (1-indexed)</td>
+<td><code>@dql</code></td>
+<td>✅</td>
+<td>Raw SQL surface</td>
 </tr>
 <tr>
-<td><code>limit</code></td>
-<td><code>100</code></td>
-<td>Items per page</td>
+<td><code>@sort</code></td>
+<td>✅</td>
+<td>In-memory evaluation</td>
+</tr>
+<tr>
+<td><code>@hints</code></td>
+<td>✅</td>
+<td>Raw query hints</td>
+</tr>
+<tr>
+<td><code>@filter</code></td>
+<td>only for the in-memory fallback</td>
+<td>DQL-fast-path is allowed; non-admin failures → <code>AccessDeniedHttpException</code></td>
+</tr>
+<tr>
+<td><code>@showDQL</code></td>
+<td>✅ (env-gated)</td>
+<td><code>dev</code> only</td>
+</tr>
+<tr>
+<td><code>@select</code></td>
+<td>guarded, not gated</td>
+<td><code>assertSafeSelect()</code> blocks identity data</td>
+</tr>
+<tr>
+<td><code>DqlExpression</code> (<code>commonFilter</code> server scope)</td>
+<td>N/A — code-owned</td>
+<td>Fail-closed, never <code>PUBLIC_ACCESS</code>; compilation/validation failure → 500, never in-memory fallback</td>
 </tr>
 </tbody>
 </table>
-<p>Paginator metadata in response:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="p">{</span>
-<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="w">    </span><span class="nt">"paginator"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="w">        </span><span class="nt">"total"</span><span class="p">:</span><span class="w"> </span><span class="mi">250</span><span class="p">,</span>
-<a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="w">        </span><span class="nt">"page"</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span>
-<a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a><span class="w">        </span><span class="nt">"limit"</span><span class="p">:</span><span class="w"> </span><span class="mi">50</span><span class="p">,</span>
-<a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a><span class="w">        </span><span class="nt">"pages"</span><span class="p">:</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span>
-<a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a><span class="w">        </span><span class="nt">"has_previous"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
-<a id="__codelineno-13-8" name="__codelineno-13-8" href="#__codelineno-13-8"></a><span class="w">        </span><span class="nt">"has_next"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
-<a id="__codelineno-13-9" name="__codelineno-13-9" href="#__codelineno-13-9"></a><span class="w">    </span><span class="p">}</span>
-<a id="__codelineno-13-10" name="__codelineno-13-10" href="#__codelineno-13-10"></a><span class="p">}</span>
-</code></pre></div>
-<p>Pagination is applied by <code>RestController::pagination()</code>. For <code>QueryBuilder</code> input, total
-is computed via <code>DoctrinePaginator</code>. For arrays, total is <code>count()</code>.</p>
+<blockquote>
+<p><code>DqlExpression</code> is the server-owned counterpart to <code>@filter</code> for row-level
+authorization: <code>commonFilter()</code> may return <code>new DqlExpression(...)</code>; it shares the
+operator set (including <code>in</code>/<code>not in</code>) but is constructed in PHP, bound via
+<code>withCriteria()</code>/<code>withContext()</code> and validated before any query executes.</p>
+</blockquote>
 <hr />
-<h2 id="13-expression-caching">13. Expression Caching<a class="headerlink" href="#13-expression-caching" title="Permanent link">&para;</a></h2>
-<p><code>ExpressionService</code> uses a PSR-16 <code>CacheInterface</code> (optional). When a cache is provided:</p>
+<h2 id="6-operators-people-notes">6. Operators &amp; People Notes<a class="headerlink" href="#6-operators-people-notes" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Cache key: <code>'expr_' . sha1($dataClass . '|' . $filter)</code></li>
-<li>Stored value: <code>{dql: compiledDQL, parameters: [{n: name, v: value}, ...]}</code></li>
-<li>On cache hit: recreates <code>Query</code> from cached DQL, wraps params in <code>Parameter</code> objects</li>
+<li>Chained attribute access uses the root alias <code>entity.getX().getY()</code> form in
+  <code>@filter</code>; the DQL tier maps these to joins (<code>filter_entity_x_y</code>).</li>
+<li><code>matches</code> with a <code>/pattern/flags</code> value compiles to <code>REGEXP(...) = TRUE</code>
+  (supported flags <code>gimsux</code>); a plain string compiles to <code>LIKE '%...%'</code> with
+  <code>!</code> escaping.</li>
+<li>The <code>ExternalExpressionValues</code> available inside filter expressions include
+  <code>math</code>/<code>Math</code>, <code>datetime</code>/<code>Datetime</code>, and <code>ArrayCommon</code>.</li>
 </ul>
-<p>Cache invalidation: SHA1 key changes whenever the entity class or filter expression
-changes. No explicit invalidation needed — new filters generate new keys.</p>
-<hr />
-<h2 id="14-troubleshooting">14. Troubleshooting<a class="headerlink" href="#14-troubleshooting" title="Permanent link">&para;</a></h2>
-<h3 id="common-filter-errors">Common Filter Errors<a class="headerlink" href="#common-filter-errors" title="Permanent link">&para;</a></h3>
-<table>
-<thead>
-<tr>
-<th>Error</th>
-<th>Cause</th>
-<th>Fix</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>AccessDeniedHttpException: @filter expressions that require in-memory evaluation are restricted to administrators</code></td>
-<td>DQL compilation failed and user is not admin</td>
-<td>Simplify expression to use only database-compatible operators</td>
-</tr>
-<tr>
-<td><code>AccessDeniedHttpException: @dql is restricted to administrators</code></td>
-<td>Non-admin used <code>@dql</code></td>
-<td>Remove <code>@dql</code> or use admin credentials</td>
-</tr>
-<tr>
-<td><code>AccessDeniedHttpException: @select cannot access identity data</code></td>
-<td><code>@select</code> targeting identity fields or entities</td>
-<td>Remove identity fields from projection</td>
-</tr>
-<tr>
-<td><code>ValidatorException: DQL: ...</code></td>
-<td><code>@showDQL</code> is set</td>
-<td>This is informational; remove <code>@showDQL</code> to see results</td>
-</tr>
-<tr>
-<td>Filter returns empty results</td>
-<td>Expression too complex or field doesn't exist</td>
-<td>Use <code>@showDQL=true</code> to inspect compiled DQL</td>
-</tr>
-<tr>
-<td><code>AccessDeniedHttpException: @sort is restricted to administrators</code></td>
-<td>Non-admin used <code>@sort</code></td>
-<td>Use <code>@order</code> for database-level sorting instead</td>
-</tr>
-</tbody>
-</table>
-<h3 id="performance-tips">Performance Tips<a class="headerlink" href="#performance-tips" title="Permanent link">&para;</a></h3>
-<ol>
-<li><strong>Use <code>@order</code> over <code>@sort</code></strong>: <code>@order</code> generates SQL <code>ORDER BY</code>; <code>@sort</code> loads all data
-   into memory.</li>
-<li><strong>Use <code>@expands</code> for eager loading</strong>: Prevents N+1 queries when rendering related
-   entities.</li>
-<li><strong>Use <code>@select</code> for view projections</strong>: Returns only needed fields instead of full
-   entities.</li>
-<li><strong>Combine <code>@filter</code> with <code>@select</code>/<code>@groupBy</code></strong>: Filters are pushed to the database even
-   with projections.</li>
-<li><strong>Avoid chain-heavy <code>@sort</code> expressions</strong>: Each comparison evaluates PHP expressions.</li>
-<li><strong>Expression caching</strong>: Provide a PSR-16 cache to <code>ExpressionService</code> to avoid re-parsing
-   identical filters.</li>
-</ol>
+<p>For parsing internals and class-level details, see
+<a href="../core-framework/">core-framework.md</a> (§4 Parser &amp; Expression Engine).</p>
 
 
 
@@ -2959,6 +3640,10 @@ changes. No explicit invalidation needed — new filters generate new keys.</p>
     
     
       <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+      
+        <script src="../../javascripts/mermaid-init.js"></script>
       
     
   </body>
