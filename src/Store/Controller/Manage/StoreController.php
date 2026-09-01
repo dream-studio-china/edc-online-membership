@@ -6,6 +6,7 @@ namespace App\Store\Controller\Manage;
 
 use App\Core\Controller\RestController;
 use App\Core\View\ApiView;
+use App\Core\View\ApiViewMessages;
 use App\Core\View\CreateApiViewMixin;
 use App\Core\View\DetailApiViewMixin;
 use App\Core\View\ListApiViewMixin;
@@ -66,7 +67,7 @@ final class StoreController extends RestController
     {
         $store = $this->store($uuid);
         if ($store === null) {
-            return $this->warning('Store not found.', 404, '', 404);
+            return $this->warning(ApiViewMessages::STORE_NOT_FOUND, 404, '', 404);
         }
 
         $store->{$status}();
@@ -80,7 +81,7 @@ final class StoreController extends RestController
     {
         $store = $this->store($uuid);
         if ($store === null) {
-            return $this->warning('Store not found.', 404, '', 404);
+            return $this->warning(ApiViewMessages::STORE_NOT_FOUND, 404, '', 404);
         }
 
         return $this->success($this->membershipService->list(['store' => $store], ['entity.createdAt' => 'ASC'], false));
@@ -91,7 +92,7 @@ final class StoreController extends RestController
     {
         $store = $this->store($uuid);
         if ($store === null) {
-            return $this->warning('Store not found.', 404, '', 404);
+            return $this->warning(ApiViewMessages::STORE_NOT_FOUND, 404, '', 404);
         }
 
         $data = json_decode($request->getContent(), true);

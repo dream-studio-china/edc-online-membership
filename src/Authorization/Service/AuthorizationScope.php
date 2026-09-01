@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Authorization\Service;
 
 use App\Core\Utils\UUID;
+use App\Core\View\ApiViewMessages;
 
 final class AuthorizationScope
 {
@@ -22,7 +23,7 @@ final class AuthorizationScope
             throw new \InvalidArgumentException('Global scope requires null uuid.');
         }
         if ($type === self::STORE && ($uuid === null || !UUID::is_valid($uuid))) {
-            throw new \InvalidArgumentException('Store scope requires valid uuid.');
+            throw new \InvalidArgumentException(ApiViewMessages::STORE_SCOPE_REQUIRES_VALID_UUID);
         }
     }
 

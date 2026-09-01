@@ -46,6 +46,7 @@ nelmio_api_doc:
             - { name: Promotions, description: 'Promotion DSL and order discounts' }
             - { name: PromotionTemplates, description: 'Promotion template CRUD, validation, and dry-run' }
             - { name: Settlement, description: 'Settlement rules, plans, allocations, and outbox' }
+            - { name: Authorization, description: 'RBAC: roles, permissions, assignments, field grants, audit logs' }
             - { name: System, description: 'System introspection: entity metadata export and route listing' }
             - { name: Wechat, description: 'WeChat login, OAuth, and payment' }
 

@@ -272,7 +272,7 @@ trait UpdateApiViewMixin
         } catch (NotFoundHttpException $exception) {
             return $this->warning($exception->getMessage(), 404, '', 404);
         } catch (\Symfony\Component\Security\Core\Exception\AccessDeniedException $exception) {
-            return $this->warning($exception->getMessage() ?: 'Access denied.', 403, '', 403);
+            return $this->warning($exception->getMessage() ?: ApiViewMessages::ACCESS_DENIED, 403, '', 403);
         } catch (\Exception $exception) {
             return $this->warning($exception->getMessage() ?: self::UNKNOWN_ERROR, 500, '', 500);
         }
