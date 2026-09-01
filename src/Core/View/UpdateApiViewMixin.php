@@ -163,6 +163,7 @@ trait UpdateApiViewMixin
                 throw new NotFoundHttpException(ApiViewMessages::ENTITY_NOT_FOUND);
             }
 
+            $this->authorizeApiAction('update', $entity);
             return $this->updateSingle($entity, $content, $transformer);
         }
         elseif(is_array($content)) {
@@ -186,6 +187,7 @@ trait UpdateApiViewMixin
                             }
                             else continue;
                         }
+                        $this->authorizeApiAction($writeMode === self::$MODE_UPDATE ? 'update' : 'create', $entity);
                         $response[] = $this->updateSingle($entity, $item, $transformer, $writeMode, true);
                     }
                 });
@@ -206,6 +208,7 @@ trait UpdateApiViewMixin
                             }
                             else continue;
                         }
+                        $this->authorizeApiAction($writeMode === self::$MODE_UPDATE ? 'update' : 'create', $entity);
                         $response[] = $this->updateSingle($entity, $item, $transformer, $writeMode, false);
                     } catch (\Exception) {
                         // Partial mode: skip failed items
@@ -260,6 +263,7 @@ trait UpdateApiViewMixin
     public function updateAction(Request $request, int|string $id): Response
     {
         try {
+            $this->authorizeApiAction('update');
             $response = $this->updateRecords($request, $id);
         } catch (ValidatorException $exception) {
             return $this->warning($exception->getMessage(), 400, '', 400);
@@ -267,6 +271,8 @@ trait UpdateApiViewMixin
             return $this->warning($exception->getMessage(), 400, '', 400);
         } catch (NotFoundHttpException $exception) {
             return $this->warning($exception->getMessage(), 404, '', 404);
+        } catch (\Symfony\Component\Security\Core\Exception\AccessDeniedException $exception) {
+            return $this->warning($exception->getMessage() ?: 'Access denied.', 403, '', 403);
         } catch (\Exception $exception) {
             return $this->warning($exception->getMessage() ?: self::UNKNOWN_ERROR, 500, '', 500);
         }

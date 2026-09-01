@@ -56,12 +56,17 @@ trait ListApiViewMixin
     #[Route('', name: 'list', methods: ['GET'])]
     public function listAction(): Response
     {
-        $service = $this->service;
-        $filter = $this->listFilter($this->resolvedCommonFilter());
-        $entities = $this->listProcessor(
-            $service->list($filter, null, false)
-        );
-        $entities = $this->listResponses($entities);
-        return $this->success($entities);
+        try {
+            $this->authorizeApiAction('list');
+            $service = $this->service;
+            $filter = $this->listFilter($this->resolvedCommonFilter());
+            $entities = $this->listProcessor(
+                $service->list($filter, null, false)
+            );
+            $entities = $this->listResponses($entities);
+            return $this->success($entities);
+        } catch (\Symfony\Component\Security\Core\Exception\AccessDeniedException $exception) {
+            return $this->warning($exception->getMessage() ?: 'Access denied.', 403, '', 403);
+        }
     }
 }

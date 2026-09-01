@@ -33,16 +33,22 @@ trait DeleteApiViewMixin
     #[Route('/{id}', name: 'delete', requirements: ['id' => '\\d+|[0-9a-fA-F-]{36}'], methods: ['DELETE'])]
     public function deleteAction(int|string $id): Response
     {
-        $service = $this->service;
-        $filter = $this->mixIdToCommonFilter($id);
-        $filter = $this->deletionFilter($filter);
-        if ($filter === null) {
-            return $this->warning(ApiViewMessages::ENTITY_NOT_FOUND, 404, '', 404);
-        }
-        $entity = $service->get($filter, false);
+        try {
+            $this->authorizeApiAction('delete');
+            $service = $this->service;
+            $filter = $this->mixIdToCommonFilter($id);
+            $filter = $this->deletionFilter($filter);
+            if ($filter === null) {
+                return $this->warning(ApiViewMessages::ENTITY_NOT_FOUND, 404, '', 404);
+            }
+            $entity = $service->get($filter, false);
 
-        if (!$entity) {
-            return $this->warning(ApiViewMessages::ENTITY_NOT_FOUND, 404, '', 404);
+            if (!$entity) {
+                return $this->warning(ApiViewMessages::ENTITY_NOT_FOUND, 404, '', 404);
+            }
+            $this->authorizeApiAction('delete', $entity);
+        } catch (\Symfony\Component\Security\Core\Exception\AccessDeniedException $exception) {
+            return $this->warning($exception->getMessage() ?: 'Access denied.', 403, '', 403);
         }
 
         if (($response = $this->processDeletion($entity)) !== null) {

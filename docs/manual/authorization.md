@@ -162,7 +162,7 @@ This is **UI-only**; the server remains authoritative.
 
 ## 8. Field-Grant Pilot (End-to-End, `common:content` `metadata`)
 
-Content is **not** Store-scoped in this phase (no `store_uuid`). The Store association was removed; only `metadata` remains as the field that distinguishes `store_content_editor` (no `metadata`) from `store_content_metadata_editor` (with `metadata`). Field enforcement is via `FieldAuthorizationService`; the example below uses direct service evaluation — the same grant would be enforced by any future controller that composes `FieldAuthorizationService` (the previous `POST /store/stores/{storeUuid}/contents` pilot has been removed).
+Content is **not** Store-scoped in this phase (no `store_uuid`). The Store association was removed; only `metadata` remains as the field that distinguishes `store_content_editor` (no `metadata`) from `store_content_metadata_editor` (with `metadata`). Field enforcement is via `FieldAuthorizationService`; the example below uses direct service evaluation — the same grant would be enforced by any future controller that composes `FieldAuthorizationService` (the previous `POST /store/{storeUuid}/contents` pilot has been removed).
 
 ```php
 // In a controller/service that handles Content create/update:

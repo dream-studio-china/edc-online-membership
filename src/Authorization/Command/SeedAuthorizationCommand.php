@@ -178,6 +178,14 @@ final class SeedAuthorizationCommand extends Command
             ['code' => 'store:order:accept', 'module' => 'store', 'resource' => 'order', 'action' => 'accept', 'name' => 'Accept store orders'],
             ['code' => 'store:order:reject', 'module' => 'store', 'resource' => 'order', 'action' => 'reject', 'name' => 'Reject store orders'],
             ['code' => 'store:order:fulfill', 'module' => 'store', 'resource' => 'order', 'action' => 'fulfill', 'name' => 'Fulfill store orders'],
+            ['code' => 'store:product:read', 'module' => 'store', 'resource' => 'product', 'action' => 'read', 'name' => 'Read store products'],
+            ['code' => 'store:product:create', 'module' => 'store', 'resource' => 'product', 'action' => 'create', 'name' => 'Create store products'],
+            ['code' => 'store:product:update', 'module' => 'store', 'resource' => 'product', 'action' => 'update', 'name' => 'Update store products'],
+            ['code' => 'store:product:delete', 'module' => 'store', 'resource' => 'product', 'action' => 'delete', 'name' => 'Delete store products'],
+            ['code' => 'store:specification:read', 'module' => 'store', 'resource' => 'specification', 'action' => 'read', 'name' => 'Read store specifications'],
+            ['code' => 'store:specification:create', 'module' => 'store', 'resource' => 'specification', 'action' => 'create', 'name' => 'Create store specifications'],
+            ['code' => 'store:specification:update', 'module' => 'store', 'resource' => 'specification', 'action' => 'update', 'name' => 'Update store specifications'],
+            ['code' => 'store:specification:delete', 'module' => 'store', 'resource' => 'specification', 'action' => 'delete', 'name' => 'Delete store specifications'],
             ['code' => 'wallet:voucher:manual', 'module' => 'wallet', 'resource' => 'voucher', 'action' => 'manual', 'name' => 'Manual voucher operations'],
         ];
     }
@@ -201,6 +209,16 @@ final class SeedAuthorizationCommand extends Command
                 'scopeType' => Role::SCOPE_STORE,
                 'isSystem' => true,
                 'permissions' => ['common:content:read', 'common:content:create', 'common:content:update', 'common:content:delete'],
+            ],
+            [
+                'code' => 'store_catalog_manager',
+                'name' => 'Store Catalog Manager',
+                'scopeType' => Role::SCOPE_STORE,
+                'isSystem' => true,
+                'permissions' => [
+                    'store:product:read', 'store:product:create', 'store:product:update', 'store:product:delete',
+                    'store:specification:read', 'store:specification:create', 'store:specification:update', 'store:specification:delete',
+                ],
             ],
             [
                 'code' => 'authorization_administrator',

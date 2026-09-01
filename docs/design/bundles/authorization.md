@@ -118,7 +118,7 @@ timestamps. It does **not** have `storeUuid` — Store association is not part o
 endpoint is readable by ordinary authenticated API users; the Manage Content controller is `ROLE_ADMIN` CRUD and now
 accepts `metadata` as a whitelisted field to demonstrate strict field-grant enforcement.
 
-Field-level Authorization for Content is provided by `common:content` `create`/`update` field grants (`metadata` vs non-`metadata` roles). Store-scoped Content routes (`/store/stores/{storeUuid}/contents`) do **not** exist in this phase; Store scope is still used for other resources (e.g. `store:order:*`) but Content is scoped only by the field grant, not by Store row scope.
+Field-level Authorization for Content is provided by `common:content` `create`/`update` field grants (`metadata` vs non-`metadata` roles). Store-scoped Content routes (`/store/{storeUuid}/contents`) do **not** exist in this phase; Store scope is still used for other resources (e.g. `store:order:*`) but Content is scoped only by the field grant, not by Store row scope.
 
 ### 2.5 Constraints Discovered During Audit
 
@@ -511,7 +511,7 @@ returns 404 rather than 403.
 When a resource is Store-scoped, create routes include Store scope in the route, not in the request body:
 
 ```text
-POST /api/v1/store/stores/{storeUuid}/orders
+POST /api/v1/store/{storeUuid}/orders
 ```
 
 The controller requires the relevant permission (e.g. `store:order:create`) for `{storeUuid}` and sets
@@ -566,7 +566,7 @@ server only:    id, createdAt, updatedAt
 | PUT | `/api/v1/manage/contents/{id}` | `ROLE_ADMIN` | none | Same |
 | GET | `/api/v1/app/authorization/me` | authenticated | own user | Returns UI capability summary only |
 
-Field-level enforcement for `common:content` is validated via `FieldAuthorizationService` (union of `RoleFieldGrant` intersected with controller `accepted*Properties`, strict 403). The `store:order:*` permissions remain the example of Store-scoped decisions; Store Content routes (`/store/stores/{storeUuid}/contents`) are **not** implemented in this phase.
+Field-level enforcement for `common:content` is validated via `FieldAuthorizationService` (union of `RoleFieldGrant` intersected with controller `accepted*Properties`, strict 403). The `store:order:*` permissions remain the example of Store-scoped decisions; Store Content routes (`/store/{storeUuid}/contents`) are **not** implemented in this phase.
 
 ### 8.3 Example Decisions (Field-Level)
 
