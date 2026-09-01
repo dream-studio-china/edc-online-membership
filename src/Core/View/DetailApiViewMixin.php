@@ -43,19 +43,24 @@ trait DetailApiViewMixin
     #[Route('/{id}', name: 'detail', requirements: ['id' => '\\d+|[0-9a-fA-F-]{36}'], methods: ['GET'])]
     public function detailAction(int|string $id): Response
     {
-        $service = $this->service;
-        $filter = $this->mixIdToCommonFilter($id);
-        $filter = $this->detailFilter($filter);
-        if ($filter === null) {
-            return $this->warning(ApiViewMessages::ENTITY_NOT_FOUND, 404, '', 404);
-        }
-        $entity = $this->detailProcessor(
-            $service->get($filter, false)
-        );
-        $response = $this->detailResponse($entity);
+        try {
+            $this->authorizeApiAction('detail');
+            $service = $this->service;
+            $filter = $this->mixIdToCommonFilter($id);
+            $filter = $this->detailFilter($filter);
+            if ($filter === null) {
+                return $this->warning(ApiViewMessages::ENTITY_NOT_FOUND, 404, '', 404);
+            }
+            $entity = $this->detailProcessor(
+                $service->get($filter, false)
+            );
+            $response = $this->detailResponse($entity);
 
-        return $response ?
-            $this->success($response):
-            $this->warning(ApiViewMessages::ENTITY_NOT_FOUND, 404, '', 404);
+            return $response ?
+                $this->success($response):
+                $this->warning(ApiViewMessages::ENTITY_NOT_FOUND, 404, '', 404);
+        } catch (\Symfony\Component\Security\Core\Exception\AccessDeniedException $exception) {
+            return $this->warning($exception->getMessage() ?: 'Access denied.', 403, '', 403);
+        }
     }
 }

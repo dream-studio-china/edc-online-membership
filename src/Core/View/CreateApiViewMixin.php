@@ -64,6 +64,12 @@ trait CreateApiViewMixin
     {
         $service = $this->service;
 
+        try {
+            $this->authorizeApiAction('create');
+        } catch (\Symfony\Component\Security\Core\Exception\AccessDeniedException $exception) {
+            return $this->warning($exception->getMessage() ?: 'Access denied.', 403, '', 403);
+        }
+
         if (FixJSON::getJSONType($request->getContent()) === false) {
             return $this->warning(ApiViewMessages::INVALID_JSON, 400, '', 400);
         }

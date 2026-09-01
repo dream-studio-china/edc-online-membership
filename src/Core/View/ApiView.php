@@ -10,6 +10,15 @@ trait ApiView
 {
     protected function entityNotFoundMessage(): string { return 'Entity not found'; }
 
+    /**
+     * Optional authorization lifecycle hook for API view actions.
+     *
+     * Controllers that do not override this hook retain their current behavior.
+     */
+    protected function authorizeApiAction(string $action, ?object $entity = null): void
+    {
+    }
+
     use TransformContent;
 
     // protected $service = null;
