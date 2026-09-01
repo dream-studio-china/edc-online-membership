@@ -28,12 +28,8 @@ final class AuthorizationService implements AuthorizationServiceInterface
 
         $effective = $this->getEffective($user);
 
-        if (!\in_array($permission, $effective['permissions'], true)) {
-            return false;
-        }
-
         if ($scope === null) {
-            return true;
+            return \in_array($permission, $effective['globalPermissions'], true);
         }
 
         if ($scope->isGlobal()) {

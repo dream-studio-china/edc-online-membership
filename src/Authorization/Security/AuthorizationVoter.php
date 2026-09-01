@@ -41,12 +41,9 @@ class AuthorizationVoter extends Voter
         if (\is_array($subject) && isset($subject['scope']) && $subject['scope'] instanceof AuthorizationScope) {
             return true;
         }
-        // Permission codes are like module:resource:action
-        if (str_contains($attribute, ':')) {
-            return true;
-        }
-        // Also support direct permission strings without colon? No, abstain
-        return false;
+        // A global permission may omit its subject. Scoped permissions must
+        // provide a scope-bearing subject so assignments cannot bleed scopes.
+        return $subject === null && str_contains($attribute, ':');
     }
 
     protected function voteOnAttribute(string $attribute, mixed $subject, TokenInterface $token, ?\Symfony\Component\Security\Core\Authorization\Voter\Vote $vote = null): bool
