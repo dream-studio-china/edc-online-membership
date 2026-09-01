@@ -5,54 +5,73 @@ declare(strict_types=1);
 namespace App\Store\Controller\Staff;
 
 use App\Core\Controller\RestController;
-use App\Core\View\ApiView;
 use App\Core\View\ScopedDetailApiViewMixin;
 use App\Core\View\ScopedListApiViewMixin;
-use App\Identity\Entity\User;
 use App\Store\Entity\Store;
-use App\Store\Entity\Membership;
 use App\Store\Entity\StoreOrder;
-use App\Store\Service\MembershipServiceInterface;
 use App\Store\Service\StoreOrderServiceInterface;
 use App\Store\Service\StoreServiceInterface;
+use App\Store\View\StoreScopedAuthorizationApiMixin;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
-#[Route('/store/stores/{scopeId}/orders', name: 'store-orders-', requirements: ['scopeId' => '[0-9a-fA-F-]{36}'])]
+#[Route('/store/{scopeId}/orders', name: 'store-orders-', requirements: ['scopeId' => '[0-9a-fA-F-]{36}'])]
 #[IsGranted('ROLE_USER')]
 final class StoreOrderController extends RestController
 {
-    use ApiView, ScopedListApiViewMixin, ScopedDetailApiViewMixin;
+    use StoreScopedAuthorizationApiMixin, ScopedListApiViewMixin, ScopedDetailApiViewMixin;
 
     public function __construct(
-        private readonly StoreServiceInterface $storeService,
-        private readonly MembershipServiceInterface $membershipService,
         protected readonly StoreOrderServiceInterface $service,
+        private readonly StoreServiceInterface $storeService,
     ) {
+    }
+
+    /** @return array<string, mixed> */
+    protected function storeScopedFilter(Store $store): array
+    {
+        return ['store' => $store];
+    }
+
+    protected function storeService(): StoreServiceInterface
+    {
+        return $this->storeService;
     }
 
     /** @return array<string, mixed> */
     protected function scopedListFilter(string $scopeId): array
     {
-        $store = $this->authorizedStore($scopeId);
-
-        return $store === null ? ['id' => -1] : ['store' => $store];
+        return $this->storeScopedFilter($this->storeForAuthorization());
     }
 
     /** @return array<string, mixed> */
     protected function scopedDetailFilter(string $scopeId, string $id): array
     {
-        $store = $this->authorizedStore($scopeId);
+        return ['uuid' => $id, ...$this->storeScopedFilter($this->storeForAuthorization())];
+    }
 
-        return $store === null ? ['id' => -1] : ['store' => $store, 'uuid' => $id];
+    /** @return array<string, string> */
+    protected function storeActionPermissions(): array
+    {
+        return [
+            'accept' => 'store:order:accept',
+            'reject' => 'store:order:reject',
+            'fulfill' => 'store:order:fulfill',
+        ];
+    }
+
+    protected function storeAuthorizationResource(): string
+    {
+        return 'order';
     }
 
     #[Route('/{orderUuid}/accept', name: 'accept', methods: ['POST'], requirements: ['orderUuid' => '[0-9a-fA-F-]{36}'])]
     public function acceptAction(Request $request, string $scopeId, string $orderUuid): Response
     {
-        $order = $this->authorizedOrder($scopeId, $orderUuid, [Membership::ROLE_OWNER, Membership::ROLE_MANAGER, Membership::ROLE_CLERK]);
+        $this->authorizeStoreAction('accept');
+        $order = $this->storeOrder($orderUuid);
         if ($order === null) {
             return $this->warning('Store order not found or access denied.', 404, '', 404);
         }
@@ -73,7 +92,8 @@ final class StoreOrderController extends RestController
     #[Route('/{orderUuid}/reject', name: 'reject', methods: ['POST'], requirements: ['orderUuid' => '[0-9a-fA-F-]{36}'])]
     public function rejectAction(Request $request, string $scopeId, string $orderUuid): Response
     {
-        $order = $this->authorizedOrder($scopeId, $orderUuid, [Membership::ROLE_OWNER, Membership::ROLE_MANAGER, Membership::ROLE_CLERK]);
+        $this->authorizeStoreAction('reject');
+        $order = $this->storeOrder($orderUuid);
         if ($order === null) {
             return $this->warning('Store order not found or access denied.', 404, '', 404);
         }
@@ -93,7 +113,8 @@ final class StoreOrderController extends RestController
     #[Route('/{orderUuid}/fulfill', name: 'fulfill', methods: ['POST'], requirements: ['orderUuid' => '[0-9a-fA-F-]{36}'])]
     public function fulfillAction(Request $request, string $scopeId, string $orderUuid): Response
     {
-        $order = $this->authorizedOrder($scopeId, $orderUuid, [Membership::ROLE_OWNER, Membership::ROLE_MANAGER, Membership::ROLE_FULFILLMENT]);
+        $this->authorizeStoreAction('fulfill');
+        $order = $this->storeOrder($orderUuid);
         if ($order === null) {
             return $this->warning('Store order not found or access denied.', 404, '', 404);
         }
@@ -118,27 +139,9 @@ final class StoreOrderController extends RestController
         return is_array($data) ? $data : [];
     }
 
-    /** @param list<string> $roles */
-    private function authorizedStore(string $storeUuid, array $roles = []): ?Store
+    private function storeOrder(string $orderUuid): ?StoreOrder
     {
-        $store = $this->storeService->get(['uuid' => $storeUuid]);
-        $user = $this->getUser();
-        if (!$store instanceof Store || !$user instanceof User) {
-            return null;
-        }
-
-        return $this->membershipService->isAuthorized($store, $user->getUuid(), $roles) ? $store : null;
-    }
-
-    /** @param list<string> $roles */
-    private function authorizedOrder(string $storeUuid, string $orderUuid, array $roles = []): ?StoreOrder
-    {
-        $store = $this->authorizedStore($storeUuid, $roles);
-        if ($store === null) {
-            return null;
-        }
-
-        $order = $this->service->get(['uuid' => $orderUuid]);
-        return $order instanceof StoreOrder && $order->getStore()->getUuid() === $store->getUuid() ? $order : null;
+        $order = $this->service->get($this->mixIdToCommonFilter($orderUuid), false);
+        return $order instanceof StoreOrder ? $order : null;
     }
 }
