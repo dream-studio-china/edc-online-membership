@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Trade\Controller\Manage;
+namespace App\Store\Controller\Manage;
 
 use App\Core\Controller\RestController;
 use App\Core\View\ApiView;
@@ -11,7 +11,7 @@ use App\Core\View\DeleteApiViewMixin;
 use App\Core\View\DetailApiViewMixin;
 use App\Core\View\ListApiViewMixin;
 use App\Core\View\UpdateApiViewMixin;
-use App\Trade\Service\SpecificationServiceInterface;
+use App\Store\Service\SpecificationServiceInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 

@@ -738,7 +738,7 @@ final class TradeApiIntegrationTest extends WebTestCase
         $this->createSpecification($activeId, 'A', 100);
 
         $em = $this->client->getContainer()->get('doctrine')->getManager();
-        $inactive = new \App\Trade\Entity\Product();
+        $inactive = new \App\Store\Entity\Product();
         $inactive->setName('InactiveProduct');
         $inactive->setStatus('inactive');
         $em->persist($inactive);
@@ -755,7 +755,7 @@ final class TradeApiIntegrationTest extends WebTestCase
     public function testAppProductListFiltersDeleted(): void
     {
         $em = $this->client->getContainer()->get('doctrine')->getManager();
-        $deleted = new \App\Trade\Entity\Product();
+        $deleted = new \App\Store\Entity\Product();
         $deleted->setName('DeletedProduct');
         $deleted->setIsDeleted(true);
         $em->persist($deleted);

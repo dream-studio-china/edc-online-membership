@@ -4,16 +4,15 @@ declare(strict_types=1);
 
 namespace App\Trade\Service\Pricing;
 
-use App\Trade\Entity\Specification;
 use App\Trade\Exception\SpecificationNotFoundException;
-use App\Trade\Service\SpecificationServiceInterface;
+use App\Trade\Service\Catalog\CatalogResolverInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
 #[AutoconfigureTag('trade.price_calculator')]
 class BasePriceCalculator implements PriceCalculatorInterface
 {
     public function __construct(
-        private readonly SpecificationServiceInterface $specificationService,
+        private readonly CatalogResolverInterface $catalogResolver,
     ) {
     }
 
@@ -28,46 +27,31 @@ class BasePriceCalculator implements PriceCalculatorInterface
             $specificationId = $inputItem['specificationId'];
             $quantity = $inputItem['quantity'] ?? 1;
 
-            /** @var Specification|null $specification */
-            $specification = $this->specificationService->get(['id' => $specificationId]);
+            $catalogItem = $this->catalogResolver->resolveForPricing((int) $specificationId, $context->storeCode);
 
-            if ($specification === null || $specification->getIsDeleted()) {
+            if ($catalogItem === null) {
                 throw new SpecificationNotFoundException(
-                    sprintf('Specification #%d not found or deleted.', $specificationId)
+                    sprintf('Specification #%d not found or not available.', $specificationId)
                 );
             }
-
-            if (!$specification->isActive()) {
-                throw new SpecificationNotFoundException(
-                    sprintf('Specification #%d is not active.', $specificationId)
-                );
-            }
-
-            $product = $specification->getProduct();
-            if ($product === null || $product->getIsDeleted() || !$product->isActive()) {
-                throw new SpecificationNotFoundException(
-                    sprintf('Product for specification #%d is not available.', $specificationId)
-                );
-            }
-
-            $unitPrice = $specification->getPrice();
 
             $context->items[] = [
-                'specification' => $specification,
-                'specificationId' => $specification->getId(),
-                'specificationName' => $specification->getName(),
+                'specificationId' => $catalogItem->id,
+                'specificationUuid' => $catalogItem->uuid,
+                'specificationName' => $catalogItem->name,
                 'quantity' => $quantity,
-                'unitPrice' => $unitPrice,
+                'unitPrice' => $catalogItem->price,
                 'price' => 0,
                 'specSnapshot' => [
-                    'id' => $specification->getId(),
-                    'uuid' => $specification->getUuid(),
-                    'name' => $specification->getName(),
-                    'productId' => $product->getId(),
+                    'id' => $catalogItem->id,
+                    'uuid' => $catalogItem->uuid,
+                    'name' => $catalogItem->name,
+                    'productId' => $catalogItem->productId,
                 ],
                 'productSnapshot' => [
-                    'id' => $product->getId(),
-                    'name' => $product->getName(),
+                    'id' => $catalogItem->productId,
+                    'uuid' => $catalogItem->productUuid,
+                    'name' => $catalogItem->productName,
                 ],
             ];
         }

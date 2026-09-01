@@ -165,9 +165,9 @@ final class OrderServicePaymentsTest extends TestCase
 
     public function testCreateOrderPersistsItemSnapshotData(): void
     {
-        $product = new \App\Trade\Entity\Product();
+        $product = new \App\Store\Entity\Product();
         $product->setName('Phone');
-        $spec = new \App\Trade\Entity\Specification();
+        $spec = new \App\Store\Entity\Specification();
         $spec->setProduct($product);
         $spec->setName('Red');
 
@@ -193,7 +193,7 @@ final class OrderServicePaymentsTest extends TestCase
         $items = $order->getItems();
         self::assertCount(1, $items);
         $item = $items->first();
-        self::assertSame($spec, $item->getSpecification());
+        self::assertSame($spec->getUuid(), $item->getSpecificationUuid());
         self::assertSame(['name' => 'Red'], $item->getSpecSnapshot());
         self::assertSame(['name' => 'Phone'], $item->getProductSnapshot());
     }

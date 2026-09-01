@@ -32,6 +32,7 @@ class RoleFieldGrantRepository extends ServiceEntityRepository
     }
 
     /**
+     * @param list<int> $roleIds
      * @return list<RoleFieldGrant>
      */
     public function findByRoleIds(array $roleIds): array

@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace App\Trade\Repository;
+namespace App\Store\Repository;
 
-use App\Trade\Entity\Specification;
+use App\Store\Entity\Specification;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\DBAL\LockMode;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @extends \Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository<\App\Trade\Entity\Specification>
+ * @extends \Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository<\App\Store\Entity\Specification>
  */
 class SpecificationRepository extends ServiceEntityRepository
 {

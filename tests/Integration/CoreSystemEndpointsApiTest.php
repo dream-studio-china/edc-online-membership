@@ -39,7 +39,7 @@ final class CoreSystemEndpointsApiTest extends IntegrationWebTestCase
         self::assertIsArray($body['data']);
         self::assertContains('App\\Common\\Entity\\Category', $body['data']);
         self::assertContains('App\\Common\\Entity\\Tag', $body['data']);
-        self::assertContains('App\\Trade\\Entity\\Product', $body['data']);
+        self::assertContains('App\\Store\\Entity\\Product', $body['data']);
         self::assertContains('App\\Identity\\Entity\\User', $body['data']);
         self::assertContains('App\\Wallet\\Entity\\Wallet', $body['data']);
     }

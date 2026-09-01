@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace App\Trade\Service;
+namespace App\Store\Service;
 
 use App\Core\Service\BaseService;
-use App\Trade\Entity\Product;
+use App\Store\Entity\Product;
 
-/** @extends BaseService<\App\Trade\Entity\Product> */
+/** @extends BaseService<\App\Store\Entity\Product> */
 final class ProductService extends BaseService implements ProductServiceInterface
 {
     public function __construct(

@@ -2,17 +2,19 @@
 
 declare(strict_types=1);
 
-namespace App\Trade\Entity;
+namespace App\Store\Entity;
 
 use App\Core\Utils\UUID;
+use App\Store\Repository\ProductRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity(repositoryClass: \App\Trade\Repository\ProductRepository::class)]
+#[ORM\Entity(repositoryClass: ProductRepository::class)]
 #[ORM\Table(name: 'trade_product')]
 #[ORM\HasLifecycleCallbacks]
 #[ORM\UniqueConstraint(name: 'uniq_trade_product_uuid', columns: ['uuid'])]
+#[ORM\Index(name: 'idx_trade_product_store', columns: ['store_id'])]
 class Product
 {
     public const STATUS_ACTIVE = 'active';
@@ -25,6 +27,10 @@ class Product
 
     #[ORM\Column(type: 'string', length: 36, unique: true)]
     private string $uuid;
+
+    #[ORM\ManyToOne(targetEntity: Store::class)]
+    #[ORM\JoinColumn(name: 'store_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
+    private ?Store $store = null;
 
     #[ORM\Column(type: 'string', length: 255)]
     private string $name = '';
@@ -54,11 +60,12 @@ class Product
     #[ORM\Column(type: 'datetime_immutable', nullable: true)]
     private ?\DateTimeImmutable $updatedAt = null;
 
-    public function __construct()
+    public function __construct(?Store $store = null)
     {
         $this->uuid = UUID::v4();
         $this->specifications = new ArrayCollection();
         $this->createdAt = new \DateTimeImmutable();
+        $this->store = $store;
     }
 
     public function __toString(): string
@@ -74,6 +81,18 @@ class Product
     public function getUuid(): string
     {
         return $this->uuid;
+    }
+
+    public function getStore(): ?Store
+    {
+        return $this->store;
+    }
+
+    public function setStore(?Store $store): self
+    {
+        $this->store = $store;
+        $this->touch();
+        return $this;
     }
 
     public function getName(): string
@@ -152,7 +171,7 @@ class Product
     }
 
     /**
-     * @return \Doctrine\Common\Collections\Collection<int, \App\Trade\Entity\Specification>
+     * @return \Doctrine\Common\Collections\Collection<int, \App\Store\Entity\Specification>
      */
     public function getSpecifications(): Collection
     {

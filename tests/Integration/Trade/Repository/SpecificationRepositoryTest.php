@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Tests\Integration\Trade\Repository;
 
 use App\Tests\Integration\DatabaseBootstrapTrait;
-use App\Trade\Entity\Product;
-use App\Trade\Entity\Specification;
-use App\Trade\Repository\SpecificationRepository;
+use App\Store\Entity\Product;
+use App\Store\Entity\Specification;
+use App\Store\Repository\SpecificationRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\Group;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
@@ -25,8 +25,8 @@ final class SpecificationRepositoryTest extends KernelTestCase
         self::bootKernel();
 
         $this->em = static::getContainer()->get(EntityManagerInterface::class);
-        $this->em->createQuery('DELETE FROM App\\Trade\\Entity\\Specification s')->execute();
-        $this->em->createQuery('DELETE FROM App\\Trade\\Entity\\Product p')->execute();
+        $this->em->createQuery('DELETE FROM App\\Store\\Entity\\Specification s')->execute();
+        $this->em->createQuery('DELETE FROM App\\Store\\Entity\\Product p')->execute();
 
         /** @var SpecificationRepository $repo */
         $repo = $this->em->getRepository(Specification::class);

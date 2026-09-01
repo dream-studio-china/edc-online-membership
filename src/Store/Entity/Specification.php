@@ -2,12 +2,13 @@
 
 declare(strict_types=1);
 
-namespace App\Trade\Entity;
+namespace App\Store\Entity;
 
 use App\Core\Utils\UUID;
+use App\Store\Repository\SpecificationRepository;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity(repositoryClass: \App\Trade\Repository\SpecificationRepository::class)]
+#[ORM\Entity(repositoryClass: SpecificationRepository::class)]
 #[ORM\Table(name: 'trade_specification')]
 #[ORM\HasLifecycleCallbacks]
 #[ORM\UniqueConstraint(name: 'uniq_trade_specification_uuid', columns: ['uuid'])]

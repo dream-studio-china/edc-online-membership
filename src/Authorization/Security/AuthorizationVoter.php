@@ -20,6 +20,8 @@ use Symfony\Component\Security\Core\Authorization\Voter\Voter;
  *  - AuthorizationScope instance
  *  - ScopedResourceInterface instance
  *  - array with 'scope' => AuthorizationScope
+ *
+ * @extends Voter<string, mixed>
  */
 class AuthorizationVoter extends Voter
 {

@@ -190,7 +190,7 @@ See `composer.json` for the full dependency list.
 ## Project Structure
 
 The repository is a modular monolith: `src/` holds the application code (Core framework
-plus business modules such as Common, Identity, Trade, Payment, Wallet, Storage, Authorization, and more),
+plus business modules such as Common, Identity, Trade (orders via Store catalog), Store (catalog, membership, StoreOrder), Payment, Wallet, Storage, Authorization, and more),
 alongside `config/`, `migrations/`, `tests/`, `docs/`, and the Docker/Compose files.
 See [Authorization Setup](docs/manual/authorization.md) for how to seed and operate Authorization.
 
@@ -249,8 +249,8 @@ MySQL, Redis, Mailpit). The app runs on the configured local port.
 |--------|---------|--------------|
 | **Core** | API foundation | REST controller support, shared service behavior, view mixins, expression queries |
 | **Common** | CMS and settings | Categories, tags, content, media, pages, comments, and key-value settings |
-| **Trade** | Commerce | Products, specifications, order workflow, and price calculation |
-| **Store** | Multi-store operations | Store membership and reliable order-event handoff |
+| **Trade** | Commerce | Orders, order workflow and price calculation over Store catalog via `CatalogResolver` (scalar `specificationUuid` snapshots) |
+| **Store** | Multi-store operations | Store membership, reliable order-event handoff and Product/Specification catalog (global `store = NULL` and store-private) |
 | **Inventory** | Stock control | Per-store stock, reservations, recipes, and stock ledger policies |
 | **Payment** | Invoice orchestration | Invoice lifecycle, gateway abstraction, payment adjustments, webhooks |
 | **Wallet** | Balance operations | Transfers, deposits, withdrawals, vouchers, and reconciliation |

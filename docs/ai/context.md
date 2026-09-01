@@ -62,22 +62,25 @@
 │   ├── Command/CreateUserCommand.php
 │   └── Controller/AuthController.php, App/UserController.php, App/ProfileController.php, Manage/UserController.php, Manage/ProfileController.php
 │
-├── src/Trade/                    # E-commerce module
-│   ├── Entity/                   # Product, Specification, Order, OrderItem, TradeOutboxMessage
-│   ├── Service/OrderService.php        # StoreContext-aware creation + price pipeline
+├── src/Trade/                    # E-commerce module (orders + pricing, Store catalog via CatalogResolver)
+│   ├── Entity/                   # Order, OrderItem (scalar specificationUuid + snapshots), TradeOutboxMessage
+│   ├── Service/Catalog/                # CatalogResolverInterface + CatalogItem (Trade-owned port/DTO, Store implements)
+│   ├── Service/OrderService.php        # StoreContext-aware creation + price pipeline (Store visibility via CatalogResolver)
 │   ├── Command/PublishOutboxCommand.php # app:trade:outbox:publish
 │   ├── MessageHandler/           # Store acceptance/rejection consumers
-│   ├── Service/Pricing/                # PriceCalculatorInterface (Base, Quantity, Total)
+│   ├── Service/Pricing/                # PriceCalculatorInterface (Base via CatalogResolver, Quantity, Total)
 │   ├── EventListener/OrderWorkflowListener.php
 │   ├── Exception/                      # OrderInvalidTransitionException, SpecificationNotFoundException
-│   └── Controller/App/ + Manage/       # CRUD + workflow + pay/refund/fulfill + items + cancel + spec browse/v2
+│   └── Controller/App/ + Manage/       # CRUD + workflow + pay/refund/fulfill + items + cancel (catalog via Store)
 │
-├── src/Store/                    # Multi-store operational boundary
-│   ├── Entity/                   # Store, membership, StoreOrder, Outbox, Inbox
-│   ├── Service/                  # Context, membership, StoreOrder, Outbox services
+├── src/Store/                    # Multi-store operational boundary + catalog
+│   ├── Entity/                   # Store, Product (trade_product, nullable store), Specification (trade_specification), membership, StoreOrder, Outbox, Inbox
+│   ├── Repository/               # ProductRepository, SpecificationRepository (Store-owned)
+│   ├── Service/                  # ProductService, SpecificationService, Context, membership, StoreOrder, Outbox services
+│   ├── Service/Catalog/StoreCatalogResolver.php  # Implements Trade CatalogResolverInterface (Store visibility: global or owned)
 │   ├── MessageHandler/           # Inbox-idempotent Trade order consumer; Inventory outcome consumers
 │   ├── Command/PublishOutboxCommand.php # app:store:outbox:publish
-│   └── Controller/App/ + Manage/ + Staff/ # Staff controllers enforce membership (isActive) before Authorization checks
+│   └── Controller/App/ + Manage/ + Staff/ # App/Manage Product/Specification + StoreOrder + Staff membership checks (DqlExpression row-scope: !entity.getStore() / !entity.getProduct().getStore())
 │
 ├── src/Payment/                  # Payment module
 │   ├── Entity/Invoice.php              # Payment invoice (pending→paying→paid→refunded)
@@ -150,7 +153,7 @@
 │       ├── workflow.yaml         # Order state machine, including Store acceptance
 │       ├── messenger.yaml        # Trade/Store integration messages to async transport
 │       └── ...
-├── migrations/                   # 26 migrations (latest: 20260901000000 authorization tables + 20260901000001 common_content `metadata` only, 2026-08-15 wallet_voucher_comment)
+├── migrations/                   # 31 migrations (latest: 20260902000000 `store_id` nullable + 20260903000000/20260903000001 OrderItem `specificationUuid` two-step, irreversible)
 ├── translations/                 # i18n translation files (messages.en/zh/zh_Hant/ja.yaml)
 ├── docs/
 │   ├── ai/context.md             # This file
@@ -183,16 +186,9 @@
     └── docs.yml                  # GitHub Pages deploy
 ```
 
-### Approved Catalog Target (Not Implemented)
+### Store Catalog (Implemented)
 
-`docs/design/store-catalog.md` defines the approved catalog ownership transition:
-Product and Specification move from Trade to Store; `Product.store = null` means a
-shared/global catalog record, while a non-null Store relation means a Store-private
-record. A resolved active Store remains mandatory for every quote and order. Pricing
-must allow only shared Products or Products owned by that Store; Inventory remains
-keyed by Store UUID and Specification UUID, and Payment remains independent of catalog
-entities. Do not describe this target as the current implementation until the migration,
-Store-scoped catalog APIs, and pricing checks are merged.
+`docs/design/store-catalog.md` is the implemented catalog model: `Store` owns `Product`/`Specification` (`store` nullable, `NULL` = shared/global; tables `trade_product`/`trade_specification` retained via `Version20260902000000` (`store_id`) and `Version20260903000000`/`Version20260903000001` two-step `specificationUuid` backfill (irreversible)). `App\Store\Controller\App\ProductController` / `SpecificationController` enforce row-scope via `DqlExpression` (`!entity.getStore()` / `!entity.getProduct().getStore()` and `||` with `ExpressionDqlParser`-validated syntax) and `Trade\Service\Pricing\BasePriceCalculator` resolves via `Trade\Service\Catalog\CatalogResolverInterface` implemented by `Store\Service\Catalog\StoreCatalogResolver` (`X-Store-Code` → `StoreContext`). `Trade` remains order authority; `Inventory` and `OrderItem` remain scalar `specificationUuid` snapshots. PHPStan Level 8 passes with no Authorization `ignoreErrors` suppressions.
 
 ## 3. Request Lifecycle
 

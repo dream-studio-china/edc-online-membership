@@ -16,6 +16,10 @@ final class AuthorizationAuditService
     ) {
     }
 
+    /**
+     * @param array<string, mixed>|null $before
+     * @param array<string, mixed>|null $after
+     */
     public function record(?string $actorUuid, string $action, string $targetType, ?string $targetUuid = null, ?array $before = null, ?array $after = null): AuditLog
     {
         $requestId = null;

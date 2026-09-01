@@ -24,6 +24,7 @@ class PermissionRepository extends ServiceEntityRepository
     }
 
     /**
+     * @param list<string> $codes
      * @return list<Permission>
      */
     public function findByCodes(array $codes): array

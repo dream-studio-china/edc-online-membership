@@ -26,27 +26,6 @@ parameters:
         objectManagerLoader: phpstan-bootstrap.php
 
     ignoreErrors:
-        # --- Authorization module — generic iterable value types are validated at runtime ---
-        -
-            identifier: missingType.iterableValue
-            path: src/Authorization
-
-        -
-            identifier: missingType.generics
-            path: src/Authorization/Security/AuthorizationVoter.php
-
-        -
-            identifier: missingType.iterableValue
-            path: src/Common/Entity/Content.php
-
-        -
-            identifier: missingType.parameter
-            path: src/Authorization/Controller/Manage
-
-        -
-            identifier: missingType.return
-            path: src/Authorization/Controller/Manage
-
         # --- Optional third-party SDKs not in composer.json ---
         -
             message: '#(Qiniu\\|Class Qiniu)#'

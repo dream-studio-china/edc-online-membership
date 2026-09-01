@@ -1,10 +1,12 @@
 # Trade Bundle Design
 
 > The Trade bundle (`src/Trade/`) owns orders, order items, price calculation, and the
-> Symfony Workflow-based order state machine. Product and Specification currently live in
-> Trade, but their approved target owner is Store; see [Store Catalog Model](../store-catalog.md).
-> This document describes the current implementation unless a section explicitly says
-> "target".
+> Symfony Workflow-based order state machine. Product and Specification are owned by
+> `Store` (`src/Store/Entity/Product.php`, `src/Store/Entity/Specification.php`,
+> tables `trade_product`/`trade_specification` retained) with nullable `store` (`NULL` =
+> shared/global); see [Store Catalog Model](../store-catalog.md). `Trade` remains the
+> commercial-order authority and references the Store catalog via scalar snapshots and
+> `StoreContext`.
 
 ---
 
@@ -12,34 +14,26 @@
 
 Trade provides a complete order management system:
 
-- Current catalog integration with **Products** and multiple **Specifications** (SKU-like variants with pricing)
+- **Store-catalog integration** with `Store` Products and Specifications (SKU-like variants, `Product.store` nullable for shared/global)
 - **Orders** with a state machine lifecycle (draft -> completed)
 - **Order Items** with price snapshots for historical accuracy
-- **Price Calculation Pipeline**: pluggable calculators with priority ordering
-- **Soft Deletes**: products and specifications use `isDeleted` flag
+- **Price Calculation Pipeline**: pluggable calculators with priority ordering (Store visibility enforced in `BasePriceCalculator`)
+- **Soft Deletes**: products and specifications use `isDeleted` flag (Store entities)
 - **UUID v4**: external identifiers for orders and items
 - **Store integration**: Store-scoped orders write a local Outbox event and await Store acceptance
 
-### 1.1 Catalog Ownership Target
+### 1.1 Catalog Ownership
 
-The approved target keeps Trade as the commercial-order owner while moving the catalog
-to Store. `Product.store = NULL` denotes a shared/global catalog product;
-`Product.store = Store` denotes a Store-private product. A resolved Store is mandatory
-for quotes and orders, and pricing must accept only a Specification whose Product is
-shared or belongs to that Store. See [Store Catalog Model](../store-catalog.md) for the
-complete invariant and migration plan. Before the entity move is complete, Trade must
-replace `OrderItem`'s Specification Doctrine relation with a scalar catalog
-Specification UUID and immutable snapshots; a permanent Trade-to-Store entity relation
-would violate the system cross-module contract.
+Product and Specification are `Store` entities (`Product.store` nullable). `StoreContext` (`X-Store-Code` → `Store`) is required for catalog reads, quotes, and orders; `BasePriceCalculator` accepts only shared (`store IS NULL`) or Store-owned specs for the resolved Store. See [Store Catalog Model](../store-catalog.md).
 
 ### 1.2 Entities
 
 | Entity | Table | Purpose |
 |--------|-------|---------|
-| `Product` | `trade_product` | Sellable product with name, description, status |
-| `Specification` | `trade_specification` | Product variant (name, price in cents, status) |
+| `Store\Product` | `trade_product` | Sellable product with name, description, status, nullable `store` |
+| `Store\Specification` | `trade_specification` | Product variant (name, price in cents, status) |
 | `Order` | `trade_order` | Purchase order with state machine, total, currency |
-| `OrderItem` | `trade_order_item` | Line item with snapshot, quantity, unit price |
+| `OrderItem` | `trade_order_item` | Line item with `specificationUuid` (scalar), `specificationTitle`, snapshots, quantity, unit price |
 | `TradeOutboxMessage` | `trade_outbox_message` | Transactional integration event relay record |
 
 ### 1.2 Store-Scoped Orders
@@ -63,18 +57,12 @@ idempotently, writes its StoreOrder and result Outbox event, and Trade consumers
 src/Trade/
 |-- Controller/
 |   |-- App/
-|   |   |-- OrderController.php           # Public: list/create/cancel own orders
-|   |   |-- ProductController.php          # Public read: list products
-|   |   |-- SpecificationController.php    # Public read: browse specs by product
+|   |   `-- OrderController.php           # Public: list/create/cancel own orders
 |   |-- Manage/
 |       |-- OrderController.php            # CRUD + workflow + price calculation
-|       |-- ProductController.php          # CRUD
-|       |-- SpecificationController.php    # CRUD
 |-- Entity/
 |   |-- Order.php
-|   |-- OrderItem.php
-|   |-- Product.php
-|   |-- Specification.php
+|   |-- OrderItem.php  # scalar specificationUuid + snapshots (FK removed, irreversible)
 |   `-- TradeOutboxMessage.php
 |-- Command/PublishOutboxCommand.php
 |-- DTO/StoreContext.php
@@ -87,20 +75,25 @@ src/Trade/
 |-- Repository/
 |   |-- OrderItemRepository.php
 |   |-- OrderRepository.php
-|   |-- ProductRepository.php
-|   |-- SpecificationRepository.php
 |-- Service/
-|   |-- OrderItemService.php
-|   |-- OrderService.php                   # Order creation + price pipeline
-|   |-- ProductService.php
-|   |-- SpecificationService.php
+|   |-- Catalog/CatalogResolverInterface.php + CatalogItem.php # Trade-owned port/DTO
+|   |-- OrderService.php                   # Order creation + price pipeline (no Store import)
 |   |-- Pricing/
 |       |-- PriceCalculatorInterface.php   # Plugin contract
-|       |-- PriceCalculationContext.php    # Input/output DTO
+|       |-- PriceCalculationContext.php    # Input/output DTO (storeCode)
 |       |-- PriceCalculationResult.php     # Result DTO
-|       |-- BasePriceCalculator.php        # Resolves specs, extracts unit price
+|       |-- BasePriceCalculator.php        # Resolves via CatalogResolver (Store visibility enforced in Store)
 |       |-- QuantityCalculator.php         # Computes price = unitPrice * quantity
 |       |-- TotalAggregator.php            # Establishes subtotal (priority 55)
+
+ src/Store/
+ |-- Entity/Product.php  # trade_product, nullable store ManyToOne Store
+ |-- Entity/Specification.php # trade_specification, ManyToOne Store\Product
+ |-- Repository/ProductRepository.php, SpecificationRepository.php
+ |-- Service/ProductService.php, SpecificationService.php
+ |-- Service/Catalog/StoreCatalogResolver.php # Trade CatalogResolverInterface impl (Store visibility)
+ |-- Controller/App/ProductController.php, SpecificationController.php # DqlExpression row-scope
+ |-- Controller/Manage/ProductController.php, SpecificationController.php, SpecificationAllController.php
 ```
 
 ---
@@ -108,23 +101,23 @@ src/Trade/
 ## 3. Entity Relationships
 
 ```
-Product (status: active/inactive, isDeleted: bool, metadata: JSON)
+Store\Product (status: active/inactive, isDeleted: bool, metadata: JSON, store: ?Store)
   |
-  +-- 1:N -> Specification (cascade: persist)
+  +-- 1:N -> Store\Specification (cascade: persist)
 
-Specification (name, price: int cents, status, sort, isDeleted)
-  |
-  +-- 1:N -> OrderItem
+Store\Specification (name, price: int cents, status, sort, isDeleted)
+  |  inherits Product.store visibility
+  +-- (no FK) -> Trade\OrderItem via scalar specificationUuid + snapshots
 
-Order (uuid, totalAmount: int cents, currency: CNY, status: state machine, notes, metadata)
+Order (uuid, totalAmount: int cents, currency: CNY, status: state machine, notes, metadata _store)
   |
   +-- M:1 -> User
   +-- 1:N -> OrderItem (cascade: persist)
 
-OrderItem (uuid, quantity, unitPrice: cents, price: cents, cost, profit, snapshots: JSON)
+OrderItem (uuid, quantity, unitPrice: cents, price: cents, cost, profit, specificationUuid, specificationTitle, specSnapshot/productSnapshot: JSON)
   |
   +-- M:1 -> Order
-  +-- M:1 -> Specification
+  +-- (scalar) specificationUuid (indexed, no FK)
 ```
 
 ---

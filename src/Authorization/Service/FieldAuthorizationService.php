@@ -114,6 +114,7 @@ final class FieldAuthorizationService implements FieldAuthorizationServiceInterf
     }
 
     /**
+     * @param array<string, mixed> $input
      * @param list<string> $allowed
      */
     private function assertOnlySchemaFields(array $input, array $allowed, string $resource, string $action): void
@@ -125,6 +126,7 @@ final class FieldAuthorizationService implements FieldAuthorizationServiceInterf
     }
 
     /**
+     * @param array<string, mixed> $input
      * @param list<string> $allowed
      */
     private function assertOnlyAllowedFields(array $input, array $allowed, string $resource, string $action): void

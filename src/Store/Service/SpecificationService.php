@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace App\Trade\Service;
+namespace App\Store\Service;
 
 use App\Core\Service\BaseService;
-use App\Trade\Entity\Specification;
+use App\Store\Entity\Specification;
 
-/** @extends BaseService<\App\Trade\Entity\Specification> */
+/** @extends BaseService<\App\Store\Entity\Specification> */
 final class SpecificationService extends BaseService implements SpecificationServiceInterface
 {
     public function __construct(
