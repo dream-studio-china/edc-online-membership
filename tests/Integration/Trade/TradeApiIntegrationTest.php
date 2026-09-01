@@ -42,9 +42,14 @@ final class TradeApiIntegrationTest extends WebTestCase
         $em = $this->client->getContainer()
             ->get('doctrine')->getManager();
 
+        $existing = $em->getRepository(\App\Identity\Entity\User::class)->findOneBy(['email' => 'trade@test.com']);
+        if ($existing !== null) {
+            return;
+        }
+
         try {
             $em->getConnection()->executeStatement(
-                "INSERT INTO users (id, uuid, email, username, password, roles) VALUES (1, '11111111-1111-4111-8111-111111111111', 'trade@test.com', 'tradeuser', '\$2y\$13\$TestHashValue1234567890abcdefg', '[\"ROLE_ADMIN\"]')"
+                "INSERT INTO users (id, uuid, email, username, password, roles, created_at, updated_at) VALUES (1, '11111111-1111-4111-8111-111111111111', 'trade@test.com', 'tradeuser', '\$2y\$13\$TestHashValue1234567890abcdefg', '[\"ROLE_ADMIN\"]', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)"
             );
         } catch (\Throwable) {
             // User may already exist
