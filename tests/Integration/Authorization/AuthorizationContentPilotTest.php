@@ -169,7 +169,7 @@ final class AuthorizationContentPilotTest extends IntegrationWebTestCase
     private function createStoreContent(KernelBrowser $client, string $token, string $storeUuid, string $title, string $body): ?int
     {
         $client->setServerParameter('HTTP_AUTHORIZATION', 'Bearer '.$token);
-        $client->jsonRequest('POST', sprintf('/api/v1/store/stores/%s/contents', $storeUuid), [
+        $client->jsonRequest('POST', sprintf('/api/v1/store/%s/contents', $storeUuid), [
             'title' => $title,
             'body' => $body,
         ]);

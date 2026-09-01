@@ -91,7 +91,7 @@ GET /api/v1/app/authorization/me   # ROLE_USER — {permissions, storeScopes, fi
 
 ### 4.6 Content Pilot (Field-Grant Only)
 
-Content is **not** Store-scoped (no `store_uuid`). The pilot is the `metadata` field grant on `common:content` `create/update`: `store_content_editor` → `title,body,category,tags`; `store_content_metadata_editor` → same + `metadata`. Manage Content (`/api/v1/manage/contents`) remains `ROLE_ADMIN` but now accepts `metadata` as the whitelisted field that demonstrates `FieldAuthorizationService` strict denial (previous `POST /store/stores/{storeUuid}/contents` routes have been removed).
+Content is **not** Store-scoped (no `store_uuid`). The pilot is the `metadata` field grant on `common:content` `create/update`: `store_content_editor` → `title,body,category,tags`; `store_content_metadata_editor` → same + `metadata`. Manage Content (`/api/v1/manage/contents`) remains `ROLE_ADMIN` but now accepts `metadata` as the whitelisted field that demonstrates `FieldAuthorizationService` strict denial (previous `POST /store/{storeUuid}/contents` routes have been removed).
 
 ## 5. Caching
 

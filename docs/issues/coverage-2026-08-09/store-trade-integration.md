@@ -79,7 +79,7 @@ higher because the pre-existing suites already covered many of these classes.
 **`StoreTradeFlowTest` (inventory disabled)**
 
 1. `testFullTradeToStoreAcceptanceThroughHttpAndOutboxCommands` — `202` → `awaiting_store_acceptance` → `trade.order.created.v1` outbox → `app:trade:outbox:publish` (sync bus, output "Published 1") → StoreOrder `accepted` + `store.order.accepted.v1` outbox → `app:store:outbox:publish` → Trade `store_accepted` → idempotent second publish ("Published 0") → HTTP `confirm` → `confirmed`.
-2. `testStoreRejectionLeavesTradeOrderInStoreRejectedUntilExplicitCancel` — real Staff `POST /store/stores/{uuid}/orders/{uuid}/reject` (with membership grant) → `store.order.rejected.v1` outbox → publish → Trade order **`store_rejected`** (see Bug 1) → explicit HTTP `cancel` → `cancelled`.
+2. `testStoreRejectionLeavesTradeOrderInStoreRejectedUntilExplicitCancel` — real Staff `POST /store/{uuid}/orders/{uuid}/reject` (with membership grant) → `store.order.rejected.v1` outbox → publish → Trade order **`store_rejected`** (see Bug 1) → explicit HTTP `cancel` → `cancelled`.
 3. `testStoreBecomingUnavailableAfterPlacementRejectsTheOrder` — order placed while store active, store suspended before the Trade outbox is relayed → Store handler emits `store.order.rejected.v1` (`STORE_UNAVAILABLE`) → publish → Trade `store_rejected`.
 4. `testUnknownStoreCodeReturnsBadRequestAndCreatesNoOrder` — unknown `X-Store-Code` → HTTP `400`, no Trade outbox, no Store order.
 5. `testDuplicateEventDeliveryIsDeduplicatedByInbox` — same event delivered twice to `TradeOrderCreatedHandler` → one StoreOrder, one `store.order.accepted.v1` outbox, one `store_consumed_event` row.
