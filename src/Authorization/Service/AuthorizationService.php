@@ -8,6 +8,7 @@ use App\Authorization\Repository\AssignmentRepository;
 use App\Identity\Entity\User;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
+use App\Core\View\ApiViewMessages;
 use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\Contracts\Cache\ItemInterface;
 
@@ -48,7 +49,7 @@ final class AuthorizationService implements AuthorizationServiceInterface
     public function require(User $user, string $permission, ?AuthorizationScope $scope = null): void
     {
         if (!$this->can($user, $permission, $scope)) {
-            throw new \Symfony\Component\Security\Core\Exception\AccessDeniedException(sprintf('Missing permission "%s".', $permission));
+            throw new \Symfony\Component\Security\Core\Exception\AccessDeniedException(sprintf(ApiViewMessages::MISSING_PERMISSION, $permission));
         }
     }
 

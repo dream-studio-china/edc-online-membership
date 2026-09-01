@@ -9,6 +9,7 @@ use App\Core\View\ApiView;
 use App\Store\Entity\Store;
 use App\Store\Service\StoreServiceInterface;
 use Doctrine\ORM\QueryBuilder;
+use App\Core\View\ApiViewMessages;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
 /**
@@ -84,12 +85,12 @@ trait StoreScopedAuthorizationApiMixin
         $request = $this->getRequestStack()->getCurrentRequest();
         $storeUuid = $request?->attributes->get($this->storeScopeRouteParameter);
         if (!is_string($storeUuid) || $storeUuid === '') {
-            throw new AccessDeniedException('Store scope is required.');
+            throw new AccessDeniedException(ApiViewMessages::STORE_SCOPE_REQUIRED);
         }
 
         $store = $this->storeService()->get(['uuid' => $storeUuid]);
         if (!$store instanceof Store) {
-            throw new AccessDeniedException('Store not found or access denied.');
+            throw new AccessDeniedException(ApiViewMessages::STORE_NOT_FOUND_OR_ACCESS_DENIED);
         }
 
         return $store;

@@ -513,6 +513,18 @@
 "Trade order event does not include inventory items.": "交易訂單事件缺少庫存項目。"
 "Trade order event includes an invalid inventory item.": "交易訂單事件包含無效的庫存項目。"
 "Invalid trade.order.cancelled.v1 envelope.": "無效的trade.order.cancelled.v1信封。"
+"Product not found.": "產品未找到。"
+"Store scope is required.": "需要門店作用域。"
+"Store scope requires valid uuid.": "門店作用域需要有效的 uuid。"
+"Store not found or access denied.": "門店未找到或無權存取。"
+
+# ====================================================================
+# Authorization
+# ====================================================================
+"Access denied.": "存取被拒絕。"
+"Missing permission \"%s\".": "缺少權限\"%s\"。"
+"Fields not allowed by schema for \"%s:%s\": %s.": "按架構不允許的欄位 \"%s:%s\": %s。"
+"Fields not allowed for \"%s:%s\": %s.": "欄位不允許用於 \"%s:%s\": %s。"
 
 # Trade
 "Order submitted for store acceptance": "訂單已提交等待門店確認"

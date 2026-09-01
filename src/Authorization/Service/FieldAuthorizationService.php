@@ -7,6 +7,7 @@ namespace App\Authorization\Service;
 use App\Authorization\Repository\AssignmentRepository;
 use App\Authorization\Repository\RoleFieldGrantRepository;
 use App\Identity\Entity\User;
+use App\Core\View\ApiViewMessages;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
 final class FieldAuthorizationService implements FieldAuthorizationServiceInterface
@@ -34,7 +35,7 @@ final class FieldAuthorizationService implements FieldAuthorizationServiceInterf
         // resource is like common:content, but permission code is common:content:update etc.
         // Ensure permission check passes
         if (!$this->authorizationService->can($user, $permission, $scope)) {
-            throw new AccessDeniedException(sprintf('Missing permission "%s".', $permission));
+            throw new AccessDeniedException(sprintf(ApiViewMessages::MISSING_PERMISSION, $permission));
         }
 
         $effectiveFields = $this->resolveEffectiveFields($user, $resource, $action, $scope);

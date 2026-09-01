@@ -570,6 +570,18 @@
 "Trade order event does not include inventory items.": "Trade order event does not include inventory items."
 "Trade order event includes an invalid inventory item.": "Trade order event includes an invalid inventory item."
 "Invalid trade.order.cancelled.v1 envelope.": "Invalid trade.order.cancelled.v1 envelope."
+"Product not found.": "Product not found."
+"Store scope is required.": "Store scope is required."
+"Store scope requires valid uuid.": "Store scope requires valid uuid."
+"Store not found or access denied.": "Store not found or access denied."
+
+# ====================================================================
+# Authorization
+# ====================================================================
+"Access denied.": "Access denied."
+"Missing permission \"%s\".": "Missing permission \"%s\"."
+"Fields not allowed by schema for \"%s:%s\": %s.": "Fields not allowed by schema for \"%s:%s\": %s."
+"Fields not allowed for \"%s:%s\": %s.": "Fields not allowed for \"%s:%s\": %s."
 
 # ====================================================================
 # Trade

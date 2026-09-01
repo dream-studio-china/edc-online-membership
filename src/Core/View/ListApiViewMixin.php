@@ -66,7 +66,7 @@ trait ListApiViewMixin
             $entities = $this->listResponses($entities);
             return $this->success($entities);
         } catch (\Symfony\Component\Security\Core\Exception\AccessDeniedException $exception) {
-            return $this->warning($exception->getMessage() ?: 'Access denied.', 403, '', 403);
+            return $this->warning($exception->getMessage() ?: ApiViewMessages::ACCESS_DENIED, 403, '', 403);
         }
     }
 }

@@ -60,7 +60,7 @@ trait DetailApiViewMixin
                 $this->success($response):
                 $this->warning(ApiViewMessages::ENTITY_NOT_FOUND, 404, '', 404);
         } catch (\Symfony\Component\Security\Core\Exception\AccessDeniedException $exception) {
-            return $this->warning($exception->getMessage() ?: 'Access denied.', 403, '', 403);
+            return $this->warning($exception->getMessage() ?: ApiViewMessages::ACCESS_DENIED, 403, '', 403);
         }
     }
 }

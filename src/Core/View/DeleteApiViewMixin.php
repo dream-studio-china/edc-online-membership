@@ -48,7 +48,7 @@ trait DeleteApiViewMixin
             }
             $this->authorizeApiAction('delete', $entity);
         } catch (\Symfony\Component\Security\Core\Exception\AccessDeniedException $exception) {
-            return $this->warning($exception->getMessage() ?: 'Access denied.', 403, '', 403);
+            return $this->warning($exception->getMessage() ?: ApiViewMessages::ACCESS_DENIED, 403, '', 403);
         }
 
         if (($response = $this->processDeletion($entity)) !== null) {

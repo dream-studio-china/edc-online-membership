@@ -513,6 +513,18 @@
 "Trade order event does not include inventory items.": "取引注文イベントに在庫項目が含まれていません。"
 "Trade order event includes an invalid inventory item.": "取引注文イベントに無効な在庫項目が含まれています。"
 "Invalid trade.order.cancelled.v1 envelope.": "無効なtrade.order.cancelled.v1エンベロープ。"
+"Product not found.": "商品が見つかりません。"
+"Store scope is required.": "ストアスコープは必須です。"
+"Store scope requires valid uuid.": "ストアスコープには有効なUUIDが必要です。"
+"Store not found or access denied.": "ストアが見つからないか、アクセスが拒否されました。"
+
+# ====================================================================
+# Authorization
+# ====================================================================
+"Access denied.": "アクセスが拒否されました。"
+"Missing permission \"%s\".": "権限\"%s\"がありません。"
+"Fields not allowed by schema for \"%s:%s\": %s.": "スキーマで許可されていないフィールド\"%s:%s\": %s。"
+"Fields not allowed for \"%s:%s\": %s.": "フィールドは\"%s:%s\"で許可されていません: %s。"
 
 # Trade
 "Order submitted for store acceptance": "注文がストア確認待ちとして送信されました"

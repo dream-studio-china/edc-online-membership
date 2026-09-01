@@ -19,7 +19,7 @@ trait ScopedListApiViewMixin
             $this->authorizeApiAction('list');
             return $this->success($this->service->list($this->scopedListFilter($scopeId), null, false));
         } catch (\Symfony\Component\Security\Core\Exception\AccessDeniedException $exception) {
-            return $this->warning($exception->getMessage() ?: 'Access denied.', 403, '', 403);
+            return $this->warning($exception->getMessage() ?: ApiViewMessages::ACCESS_DENIED, 403, '', 403);
         }
     }
 }

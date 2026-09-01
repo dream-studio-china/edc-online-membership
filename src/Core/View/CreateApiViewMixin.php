@@ -67,7 +67,7 @@ trait CreateApiViewMixin
         try {
             $this->authorizeApiAction('create');
         } catch (\Symfony\Component\Security\Core\Exception\AccessDeniedException $exception) {
-            return $this->warning($exception->getMessage() ?: 'Access denied.', 403, '', 403);
+            return $this->warning($exception->getMessage() ?: ApiViewMessages::ACCESS_DENIED, 403, '', 403);
         }
 
         if (FixJSON::getJSONType($request->getContent()) === false) {

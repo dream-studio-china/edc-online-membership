@@ -513,6 +513,18 @@
 "Trade order event does not include inventory items.": "交易订单事件缺少库存项目。"
 "Trade order event includes an invalid inventory item.": "交易订单事件包含无效的库存项目。"
 "Invalid trade.order.cancelled.v1 envelope.": "无效的trade.order.cancelled.v1信封。"
+"Product not found.": "产品未找到。"
+"Store scope is required.": "需要门店作用域。"
+"Store scope requires valid uuid.": "门店作用域需要有效的 uuid。"
+"Store not found or access denied.": "门店未找到或无权访问。"
+
+# ====================================================================
+# Authorization
+# ====================================================================
+"Access denied.": "访问被拒绝。"
+"Missing permission \"%s\".": "缺少权限\"%s\"。"
+"Fields not allowed by schema for \"%s:%s\": %s.": "按架构不允许的字段 \"%s:%s\": %s。"
+"Fields not allowed for \"%s:%s\": %s.": "字段不允许用于 \"%s:%s\": %s。"
 
 # Trade
 "Order submitted for store acceptance": "订单已提交等待门店确认"
