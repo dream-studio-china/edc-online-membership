@@ -661,3 +661,17 @@
 "Contact": "聯絡方式"
 "Address": "地址"
 "Settings": "設定"
+
+"SettlementAllocation": "結算分配"
+
+"SettlementConsumedEvent": "結算消費事件"
+
+"SettlementOutboxMessage": "結算寄件匣訊息"
+
+"SettlementPlan": "結算計畫"
+
+"SettlementRule": "結算規則"
+
+"SettlementRuleVersion": "結算規則版本"
+
+"Authorization": "授權"

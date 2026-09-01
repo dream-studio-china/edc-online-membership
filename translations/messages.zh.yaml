@@ -661,3 +661,17 @@
 "Contact": "联系方式"
 "Address": "地址"
 "Settings": "设置"
+
+"SettlementAllocation": "结算分配"
+
+"SettlementConsumedEvent": "结算消费事件"
+
+"SettlementOutboxMessage": "结算发件箱消息"
+
+"SettlementPlan": "结算计划"
+
+"SettlementRule": "结算规则"
+
+"SettlementRuleVersion": "结算规则版本"
+
+"Authorization": "授权"

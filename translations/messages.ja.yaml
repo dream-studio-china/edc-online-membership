@@ -661,3 +661,17 @@
 "Contact": "連絡先"
 "Address": "住所"
 "Settings": "設定"
+
+"SettlementAllocation": "決済割当"
+
+"SettlementConsumedEvent": "決済消費イベント"
+
+"SettlementOutboxMessage": "決済アウトボックスメッセージ"
+
+"SettlementPlan": "決済プラン"
+
+"SettlementRule": "決済ルール"
+
+"SettlementRuleVersion": "決済ルールバージョン"
+
+"Authorization": "認可"

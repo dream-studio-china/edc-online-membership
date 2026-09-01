@@ -49,6 +49,13 @@
 "Reconciliation": "Reconciliation"
 "Refund": "Refund"
 
+"SettlementAllocation": "SettlementAllocation"
+"SettlementConsumedEvent": "SettlementConsumedEvent"
+"SettlementOutboxMessage": "SettlementOutboxMessage"
+"SettlementPlan": "SettlementPlan"
+"SettlementRule": "SettlementRule"
+"SettlementRuleVersion": "SettlementRuleVersion"
+"Authorization": "Authorization"
 # ====================================================================
 # Entity field names (camelCase → plain text, used by EntityController)
 # ====================================================================
