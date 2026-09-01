@@ -333,7 +333,7 @@ class RestController extends AbstractController
         $response = [
             'data' => $processedContent,
             'code' => 0,
-            'message' => $this->getTranslator()->trans($addition_message),
+            'message' => $addition_message,
         ];
         if (is_array($paginated['paginator'])) {
             $response['paginator'] = $paginated['paginator'];
