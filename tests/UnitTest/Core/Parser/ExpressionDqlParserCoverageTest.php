@@ -95,10 +95,10 @@ final class ExpressionDqlParserCoverageTest extends TestCase
     public function testUnsupportedBinaryOperatorThrows(): void
     {
         $parser = $this->newParser();
-        $parser->setExpression('entity.getId() in [1, 2]');
+        $parser->setExpression('entity.getId() ** 2');
 
         $this->expectException(ValidatorException::class);
-        $this->expectExceptionMessage('Unsupported operator: in');
+        $this->expectExceptionMessage('Unsupported operator: **');
         $parser->compile();
     }
 
@@ -119,8 +119,9 @@ final class ExpressionDqlParserCoverageTest extends TestCase
         $parser->compile();
 
         self::assertStringContainsString('filter_entity.id = ', $parser->getWhere());
-        // [1, 2] compiles as key=>value pairs, each side a ConstantNode => 4 params.
-        self::assertSame(4, $parser->getParameters()->count());
+        // [1, 2] now compiles as a single array parameter via ArrayNode handling.
+        self::assertSame(1, $parser->getParameters()->count());
+        self::assertSame([1, 2], $parser->getParametersArray()['filter_parameter_1']);
     }
 
     public function testGetSourceFallsBackToManualDqlWhenQueryBuilderDqlThrows(): void

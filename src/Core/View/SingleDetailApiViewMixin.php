@@ -21,7 +21,7 @@ trait SingleDetailApiViewMixin
     public function detailAction(): Response
     {
         $service = $this->service;
-        $filter = $this->commonFilter();
+        $filter = $this->resolvedCommonFilter();
         $entity = $service->get($filter, false);
 
         return $this->success($entity);

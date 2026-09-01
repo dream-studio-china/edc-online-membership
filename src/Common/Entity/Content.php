@@ -39,6 +39,10 @@ class Content
     #[ORM\Column(type: 'datetime_immutable', nullable: true)]
     private ?\DateTimeImmutable $updatedAt = null;
 
+    /** @var array<string, mixed>|null */
+    #[ORM\Column(type: 'json', nullable: true)]
+    private ?array $metadata = null;
+
     public function __construct(string $title, ?string $body = null)
     {
         $this->title = $title;
@@ -127,6 +131,21 @@ class Content
     public function getUpdatedAt(): ?\DateTimeImmutable
     {
         return $this->updatedAt;
+    }
+
+    /** @return array<string, mixed>|null */
+    public function getMetadata(): ?array
+    {
+        return $this->metadata;
+    }
+
+    /** @param array<string, mixed>|null $metadata */
+    public function setMetadata(?array $metadata): self
+    {
+        $this->metadata = $metadata;
+        $this->touch();
+
+        return $this;
     }
 
     public function touch(): void

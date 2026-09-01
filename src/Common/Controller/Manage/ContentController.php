@@ -23,9 +23,9 @@ class ContentController extends RestController
     /** @var list<string> */
     protected array $requiredCreateProperties = ['title'];
     /** @var list<string> */
-    protected array $acceptedCreateProperties = ['title', 'body', 'category', 'tags'];
+    protected array $acceptedCreateProperties = ['title', 'body', 'category', 'tags', 'metadata'];
     /** @var list<string> */
-    protected array $acceptedUpdateProperties = ['title', 'body', 'category', 'tags'];
+    protected array $acceptedUpdateProperties = ['title', 'body', 'category', 'tags', 'metadata'];
 
     public function __construct(
         protected readonly ContentService $service

@@ -7,8 +7,8 @@ namespace App\Tests\LowValue\Trade\Repository;
 
 use PHPUnit\Framework\Attributes\Group;
 use App\Tests\Integration\DatabaseBootstrapTrait;
-use App\Trade\Entity\Product;
-use App\Trade\Repository\ProductRepository;
+use App\Store\Entity\Product;
+use App\Store\Repository\ProductRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
@@ -26,7 +26,7 @@ final class ProductRepositoryTest extends KernelTestCase
         self::bootKernel();
 
         $this->em = static::getContainer()->get(EntityManagerInterface::class);
-        $this->em->createQuery('DELETE FROM App\\Trade\\Entity\\Product p')->execute();
+        $this->em->createQuery('DELETE FROM App\\Store\\Entity\\Product p')->execute();
 
         /** @var ProductRepository $repo */
         $repo = $this->em->getRepository(Product::class);

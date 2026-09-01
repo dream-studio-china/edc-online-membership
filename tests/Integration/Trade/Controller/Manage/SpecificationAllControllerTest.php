@@ -6,8 +6,8 @@ namespace App\Tests\Integration\Trade\Controller\Manage;
 
 use App\Tests\Integration\DatabaseBootstrapTrait;
 use App\Tests\Integration\IntegrationWebTestCase;
-use App\Trade\Entity\Product;
-use App\Trade\Entity\Specification;
+use App\Store\Entity\Product;
+use App\Store\Entity\Specification;
 use Doctrine\ORM\EntityManagerInterface;
 
 final class SpecificationAllControllerTest extends IntegrationWebTestCase
@@ -24,8 +24,8 @@ final class SpecificationAllControllerTest extends IntegrationWebTestCase
         $client = static::createClient();
         $this->em = $client->getContainer()->get(EntityManagerInterface::class);
 
-        $this->em->createQuery('DELETE FROM App\\Trade\\Entity\\Specification')->execute();
-        $this->em->createQuery('DELETE FROM App\\Trade\\Entity\\Product')->execute();
+        $this->em->createQuery('DELETE FROM App\\Store\\Entity\\Specification')->execute();
+        $this->em->createQuery('DELETE FROM App\\Store\\Entity\\Product')->execute();
         self::ensureKernelShutdown();
     }
 

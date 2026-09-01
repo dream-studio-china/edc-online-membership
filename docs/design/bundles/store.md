@@ -3,9 +3,12 @@
 > **Status: phase 1-3 implemented in the modular monolith.** Store, membership,
 > StoreOrder, Trade/Store Outbox-Inbox, Messenger consumers, and Store acceptance are
 > implemented. Inventory reservation remains an intentionally deferred boundary.
-> The Store bundle (`src/Store/`) owns multi-store context, store operations, and the
-> store-side order projection. Trade remains the single commercial order entry point
-> and the source of truth for order amount, payment, refund, and customer order status.
+> The Store bundle (`src/Store/`) owns multi-store context, store operations, the
+> store-side order projection, and the Product/Specification catalog (shared/global
+> `Product.store = NULL` and store-private `Product.store = Store`, tables
+> `trade_product`/`trade_specification` retained). Trade remains the single commercial
+> order entry point and the source of truth for order amount, payment, refund, and
+> customer order status. See [Store Catalog Model](../store-catalog.md) for invariants.
 
 ---
 
@@ -37,13 +40,13 @@ The bundle owns:
 - The `StoreOrder` projection/aggregate for store acceptance and fulfillment data.
 - Idempotent consumption and publication of Store integration events.
 - The contract by which a store accepts or rejects a Trade order.
+- Product and Specification catalog (shared/global and store-private, nullable `store`).
 
 The bundle does not own:
 
 - Customer order creation API.
 - Commercial order amount, discounts, payment, refund, or customer cancellation.
 - The canonical payment invoice.
-- Global product/SKU master data.
 - Inventory implementation. Inventory reservation is an integration boundary defined
   here and designed in a later Inventory bundle.
 

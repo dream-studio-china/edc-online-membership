@@ -66,7 +66,7 @@ An expression evaluated against a root alias of `entity`. The same syntax is
 usable as a raw `QueryBuilder` fragment (the DQL tier) and as an in-memory
 predicate (the fallback).
 
-Supported operators:
+Supported operators (shared by client `@filter` and server `DqlExpression`):
 
 | Operator | Meaning | DQL mapping |
 |----------|---------|-------------|
@@ -74,6 +74,7 @@ Supported operators:
 | `>` `>=` `<` `<=` | comparison | same |
 | `&&` / `||` | logical AND / OR | `AND` / `OR` |
 | `!` | logical NOT (attr check) | `prop IS NULL` on the child |
+| `in` / `not in` | collection membership | `IN (:param)` / `NOT IN (:param)` — bound as array parameters; empty `in []` becomes `1 = 0`, empty `not in []` becomes `1 = 1` |
 | `matches` | regex / LIKE | `REGEXP(...) = TRUE` or `LIKE '%...%'` |
 | `+ - * /` | arithmetic | same |
 
@@ -109,6 +110,19 @@ when DQL compilation fails or the filter touches non-persistent data) is
 restricted to admins. For non-admins a DQL compilation error raises
 `AccessDeniedHttpException`; admins fall back to
 `LegacyEvaluator::evaluateBool()` over each entity.
+
+**Server-owned `DqlExpression` vs client `@filter`**: `DqlExpression` reuses the
+same expression compiler, but variables are bound in PHP code (e.g.
+`new DqlExpression('entity.getUser() == user', ['user' => $this->getUser()])`
+or `new DqlExpression('entity.getStoreUuid() in this.getAllowedStoreUuids()')`
+— the latter is shorthand for explicit binding and is only available inside
+`commonFilter()` via `ApiView::resolvedCommonFilter()`). It never uses the
+`LegacyEvaluator`, never falls back to in-memory filtering, and a compilation
+or metadata-validation failure is a 500 configuration error that rejects the
+request. Like `commonFilter()` arrays, it is automatically `AND`ed with the
+`id`/`uuid` added by `mixIdToCommonFilter`, so detail/update/delete cannot be
+bypassed. `in`/`not in` with an empty collection is compiled to the constant
+predicates `1 = 0` / `1 = 1` rather than an invalid `IN ()`.
 
 ### `@dql`
 
@@ -299,6 +313,12 @@ per-item exceptions).
 | `@filter` | only for the in-memory fallback | DQL-fast-path is allowed; non-admin failures → `AccessDeniedHttpException` |
 | `@showDQL` | ✅ (env-gated) | `dev` only |
 | `@select` | guarded, not gated | `assertSafeSelect()` blocks identity data |
+| `DqlExpression` (`commonFilter` server scope) | N/A — code-owned | Fail-closed, never `PUBLIC_ACCESS`; compilation/validation failure → 500, never in-memory fallback |
+
+> `DqlExpression` is the server-owned counterpart to `@filter` for row-level
+> authorization: `commonFilter()` may return `new DqlExpression(...)`; it shares the
+> operator set (including `in`/`not in`) but is constructed in PHP, bound via
+> `withCriteria()`/`withContext()` and validated before any query executes.
 
 ---
 

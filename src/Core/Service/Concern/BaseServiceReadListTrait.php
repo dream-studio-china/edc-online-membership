@@ -3,6 +3,9 @@ declare(strict_types=1);
 
 namespace App\Core\Service\Concern;
 
+use App\Core\Parser\ExpressionDqlParser;
+use App\Core\Parser\ExpressionQueryBuilderAssembler;
+use App\Core\Query\DqlExpression;
 use App\Core\Utils\UUID;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
@@ -16,13 +19,25 @@ use Symfony\Component\Validator\Exception\ValidatorException;
 trait BaseServiceReadListTrait
 {
     /**
-     * @param TEntity|int|string|array<string, mixed>|QueryBuilder $object
+     * @param TEntity|int|string|array<string, mixed>|QueryBuilder|DqlExpression $object
      * @return TEntity|null
      */
     public function get(mixed $object, bool $directly = false)
     {
         if ($object === null) {
             return null;
+        }
+
+        if ($object instanceof DqlExpression) {
+            $qb = $this->getQueryBuilderFactory()->create($this->entityClass, 'entity');
+            $this->applyDqlExpression($qb, $object);
+            try {
+                $entity = $qb->getQuery()->getSingleResult();
+            } catch (NoResultException | NonUniqueResultException $e) {
+                $entity = null;
+            }
+
+            return $entity;
         }
 
         if ($object instanceof QueryBuilder) {
@@ -49,7 +64,7 @@ trait BaseServiceReadListTrait
     }
 
     /**
-     * @param array<string, mixed>|QueryBuilder|null $object
+     * @param array<string, mixed>|QueryBuilder|DqlExpression|null $object
      * @param array<string, 'ASC'|'DESC'>|null $order
      * @return int|mixed|string
      * @throws \Exception
@@ -62,7 +77,11 @@ trait BaseServiceReadListTrait
         $em = $this->getEntityManager();
         $request = $this->getCurrentRequest();
 
-        if($object instanceof QueryBuilder) {
+        if ($object instanceof DqlExpression) {
+            $alias = 'entity';
+            $qb = $this->getQueryBuilderFactory()->create($this->entityClass, $alias);
+            $this->applyDqlExpression($qb, $object);
+        } elseif($object instanceof QueryBuilder) {
             $qb = $object;
 
             $aliases = $object->getRootAliases();
@@ -298,5 +317,60 @@ trait BaseServiceReadListTrait
     {
         return $this->container->hasParameter('kernel.environment')
             && $this->container->getParameter('kernel.environment') === 'dev';
+    }
+
+    private function applyDqlExpression(QueryBuilder $qb, DqlExpression $expression): void
+    {
+        $values = $expression->values;
+        if ($expression->context() !== null) {
+            $values['this'] = $expression->context();
+        } elseif ($expression->usesThis()) {
+            throw new \LogicException('DqlExpression uses "this" without controller context.');
+        }
+
+        try {
+            $parser = new ExpressionDqlParser();
+            $parser->setDataClass($this->entityClass)
+                ->setValues($values)
+                ->setExpression($expression->expression)
+                ->compile();
+            $parser->validateFragments($this->getEntityManager());
+        } catch (\Throwable $e) {
+            throw new \LogicException('Invalid server DQL common filter: ' . $e->getMessage(), 0, $e);
+        }
+
+        $assembler = new ExpressionQueryBuilderAssembler($this->getEntityManager());
+        $assembler->applyToQueryBuilder($qb, $parser);
+
+        $criteria = $expression->criteria();
+        if ($criteria === []) {
+            return;
+        }
+
+        $em = $this->getEntityManager();
+        $meta = $em->getClassMetadata($this->entityClass);
+        $rootAlias = $qb->getRootAliases()[0] ?? 'entity';
+
+        // Collect existing parameter names to avoid collision
+        $existingParams = [];
+        foreach ($qb->getParameters() as $p) {
+            $existingParams[$p->getName()] = true;
+        }
+
+        $counter = 0;
+        foreach ($criteria as $field => $value) {
+            if (!$meta->hasField($field) && !$meta->hasAssociation($field) && !in_array($field, $meta->getIdentifierFieldNames(), true)) {
+                throw new \LogicException(sprintf('Invalid criteria field "%s" for %s', $field, $this->entityClass));
+            }
+            // Ensure unique parameter name
+            $base = '_common_filter_criterion_' . $field;
+            $param = $base;
+            while (isset($existingParams[$param])) {
+                $param = $base . '_' . (++$counter);
+            }
+            $existingParams[$param] = true;
+            $qb->andWhere(sprintf('%s.%s = :%s', $rootAlias, $field, $param))
+                ->setParameter($param, $value);
+        }
     }
 }

@@ -6,8 +6,6 @@ namespace App\Tests\UnitTest\Trade\Entity;
 
 use App\Trade\Entity\Order;
 use App\Trade\Entity\OrderItem;
-use App\Trade\Entity\Product;
-use App\Trade\Entity\Specification;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
@@ -22,7 +20,7 @@ final class OrderItemTest extends TestCase
             $item->getUuid()
         );
         self::assertNull($item->getOrder());
-        self::assertNull($item->getSpecification());
+        self::assertNull($item->getSpecificationUuid());
         self::assertNull($item->getSpecificationTitle());
         self::assertSame(1, $item->getQuantity());
         self::assertSame(0, $item->getUnitPrice());
@@ -68,16 +66,18 @@ final class OrderItemTest extends TestCase
 
     public function testPrePersistPopulatesSnapshotsAndCalculatesPrice(): void
     {
-        $product = new Product();
-        $product->setName('TestProduct');
-
-        $spec = new Specification();
-        $spec->setName('TestSpec');
-        $spec->setPrice(1500);
-        $spec->setProduct($product);
-
         $item = new OrderItem();
-        $item->setSpecification($spec);
+        $item->setSpecificationUuid('11111111-1111-1111-1111-111111111111');
+        $item->setSpecSnapshot([
+            'id' => null,
+            'uuid' => '11111111-1111-1111-1111-111111111111',
+            'name' => 'TestSpec',
+            'productId' => null,
+        ]);
+        $item->setProductSnapshot([
+            'id' => null,
+            'name' => 'TestProduct',
+        ]);
         $item->setQuantity(2);
         $item->setUnitPrice(1500);
 
@@ -85,15 +85,7 @@ final class OrderItemTest extends TestCase
 
         self::assertSame('TestSpec', $item->getSpecificationTitle());
         self::assertSame(3000, $item->getPrice());
-        self::assertSame([
-            'id' => null,
-            'name' => 'TestSpec',
-            'productId' => null,
-        ], $item->getSpecSnapshot());
-        self::assertSame([
-            'id' => null,
-            'name' => 'TestProduct',
-        ], $item->getProductSnapshot());
+        self::assertSame('11111111-1111-1111-1111-111111111111', $item->getSpecificationUuid());
     }
 
     public function testPrePersistWithNullSpecificationDoesNotPopulate(): void

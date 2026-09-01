@@ -110,7 +110,7 @@ final class StoreTradeFlowTest extends StoreTradeFlowTestCase
         $em->flush();
         $container->get(MembershipServiceInterface::class)->grant($store, (string) $user->getUuid(), 'manager');
 
-        $client->request('POST', '/api/v1/store/stores/' . $store->getUuid() . '/orders/' . $storeOrder->getUuid() . '/reject', [], [], [], json_encode([
+        $client->request('POST', '/api/v1/store/' . $store->getUuid() . '/orders/' . $storeOrder->getUuid() . '/reject', [], [], [], json_encode([
             'code' => 'OUT_OF_STOCK',
             'reason' => 'Unavailable.',
         ], JSON_THROW_ON_ERROR));

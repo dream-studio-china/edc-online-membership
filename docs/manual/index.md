@@ -26,6 +26,7 @@ live next to it under `docs/design`, `docs/runbooks`, and `docs/testing`.
 | [Core Framework — Deep Dive](core-framework.md) | RestController, BaseService, View mixins, Expression engine, listeners, utils |
 | [Core — Usage Recipes](core-usage.md) | Practical, codebase-derived patterns for building on the Core framework |
 | [Query System](query-system.md) | Complete reference for `@filter`, `@sort`, `@order`, `@dql`, `@select`, and related parameters |
+| [Authorization Setup](authorization.md) | How to seed and configure Authorization: permissions, roles, assignments, field grants, Content pilot |
 
 ### Development Process
 

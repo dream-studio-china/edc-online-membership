@@ -6,8 +6,8 @@ namespace App\Tests\UnitTest\Trade\Entity;
 
 use App\Trade\Entity\Order;
 use App\Trade\Entity\OrderItem;
-use App\Trade\Entity\Product;
-use App\Trade\Entity\Specification;
+use App\Store\Entity\Product;
+use App\Store\Entity\Specification;
 use App\Identity\Entity\User;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
@@ -146,7 +146,7 @@ final class ProductTest extends TestCase
         $reflection = new \ReflectionClass(Product::class);
         $product = $reflection->newInstanceWithoutConstructor();
 
-        $property = $reflection->getProperty('uuid');
+        $property = $reflection->hasProperty('uuid') ? $reflection->getProperty('uuid') : (new \ReflectionClass(\App\Store\Entity\Product::class))->getProperty('uuid');
         $property->setValue($product, '00000000-0000-0000-0000-000000000000');
 
         $product->prePersist();

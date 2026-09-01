@@ -4,16 +4,15 @@ declare(strict_types=1);
 
 namespace App\Tests\UnitTest\Trade\Pricing;
 
-use App\Trade\Entity\Product;
-use App\Trade\Entity\Specification;
 use App\Trade\Exception\SpecificationNotFoundException;
+use App\Trade\Service\Catalog\CatalogItem;
+use App\Trade\Service\Catalog\CatalogResolverInterface;
 use App\Trade\Service\Pricing\BasePriceCalculator;
 use App\Trade\Service\Pricing\PriceCalculationContext;
 use App\Trade\Service\Pricing\PriceCalculationResult;
 use App\Trade\Service\Pricing\PriceCalculatorInterface;
 use App\Trade\Service\Pricing\QuantityCalculator;
 use App\Trade\Service\Pricing\TotalAggregator;
-use App\Trade\Service\SpecificationServiceInterface;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 
@@ -64,19 +63,34 @@ final class PricingTest extends TestCase
         self::assertSame($items, $result->items);
     }
 
+    private function catalogItem(int $id, string $uuid, string $name, int $price, string $productName = 'Product'): CatalogItem
+    {
+        return new CatalogItem(
+            id: $id,
+            uuid: $uuid,
+            name: $name,
+            price: $price,
+            status: 'active',
+            isDeleted: false,
+            productId: 10,
+            productUuid: '00000000-0000-0000-0000-000000000001',
+            productName: $productName,
+            productIsDeleted: false,
+            productStatus: 'active',
+            storeUuid: null,
+            storeId: null,
+        );
+    }
+
     public function testBasePriceCalculatorPopulatesUnitPriceAndSnapshots(): void
     {
-        $product = new Product();
-        $product->setName('iPhone');
-        $specification = new Specification();
-        $specification->setProduct($product);
-        $specification->setName('128GB');
-        $specification->setPrice(100000);
+        $item1 = $this->catalogItem(1, '00000000-0000-0000-0000-000000000011', '128GB', 100000, 'iPhone');
+        $item2 = $this->catalogItem(2, '00000000-0000-0000-0000-000000000012', '128GB', 100000, 'iPhone');
 
-        $specService = $this->createMock(SpecificationServiceInterface::class);
-        $specService->method('get')->willReturn($specification);
+        $resolver = $this->createMock(CatalogResolverInterface::class);
+        $resolver->method('resolveForPricing')->willReturnOnConsecutiveCalls($item1, $item2);
 
-        $calculator = new BasePriceCalculator($specService);
+        $calculator = new BasePriceCalculator($resolver);
         $context = new PriceCalculationContext([
             ['specificationId' => 1, 'quantity' => 2],
             ['specificationId' => 2, 'quantity' => 1],
@@ -97,10 +111,10 @@ final class PricingTest extends TestCase
 
     public function testBasePriceCalculatorThrowsWhenSpecNotFound(): void
     {
-        $specService = $this->createMock(SpecificationServiceInterface::class);
-        $specService->method('get')->willReturn(null);
+        $resolver = $this->createMock(CatalogResolverInterface::class);
+        $resolver->method('resolveForPricing')->willReturn(null);
 
-        $calculator = new BasePriceCalculator($specService);
+        $calculator = new BasePriceCalculator($resolver);
         $context = new PriceCalculationContext([
             ['specificationId' => 999, 'quantity' => 1],
         ]);
@@ -111,13 +125,10 @@ final class PricingTest extends TestCase
 
     public function testBasePriceCalculatorThrowsWhenSpecDeleted(): void
     {
-        $specification = new Specification();
-        $specification->setIsDeleted(true);
+        $resolver = $this->createMock(CatalogResolverInterface::class);
+        $resolver->method('resolveForPricing')->willReturn(null);
 
-        $specService = $this->createMock(SpecificationServiceInterface::class);
-        $specService->method('get')->willReturn($specification);
-
-        $calculator = new BasePriceCalculator($specService);
+        $calculator = new BasePriceCalculator($resolver);
         $context = new PriceCalculationContext([
             ['specificationId' => 1, 'quantity' => 1],
         ]);
@@ -128,13 +139,10 @@ final class PricingTest extends TestCase
 
     public function testBasePriceCalculatorThrowsWhenSpecInactive(): void
     {
-        $specification = new Specification();
-        $specification->setStatus(Specification::STATUS_INACTIVE);
+        $resolver = $this->createMock(CatalogResolverInterface::class);
+        $resolver->method('resolveForPricing')->willReturn(null);
 
-        $specService = $this->createMock(SpecificationServiceInterface::class);
-        $specService->method('get')->willReturn($specification);
-
-        $calculator = new BasePriceCalculator($specService);
+        $calculator = new BasePriceCalculator($resolver);
         $context = new PriceCalculationContext([
             ['specificationId' => 1, 'quantity' => 1],
         ]);
@@ -145,15 +153,10 @@ final class PricingTest extends TestCase
 
     public function testBasePriceCalculatorThrowsWhenProductNotAvailable(): void
     {
-        $product = new Product();
-        $product->setIsDeleted(true);
-        $specification = new Specification();
-        $specification->setProduct($product);
+        $resolver = $this->createMock(CatalogResolverInterface::class);
+        $resolver->method('resolveForPricing')->willReturn(null);
 
-        $specService = $this->createMock(SpecificationServiceInterface::class);
-        $specService->method('get')->willReturn($specification);
-
-        $calculator = new BasePriceCalculator($specService);
+        $calculator = new BasePriceCalculator($resolver);
         $context = new PriceCalculationContext([
             ['specificationId' => 1, 'quantity' => 1],
         ]);
@@ -164,14 +167,12 @@ final class PricingTest extends TestCase
 
     public function testBasePriceCalculatorDefaultQuantityIsOne(): void
     {
-        $product = new Product();
-        $specification = new Specification();
-        $specification->setProduct($product);
+        $item = $this->catalogItem(1, '00000000-0000-0000-0000-000000000021', 'Test', 1000);
 
-        $specService = $this->createMock(SpecificationServiceInterface::class);
-        $specService->method('get')->willReturn($specification);
+        $resolver = $this->createMock(CatalogResolverInterface::class);
+        $resolver->method('resolveForPricing')->willReturn($item);
 
-        $calculator = new BasePriceCalculator($specService);
+        $calculator = new BasePriceCalculator($resolver);
         $context = new PriceCalculationContext([
             ['specificationId' => 1],
         ]);
@@ -224,16 +225,13 @@ final class PricingTest extends TestCase
 
     public function testPipelineExecutionOrder(): void
     {
-        $product = new Product();
-        $specification = new Specification();
-        $specification->setProduct($product);
-        $specification->setPrice(1000);
+        $item = $this->catalogItem(1, '00000000-0000-0000-0000-000000000031', 'Test', 1000);
 
-        $specService = $this->createMock(SpecificationServiceInterface::class);
-        $specService->method('get')->willReturn($specification);
+        $resolver = $this->createMock(CatalogResolverInterface::class);
+        $resolver->method('resolveForPricing')->willReturn($item);
 
         $calculators = [
-            new BasePriceCalculator($specService),
+            new BasePriceCalculator($resolver),
             new QuantityCalculator(),
             new TotalAggregator(),
         ];
@@ -278,24 +276,14 @@ final class PricingTest extends TestCase
 
     public function testPipelineHandlesMultipleItemsWithDifferentPrices(): void
     {
-        $product = new Product();
-        $product->setName('Phone');
+        $item1 = $this->catalogItem(1, '00000000-0000-0000-0000-000000000041', 'Red', 1000, 'Phone');
+        $item2 = $this->catalogItem(2, '00000000-0000-0000-0000-000000000042', 'Blue', 1100, 'Phone');
 
-        $spec1 = new Specification();
-        $spec1->setProduct($product);
-        $spec1->setName('Red');
-        $spec1->setPrice(1000);
-
-        $spec2 = new Specification();
-        $spec2->setProduct($product);
-        $spec2->setName('Blue');
-        $spec2->setPrice(1100);
-
-        $specService = $this->createMock(SpecificationServiceInterface::class);
-        $specService->method('get')->willReturnOnConsecutiveCalls($spec1, $spec2);
+        $resolver = $this->createMock(CatalogResolverInterface::class);
+        $resolver->method('resolveForPricing')->willReturnOnConsecutiveCalls($item1, $item2);
 
         $calculators = [
-            new BasePriceCalculator($specService),
+            new BasePriceCalculator($resolver),
             new QuantityCalculator(),
             new TotalAggregator(),
         ];
