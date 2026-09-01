@@ -408,7 +408,7 @@
   <span class="md-ellipsis">
     
   
-    Microservice Transition
+    微服务转型
   
 
     
@@ -1571,7 +1571,7 @@
   <span class="md-ellipsis">
     
   
-    项目结构
+    Project Structure
   
 
     
@@ -1683,7 +1683,7 @@
   <span class="md-ellipsis">
     
   
-    开发流程
+    Development Workflow
   
 
     
@@ -1795,7 +1795,7 @@
   <span class="md-ellipsis">
     
   
-    整合活动
+    Integration Events
   
 
     
@@ -2174,7 +2174,7 @@
 
 <h1 id="api">API文档合约<a class="headerlink" href="#api" title="Permanent link">&para;</a></h1>
 <blockquote>
-<p><code>/api/doc</code> 是如何工作的，如何扩展它，以及每个新端点必须遵循的规则。</p>
+<p><code>/api/doc</code> 如何工作、如何扩展它以及每个新端点必须遵循的规则。</p>
 </blockquote>
 <hr />
 <h2 id="1">1. 架构<a class="headerlink" href="#1" title="Permanent link">&para;</a></h2>
@@ -2304,7 +2304,7 @@
 <a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a><span class="x">#[Route('/resource/custom-action', name: 'manage-resource-custom', methods: ['POST'])]</span>
 <a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a><span class="x">public function customAction(): Response { ... }</span>
 </code></pre></div>
-<p><strong>路由命名至关重要</strong> — <code>name:</code> 前缀决定 <code>operationId</code>，后者决定模块标签：
+<p><strong>路由命名至关重要</strong> — <code>name:</code> 前缀决定了 <code>operationId</code>，而 <code>operationId</code> 又决定了模块标签：
 - <code>manage-products-custom</code> → <code>operationId: post_manage-products-custom</code> → 标签：<strong>产品</strong>
 - <code>app-orders-export</code> → <code>operationId: get_app-orders-export</code> → 标签：<strong>订单</strong></p>
 <h2 id="5">5. 安全文档<a class="headerlink" href="#5" title="Permanent link">&para;</a></h2>

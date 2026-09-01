@@ -80,7 +80,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#crud-platform" class="md-skip">
+        <a href="#_1" class="md-skip">
           跳转至
         </a>
       
@@ -350,10 +350,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#current-status" class="md-nav__link">
+  <a href="#_2" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Current Status
+        目前状态
       
     </span>
   </a>
@@ -361,10 +361,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#target" class="md-nav__link">
+  <a href="#_3" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Target
+        目标
       
     </span>
   </a>
@@ -372,10 +372,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#local-run" class="md-nav__link">
+  <a href="#_4" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Local Run
+        本地运行
       
     </span>
   </a>
@@ -383,10 +383,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#documentation" class="md-nav__link">
+  <a href="#_5" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Documentation
+        文档
       
     </span>
   </a>
@@ -394,10 +394,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#quality-checks" class="md-nav__link">
+  <a href="#_6" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Quality Checks
+        质量检查
       
     </span>
   </a>
@@ -508,7 +508,7 @@
   <span class="md-ellipsis">
     
   
-    Microservice Transition
+    微服务转型
   
 
     
@@ -1480,7 +1480,7 @@
   <span class="md-ellipsis">
     
   
-    项目结构
+    Project Structure
   
 
     
@@ -1592,7 +1592,7 @@
   <span class="md-ellipsis">
     
   
-    开发流程
+    Development Workflow
   
 
     
@@ -1704,7 +1704,7 @@
   <span class="md-ellipsis">
     
   
-    整合活动
+    Integration Events
   
 
     
@@ -1918,10 +1918,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#current-status" class="md-nav__link">
+  <a href="#_2" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Current Status
+        目前状态
       
     </span>
   </a>
@@ -1929,10 +1929,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#target" class="md-nav__link">
+  <a href="#_3" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Target
+        目标
       
     </span>
   </a>
@@ -1940,10 +1940,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#local-run" class="md-nav__link">
+  <a href="#_4" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Local Run
+        本地运行
       
     </span>
   </a>
@@ -1951,10 +1951,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#documentation" class="md-nav__link">
+  <a href="#_5" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Documentation
+        文档
       
     </span>
   </a>
@@ -1962,10 +1962,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#quality-checks" class="md-nav__link">
+  <a href="#_6" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Quality Checks
+        质量检查
       
     </span>
   </a>
@@ -1992,42 +1992,42 @@
   
 
 
-<h1 id="crud-platform">CRUD Platform<a class="headerlink" href="#crud-platform" title="Permanent link">&para;</a></h1>
-<p>CRUD Platform evolves the <code>crud-skeleton</code> Symfony backend into a
-multi-application microservice platform.</p>
-<h2 id="current-status">Current Status<a class="headerlink" href="#current-status" title="Permanent link">&para;</a></h2>
-<p>The codebase is currently a <strong>modular monolith</strong> with Store and Inventory extracted
-into independently bootable applications:</p>
+<h1 id="_1">增删改查平台<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h1>
+<p>CRUD 平台将 <code>crud-skeleton</code> Symfony 后端发展为
+多应用微服务平台。</p>
+<h2 id="_2">目前状态<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<p>代码库目前是一个<strong>模块化整体</strong>，提取了 Store 和 Inventory
+进入独立可启动的应用程序：</p>
 <ul>
-<li>One Symfony Kernel for the monolith; Store and Inventory have their own Kernels.</li>
-<li>One Composer project, service container, database, migration chain,
-  Messenger queue, worker, scheduler, and Docker image for the monolith.</li>
-<li>Store and Inventory each have config, a MySQL 8.4 database, migration baseline,
-  and FrankenPHP container.</li>
-<li>Domain modules include Identity, CMS, Commerce, Store, Inventory, Payment, Wallet,
-  Promotion, WeChat adapters, and Storage adapters.</li>
-<li>The <code>Trade -&gt; Store -&gt; Inventory</code> Outbox/Inbox flow is the strongest existing
-  extraction seam.</li>
-<li>Store source lives exclusively in <code>apps/store/src</code> with de-prefixed entities
-  (<code>Membership</code>, <code>InboxMessage</code>, <code>OutboxMessage</code>, <code>TradeOrderCancellation</code>).</li>
-<li>Inventory source lives exclusively in <code>apps/inventory/src</code>; its nine owned
-  <code>inventory_*</code> tables retain their names and use scalar Store/Trade UUID references.</li>
-<li>Trade resolves <code>X-Store-Code</code> through a local <code>trade_store_directory</code> projection
-  fed by the <code>store.directory.upserted.v1</code> event.</li>
+<li>一个用于单体应用的 Symfony 内核；商店和库存有自己的内核。</li>
+<li>一个 Composer 项目、服务容器、数据库、迁移链、
+  单体应用的 Messenger 队列、工作线程、调度程序和 Docker 镜像。</li>
+<li>Store 和 Inventory 各有配置、MySQL 8.4 数据库、迁移基线、
+  和 FrankenPHP 容器。</li>
+<li>领域模块包括身份、CMS、商业、商店、库存、支付、钱包、
+  促销、微信适配器、存储适配器。</li>
+<li><code>Trade -&gt; Store -&gt; Inventory</code> 发件箱/收件箱流程是现有最强的
+  提取缝。</li>
+<li>存储源仅存在于带有去前缀实体的 <code>apps/store/src</code> 中
+  （<code>Membership</code>、<code>InboxMessage</code>、<code>OutboxMessage</code>、<code>TradeOrderCancellation</code>）。</li>
+<li>库存来源仅存在于<code>apps/inventory/src</code>；其九拥有
+  <code>inventory_*</code> 表保留其名称并使用标量 Store/Trade UUID 引用。</li>
+<li>贸易通过本地<code>trade_store_directory</code>预测解决<code>X-Store-Code</code>
+  由 <code>store.directory.upserted.v1</code> 事件提供。</li>
 </ul>
-<p>This is not yet a set of independently deployed services. Gateway cutover and
-standalone worker/scheduler operation are deferred until remaining modules are
-extracted and a shared broker replaces the transitional Doctrine transport.</p>
-<h2 id="target">Target<a class="headerlink" href="#target" title="Permanent link">&para;</a></h2>
-<p>The target is a monorepo with independently deployable Symfony applications. Each
-service owns its Kernel, configuration, database and migrations, queue, worker,
-scheduler, image, tests, and CI.</p>
-<p>Store and Inventory are extracted transition hosts. Inventory remains disabled by
-default and is not production-ready until its safety checklist is complete.</p>
-<p>Read the <a href="design/microservice-transition/">Microservice Transition Contract</a> for
-the target directory structure, service-boundary rules, event envelope, and
-extraction gates.</p>
-<h2 id="local-run">Local Run<a class="headerlink" href="#local-run" title="Permanent link">&para;</a></h2>
+<p>这还不是一组独立部署的服务。网关割接和
+独立工作程序/调度程序操作被推迟，直到剩余模块完成
+提取并共享代理取代了过渡 Doctrine 传输。</p>
+<h2 id="_3">目标<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
+<p>目标是具有可独立部署的 Symfony 应用程序的 monorepo。每个
+服务拥有其内核、配置、数据库和迁移、队列、工作线程、
+调度程序、图像、测试和 CI。</p>
+<p>Store 和 Inventory 是提取的过渡主机。库存仍处于禁用状态
+默认情况下，在安全检查表完成之前无法投入生产。</p>
+<p>阅读<a href="design/microservice-transition/">Microservice Transition Contract</a>
+目标目录结构、服务边界规则、事件信封以及
+撤离门。</p>
+<h2 id="_4">本地运行<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>docker<span class="w"> </span>compose<span class="w"> </span>up<span class="w"> </span>-d<span class="w"> </span>--build
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>docker<span class="w"> </span>compose<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>app<span class="w"> </span>php<span class="w"> </span>bin/console<span class="w"> </span>doctrine:migrations:migrate<span class="w"> </span>--no-interaction
 <a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>docker<span class="w"> </span>compose<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>store-app<span class="w"> </span>php<span class="w"> </span>bin/console<span class="w"> </span>doctrine:migrations:migrate<span class="w"> </span>--no-interaction
@@ -2035,13 +2035,13 @@ extraction gates.</p>
 <a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>docker<span class="w"> </span>compose<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>app<span class="w"> </span>php<span class="w"> </span>bin/console<span class="w"> </span>app:identity:user:create<span class="w"> </span>admin@example.com<span class="w"> </span>admin<span class="w"> </span><span class="s1">'P@ssw0rd'</span><span class="w"> </span>--admin
 </code></pre></div>
 <ul>
-<li>Monolith API: <code>http://localhost:8080</code></li>
-<li>Store API: <code>http://localhost:8081</code></li>
-<li>Inventory API: <code>http://localhost:8082</code></li>
-<li>OpenAPI: <code>http://localhost:8080/api/doc</code></li>
-<li>Mailpit: <code>http://localhost:8025</code></li>
+<li>整体API：<code>http://localhost:8080</code></li>
+<li>商店API：<code>http://localhost:8081</code></li>
+<li>库存API：<code>http://localhost:8082</code></li>
+<li>OpenAPI：<code>http://localhost:8080/api/doc</code></li>
+<li>邮件坑：<code>http://localhost:8025</code></li>
 </ul>
-<h2 id="documentation">Documentation<a class="headerlink" href="#documentation" title="Permanent link">&para;</a></h2>
+<h2 id="_5">文档<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h2>
 <ul>
 <li><a href="design/microservice-transition/">Microservice Transition</a></li>
 <li><a href="design/system-architecture/">System Architecture</a></li>
@@ -2050,13 +2050,13 @@ extraction gates.</p>
 <li><a href="design/api-design/">API Design</a></li>
 <li><a href="ai/context/">AI Context</a></li>
 </ul>
-<h2 id="quality-checks">Quality Checks<a class="headerlink" href="#quality-checks" title="Permanent link">&para;</a></h2>
+<h2 id="_6">质量检查<a class="headerlink" href="#_6" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>./vendor/bin/phpunit
 <a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>composer<span class="w"> </span>deptrac
 <a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>composer<span class="w"> </span>phpstan
 <a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>composer<span class="w"> </span>rector:types:check
 </code></pre></div>
-<p>Use PHP 8.4+ for local commands.</p>
+<p>使用 PHP 8.4+ 执行本地命令。</p>
 
 
 

@@ -31,7 +31,7 @@
     
     
       
-        <title>Microservice Transition - CRUD Platform</title>
+        <title>微服务转型 - CRUD Platform</title>
       
     
     
@@ -118,7 +118,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Microservice Transition
+              微服务转型
             
           </span>
         </div>
@@ -417,7 +417,7 @@
   <span class="md-ellipsis">
     
   
-    Microservice Transition
+    微服务转型
   
 
     
@@ -435,7 +435,7 @@
   <span class="md-ellipsis">
     
   
-    Microservice Transition
+    微服务转型
   
 
     
@@ -566,10 +566,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#8-non-goals" class="md-nav__link">
+  <a href="#8" class="md-nav__link">
     <span class="md-ellipsis">
       
-        8. Non-Goals
+        8. 非目标
       
     </span>
   </a>
@@ -1543,7 +1543,7 @@
   <span class="md-ellipsis">
     
   
-    项目结构
+    Project Structure
   
 
     
@@ -1655,7 +1655,7 @@
   <span class="md-ellipsis">
     
   
-    开发流程
+    Development Workflow
   
 
     
@@ -1767,7 +1767,7 @@
   <span class="md-ellipsis">
     
   
-    整合活动
+    Integration Events
   
 
     
@@ -2086,10 +2086,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#8-non-goals" class="md-nav__link">
+  <a href="#8" class="md-nav__link">
     <span class="md-ellipsis">
       
-        8. Non-Goals
+        8. 非目标
       
     </span>
   </a>
@@ -2217,7 +2217,7 @@
 在支付适配器后面。 <code>Storage</code> 是基础设施，而不是商业服务
 默认。</p>
 <h2 id="4">4. 服务边界规则<a class="headerlink" href="#4" title="Permanent link">&para;</a></h2>
-<p>在模块可以独立部署之前，需要遵循以下规则：</p>
+<p>在模块可以独立部署之前，应用以下规则：</p>
 <ol>
 <li>一个服务拥有自己的数据库并且没有跨服务的 Doctrine 关联，
    外键、存储库访问或事务。
@@ -2341,26 +2341,26 @@ Symfony 命名空间。更改需要新的消息版本和兼容性
   在考虑远程执行之前确定性结果。</li>
 </ul>
 <h2 id="7">7. 第一阶段可交付成果<a class="headerlink" href="#7" title="Permanent link">&para;</a></h2>
-<p>Directory restructuring is considered complete only when all of the following
-exist, even before business code is moved:</p>
+<p>仅当满足以下所有条件时才认为目录重组完成
+即使在移动业务代码之前就存在：</p>
 <ul>
-<li>The target <code>apps/</code>, <code>packages/</code>, <code>contracts/</code>, <code>infrastructure/</code>, and <code>tools/</code> ownership
-  model is documented and reflected in repository tooling.</li>
-<li>Architecture checks reject forbidden cross-service imports and entity leaks.</li>
-<li>Existing Trade, Store, and Inventory events share the envelope in section 5.</li>
-<li>A service template defines independent Kernel, configuration, migration, queue,
-  worker, scheduler, Docker, test, static-analysis, and CI ownership.</li>
-<li>The legacy modular-monolith test suite remains as a characterization suite
-  until the relevant service extraction is complete.</li>
+<li>目标<code>apps/</code>、<code>packages/</code>、<code>contracts/</code>、<code>infrastructure/</code>和<code>tools/</code>所有权
+  模型被记录并反映在存储库工具中。</li>
+<li>架构检查拒绝禁止的跨服务导入和实体泄漏。</li>
+<li>现有的贸易、商店和库存事件共享第 5 节中的信封。</li>
+<li>一个服务模板定义了独立的Kernel、配置、迁移、队列、
+  工作人员、调度程序、Docker、测试、静态分析和 CI 所有权。</li>
+<li>传统的模块化整体测试套件仍然作为表征套件
+  直至相关服务提取完成。</li>
 </ul>
-<h2 id="8-non-goals">8. Non-Goals<a class="headerlink" href="#8-non-goals" title="Permanent link">&para;</a></h2>
+<h2 id="8">8. 非目标<a class="headerlink" href="#8" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Moving directories without enforcing a deployable boundary.</li>
-<li>Creating empty service applications for every current module.</li>
-<li>Extracting <code>Core</code> as a network service.</li>
-<li>Splitting historical migrations by filename; mixed legacy migrations remain for
-  rebuilding the monolith, while extracted services start from validated schema
-  baselines and new service-local migration histories.</li>
+<li>移动目录而不强制执行可部署边界。</li>
+<li>为每个当前模块创建空服务应用程序。</li>
+<li>将<code>Core</code>提取为网络服务。</li>
+<li>按文件名拆分历史迁移；混合遗留迁移仍然存在
+  重建整体，而提取的服务从经过验证的模式开始
+  基线和新的服务本地迁移历史。</li>
 </ul>
 
 

@@ -82,7 +82,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#inventory-extraction-readiness" class="md-skip">
+        <a href="#_1" class="md-skip">
           跳转至
         </a>
       
@@ -408,7 +408,7 @@
   <span class="md-ellipsis">
     
   
-    Microservice Transition
+    微服务转型
   
 
     
@@ -517,10 +517,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#completed" class="md-nav__link">
+  <a href="#_2" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Completed
+        已完成
       
     </span>
   </a>
@@ -528,10 +528,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#remaining-cutover" class="md-nav__link">
+  <a href="#_3" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Remaining Cutover
+        剩余割接
       
     </span>
   </a>
@@ -1449,7 +1449,7 @@
   <span class="md-ellipsis">
     
   
-    项目结构
+    Project Structure
   
 
     
@@ -1561,7 +1561,7 @@
   <span class="md-ellipsis">
     
   
-    开发流程
+    Development Workflow
   
 
     
@@ -1673,7 +1673,7 @@
   <span class="md-ellipsis">
     
   
-    整合活动
+    Integration Events
   
 
     
@@ -1887,10 +1887,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#completed" class="md-nav__link">
+  <a href="#_2" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Completed
+        已完成
       
     </span>
   </a>
@@ -1898,10 +1898,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#remaining-cutover" class="md-nav__link">
+  <a href="#_3" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Remaining Cutover
+        剩余割接
       
     </span>
   </a>
@@ -1928,43 +1928,43 @@
   
 
 
-<h1 id="inventory-extraction-readiness">Inventory Extraction Readiness<a class="headerlink" href="#inventory-extraction-readiness" title="Permanent link">&para;</a></h1>
+<h1 id="_1">库存提取准备情况<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h1>
 <blockquote>
-<p><strong>Inventory source has been fully extracted.</strong> This document records the
-completed transition-host work and the remaining runtime cutover steps.</p>
+<p><strong>库存来源已完全提取。</strong> 本文档记录了
+已完成过渡主机工作和剩余的运行时切换步骤。</p>
 </blockquote>
-<h2 id="completed">Completed<a class="headerlink" href="#completed" title="Permanent link">&para;</a></h2>
+<h2 id="_2">已完成<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Inventory source now lives exclusively in <code>apps/inventory/src</code> under
-  <code>App\Inventory\*</code>.</li>
-<li>The monolith temporarily loads it through the <code>crud-platform/inventory-app</code>
-  Composer path package; root routes, Doctrine mapping, services, PHPStan, Deptrac,
-  and Rector point to that package.</li>
-<li><code>apps/inventory</code> has its own Kernel, Composer lock, configuration, PHPUnit smoke
-  test, FrankenPHP image, and MySQL 8.4 service.</li>
-<li>The Inventory baseline migration owns nine <code>inventory_*</code> tables and contains only
-  local Material/Recipe/Reservation foreign keys. Store, Trade, and Specification
-  references remain scalar UUIDs.</li>
-<li>The baseline includes nullable correlation and causation Outbox columns. The
-  Store-owned cancellation tombstone is intentionally excluded.</li>
-<li><code>InventoryServiceInterface</code> is explicitly aliased to <code>InventoryService</code> in both
-  the Inventory app and the transitional monolith host.</li>
+<li>库存来源现在仅位于 <code>apps/inventory/src</code> 下
+  <code>App\Inventory\*</code>。</li>
+<li>整体通过 <code>crud-platform/inventory-app</code> 临时加载它
+  Composer路径包；根路线、学说映射、服务、PHPStan、Deptrac、
+  校长指着那个包裹。</li>
+<li><code>apps/inventory</code>有自己的内核，Composer锁，配置，PHPUnit烟雾
+  测试、FrankenPHP 图像和 MySQL 8.4 服务。</li>
+<li>Inventory 基线迁移拥有 9 个 <code>inventory_*</code> 表，并且仅包含
+  本地材料/食谱/预订外键。商店、贸易和规格
+  引用仍然是标量 UUID。</li>
+<li>基线包括可为空的相关性和因果关系发件箱列。的
+  商店拥有的取消墓碑被有意排除。</li>
+<li><code>InventoryServiceInterface</code> 在两者中都显式地别名为 <code>InventoryService</code>
+  库存应用程序和过渡整体主机。</li>
 </ul>
-<h2 id="remaining-cutover">Remaining Cutover<a class="headerlink" href="#remaining-cutover" title="Permanent link">&para;</a></h2>
+<h2 id="_3">剩余割接<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
 <ol>
-<li>Keep <code>INVENTORY_ENABLED=0</code> outside isolated development and testing until the
-   inventory safety checklist is completed.</li>
-<li>Introduce a shared broker and schema-versioned serializer. Separate Doctrine
-   Messenger databases cannot transport Store requests to Inventory or Inventory
-   outcomes to Store.</li>
-<li>Configure an Inventory-owned worker and scheduler for its receiver queue,
-   <code>app:inventory:outbox:publish</code>, and
-   <code>app:inventory:reservations:release-expired</code>.</li>
-<li>Configure Store-owned worker/scheduler and Gateway shadow routing for both apps.</li>
-<li>After cutover observation, remove the monolith Inventory path-package host,
-   Doctrine mapping, route import, and service scan.</li>
-<li>Drain historical native-PHP queue records before removing
-   <code>packages/legacy-messenger-compat</code>.</li>
+<li>将 <code>INVENTORY_ENABLED=0</code> 置于隔离开发和测试之外，直到
+   库存安全检查表已完成。</li>
+<li>引入共享代理和模式版本化序列化器。分离主义
+   Messenger 数据库无法将 Store 请求传输到 Inventory 或 Inventory
+   结果存储。
+3.为其接收队列配置 Inventory 拥有的工作线程和调度程序，
+   <code>app:inventory:outbox:publish</code>，以及
+   <code>app:inventory:reservations:release-expired</code>。</li>
+<li>为两个应用程序配置应用商店拥有的工作线程/调度程序和网关影子路由。</li>
+<li>切换观察后，删除整体 Inventory 路径包主机，
+   学说映射、路线导入和服务扫描。</li>
+<li>在删除之前清空历史本机 PHP 队列记录
+   <code>packages/legacy-messenger-compat</code>。</li>
 </ol>
 
 

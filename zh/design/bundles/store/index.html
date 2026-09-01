@@ -408,7 +408,7 @@
   <span class="md-ellipsis">
     
   
-    Microservice Transition
+    微服务转型
   
 
     
@@ -2287,7 +2287,7 @@
   <span class="md-ellipsis">
     
   
-    项目结构
+    Project Structure
   
 
     
@@ -2399,7 +2399,7 @@
   <span class="md-ellipsis">
     
   
-    开发流程
+    Development Workflow
   
 
     
@@ -2511,7 +2511,7 @@
   <span class="md-ellipsis">
     
   
-    整合活动
+    Integration Events
   
 
     
@@ -4510,7 +4510,7 @@ Store端权威记录，集成事件也有同样的记录
   付款凭据、原始提供商回调或不必要的 PII。</li>
 </ul>
 <h3 id="72-tradeordercreatedv1">7.2 <code>trade.order.created.v1</code><a class="headerlink" href="#72-tradeordercreatedv1" title="Permanent link">&para;</a></h3>
-<p><strong>发布者：</strong> 订单创建提交后进行交易发件箱中继。</p>
+<p><strong>发布者：</strong> 订单创建提交后进行交易发件箱转发。</p>
 <p><strong>消费者：</strong> 商店<code>TradeOrderCreatedConsumer</code>。</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="p">{</span>
 <a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">  </span><span class="nt">"orderUuid"</span><span class="p">:</span><span class="w"> </span><span class="s2">"trade-order-uuid"</span><span class="p">,</span>
@@ -4601,7 +4601,7 @@ Store端权威记录，集成事件也有同样的记录
 </tr>
 <tr>
 <td><code>SYSTEM_ERROR</code></td>
-<td>重试预算已用尽；需要操作员采取行动</td>
+<td>重试预算已用完；需要操作员采取行动</td>
 </tr>
 </tbody>
 </table>
@@ -4728,7 +4728,7 @@ Store端权威记录，集成事件也有同样的记录
 <li>事件主题应在传输支持的情况下保留每个聚合键的排序
   它，但正确性不能依赖于全局排序。</li>
 <li>终端后商店接受 贸易取消是无害的：贸易忽略
-  stale 接受事件，Store 使用 <code>trade.order.cancelled.v1</code> 来释放工作。</li>
+  陈旧的接受事件和 Store 消耗 <code>trade.order.cancelled.v1</code> 来释放工作。</li>
 <li>所有结果处理程序在应用转换之前都会验证预期的源状态。</li>
 </ul>
 <hr />
@@ -4822,7 +4822,7 @@ Store端权威记录，集成事件也有同样的记录
 </tbody>
 </table>
 <h3 id="94">9.4 店员操作<a class="headerlink" href="#94" title="Permanent link">&para;</a></h3>
-<p>商店员工不得使用通用 Trade <code>manage/orders</code> 路线，该路线是整个平台范围内的
+<p>商店工作人员不得使用通用 Trade <code>manage/orders</code> 路线，该路线是整个平台范围内的
 <code>ROLE_ADMIN</code> 端点。 Store 提供范围化的操作端点：</p>
 <table>
 <thead>

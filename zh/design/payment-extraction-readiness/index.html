@@ -408,7 +408,7 @@
   <span class="md-ellipsis">
     
   
-    Microservice Transition
+    微服务转型
   
 
     
@@ -1460,7 +1460,7 @@
   <span class="md-ellipsis">
     
   
-    项目结构
+    Project Structure
   
 
     
@@ -1572,7 +1572,7 @@
   <span class="md-ellipsis">
     
   
-    开发流程
+    Development Workflow
   
 
     
@@ -1684,7 +1684,7 @@
   <span class="md-ellipsis">
     
   
-    整合活动
+    Integration Events
   
 
     
@@ -1959,7 +1959,7 @@
 <ul>
 <li>付款来源现在仅位于 <code>apps/payment/src</code> 下
   <code>App\Payment\*</code>（30 个文件）。</li>
-<li><code>apps/payment</code>有自己的内核、Composer锁、composer.json (<code>crud-platform/payment-app</code>)、配置、PHPUnit冒烟测试、FrankenPHP图像和MySQL 8.4服务。</li>
+<li><code>apps/payment</code>有自己的内核，Composer锁，composer.json（<code>crud-platform/payment-app</code>），配置，PHPUnit冒烟测试，FrankenPHP图像和MySQL 8.4服务。</li>
 <li>单体通过<code>crud-platform/payment-app</code> Composer路径包临时加载Payment；根路由、Doctrine 映射、服务、PHPStan、Deptrac 和 Rector 都指向该包。</li>
 <li>付款基线迁移拥有 <code>payment_invoice</code>、<code>payment_outbox_message</code> 和 <code>payment_payer_directory</code> — 三个付款拥有的表，没有非付款表的外键。</li>
 <li>付款发票使用付款拥有的 <code>payer_uuid</code> 标量，而不是与身份 <code>users</code> 的 ORM 关联。 <code>payment_payer_directory</code> 在转换期间将旧数字身份 ID 映射到 UUID。</li>
