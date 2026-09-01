@@ -16,6 +16,11 @@ final class Version20260903000000 extends AbstractMigration
 
     public function up(Schema $schema): void
     {
+        $this->abortIf(
+            !$schema->hasTable('trade_order_item'),
+            'The trade_order_item table is missing. Restore the Trade schema or correct the migration metadata before applying the OrderItem UUID migration.',
+        );
+
         $table = $schema->getTable('trade_order_item');
 
         if (!$table->hasColumn('specification_uuid')) {
@@ -28,6 +33,11 @@ final class Version20260903000000 extends AbstractMigration
 
     public function down(Schema $schema): void
     {
+        $this->abortIf(
+            !$schema->hasTable('trade_order_item'),
+            'The trade_order_item table is missing. Restore the Trade schema or correct the migration metadata before rolling back the OrderItem UUID migration.',
+        );
+
         $table = $schema->getTable('trade_order_item');
 
         if ($table->hasIndex('idx_trade_order_item_spec_uuid')) {

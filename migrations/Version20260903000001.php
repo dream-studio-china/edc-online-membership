@@ -16,6 +16,11 @@ final class Version20260903000001 extends AbstractMigration
 
     public function up(Schema $schema): void
     {
+        $this->abortIf(
+            !$schema->hasTable('trade_order_item'),
+            'The trade_order_item table is missing. Restore the Trade schema or correct the migration metadata before applying the OrderItem UUID migration.',
+        );
+
         // Backfill UUID from existing FK. addSql runs BEFORE schema diff drop,
         // but specification_uuid already exists from Version20260903000000,
         // so the UPDATE is safe and executes before the FK/column are dropped.
