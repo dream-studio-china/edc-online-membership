@@ -675,3 +675,13 @@
 "SettlementRuleVersion": "決済ルールバージョン"
 
 "Authorization": "認可"
+"Store code": "ストアコード"
+"Start time": "開始時間"
+"End time": "終了時間"
+"Phase": "フェーズ"
+"Config": "コンフィグ"
+"Template": "テンプレート"
+"DSL": "DSL"
+"Conflict mode": "競合モード"
+"Ast cache": "ASTキャッシュ"
+"Priority": "優先度"

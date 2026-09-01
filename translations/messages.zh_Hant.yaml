@@ -675,3 +675,13 @@
 "SettlementRuleVersion": "結算規則版本"
 
 "Authorization": "授權"
+"Store code": "門店編碼"
+"Start time": "開始時間"
+"End time": "結束時間"
+"Phase": "階段"
+"Config": "配置"
+"Template": "模板"
+"DSL": "DSL"
+"Conflict mode": "衝突模式"
+"Ast cache": "AST 快取"
+"Priority": "優先級"

@@ -250,6 +250,16 @@
 "Contact": "Contact"
 "Address": "Address"
 "Settings": "Settings"
+"Store code": "Store code"
+"Start time": "Start time"
+"End time": "End time"
+"Phase": "Phase"
+"Config": "Config"
+"Template": "Template"
+"DSL": "DSL"
+"Conflict mode": "Conflict mode"
+"Ast cache": "Ast cache"
+"Priority": "Priority"
 # ====================================================================
 # Status / enum values
 # ====================================================================
