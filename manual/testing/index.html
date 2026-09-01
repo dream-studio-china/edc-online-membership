@@ -6,11 +6,11 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="Symfony 8.1 API backend skeleton with modular architecture">
+        <meta name="description" content="A production-oriented Symfony microservices platform evolved from modular monolith architecture, featuring DDD, service isolation, and event-driven communication.">
       
       
       
-        <link rel="canonical" href="https://immane.github.io/crud-skeleton/manual/testing/">
+        <link rel="canonical" href="https://immane.github.io/crud-platform/manual/testing/">
       
       
         <link rel="prev" href="../development-workflow/">
@@ -20,9 +20,9 @@
       
       
         
-          <link rel="alternate" href="/crud-skeleton/" hreflang="en">
+          <link rel="alternate" href="/crud-platform/" hreflang="en">
         
-          <link rel="alternate" href="/crud-skeleton/zh/" hreflang="zh">
+          <link rel="alternate" href="/crud-platform/zh/" hreflang="zh">
         
       
       
@@ -31,7 +31,7 @@
     
     
       
-        <title>Testing - CRUD Skeleton</title>
+        <title>Testing - CRUD Platform</title>
       
     
     
@@ -98,7 +98,7 @@
 
 <header class="md-header md-header--shadow" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../.." title="CRUD Skeleton" class="md-header__button md-logo" aria-label="CRUD Skeleton" data-md-component="logo">
+    <a href="../.." title="CRUD Platform" class="md-header__button md-logo" aria-label="CRUD Platform" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -112,7 +112,7 @@
       <div class="md-header__ellipsis">
         <div class="md-header__topic">
           <span class="md-ellipsis">
-            CRUD Skeleton
+            CRUD Platform
           </span>
         </div>
         <div class="md-header__topic" data-md-component="header-topic">
@@ -165,13 +165,13 @@
       <ul class="md-select__list">
         
           <li class="md-select__item">
-            <a href="/crud-skeleton/" hreflang="en" class="md-select__link">
+            <a href="/crud-platform/" hreflang="en" class="md-select__link">
               English
             </a>
           </li>
         
           <li class="md-select__item">
-            <a href="/crud-skeleton/zh/" hreflang="zh" class="md-select__link">
+            <a href="/crud-platform/zh/" hreflang="zh" class="md-select__link">
               中文
             </a>
           </li>
@@ -226,7 +226,7 @@
     
     
       <div class="md-header__source">
-        <a href="https://github.com/immane/crud-skeleton" title="Go to repository" class="md-source" data-md-component="source">
+        <a href="https://github.com/immane/crud-platform" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
@@ -262,17 +262,17 @@
 
 <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../.." title="CRUD Skeleton" class="md-nav__button md-logo" aria-label="CRUD Skeleton" data-md-component="logo">
+    <a href="../.." title="CRUD Platform" class="md-nav__button md-logo" aria-label="CRUD Platform" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
 
     </a>
-    CRUD Skeleton
+    CRUD Platform
   </label>
   
     <div class="md-nav__source">
-      <a href="https://github.com/immane/crud-skeleton" title="Go to repository" class="md-source" data-md-component="source">
+      <a href="https://github.com/immane/crud-platform" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
@@ -316,6 +316,922 @@
       
   
   
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Design Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Design Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/system-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    System Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/microservice-transition/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Microservice Transition
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/store-extraction-readiness/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Store Extraction Readiness
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/inventory-extraction-readiness/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Inventory Extraction Readiness
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/payment-extraction-readiness/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Payment Extraction Readiness
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/wallet-extraction-readiness.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Wallet Extraction Readiness
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/api-design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/data-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/module-design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Module Design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/controller-design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Controller Design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/api-documentation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Documentation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/system-contracts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    System Contracts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bundles
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Bundles
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/core/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core Framework
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/common/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Common (CMS)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/trade/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Trade (E-Commerce)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/store/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Store (Multi-Store Operations)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/inventory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Inventory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/payment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Payment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/wallet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Wallet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/identity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Identity (Auth)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/wechat/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Wechat (Login + Pay)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Research
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Research
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../research/easywechat-6.x-usage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    EasyWeChat 6.x Usage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../research/huifu-payment-api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Huifu Payment API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Issues
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Issues
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../issues/architecture-review-2026-06-26/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture Review 2026-06-26
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
     
   
   
@@ -334,10 +1250,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
         
           
-          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
             
   
   
@@ -355,8 +1271,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
-          <label class="md-nav__title" for="__nav_2">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_6">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -380,35 +1296,7 @@
   <span class="md-ellipsis">
     
   
-    Manual Index
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../getting-started/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Getting Started
+    Overview
   
 
     
@@ -437,6 +1325,34 @@
     
   
     Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
   
 
     
@@ -657,10 +1573,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#1-suite-layout" class="md-nav__link">
+  <a href="#1-test-structure" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. Suite Layout
+        1. Test Structure
       
     </span>
   </a>
@@ -668,33 +1584,34 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2-phpunitdistxml" class="md-nav__link">
+  <a href="#2-per-app-test-suites" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. phpunit.dist.xml
+        2. Per-App Test Suites
       
     </span>
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#3-shared-integration-helpers" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        3. Shared Integration Helpers
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="3. Shared Integration Helpers">
+    <nav class="md-nav" aria-label="2. Per-App Test Suites">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#31-databasebootstraptrait" class="md-nav__link">
+  <a href="#what-each-suite-tests" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3.1 DatabaseBootstrapTrait
+        What Each Suite Tests
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="What Each Suite Tests">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#common-appscommontests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common (apps/common/tests/)
       
     </span>
   </a>
@@ -702,10 +1619,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#32-integrationkerneltestcase" class="md-nav__link">
+  <a href="#identity-appsidentitytests" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3.2 IntegrationKernelTestCase
+        Identity (apps/identity/tests/)
       
     </span>
   </a>
@@ -713,10 +1630,87 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#33-integrationwebtestcase" class="md-nav__link">
+  <a href="#trade-appstradetests" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3.3 IntegrationWebTestCase
+        Trade (apps/trade/tests/)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#wallet-appswallettests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Wallet (apps/wallet/tests/)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#payment-appspaymenttests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Payment (apps/payment/tests/)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#store-appsstoretests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Store (apps/store/tests/)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#inventory-appsinventorytests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Inventory (apps/inventory/tests/)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-root-integration-tests-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Root Integration Tests (tests/)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Root Integration Tests (tests/)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#test-organization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Test Organization
       
     </span>
   </a>
@@ -729,33 +1723,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#4-test-categories" class="md-nav__link">
+  <a href="#4-running-tests-locally" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. Test Categories
+        4. Running Tests Locally
       
     </span>
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#5-running-tests" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        5. Running Tests
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="5. Running Tests">
+    <nav class="md-nav" aria-label="4. Running Tests Locally">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#51-full-default-suite-serial" class="md-nav__link">
+  <a href="#php-version" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5.1 Full default suite (serial)
+        PHP Version
       
     </span>
   </a>
@@ -763,10 +1746,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#52-parallel-recommended-for-speed" class="md-nav__link">
+  <a href="#root-tests" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5.2 Parallel (recommended for speed)
+        Root Tests
       
     </span>
   </a>
@@ -774,10 +1757,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#53-single-file" class="md-nav__link">
+  <a href="#per-app-tests" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5.3 Single file
+        Per-App Tests
       
     </span>
   </a>
@@ -785,10 +1768,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#54-low-value-group-excluded-by-default" class="md-nav__link">
+  <a href="#docker-tests" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5.4 Low-value group (excluded by default)
+        Docker Tests
       
     </span>
   </a>
@@ -796,21 +1779,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#55-coverage" class="md-nav__link">
+  <a href="#smoke-scripts" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5.5 Coverage
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#56-the-90-coverage-gate" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        5.6 The 90% coverage gate
+        Smoke Scripts
       
     </span>
   </a>
@@ -823,10 +1795,132 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#6-test-database-contract" class="md-nav__link">
+  <a href="#5-coverage" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6. Test Database Contract
+        5. Coverage
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Coverage">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#current-state" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Current State
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#coverage-commands" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Coverage Commands
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#html-coverage-report" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        HTML Coverage Report
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-writing-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Writing Tests
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. Writing Tests">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#unit-tests-service-layer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Unit Tests (Service Layer)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#integration-tests-controllerapi-level" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Integration Tests (Controller/API Level)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#root-integration-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Root Integration Tests
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixtures" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixtures
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mocking" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mocking
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-test-naming-conventions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Test Naming Conventions
       
     </span>
   </a>
@@ -834,21 +1928,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#7-static-analysis-and-the-coverage-gate-in-ci" class="md-nav__link">
+  <a href="#8-ci-test-jobs" class="md-nav__link">
     <span class="md-ellipsis">
       
-        7. Static Analysis and the Coverage Gate in CI
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#8-troubleshooting" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        8. Troubleshooting
+        8. CI Test Jobs
       
     </span>
   </a>
@@ -1073,1604 +2156,6 @@
   
   
   
-    
-    
-    
-    
-      
-        
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
-        
-          
-          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Design Contracts
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Design Contracts
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/system-architecture/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    System Architecture
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/api-design/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    API Design
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/data-model/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Data Model
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/module-design/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Module Design
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/controller-design/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Controller Design
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/api-documentation/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    API Documentation
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/system-contracts/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    System Contracts
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/naming-convention/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Naming Convention
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    
-    
-    
-    
-      
-        
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
-        
-          
-          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Bundles
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Bundles
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/bundles/core/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Core Framework
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/bundles/common/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Common (CMS)
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/bundles/trade/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Trade (E-Commerce)
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/bundles/store/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Store (Multi-Store Operations)
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/bundles/inventory/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Inventory
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/bundles/payment/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Payment
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/bundles/wallet/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Wallet
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/bundles/settlement/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Settlement (Allocation + Finality)
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/bundles/exchange/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Exchange (Pool-backed Economy)
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/bundles/identity/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Identity (Auth)
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/bundles/wechat/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Wechat (Login + Pay)
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    
-    
-    
-    
-      
-        
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
-        
-          
-          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Runbooks
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_5">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Runbooks
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../runbooks/common/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Common
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../runbooks/core/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Core
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../runbooks/exchange/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Exchange
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../runbooks/identity/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Identity
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../runbooks/inventory/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Inventory
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../runbooks/payment/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Payment
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../runbooks/promotion/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Promotion
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../runbooks/settlement/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Settlement
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../runbooks/storage/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Storage
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../runbooks/store/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Store
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../runbooks/trade/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Trade
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../runbooks/wallet/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Wallet
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../runbooks/wechat/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    WeChat
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    
-    
-    
-    
-      
-        
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
-        
-          
-          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Research
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_6">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Research
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../research/easywechat-6.x-usage/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    EasyWeChat 6.x Usage
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../research/huifu-payment-api/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Huifu Payment API
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    
-    
-    
-    
-      
-        
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
-        
-          
-          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Issues
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_7">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Issues
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../issues/architecture-review-2026-06-26/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Architecture Review 2026-06-26
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    
-    
-    
-    
-      
-        
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
-        
-          
-          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Testing
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_8">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Testing
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../testing/crud-skeleton-production/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Production Validation Overview
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../testing/crud-skeleton-production/TEST_STRATEGY/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Test Strategy
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../testing/crud-skeleton-production/SYSTEM_WALKTHROUGH/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    System Walkthrough And Test Seams
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../testing/crud-skeleton-production/TEST_MATRIX/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Test Matrix
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../testing/crud-skeleton-production/BUSINESS_INVARIANTS/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Business Invariants
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../testing/crud-skeleton-production/ARCHITECTURE_TEST_MAPPING/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Architecture Test Mapping
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../testing/crud-skeleton-production/FAILURE_MODES/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Failure Modes
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../testing/crud-skeleton-production/PRODUCTION_VALIDATION/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Release Validation
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../testing/crud-skeleton-production/AI_DEVELOPMENT_PROCESS/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    AI Development Process
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
     <li class="md-nav__item">
       <a href="../../ai/context/" class="md-nav__link">
         
@@ -2746,10 +2231,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#1-suite-layout" class="md-nav__link">
+  <a href="#1-test-structure" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. Suite Layout
+        1. Test Structure
       
     </span>
   </a>
@@ -2757,33 +2242,34 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2-phpunitdistxml" class="md-nav__link">
+  <a href="#2-per-app-test-suites" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. phpunit.dist.xml
+        2. Per-App Test Suites
       
     </span>
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#3-shared-integration-helpers" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        3. Shared Integration Helpers
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="3. Shared Integration Helpers">
+    <nav class="md-nav" aria-label="2. Per-App Test Suites">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#31-databasebootstraptrait" class="md-nav__link">
+  <a href="#what-each-suite-tests" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3.1 DatabaseBootstrapTrait
+        What Each Suite Tests
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="What Each Suite Tests">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#common-appscommontests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Common (apps/common/tests/)
       
     </span>
   </a>
@@ -2791,10 +2277,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#32-integrationkerneltestcase" class="md-nav__link">
+  <a href="#identity-appsidentitytests" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3.2 IntegrationKernelTestCase
+        Identity (apps/identity/tests/)
       
     </span>
   </a>
@@ -2802,10 +2288,87 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#33-integrationwebtestcase" class="md-nav__link">
+  <a href="#trade-appstradetests" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3.3 IntegrationWebTestCase
+        Trade (apps/trade/tests/)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#wallet-appswallettests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Wallet (apps/wallet/tests/)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#payment-appspaymenttests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Payment (apps/payment/tests/)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#store-appsstoretests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Store (apps/store/tests/)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#inventory-appsinventorytests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Inventory (apps/inventory/tests/)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-root-integration-tests-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Root Integration Tests (tests/)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Root Integration Tests (tests/)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#test-organization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Test Organization
       
     </span>
   </a>
@@ -2818,33 +2381,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#4-test-categories" class="md-nav__link">
+  <a href="#4-running-tests-locally" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. Test Categories
+        4. Running Tests Locally
       
     </span>
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#5-running-tests" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        5. Running Tests
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="5. Running Tests">
+    <nav class="md-nav" aria-label="4. Running Tests Locally">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#51-full-default-suite-serial" class="md-nav__link">
+  <a href="#php-version" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5.1 Full default suite (serial)
+        PHP Version
       
     </span>
   </a>
@@ -2852,10 +2404,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#52-parallel-recommended-for-speed" class="md-nav__link">
+  <a href="#root-tests" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5.2 Parallel (recommended for speed)
+        Root Tests
       
     </span>
   </a>
@@ -2863,10 +2415,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#53-single-file" class="md-nav__link">
+  <a href="#per-app-tests" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5.3 Single file
+        Per-App Tests
       
     </span>
   </a>
@@ -2874,10 +2426,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#54-low-value-group-excluded-by-default" class="md-nav__link">
+  <a href="#docker-tests" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5.4 Low-value group (excluded by default)
+        Docker Tests
       
     </span>
   </a>
@@ -2885,21 +2437,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#55-coverage" class="md-nav__link">
+  <a href="#smoke-scripts" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5.5 Coverage
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#56-the-90-coverage-gate" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        5.6 The 90% coverage gate
+        Smoke Scripts
       
     </span>
   </a>
@@ -2912,10 +2453,132 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#6-test-database-contract" class="md-nav__link">
+  <a href="#5-coverage" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6. Test Database Contract
+        5. Coverage
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Coverage">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#current-state" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Current State
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#coverage-commands" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Coverage Commands
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#html-coverage-report" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        HTML Coverage Report
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-writing-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Writing Tests
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. Writing Tests">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#unit-tests-service-layer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Unit Tests (Service Layer)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#integration-tests-controllerapi-level" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Integration Tests (Controller/API Level)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#root-integration-tests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Root Integration Tests
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fixtures" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixtures
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mocking" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mocking
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-test-naming-conventions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Test Naming Conventions
       
     </span>
   </a>
@@ -2923,21 +2586,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#7-static-analysis-and-the-coverage-gate-in-ci" class="md-nav__link">
+  <a href="#8-ci-test-jobs" class="md-nav__link">
     <span class="md-ellipsis">
       
-        7. Static Analysis and the Coverage Gate in CI
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#8-troubleshooting" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        8. Troubleshooting
+        8. CI Test Jobs
       
     </span>
   </a>
@@ -2965,327 +2617,385 @@
 
 
 <h1 id="testing">Testing<a class="headerlink" href="#testing" title="Permanent link">&para;</a></h1>
-<blockquote>
-<p>How the test suites are organised and run. The suite currently stands at
-<strong>2224 tests · 7951 assertions</strong> in the default run, plus <strong>477 low-value tests</strong>
-that are excluded by default.</p>
-</blockquote>
-<hr />
-<h2 id="1-suite-layout">1. Suite Layout<a class="headerlink" href="#1-suite-layout" title="Permanent link">&para;</a></h2>
-<p>Tests live under <code>tests/</code> and are namespaced <code>App\Tests\...</code>:</p>
+<h2 id="1-test-structure">1. Test Structure<a class="headerlink" href="#1-test-structure" title="Permanent link">&para;</a></h2>
+<p>The platform uses <strong>PHPUnit 12.5</strong> with two tiers of tests:</p>
+<table>
+<thead>
+<tr>
+<th>Tier</th>
+<th>Location</th>
+<th>Database</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Root Integration</strong></td>
+<td><code>tests/</code></td>
+<td>SQLite <code>var/test.db</code></td>
+<td>Cross-module integration tests for the monolith (963 tests)</td>
+</tr>
+<tr>
+<td><strong>Per-App Unit</strong></td>
+<td><code>apps/{name}/tests/</code></td>
+<td>SQLite <code>var/test.db</code></td>
+<td>Service-specific unit + integration tests</td>
+</tr>
+</tbody>
+</table>
+<p>All test suites use <strong>SQLite</strong> in-memory databases. No MySQL or Docker is required
+for local testing. The test environment is configured via <code>phpunit.xml</code> and
+<code>APP_ENV=test</code>.</p>
+<h2 id="2-per-app-test-suites">2. Per-App Test Suites<a class="headerlink" href="#2-per-app-test-suites" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>App</th>
+<th>Location</th>
+<th>Test Count</th>
+<th>Coverage Artifact</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Common</strong></td>
+<td><code>apps/common/tests/</code></td>
+<td>74</td>
+<td><code>build/coverage/common.xml</code></td>
+</tr>
+<tr>
+<td><strong>Identity</strong></td>
+<td><code>apps/identity/tests/</code></td>
+<td>209</td>
+<td><code>build/coverage/identity.xml</code></td>
+</tr>
+<tr>
+<td><strong>Trade</strong></td>
+<td><code>apps/trade/tests/</code></td>
+<td>412</td>
+<td><code>build/coverage/trade.xml</code></td>
+</tr>
+<tr>
+<td><strong>Wallet</strong></td>
+<td><code>apps/wallet/tests/</code></td>
+<td>60</td>
+<td><code>build/coverage/wallet.xml</code></td>
+</tr>
+<tr>
+<td><strong>Payment</strong></td>
+<td><code>apps/payment/tests/</code></td>
+<td>37</td>
+<td><code>build/coverage/payment.xml</code></td>
+</tr>
+<tr>
+<td><strong>Store</strong></td>
+<td><code>apps/store/tests/</code></td>
+<td>20</td>
+<td><code>build/coverage/store.xml</code></td>
+</tr>
+<tr>
+<td><strong>Inventory</strong></td>
+<td><code>apps/inventory/tests/</code></td>
+<td>11</td>
+<td><code>build/coverage/inventory.xml</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="what-each-suite-tests">What Each Suite Tests<a class="headerlink" href="#what-each-suite-tests" title="Permanent link">&para;</a></h3>
+<h4 id="common-appscommontests">Common (<code>apps/common/tests/</code>)<a class="headerlink" href="#common-appscommontests" title="Permanent link">&para;</a></h4>
+<ul>
+<li>Entity tests: Category, Comment, Content, Media, Page, Picture, Setting, Tag</li>
+<li>Media upload/delete controller integration</li>
+<li>Picture CRUD integration</li>
+<li>Storage service tests (LocalStorage, QiniuStorage)</li>
+<li>InitQiniuSettingsCommand</li>
+</ul>
+<h4 id="identity-appsidentitytests">Identity (<code>apps/identity/tests/</code>)<a class="headerlink" href="#identity-appsidentitytests" title="Permanent link">&para;</a></h4>
+<ul>
+<li>Auth controller (login, register, refresh, logout)</li>
+<li>OTP controller (request, verify)</li>
+<li>TokenManager (JWT creation, refresh rotation, reuse detection)</li>
+<li>UserService (register, password hashing, profile update)</li>
+<li>Wechat module (login flow, WechatUser, auth service)</li>
+<li>Controller integration tests</li>
+</ul>
+<h4 id="trade-appstradetests">Trade (<code>apps/trade/tests/</code>)<a class="headerlink" href="#trade-appstradetests" title="Permanent link">&para;</a></h4>
+<ul>
+<li>Entity tests: Product, Specification, Order, OrderItem</li>
+<li>OrderService (create, pay, refund, fulfill, calculate prices)</li>
+<li>Pricing calculators (Base, Quantity, TotalAggregator, Promotion)</li>
+<li>Promotion DSL: Lexer, Parser, Evaluator, 7 strategies</li>
+<li>PromotionCalculator integration</li>
+<li>Controller integration (products, orders, specifications)</li>
+<li>Message handler tests (Store acceptance/rejection consumers)</li>
+</ul>
+<h4 id="wallet-appswallettests">Wallet (<code>apps/wallet/tests/</code>)<a class="headerlink" href="#wallet-appswallettests" title="Permanent link">&para;</a></h4>
+<ul>
+<li>Entity tests: Wallet, WalletTransaction</li>
+<li>WalletService (create, balance, freeze)</li>
+<li>TransferService (transfer, deposit with idempotency)</li>
+<li>Payment integration (WalletPaymentDeduction, WalletGateway)</li>
+<li>API regression tests</li>
+<li>Exception tests (InsufficientFundsException, etc.)</li>
+</ul>
+<h4 id="payment-appspaymenttests">Payment (<code>apps/payment/tests/</code>)<a class="headerlink" href="#payment-appspaymenttests" title="Permanent link">&para;</a></h4>
+<ul>
+<li>Gateway tests (MockGateway, WalletGateway, WechatPayGateway)</li>
+<li>PaymentGatewayRegistry (autowire discovery)</li>
+<li>Adjustment provider tests (WalletBalanceAdjustmentProvider)</li>
+<li>Invoice entity and service tests</li>
+</ul>
+<h4 id="store-appsstoretests">Store (<code>apps/store/tests/</code>)<a class="headerlink" href="#store-appsstoretests" title="Permanent link">&para;</a></h4>
+<ul>
+<li>Store entity/service tests</li>
+<li>Trade→Store→Trade integration flow</li>
+<li>Store-Inventory integration (reservation flows)</li>
+<li>Message handler tests</li>
+</ul>
+<h4 id="inventory-appsinventorytests">Inventory (<code>apps/inventory/tests/</code>)<a class="headerlink" href="#inventory-appsinventorytests" title="Permanent link">&para;</a></h4>
+<ul>
+<li>Entity tests (Material, Stock, Recipe, Reservation)</li>
+<li>Service tests (reservation processing, recipe resolution)</li>
+<li>Integration tests (reservation request flow)</li>
+<li>Message handler tests</li>
+<li>API tests (materials, recipes, stocks)</li>
+</ul>
+<h2 id="3-root-integration-tests-tests">3. Root Integration Tests (<code>tests/</code>)<a class="headerlink" href="#3-root-integration-tests-tests" title="Permanent link">&para;</a></h2>
+<p>963 cross-module tests covering:</p>
+<ul>
+<li><strong>Core framework</strong>: BaseService, ExpressionDqlParser, FlatNormalizer, RestController</li>
+<li><strong>Controller tests</strong>: System introspection, entity metadata, router</li>
+<li><strong>LocaleListener</strong>: Language detection and translation</li>
+<li><strong>Cross-service integration</strong>: Full workflow tests spanning multiple modules</li>
+</ul>
+<h3 id="test-organization">Test Organization<a class="headerlink" href="#test-organization" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>tests/
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>|-- bootstrap.php                    # env bootstrapping, DB isolation, paratest wiring
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>|-- UnitTest/                        # pure unit tests, no kernel, no DB
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>|-- Integration/                     # kernel + DB + HTTP tests, shared helpers
-<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>|-- LowValue/                        # audit-flagged tests, excluded by default
-<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>|-- Smoke/                           # long fuzzy smoke suites (Settlement/Nightclub)
-<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>`-- Identity/Security/               # JWT test keypair used by .env.test
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>├── Core/
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>│   ├── Controller/System/
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>│   │   ├── EntityControllerTest.php
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>│   │   └── RouterControllerTest.php
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>│   ├── Parser/
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>│   │   └── ExpressionDqlParserTest.php
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>│   ├── Serializer/
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>│   │   └── FlatNormalizerTest.php
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>│   ├── Service/
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>│   │   └── BaseServiceTest.php
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>│   └── EventListener/
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>│       └── LocaleListenerTest.php
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>├── Integration/
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>│   ├── Common/
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>│   ├── Identity/
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>│   ├── Trade/
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>│   ├── Store/
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>│   ├── Payment/
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>│   ├── Wallet/
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>│   └── Inventory/
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>└── bootstrap.php
 </code></pre></div>
-<table>
-<thead>
-<tr>
-<th>Directory</th>
-<th>Namespace root</th>
-<th>Tests</th>
-<th>Approx. files</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>tests/UnitTest</code></td>
-<td><code>App\Tests\UnitTest</code></td>
-<td>Entities, utils, DSL engine, promotion strategies, mock-based services/controllers, workflow state machine</td>
-<td>189</td>
-</tr>
-<tr>
-<td><code>tests/Integration</code></td>
-<td><code>App\Tests\Integration</code></td>
-<td>Cross-module flows, API regressions, outbox/inbox idempotency, concurrency, health/metrics/rate-limit endpoints</td>
-<td>71</td>
-</tr>
-<tr>
-<td><code>tests/LowValue</code></td>
-<td><code>App\Tests\LowValue</code></td>
-<td>Audit-flagged duplicates and coverage-chasing tests</td>
-<td>43</td>
-</tr>
-</tbody>
-</table>
-<p><code>tests/Integration</code> also contains the shared helpers:</p>
+<h2 id="4-running-tests-locally">4. Running Tests Locally<a class="headerlink" href="#4-running-tests-locally" title="Permanent link">&para;</a></h2>
+<h3 id="php-version">PHP Version<a class="headerlink" href="#php-version" title="Permanent link">&para;</a></h3>
+<p>The recommended local PHP is <strong>Homebrew PHP 8.5</strong> at:
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>/opt/homebrew/opt/php@8.5/bin/php
+</code></pre></div></p>
+<p>Default system <code>php</code> may point to PHP 7.4 (macOS), which is insufficient.</p>
+<h3 id="root-tests">Root Tests<a class="headerlink" href="#root-tests" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># All root tests</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>/opt/homebrew/opt/php@8.5/bin/php<span class="w"> </span>vendor/bin/phpunit
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="c1"># Specific test file</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>/opt/homebrew/opt/php@8.5/bin/php<span class="w"> </span>vendor/bin/phpunit<span class="w"> </span>tests/Core/Controller/System/EntityControllerTest.php
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="c1"># With coverage</span>
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="nv">XDEBUG_MODE</span><span class="o">=</span>coverage<span class="w"> </span>/opt/homebrew/opt/php@8.5/bin/php<span class="w"> </span>vendor/bin/phpunit<span class="w"> </span>--coverage-html<span class="w"> </span>var/coverage
+</code></pre></div>
+<h3 id="per-app-tests">Per-App Tests<a class="headerlink" href="#per-app-tests" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># Example: Trade tests</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="nb">cd</span><span class="w"> </span>apps/trade
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>/opt/homebrew/opt/php@8.5/bin/php<span class="w"> </span>vendor/bin/phpunit
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="c1"># With coverage</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="nv">XDEBUG_MODE</span><span class="o">=</span>coverage<span class="w"> </span>/opt/homebrew/opt/php@8.5/bin/php<span class="w"> </span>vendor/bin/phpunit<span class="w"> </span>--coverage-clover<span class="w"> </span>../../build/coverage/trade.xml
+</code></pre></div>
+<h3 id="docker-tests">Docker Tests<a class="headerlink" href="#docker-tests" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c1"># Root tests in Docker</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>docker<span class="w"> </span>compose<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>app<span class="w"> </span>php<span class="w"> </span>vendor/bin/phpunit
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="c1"># Per-app tests in Docker</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>docker<span class="w"> </span>compose<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>trade-app<span class="w"> </span>php<span class="w"> </span>vendor/bin/phpunit
+</code></pre></div>
+<h3 id="smoke-scripts">Smoke Scripts<a class="headerlink" href="#smoke-scripts" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="c1"># API smoke test (requires running app)</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>bash<span class="w"> </span>scripts/tests/api-smoke.sh
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="c1"># Store orchestration smoke (requires running Store + Trade)</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>bash<span class="w"> </span>scripts/tests/store-smoke.sh
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>
+<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="c1"># Trade workflow demo (generates 100 orders into SQLite)</span>
+<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>/opt/homebrew/opt/php@8.5/bin/php<span class="w"> </span>scripts/tests/demo-trade-workflow.php
+</code></pre></div>
+<h2 id="5-coverage">5. Coverage<a class="headerlink" href="#5-coverage" title="Permanent link">&para;</a></h2>
+<h3 id="current-state">Current State<a class="headerlink" href="#current-state" title="Permanent link">&para;</a></h3>
 <ul>
-<li><code>DatabaseBootstrapTrait.php</code></li>
-<li><code>IntegrationKernelTestCase.php</code></li>
-<li><code>IntegrationWebTestCase.php</code></li>
+<li><strong>Aggregate coverage</strong>: <strong>91.36%</strong> (via <code>phpcov merge</code>)</li>
+<li><strong>Total tests</strong>: 1785</li>
+<li><strong>Total assertions</strong>: 6098</li>
 </ul>
-<p>Plus API regression suites (<code>*ApiRegressionTest.php</code>), integration suites
-(<code>*IntegrationTest.php</code>), and the OpenAPI integration test that builds the complete
-specification in-process.</p>
-<hr />
-<h2 id="2-phpunitdistxml">2. phpunit.dist.xml<a class="headerlink" href="#2-phpunitdistxml" title="Permanent link">&para;</a></h2>
-<p><code>phpunit.dist.xml</code> is the single PHPUnit configuration:</p>
-<table>
-<thead>
-<tr>
-<th>Setting</th>
-<th>Value</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Bootstrap</td>
-<td><code>tests/bootstrap.php</code></td>
-</tr>
-<tr>
-<td>Env (forced)</td>
-<td><code>APP_ENV=test</code>, <code>KERNEL_CLASS=App\Kernel</code></td>
-</tr>
-<tr>
-<td>Failures</td>
-<td><code>failOnDeprecation</code>, <code>failOnNotice</code>, <code>failOnWarning</code> all <code>true</code></td>
-</tr>
-<tr>
-<td>Memory</td>
-<td><code>memory_limit=512M</code> (OpenAPI integration builds the full spec in-process)</td>
-</tr>
-<tr>
-<td>Suites</td>
-<td><code>Project Test Suite</code> (UnitTest + Integration), <code>Low Value</code> (LowValue)</td>
-</tr>
-<tr>
-<td>Groups</td>
-<td><code>low-value</code> globally <strong>excluded</strong> from every run</td>
-</tr>
-<tr>
-<td>Coverage source</td>
-<td><code>src/</code>, with <code>ignoreSuppressionOfDeprecations</code>, deprecation triggers mapped to Doctrine/Symfony deprecation APIs</td>
-</tr>
-</tbody>
-</table>
-<p>The <code>Low Value</code> suite exists so the excluded files stay discoverable for
-<code>--group low-value</code>; the suite itself runs empty because the global exclusion applies
-to every run.</p>
-<hr />
-<h2 id="3-shared-integration-helpers">3. Shared Integration Helpers<a class="headerlink" href="#3-shared-integration-helpers" title="Permanent link">&para;</a></h2>
-<h3 id="31-databasebootstraptrait">3.1 <code>DatabaseBootstrapTrait</code><a class="headerlink" href="#31-databasebootstraptrait" title="Permanent link">&para;</a></h3>
-<p>Used by kernel/web integration tests that need a working database:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="x">use App\Tests\Integration\DatabaseBootstrapTrait;</span>
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="x">class MyKernelTest extends IntegrationKernelTestCase</span>
-<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="x">{</span>
-<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="x">    use DatabaseBootstrapTrait;</span>
-<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>
-<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="x">    public function testSomething(): void</span>
-<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="x">    {</span>
-<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="x">        $this-&gt;bootTestDatabase();</span>
-<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="x">        // ...kernel is booted, schema is ready...</span>
-<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="x">    }</span>
-<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="x">}</span>
+<h3 id="coverage-commands">Coverage Commands<a class="headerlink" href="#coverage-commands" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="c1"># Root coverage</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="nv">XDEBUG_MODE</span><span class="o">=</span>coverage<span class="w"> </span>/opt/homebrew/opt/php@8.5/bin/php<span class="w"> </span>vendor/bin/phpunit<span class="w"> </span>--coverage-clover<span class="w"> </span>build/coverage/root.xml
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="c1"># Per-app coverage (example: Trade)</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="nb">cd</span><span class="w"> </span>apps/trade
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="nv">XDEBUG_MODE</span><span class="o">=</span>coverage<span class="w"> </span>/opt/homebrew/opt/php@8.5/bin/php<span class="w"> </span>vendor/bin/phpunit<span class="w"> </span>--coverage-clover<span class="w"> </span>../../build/coverage/trade.xml
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>
+<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="c1"># Merge and check gate</span>
+<a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>phpcov<span class="w"> </span>merge<span class="w"> </span>build/coverage<span class="w"> </span>--clover<span class="w"> </span>build/coverage/merged.xml
+<a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span class="c1"># Gate is ≥ 90%</span>
 </code></pre></div>
-<p>What <code>bootTestDatabase()</code> does — once per process (guarded by a static flag):</p>
-<ol>
-<li>Boots the kernel.</li>
-<li><code>doctrine:schema:drop --force --full-database</code> (test env, quiet).</li>
-<li><code>doctrine:schema:create</code> (test env, quiet).</li>
-</ol>
-<p>The schema is built from the <strong>Doctrine schema tool</strong>, not from migrations — that is
-the contract for tests (see §6). It also pins <code>getKernelClass()</code> to <code>App\Kernel</code>.</p>
-<h3 id="32-integrationkerneltestcase">3.2 <code>IntegrationKernelTestCase</code><a class="headerlink" href="#32-integrationkerneltestcase" title="Permanent link">&para;</a></h3>
-<p>Abstract base extending <code>KernelTestCase</code>. Resolves the kernel class directly to
-<code>App\Kernel</code> (no autoloader assumptions) and exposes <code>createKernel()</code> using
-<code>APP_ENV</code>/<code>APP_DEBUG</code> from the environment with <code>test</code>/<code>true</code> defaults. Use it for
-kernel-booted tests that need container services or the database.</p>
-<h3 id="33-integrationwebtestcase">3.3 <code>IntegrationWebTestCase</code><a class="headerlink" href="#33-integrationwebtestcase" title="Permanent link">&para;</a></h3>
-<p>Abstract base extending <code>WebTestCase</code> for full HTTP request/response tests. Its key
-addition:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="x">$client = static::createAuthenticatedClient();</span>
+<h3 id="html-coverage-report">HTML Coverage Report<a class="headerlink" href="#html-coverage-report" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="nv">XDEBUG_MODE</span><span class="o">=</span>coverage<span class="w"> </span>/opt/homebrew/opt/php@8.5/bin/php<span class="w"> </span>vendor/bin/phpunit<span class="w"> </span>--coverage-html<span class="w"> </span>var/coverage
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="c1"># Open var/coverage/index.html in browser</span>
 </code></pre></div>
+<h2 id="6-writing-tests">6. Writing Tests<a class="headerlink" href="#6-writing-tests" title="Permanent link">&para;</a></h2>
+<h3 id="unit-tests-service-layer">Unit Tests (Service Layer)<a class="headerlink" href="#unit-tests-service-layer" title="Permanent link">&para;</a></h3>
+<p>Located in per-app <code>tests/</code> directories. Test business logic in isolation:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="cp">&lt;?php</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="k">declare</span><span class="p">(</span><span class="nx">strict_types</span><span class="o">=</span><span class="mi">1</span><span class="p">);</span>
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="k">namespace</span> <span class="nx">App\Wallet\Tests\Service</span><span class="p">;</span>
+<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>
+<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="k">use</span> <span class="nx">App\Wallet\Entity\Wallet</span><span class="p">;</span>
+<a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a><span class="k">use</span> <span class="nx">App\Wallet\Exception\InsufficientFundsException</span><span class="p">;</span>
+<a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a><span class="k">use</span> <span class="nx">App\Wallet\Service\WalletService</span><span class="p">;</span>
+<a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a><span class="k">use</span> <span class="nx">PHPUnit\Framework\TestCase</span><span class="p">;</span>
+<a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a>
+<a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a><span class="k">final</span> <span class="k">class</span> <span class="nc">WalletServiceTest</span> <span class="k">extends</span> <span class="nx">TestCase</span>
+<a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a><span class="p">{</span>
+<a id="__codelineno-8-14" name="__codelineno-8-14" href="#__codelineno-8-14"></a>    <span class="k">private</span> <span class="nx">WalletService</span> <span class="nv">$walletService</span><span class="p">;</span>
+<a id="__codelineno-8-15" name="__codelineno-8-15" href="#__codelineno-8-15"></a>    <span class="k">private</span> <span class="nx">EntityManagerInterface</span> <span class="nv">$entityManager</span><span class="p">;</span> <span class="c1">// mocked</span>
+<a id="__codelineno-8-16" name="__codelineno-8-16" href="#__codelineno-8-16"></a>
+<a id="__codelineno-8-17" name="__codelineno-8-17" href="#__codelineno-8-17"></a>    <span class="k">protected</span> <span class="k">function</span> <span class="nf">setUp</span><span class="p">()</span><span class="o">:</span> <span class="nx">void</span>
+<a id="__codelineno-8-18" name="__codelineno-8-18" href="#__codelineno-8-18"></a>    <span class="p">{</span>
+<a id="__codelineno-8-19" name="__codelineno-8-19" href="#__codelineno-8-19"></a>        <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">entityManager</span> <span class="o">=</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">createMock</span><span class="p">(</span><span class="nx">EntityManagerInterface</span><span class="o">::</span><span class="na">class</span><span class="p">);</span>
+<a id="__codelineno-8-20" name="__codelineno-8-20" href="#__codelineno-8-20"></a>        <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">walletService</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">WalletService</span><span class="p">(</span><span class="nv">$this</span><span class="o">-&gt;</span><span class="na">entityManager</span><span class="p">);</span>
+<a id="__codelineno-8-21" name="__codelineno-8-21" href="#__codelineno-8-21"></a>    <span class="p">}</span>
+<a id="__codelineno-8-22" name="__codelineno-8-22" href="#__codelineno-8-22"></a>
+<a id="__codelineno-8-23" name="__codelineno-8-23" href="#__codelineno-8-23"></a>    <span class="k">public</span> <span class="k">function</span> <span class="nf">testTransferFailsWhenInsufficientFunds</span><span class="p">()</span><span class="o">:</span> <span class="nx">void</span>
+<a id="__codelineno-8-24" name="__codelineno-8-24" href="#__codelineno-8-24"></a>    <span class="p">{</span>
+<a id="__codelineno-8-25" name="__codelineno-8-25" href="#__codelineno-8-25"></a>        <span class="nv">$source</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Wallet</span><span class="p">(</span><span class="cm">/* ... */</span><span class="p">,</span> <span class="nx">balance</span><span class="o">:</span> <span class="mi">1000</span><span class="p">);</span>  <span class="c1">// cents</span>
+<a id="__codelineno-8-26" name="__codelineno-8-26" href="#__codelineno-8-26"></a>        <span class="nv">$target</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Wallet</span><span class="p">(</span><span class="cm">/* ... */</span><span class="p">,</span> <span class="nx">balance</span><span class="o">:</span> <span class="mi">0</span><span class="p">);</span>
+<a id="__codelineno-8-27" name="__codelineno-8-27" href="#__codelineno-8-27"></a>
+<a id="__codelineno-8-28" name="__codelineno-8-28" href="#__codelineno-8-28"></a>        <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">expectException</span><span class="p">(</span><span class="nx">InsufficientFundsException</span><span class="o">::</span><span class="na">class</span><span class="p">);</span>
+<a id="__codelineno-8-29" name="__codelineno-8-29" href="#__codelineno-8-29"></a>        <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">walletService</span><span class="o">-&gt;</span><span class="na">transfer</span><span class="p">(</span><span class="nv">$source</span><span class="p">,</span> <span class="nv">$target</span><span class="p">,</span> <span class="mi">2000</span><span class="p">);</span> <span class="c1">// 2000 &gt; 1000</span>
+<a id="__codelineno-8-30" name="__codelineno-8-30" href="#__codelineno-8-30"></a>    <span class="p">}</span>
+<a id="__codelineno-8-31" name="__codelineno-8-31" href="#__codelineno-8-31"></a><span class="p">}</span>
+</code></pre></div>
+<h3 id="integration-tests-controllerapi-level">Integration Tests (Controller/API Level)<a class="headerlink" href="#integration-tests-controllerapi-level" title="Permanent link">&para;</a></h3>
+<p>Located in per-app <code>tests/</code> directories. Test the HTTP layer:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="cp">&lt;?php</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="k">declare</span><span class="p">(</span><span class="nx">strict_types</span><span class="o">=</span><span class="mi">1</span><span class="p">);</span>
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="k">namespace</span> <span class="nx">App\Trade\Tests\Integration</span><span class="p">;</span>
+<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>
+<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="k">use</span> <span class="nx">Symfony\Bundle\FrameworkBundle\Test\WebTestCase</span><span class="p">;</span>
+<a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a>
+<a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a><span class="k">final</span> <span class="k">class</span> <span class="nc">OrderControllerTest</span> <span class="k">extends</span> <span class="nx">WebTestCase</span>
+<a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a><span class="p">{</span>
+<a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a>    <span class="k">public</span> <span class="k">function</span> <span class="nf">testCreateOrderReturns201</span><span class="p">()</span><span class="o">:</span> <span class="nx">void</span>
+<a id="__codelineno-9-12" name="__codelineno-9-12" href="#__codelineno-9-12"></a>    <span class="p">{</span>
+<a id="__codelineno-9-13" name="__codelineno-9-13" href="#__codelineno-9-13"></a>        <span class="nv">$client</span> <span class="o">=</span> <span class="k">static</span><span class="o">::</span><span class="na">createClient</span><span class="p">();</span>
+<a id="__codelineno-9-14" name="__codelineno-9-14" href="#__codelineno-9-14"></a>        <span class="nv">$client</span><span class="o">-&gt;</span><span class="na">request</span><span class="p">(</span><span class="s1">'POST'</span><span class="p">,</span> <span class="s1">'/api/v1/app/orders'</span><span class="p">,</span> <span class="p">[</span>
+<a id="__codelineno-9-15" name="__codelineno-9-15" href="#__codelineno-9-15"></a>            <span class="s1">'json'</span> <span class="o">=&gt;</span> <span class="p">[</span>
+<a id="__codelineno-9-16" name="__codelineno-9-16" href="#__codelineno-9-16"></a>                <span class="s1">'items'</span> <span class="o">=&gt;</span> <span class="p">[</span>
+<a id="__codelineno-9-17" name="__codelineno-9-17" href="#__codelineno-9-17"></a>                    <span class="p">[</span><span class="s1">'specificationId'</span> <span class="o">=&gt;</span> <span class="s1">'uuid-here'</span><span class="p">,</span> <span class="s1">'quantity'</span> <span class="o">=&gt;</span> <span class="mi">2</span><span class="p">],</span>
+<a id="__codelineno-9-18" name="__codelineno-9-18" href="#__codelineno-9-18"></a>                <span class="p">],</span>
+<a id="__codelineno-9-19" name="__codelineno-9-19" href="#__codelineno-9-19"></a>            <span class="p">],</span>
+<a id="__codelineno-9-20" name="__codelineno-9-20" href="#__codelineno-9-20"></a>        <span class="p">]);</span>
+<a id="__codelineno-9-21" name="__codelineno-9-21" href="#__codelineno-9-21"></a>
+<a id="__codelineno-9-22" name="__codelineno-9-22" href="#__codelineno-9-22"></a>        <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">assertResponseStatusCodeSame</span><span class="p">(</span><span class="mi">201</span><span class="p">);</span>
+<a id="__codelineno-9-23" name="__codelineno-9-23" href="#__codelineno-9-23"></a>        <span class="nv">$data</span> <span class="o">=</span> <span class="nb">json_decode</span><span class="p">(</span><span class="nv">$client</span><span class="o">-&gt;</span><span class="na">getResponse</span><span class="p">()</span><span class="o">-&gt;</span><span class="na">getContent</span><span class="p">(),</span> <span class="k">true</span><span class="p">);</span>
+<a id="__codelineno-9-24" name="__codelineno-9-24" href="#__codelineno-9-24"></a>        <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">assertArrayHasKey</span><span class="p">(</span><span class="s1">'data'</span><span class="p">,</span> <span class="nv">$data</span><span class="p">);</span>
+<a id="__codelineno-9-25" name="__codelineno-9-25" href="#__codelineno-9-25"></a>        <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">assertArrayHasKey</span><span class="p">(</span><span class="s1">'id'</span><span class="p">,</span> <span class="nv">$data</span><span class="p">[</span><span class="s1">'data'</span><span class="p">]);</span>
+<a id="__codelineno-9-26" name="__codelineno-9-26" href="#__codelineno-9-26"></a>    <span class="p">}</span>
+<a id="__codelineno-9-27" name="__codelineno-9-27" href="#__codelineno-9-27"></a><span class="p">}</span>
+</code></pre></div>
+<h3 id="root-integration-tests">Root Integration Tests<a class="headerlink" href="#root-integration-tests" title="Permanent link">&para;</a></h3>
+<p>Located in <code>tests/Integration/</code>. These test cross-service workflows and core
+framework components:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="cp">&lt;?php</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="k">declare</span><span class="p">(</span><span class="nx">strict_types</span><span class="o">=</span><span class="mi">1</span><span class="p">);</span>
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>
+<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="k">namespace</span> <span class="nx">App\Tests\Integration\Trade</span><span class="p">;</span>
+<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>
+<a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a><span class="k">use</span> <span class="nx">Symfony\Bundle\FrameworkBundle\Test\WebTestCase</span><span class="p">;</span>
+<a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a>
+<a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a><span class="k">final</span> <span class="k">class</span> <span class="nc">OrderWorkflowTest</span> <span class="k">extends</span> <span class="nx">WebTestCase</span>
+<a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a><span class="p">{</span>
+<a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a>    <span class="k">public</span> <span class="k">function</span> <span class="nf">testFullOrderLifecycle</span><span class="p">()</span><span class="o">:</span> <span class="nx">void</span>
+<a id="__codelineno-10-12" name="__codelineno-10-12" href="#__codelineno-10-12"></a>    <span class="p">{</span>
+<a id="__codelineno-10-13" name="__codelineno-10-13" href="#__codelineno-10-13"></a>        <span class="nv">$client</span> <span class="o">=</span> <span class="k">static</span><span class="o">::</span><span class="na">createClient</span><span class="p">();</span>
+<a id="__codelineno-10-14" name="__codelineno-10-14" href="#__codelineno-10-14"></a>        <span class="c1">// 1. Login</span>
+<a id="__codelineno-10-15" name="__codelineno-10-15" href="#__codelineno-10-15"></a>        <span class="c1">// 2. Create order</span>
+<a id="__codelineno-10-16" name="__codelineno-10-16" href="#__codelineno-10-16"></a>        <span class="c1">// 3. Pay order</span>
+<a id="__codelineno-10-17" name="__codelineno-10-17" href="#__codelineno-10-17"></a>        <span class="c1">// 4. Fulfill order</span>
+<a id="__codelineno-10-18" name="__codelineno-10-18" href="#__codelineno-10-18"></a>        <span class="c1">// 5. Verify wallet balance changes</span>
+<a id="__codelineno-10-19" name="__codelineno-10-19" href="#__codelineno-10-19"></a>    <span class="p">}</span>
+<a id="__codelineno-10-20" name="__codelineno-10-20" href="#__codelineno-10-20"></a><span class="p">}</span>
+</code></pre></div>
+<h3 id="fixtures">Fixtures<a class="headerlink" href="#fixtures" title="Permanent link">&para;</a></h3>
+<p>Use in-line entity creation or data providers:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="x">public static function orderAmountProvider(): array</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="x">{</span>
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="x">    return [</span>
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="x">        'small order' =&gt; [1000, 1],    // $10.00, 1 item</span>
+<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="x">        'large order' =&gt; [100000, 5],  // $1000.00, 5 items</span>
+<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a><span class="x">    ];</span>
+<a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a><span class="x">}</span>
+<a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a>
+<a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a><span class="x">#[DataProvider('orderAmountProvider')]</span>
+<a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a><span class="x">public function testPaymentCalculation(int $amount, int $itemCount): void</span>
+<a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a><span class="x">{</span>
+<a id="__codelineno-11-12" name="__codelineno-11-12" href="#__codelineno-11-12"></a><span class="x">    // ...</span>
+<a id="__codelineno-11-13" name="__codelineno-11-13" href="#__codelineno-11-13"></a><span class="x">}</span>
+</code></pre></div>
+<h3 id="mocking">Mocking<a class="headerlink" href="#mocking" title="Permanent link">&para;</a></h3>
 <ul>
-<li>Boots the kernel, creates the persistent test user <code>testauth@example.com</code>
-  (username <code>testauth</code>, password <code>TestPass123!</code>, <code>ROLE_ADMIN</code>) if missing, and</li>
-<li>generates a <strong>real JWT</strong> through <code>App\Identity\Security\TokenManager</code>, then</li>
-<li>injects <code>HTTP_AUTHORIZATION: Bearer &lt;token&gt;</code> as a server parameter.</li>
+<li><code>createMock()</code> for service dependencies in unit tests</li>
+<li><code>EntityManagerInterface</code> is the most commonly mocked dependency</li>
+<li>Avoid mocking entities; create real instances for value-object semantics</li>
+<li>For controller tests, use <code>WebTestCase::createClient()</code> which boots the full
+  Symfony kernel with SQLite</li>
 </ul>
-<p>This satisfies firewall rules that require <code>IS_AUTHENTICATED_FULLY</code> without re-dealing
-with the login flow in every test.</p>
-<hr />
-<h2 id="4-test-categories">4. Test Categories<a class="headerlink" href="#4-test-categories" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>Category</th>
-<th>Base / pattern</th>
-<th>Purpose</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Unit</td>
-<td><code>PHPUnit\Framework\TestCase</code></td>
-<td>Isolated logic — no kernel, no DB</td>
-</tr>
-<tr>
-<td>Kernel</td>
-<td><code>IntegrationKernelTestCase</code> (+ <code>DatabaseBootstrapTrait</code>)</td>
-<td>Booted kernel, container services, DB access</td>
-</tr>
-<tr>
-<td>Web</td>
-<td><code>IntegrationWebTestCase</code></td>
-<td>Full HTTP request/response cycle, with or without JWT auth</td>
-</tr>
-<tr>
-<td>Regression</td>
-<td><code>*ApiRegressionTest</code></td>
-<td>API contract stability across modules</td>
-</tr>
-<tr>
-<td>Smoke</td>
-<td><code>tests/Smoke/</code> (e.g. <code>NightclubSettlementFuzzySmokeTest</code>)</td>
-<td>Long-running fuzz/property smoke suites</td>
-</tr>
-</tbody>
-</table>
-<p>Naming pattern: <code>{Class}Test.php</code>, <code>{Module}ApiRegressionTest.php</code>,
-<code>{Module}IntegrationTest.php</code>.</p>
-<hr />
-<h2 id="5-running-tests">5. Running Tests<a class="headerlink" href="#5-running-tests" title="Permanent link">&para;</a></h2>
-<h3 id="51-full-default-suite-serial">5.1 Full default suite (serial)<a class="headerlink" href="#51-full-default-suite-serial" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>./vendor/bin/phpunit
+<h2 id="7-test-naming-conventions">7. Test Naming Conventions<a class="headerlink" href="#7-test-naming-conventions" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Test class</strong>: <code>{TargetClass}Test.php</code> — e.g., <code>OrderServiceTest.php</code></li>
+<li><strong>Test method</strong>: <code>test{Scenario}()</code> or <code>test{Method}{Condition}()</code></li>
+<li><code>testTransferFailsWhenInsufficientFunds()</code></li>
+<li><code>testCreateOrderReturns201()</code></li>
+<li><code>testInvoiceLifecycle()</code></li>
+<li><strong>Data providers</strong>: <code>{context}Provider()</code> returning an array of named cases</li>
+<li><strong>Test directories</strong>: Mirror the source structure under <code>tests/</code></li>
+</ul>
+<h2 id="8-ci-test-jobs">8. CI Test Jobs<a class="headerlink" href="#8-ci-test-jobs" title="Permanent link">&para;</a></h2>
+<p>Each per-app test suite runs as a separate GitHub Actions job in parallel:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="nt">jobs</span><span class="p">:</span>
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="w">  </span><span class="nt">test-common</span><span class="p">:</span>
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="w">    </span><span class="nt">runs-on</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ubuntu-latest</span>
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="w">    </span><span class="nt">steps</span><span class="p">:</span>
+<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">actions/checkout@v4</span>
+<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">php-actions/composer@v6</span>
+<a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">cd apps/common &amp;&amp; composer test -- --coverage-clover ../../build/coverage/common.xml</span>
+<a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a>
+<a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a><span class="w">  </span><span class="nt">test-identity</span><span class="p">:</span>
+<a id="__codelineno-12-10" name="__codelineno-12-10" href="#__codelineno-12-10"></a><span class="w">    </span><span class="c1"># ... similar for each app</span>
 </code></pre></div>
-<p>Runs <code>tests/UnitTest</code> + <code>tests/Integration</code> (the <code>low-value</code> group is excluded
-automatically). Uses SQLite <code>var/test.db</code> by default.</p>
-<h3 id="52-parallel-recommended-for-speed">5.2 Parallel (recommended for speed)<a class="headerlink" href="#52-parallel-recommended-for-speed" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nv">PARATEST</span><span class="o">=</span><span class="m">1</span><span class="w"> </span>./vendor/bin/paratest<span class="w"> </span>--processes<span class="w"> </span><span class="m">8</span><span class="w"> </span>--runner<span class="w"> </span>WrapperRunner
-</code></pre></div>
-<p>Aprox. 2–3× faster. <code>tests/bootstrap.php</code> gives every worker its <strong>own</strong> SQLite file
-(<code>var/test_paratest_{pid}.db</code>), eagerly creates the schema, and routes the test access
-log to a per-process file (<code>var/log/access-{pid}.log</code>) so concurrent workers never
-race. CI uses the same mechanism but with 4 workers and one PostgreSQL database per
-token (<code>app_test_1..4</code>) via <code>PARATEST_DATABASE_URL_TEMPLATE</code>.</p>
-<h3 id="53-single-file">5.3 Single file<a class="headerlink" href="#53-single-file" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>./vendor/bin/phpunit<span class="w"> </span>tests/UnitTest/Core/Service/BaseServiceInfrastructureTraitTest.php
-</code></pre></div>
-<h3 id="54-low-value-group-excluded-by-default">5.4 Low-value group (excluded by default)<a class="headerlink" href="#54-low-value-group-excluded-by-default" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>./vendor/bin/phpunit<span class="w"> </span>--group<span class="w"> </span>low-value
-</code></pre></div>
-<p>These are kept for reference and historical audit coverage; they are not part of the
-CI gate.</p>
-<h3 id="55-coverage">5.5 Coverage<a class="headerlink" href="#55-coverage" title="Permanent link">&para;</a></h3>
-<p>Coverage is measured over <code>src/</code> only (<code>pcov.directory=src</code>). Use <strong>PCOV</strong> in CI; for
-local runs the same flag applies:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="nv">PCOV_ENABLED</span><span class="o">=</span><span class="m">1</span><span class="w"> </span>./vendor/bin/phpunit<span class="w"> </span>--coverage-text
-</code></pre></div>
-<p>or with Xdebug (slower, no PCOV extension required):</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="nv">XDEBUG_MODE</span><span class="o">=</span>coverage<span class="w"> </span>./vendor/bin/phpunit<span class="w"> </span>--coverage-text
-</code></pre></div>
-<p>HTML report:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="nv">XDEBUG_MODE</span><span class="o">=</span>coverage<span class="w"> </span>./vendor/bin/phpunit<span class="w"> </span>--coverage-html<span class="w"> </span>var/coverage
-<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="c1"># open var/coverage/index.html</span>
-</code></pre></div>
-<h3 id="56-the-90-coverage-gate">5.6 The 90% coverage gate<a class="headerlink" href="#56-the-90-coverage-gate" title="Permanent link">&para;</a></h3>
-<p>CI enforces a <strong>minimum 90% line coverage</strong> on the <code>src/</code> source set. The <code>tests</code> job
-runs paraTest with <code>--coverage-text</code>, extracts the <code>Lines:</code> figure, and fails the build
-if it is below <code>90.0</code> (compared with <code>bc</code>). Treat 90% as a floor, not a target — new
-code should travel with tests that cover its behaviours, especially error paths.</p>
-<hr />
-<h2 id="6-test-database-contract">6. Test Database Contract<a class="headerlink" href="#6-test-database-contract" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>Rule</th>
-<th>Detail</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Environment</td>
-<td><code>APP_ENV=test</code>, <code>KERNEL_CLASS=App\Kernel</code> (forced in <code>phpunit.dist.xml</code>)</td>
-</tr>
-<tr>
-<td>Default DB</td>
-<td>SQLite (<code>var/test.db</code>), no external service required</td>
-</tr>
-<tr>
-<td>CI DB</td>
-<td>PostgreSQL 16, one database per ParaTest token</td>
-</tr>
-<tr>
-<td>Schema</td>
-<td>Created from the <strong>Doctrine schema tool</strong> (<code>doctrine:schema:create</code>) — never from migrations in local tests</td>
-</tr>
-<tr>
-<td>Cleanliness</td>
-<td><code>DatabaseBootstrapTrait</code> drops and recreates the schema once per process; tests seed fixtures per test/class</td>
-</tr>
-<tr>
-<td>Isolation</td>
-<td>Each ParaTest worker runs against its own database; serial runs share <code>var/test.db</code> but are flushed per test</td>
-</tr>
-</tbody>
-</table>
-<p>Required test configuration comes from <code>.env.test</code>:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>APP_SECRET='$ecretf0rt3st'
-<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>DATABASE_URL='sqlite:///%kernel.project_dir%/var/test.db'
-<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>INVENTORY_ENABLED=0
-<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>JWT_PRIVATE_KEY_PATH=.../tests/Identity/Security/test_private.pem
-<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>JWT_PUBLIC_KEY_PATH=.../tests/Identity/Security/test_public.pem
-<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>JWT_PASSPHRASE=''
-<a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a>ACCESS_TOKEN_TTL=7200
-<a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a>REFRESH_TOKEN_TTL=31536000
-<a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a>REFRESH_TOKEN_SECRET=test_refresh_secret_key_32bytes
-<a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a>OTP_TTL=300
-<a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a>OTP_REDIS_DSN=redis://localhost:6379/0
-<a id="__codelineno-10-12" name="__codelineno-10-12" href="#__codelineno-10-12"></a>ALIYUN_*  # SMS values with ALIYUN_SMS_DRY_RUN=true
-<a id="__codelineno-10-13" name="__codelineno-10-13" href="#__codelineno-10-13"></a># WeChat:*  # left empty — WeChat is disabled for tests
-</code></pre></div>
-<hr />
-<h2 id="7-static-analysis-and-the-coverage-gate-in-ci">7. Static Analysis and the Coverage Gate in CI<a class="headerlink" href="#7-static-analysis-and-the-coverage-gate-in-ci" title="Permanent link">&para;</a></h2>
-<p>The <code>tests</code> job in <code>.github/workflows/ci.yml</code> is the authoritative gate:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>Set up PHP 8.4 (ext pdo_pgsql, coverage: pcov)
-<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>  → composer install
-<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>  → start postgres:16, create app_test_1..4
-<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>  → PCOV_ENABLED=1 PARATEST=1 php vendor/bin/paratest \
-<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>      --processes=4 --coverage-text=/tmp/coverage.txt --display-deprecations
-<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>  → extract "Lines: &lt;pct&gt;%" → fail if &lt; 90.0
-</code></pre></div>
-<p>PHPStan and Rector gates are separate jobs (<code>phpstan</code>, <code>rector</code>). See
-<a href="../development-workflow/">development-workflow.md</a> for the full pipeline.</p>
-<hr />
-<h2 id="8-troubleshooting">8. Troubleshooting<a class="headerlink" href="#8-troubleshooting" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>Symptom</th>
-<th>Cause / fix</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>Missing DATABASE_URL</code> / tables not found</td>
-<td>Run with the bootstrap loaded (phpunit does this automatically); don't set a real <code>DATABASE_URL</code> while using the sqlite default</td>
-</tr>
-<tr>
-<td>Parallel run races on schema</td>
-<td><code>tests/bootstrap.php</code> only isolates databases when <code>PARATEST=1</code>; do not mix a project-level <code>DATABASE_URL</code> with a parallel run unless a <code>PARATEST_DATABASE_URL_TEMPLATE</code> is supplied</td>
-</tr>
-<tr>
-<td>Coverage below threshold after adding code</td>
-<td>Add tests for the new source lines; check <code>var/coverage/index.html</code></td>
-</tr>
-<tr>
-<td>JWT errors in tests</td>
-<td>Ensure <code>JWT_PRIVATE_KEY_PATH</code>/<code>JWT_PUBLIC_KEY_PATH</code> point at <code>tests/Identity/Security/</code> keypair and <code>JWT_PASSPHRASE=''</code></td>
-</tr>
-<tr>
-<td>Memory exhaustion on OpenAPI tests</td>
-<td><code>memory_limit=512M</code> is preset in <code>phpunit.dist.xml</code>; raise only when actually extending the spec</td>
-</tr>
-</tbody>
-</table>
-<p>Refer to the test-quality contract in
-<a href="../../testing/crud-skeleton-production/"><code>docs/testing/crud-skeleton-production/README.md</code></a>
-and the audit that flagged the low-value tests in
-<a href="../../issues/test-audit-2026-08-09/"><code>docs/issues/test-audit-2026-08-09/</code></a>.</p>
+<p>All per-app coverage artifacts are merged via <code>phpcov</code>:
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>phpcov<span class="w"> </span>merge<span class="w"> </span>build/coverage<span class="w"> </span>--clover<span class="w"> </span>build/coverage/merged.xml
+</code></pre></div></p>
+<p>The merge gate is enforced at <strong>≥ 90% aggregate line coverage</strong>.</p>
 
 
 
@@ -3345,10 +3055,6 @@ and the audit that flagged the low-value tests in
     
     
       <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
-      
-        <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
-      
-        <script src="../../javascripts/mermaid-init.js"></script>
       
     
   </body>

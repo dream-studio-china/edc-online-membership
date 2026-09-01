@@ -6,23 +6,23 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="Symfony 8.1 API backend skeleton with modular architecture">
+        <meta name="description" content="A production-oriented Symfony microservices platform evolved from modular monolith architecture, featuring DDD, service isolation, and event-driven communication.">
       
       
       
-        <link rel="canonical" href="https://immane.github.io/crud-skeleton/zh/manual/architecture/">
+        <link rel="canonical" href="https://immane.github.io/crud-platform/zh/manual/architecture/">
       
       
-        <link rel="prev" href="../getting-started/">
+        <link rel="prev" href="../">
       
       
-        <link rel="next" href="../project-structure/">
+        <link rel="next" href="../getting-started/">
       
       
         
-          <link rel="alternate" href="/crud-skeleton/" hreflang="en">
+          <link rel="alternate" href="/crud-platform/" hreflang="en">
         
-          <link rel="alternate" href="/crud-skeleton/zh/" hreflang="zh">
+          <link rel="alternate" href="/crud-platform/zh/" hreflang="zh">
         
       
       
@@ -31,7 +31,7 @@
     
     
       
-        <title>Architecture - CRUD Skeleton</title>
+        <title>Architecture - CRUD Platform</title>
       
     
     
@@ -98,7 +98,7 @@
 
 <header class="md-header md-header--shadow" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="页眉">
-    <a href="../.." title="CRUD Skeleton" class="md-header__button md-logo" aria-label="CRUD Skeleton" data-md-component="logo">
+    <a href="../.." title="CRUD Platform" class="md-header__button md-logo" aria-label="CRUD Platform" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -112,7 +112,7 @@
       <div class="md-header__ellipsis">
         <div class="md-header__topic">
           <span class="md-ellipsis">
-            CRUD Skeleton
+            CRUD Platform
           </span>
         </div>
         <div class="md-header__topic" data-md-component="header-topic">
@@ -165,13 +165,13 @@
       <ul class="md-select__list">
         
           <li class="md-select__item">
-            <a href="/crud-skeleton/" hreflang="en" class="md-select__link">
+            <a href="/crud-platform/" hreflang="en" class="md-select__link">
               English
             </a>
           </li>
         
           <li class="md-select__item">
-            <a href="/crud-skeleton/zh/" hreflang="zh" class="md-select__link">
+            <a href="/crud-platform/zh/" hreflang="zh" class="md-select__link">
               中文
             </a>
           </li>
@@ -226,7 +226,7 @@
     
     
       <div class="md-header__source">
-        <a href="https://github.com/immane/crud-skeleton" title="前往仓库" class="md-source" data-md-component="source">
+        <a href="https://github.com/immane/crud-platform" title="前往仓库" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
@@ -262,17 +262,17 @@
 
 <nav class="md-nav md-nav--primary" aria-label="导航栏" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../.." title="CRUD Skeleton" class="md-nav__button md-logo" aria-label="CRUD Skeleton" data-md-component="logo">
+    <a href="../.." title="CRUD Platform" class="md-nav__button md-logo" aria-label="CRUD Platform" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
 
     </a>
-    CRUD Skeleton
+    CRUD Platform
   </label>
   
     <div class="md-nav__source">
-      <a href="https://github.com/immane/crud-skeleton" title="前往仓库" class="md-source" data-md-component="source">
+      <a href="https://github.com/immane/crud-platform" title="前往仓库" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
@@ -316,740 +316,6 @@
       
   
   
-    
-  
-  
-  
-    
-    
-    
-    
-      
-        
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
-      
-        
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
-        
-          
-          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    开发手册
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
-          <label class="md-nav__title" for="__nav_2">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    开发手册
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    手册索引
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../getting-started/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    入门
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-    
-  
-  
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Architecture
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Architecture
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="目录">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      目录
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#_2" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        模块化整体架构（不是单一存储库）
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="模块化整体架构（不是单一存储库）">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#src" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        src/下的模块
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#_3" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        层架构
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="层架构">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#_4" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        层依赖规则
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#_5" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        关键设计模式
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="关键设计模式">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#restcontroller-view-mixins" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        RestController + View Mixins
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#_6" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        基础服务 + 特征
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#_7" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        表达式动态查询引擎
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#_8" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        定价管道
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#_9" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        支付网关注册
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#_10" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        发件箱/收件箱模式
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#_11" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        其他值得注意的模式
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#_12" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        跨模块依赖规则
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="跨模块依赖规则">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#_13" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        这在实践中表现出来
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../project-structure/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    项目结构
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../core-framework/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Core 框架
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../core-usage/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    核心用法
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../query-system/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    查询系统
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../development-workflow/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    开发流程
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../testing/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Testing
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../api-contracts/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    API合约
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../development-contracts/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    开发合同
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../integration-events/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    整合活动
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../database-and-migrations/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    数据库和迁移
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../deployment/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Deployment
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../extracting-a-service/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    提取服务
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../i18n/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Internationalization
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-    
-      
-      
-  
-  
   
   
     
@@ -1068,10 +334,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
         
           
-          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
             
   
   
@@ -1089,8 +355,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1115,6 +381,146 @@
     
   
     系统架构
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/microservice-transition/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Microservice Transition
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/store-extraction-readiness/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Store Extraction Readiness
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/inventory-extraction-readiness/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Inventory Extraction Readiness
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/payment-extraction-readiness/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Payment Extraction Readiness
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/wallet-extraction-readiness.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Wallet Extraction Readiness
   
 
     
@@ -1296,34 +702,6 @@
 
               
             
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/naming-convention/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    命名约定
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
           </ul>
         </nav>
       
@@ -1353,10 +731,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
         
           
-          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
             
   
   
@@ -1374,8 +752,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1483,7 +861,7 @@
   <span class="md-ellipsis">
     
   
-    商店（多商店运营）
+    Store (Multi-Store Operations)
   
 
     
@@ -1588,62 +966,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/bundles/settlement/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    结算（分配+最终确定）
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/bundles/exchange/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    交易所（矿池支持经济）
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../../design/bundles/identity/" class="md-nav__link">
         
   
@@ -1679,7 +1001,7 @@
   <span class="md-ellipsis">
     
   
-    微信（登录+支付）
+    Wechat (Login + Pay)
   
 
     
@@ -1722,435 +1044,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
         
           
-          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Runbooks
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_5">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Runbooks
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../runbooks/common/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Common
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../runbooks/core/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Core
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../runbooks/exchange/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Exchange
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../runbooks/identity/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Identity
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../runbooks/inventory/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Inventory
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../runbooks/payment/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Payment (支付)
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../runbooks/promotion/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Promotion
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../runbooks/settlement/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Settlement
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../runbooks/storage/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Storage
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../runbooks/store/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Store
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../runbooks/trade/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Trade
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../runbooks/wallet/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Wallet (钱包)
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../runbooks/wechat/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    WeChat
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    
-    
-    
-    
-      
-        
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
-        
-          
-          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
             
   
   
@@ -2168,8 +1065,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_6">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -2264,10 +1161,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
         
           
-          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
             
   
   
@@ -2285,8 +1182,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_7">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -2310,7 +1207,7 @@
   <span class="md-ellipsis">
     
   
-    架构回顾 2026-06-26
+    Architecture Review 2026-06-26
   
 
     
@@ -2335,8 +1232,10 @@
       
   
   
+    
   
   
+  
     
     
     
@@ -2347,23 +1246,21 @@
       
     
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
         
           
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
-        
-          
-          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="">
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
             
   
   
   <span class="md-ellipsis">
     
   
-    Testing
+    Development Manual
   
 
     
@@ -2374,12 +1271,12 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_8">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_6">
             <span class="md-nav__icon md-icon"></span>
             
   
-    Testing
+    Development Manual
   
 
           </label>
@@ -2392,14 +1289,245 @@
   
   
     <li class="md-nav__item">
-      <a href="../../testing/crud-skeleton-production/" class="md-nav__link">
+      <a href="../" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    生产验证概述
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. 服务拓扑
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. 服务拓扑">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        共享基础设施
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. 层架构
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. 层架构">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        层依赖规则
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-monorepo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Monorepo 布局
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Monorepo 布局">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#apps-packages" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        apps/ 与 packages/ 的区别
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. 提取状态
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. 事件驱动的集成流程
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. 关键设计模式
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. 跨服务依赖规则
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
   
 
     
@@ -2420,14 +1548,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../testing/crud-skeleton-production/TEST_STRATEGY/" class="md-nav__link">
+      <a href="../project-structure/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    测试策略
+    项目结构
   
 
     
@@ -2448,14 +1576,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../testing/crud-skeleton-production/SYSTEM_WALKTHROUGH/" class="md-nav__link">
+      <a href="../core-framework/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    系统演练和测试接缝
+    Core 框架
   
 
     
@@ -2476,14 +1604,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../testing/crud-skeleton-production/TEST_MATRIX/" class="md-nav__link">
+      <a href="../core-usage/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    测试矩阵
+    Core Usage
   
 
     
@@ -2504,14 +1632,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../testing/crud-skeleton-production/BUSINESS_INVARIANTS/" class="md-nav__link">
+      <a href="../query-system/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    业务不变量
+    Query System
   
 
     
@@ -2532,14 +1660,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../testing/crud-skeleton-production/ARCHITECTURE_TEST_MAPPING/" class="md-nav__link">
+      <a href="../development-workflow/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    架构测试映射
+    开发流程
   
 
     
@@ -2560,14 +1688,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../testing/crud-skeleton-production/FAILURE_MODES/" class="md-nav__link">
+      <a href="../testing/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    失效模式
+    Testing
   
 
     
@@ -2588,14 +1716,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../testing/crud-skeleton-production/PRODUCTION_VALIDATION/" class="md-nav__link">
+      <a href="../api-contracts/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    发布验证
+    API Contracts
   
 
     
@@ -2616,14 +1744,154 @@
   
   
     <li class="md-nav__item">
-      <a href="../../testing/crud-skeleton-production/AI_DEVELOPMENT_PROCESS/" class="md-nav__link">
+      <a href="../development-contracts/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    人工智能开发流程
+    Development Contracts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../integration-events/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    整合活动
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../database-and-migrations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    数据库和迁移
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../deployment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../extracting-a-service/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Extracting a Service
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../i18n/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Internationalization
   
 
     
@@ -2725,22 +1993,22 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#_2" class="md-nav__link">
+  <a href="#1" class="md-nav__link">
     <span class="md-ellipsis">
       
-        模块化整体架构（不是单一存储库）
+        1. 服务拓扑
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="模块化整体架构（不是单一存储库）">
+    <nav class="md-nav" aria-label="1. 服务拓扑">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#src" class="md-nav__link">
+  <a href="#_2" class="md-nav__link">
     <span class="md-ellipsis">
       
-        src/下的模块
+        共享基础设施
       
     </span>
   </a>
@@ -2753,19 +2021,19 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_3" class="md-nav__link">
+  <a href="#2" class="md-nav__link">
     <span class="md-ellipsis">
       
-        层架构
+        2. 层架构
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="层架构">
+    <nav class="md-nav" aria-label="2. 层架构">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#_4" class="md-nav__link">
+  <a href="#_3" class="md-nav__link">
     <span class="md-ellipsis">
       
         层依赖规则
@@ -2781,88 +2049,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_5" class="md-nav__link">
+  <a href="#3-monorepo" class="md-nav__link">
     <span class="md-ellipsis">
       
-        关键设计模式
+        3. Monorepo 布局
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="关键设计模式">
+    <nav class="md-nav" aria-label="3. Monorepo 布局">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#restcontroller-view-mixins" class="md-nav__link">
+  <a href="#apps-packages" class="md-nav__link">
     <span class="md-ellipsis">
       
-        RestController + View Mixins
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#_6" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        基础服务 + 特征
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#_7" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        表达式动态查询引擎
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#_8" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        定价管道
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#_9" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        支付网关注册
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#_10" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        发件箱/收件箱模式
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#_11" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        其他值得注意的模式
+        apps/ 与 packages/ 的区别
       
     </span>
   </a>
@@ -2875,30 +2077,46 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#_12" class="md-nav__link">
+  <a href="#4" class="md-nav__link">
     <span class="md-ellipsis">
       
-        跨模块依赖规则
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="跨模块依赖规则">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#_13" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        这在实践中表现出来
+        4. 提取状态
       
     </span>
   </a>
   
 </li>
-        
-      </ul>
-    </nav>
+      
+        <li class="md-nav__item">
+  <a href="#5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. 事件驱动的集成流程
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. 关键设计模式
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. 跨服务依赖规则
+      
+    </span>
+  </a>
   
 </li>
       
@@ -2923,114 +2141,144 @@
 
 
 <h1 id="_1">架构<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h1>
-<p>本页是关于如何构建代码库的实用总结。权威的、
-规范版本为<a href="../../design/system-architecture/">docs/design/system-architecture.md</a>；
-该文档就是合同——该页面是面向开发人员的概述。</p>
-<h2 id="_2">模块化整体架构（不是单一存储库）<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
-<p>该应用程序是<strong>作为一个单元部署的一个 Symfony 应用程序</strong>，其中包含
-几个独立的业务模块。它故意“不是”多服务
-monorepo：模块共享一个内核、一个 Doctrine EntityManager、一个缓存和
-一辆 Messenger 总线，但它们的行为必须像独立服务一样。</p>
-<ul>
-<li>模块仅通过 <strong>服务接口</strong> 进行通信（请参阅
-  <a href="#cross-module-dependency-rules">Cross-Module Dependency Rules</a>）。</li>
-<li>每个模块都拥有其实体、存储库、控制器和服务。</li>
-<li><code>Core</code> 是基础性的，绝不能依赖于业务模块。</li>
-</ul>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>┌────────────────────────────────────────────────────────────┐
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>│                     Single application                     │
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>│   Kernel · config/ · public/ ·  migrations/ ·  tests/      │
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>│  ┌────────┐ ┌─────────┐ ┌────────┐ ┌────────┐ ┌─────────┐  │
-<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>│  │  Core  │ │ Common  │ │Identity│ │ Trade  │ │  ...    │  │
-<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>│  ├────────┤ ├─────────┤ ├────────┤ ├────────┤ ├─────────┤  │
-<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>│  │ Store  │ │Inventory│ │Payment │ │ Wallet │ │Promotion│  │
-<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>│  ├────────┤ ├─────────┤ ├────────┤ ├────────┤ ├─────────┤  │
-<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>│  │Settle  │ │Storage  │ │Wechat  │ │  ...   │ │         │  │
-<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>│  └────────┘ └─────────┘ └────────┘ └────────┘ └─────────┘  │
-<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>└────────────────────────────────────────────────────────────┘
-</code></pre></div>
-<h3 id="src"><code>src/</code>下的模块<a class="headerlink" href="#src" title="Permanent link">&para;</a></h3>
+<h2 id="1">1. 服务拓扑<a class="headerlink" href="#1" title="Permanent link">&para;</a></h2>
+<p>CRUD 平台是一个 <strong>多应用程序单一存储库</strong>，包含 <strong>8 个独立的应用程序
+可启动的 Symfony 应用程序</strong>以及在运行期间托管它们的根整体应用程序
+过渡。每个服务都拥有自己的内核、数据库、迁移、队列、工作线程、
+调度程序、容器映像和测试。</p>
 <table>
 <thead>
 <tr>
-<th>模块</th>
-<th>责任</th>
+<th>＃</th>
+<th>服务</th>
+<th>命名空间</th>
+<th>数据库</th>
+<th>状态</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>Core</code></td>
-<td>框架抽象：<code>RestController</code>、<code>BaseService</code>、视图混合、表达式查询引擎、序列化</td>
+<td>1</td>
+<td><strong>巨石（根）</strong></td>
+<td><code>App\*</code>（桥梁）</td>
+<td><code>app</code></td>
+<td>过渡主机；网关割接后将被删除</td>
 </tr>
 <tr>
-<td><code>Common</code></td>
-<td>CMS 原语：类别、标签、内容、评论、页面、媒体、图片、设置</td>
+<td>2</td>
+<td><strong>常见</strong></td>
+<td><code>App\Common\Main\*</code>、<code>App\Common\Storage\*</code></td>
+<td><code>common</code></td>
+<td>完全提取</td>
 </tr>
 <tr>
-<td><code>Identity</code></td>
-<td>身份验证和帐户：用户、个人资料、RefreshToken、JWT/OTP 流程</td>
+<td>3</td>
+<td><strong>身份</strong></td>
+<td><code>App\Identity\Main\*</code>、<code>App\Identity\Wechat\*</code></td>
+<td><code>identity</code></td>
+<td>完全提取</td>
 </tr>
 <tr>
-<td><code>Trade</code></td>
-<td>电子商务核心：产品、规格、订单、订单项目、定价管道</td>
+<td>4</td>
+<td><strong>贸易</strong></td>
+<td><code>App\Trade\Trade\*</code>、<code>App\Trade\Promotion\*</code></td>
+<td><code>trade</code></td>
+<td>完全提取</td>
 </tr>
 <tr>
-<td><code>Store</code></td>
-<td>多店铺运营：店铺、会员、StoreOrder分发</td>
+<td>5</td>
+<td><strong>商店</strong></td>
+<td><code>App\Store\*</code></td>
+<td><code>store</code></td>
+<td>完全提取 - 首先提取的服务</td>
 </tr>
 <tr>
-<td><code>Inventory</code></td>
-<td>库存、材料、食谱、预订、分类账</td>
+<td>6</td>
+<td><strong>库存</strong></td>
+<td><code>App\Inventory\*</code></td>
+<td><code>inventory</code></td>
+<td>提取；生产由安全检查表控制</td>
 </tr>
 <tr>
-<td><code>Payment</code></td>
-<td>发票生命周期、网关抽象、webhooks、事件</td>
+<td>7</td>
+<td><strong>付款</strong></td>
+<td><code>App\Payment\*</code></td>
+<td><code>payment</code></td>
+<td>完全提取</td>
 </tr>
 <tr>
-<td><code>Wallet</code></td>
-<td>余额、原子转账、存款/取款、凭证、扣除</td>
-</tr>
-<tr>
-<td><code>Promotion</code></td>
-<td>带有小型嵌入式DSL的促销规则、策略、计算</td>
-</tr>
-<tr>
-<td><code>Settlement</code></td>
-<td>规则驱动的资金分配和结算最终性</td>
-</tr>
-<tr>
-<td><code>Storage</code></td>
-<td>媒体存储抽象（本地/七牛）</td>
-</tr>
-<tr>
-<td><code>Wechat</code></td>
-<td>微信登录（小程序/公众号）和微信支付V3网关</td>
+<td>8</td>
+<td><strong>钱包</strong></td>
+<td><code>App\Wallet\*</code></td>
+<td><code>wallet</code></td>
+<td>完全提取</td>
 </tr>
 </tbody>
 </table>
-<h2 id="_3">层架构<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
-<p>请求流经严格的单向链：</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>HTTP (Controllers / View mixins)  →  Service  →  Repository  →  Entity  →  Infrastructure
+<h3 id="_2">共享基础设施<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>组件</th>
+<th>地点</th>
+<th>拥有者</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>platform-kernel</code></td>
+<td><code>packages/platform-kernel/</code></td>
+<td>框架（核心）——绝不是商业服务</td>
+</tr>
+<tr>
+<td><code>integration-contracts</code></td>
+<td><code>packages/integration-contracts/</code></td>
+<td>共享 — 传输中立的 v1 运营商类别</td>
+</tr>
+<tr>
+<td><code>legacy-messenger-compat</code></td>
+<td><code>packages/legacy-messenger-compat/</code></td>
+<td>共享 — 历史上的原生 PHP Messenger 包装器 FQCN</td>
+</tr>
+<tr>
+<td>测试</td>
+<td>根 <code>tests/</code></td>
+<td>根整体——跨模块集成测试</td>
+</tr>
+</tbody>
+</table>
+<h2 id="2">2. 层架构<a class="headerlink" href="#2" title="Permanent link">&para;</a></h2>
+<p>每个应用程序都遵循严格的分层架构：</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>Request/Response
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>      ↓
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>+-----v------------------------------------+
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>|  HTTP Layer  (Controllers / View Mixins) |  ← Only layer touching Request/Response
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>+-----+------------------------------------+
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>      ↓  (Service Interface only)
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>+-----v------------------------------------+
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>|  Service Layer                           |  ← All business logic, transactions, validation
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>+-----+------------------------------------+
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>      ↓  (Repository only)
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>+-----v------------------------------------+
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>|  Repository Layer                        |  ← Data access queries (Doctrine repositories)
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>+-----+------------------------------------+
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>      ↓  (Entities only)
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>+-----v------------------------------------+
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>|  Entity Layer (Domain Model)             |  ← Persistence and aggregate-local invariants
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>+-----+------------------------------------+
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>      ↓  (Doctrine ORM)
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>+-----v------------------------------------+
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>|  Infrastructure (ORM, Cache, Serializer) |  ← Framework-provided
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>+------------------------------------------+
 </code></pre></div>
-<ul>
-<li><strong>HTTP 层</strong> — 仅控制器。唯一涉及请求/响应的层。
-  瘦：它读取输入，调用一项服务，并通过视图混合进行渲染。
-  单独的 <code>App</code>（只读用户）、<code>Manage</code>（管理员 CRUD）和 <code>Webhook</code> 命名空间。</li>
-<li><strong>服务层</strong> — 所有业务逻辑、事务和验证都位于此处。
-  服务暴露接口；其他模块和控制器取决于接口，
-  从来没有具体的类。</li>
-<li><strong>存储库层</strong> — 仅 Doctrine 数据访问查询。</li>
-<li><strong>实体层</strong> — 纯领域对象（Doctrine 实体），没有业务逻辑。</li>
-<li><strong>基础设施</strong> — 框架提供的 ORM、缓存、序列化器、信使。</li>
-</ul>
-<h3 id="_4">层依赖规则<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h3>
+<h3 id="_3">层依赖规则<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
 <tr>
 <th>规则</th>
 <th>来自</th>
 <th>至</th>
-<th>允许吗？</th>
+<th>允许</th>
 </tr>
 </thead>
 <tbody>
@@ -3038,13 +2286,13 @@ monorepo：模块共享一个内核、一个 Doctrine EntityManager、一个缓�
 <td>R1</td>
 <td>控制器</td>
 <td>服务</td>
-<td>是</td>
+<td><strong>是</strong></td>
 </tr>
 <tr>
 <td>R2</td>
 <td>控制器</td>
 <td>实体</td>
-<td>是（仅输入提示/返回）</td>
+<td><strong>是</strong>（仅键入提示/返回）</td>
 </tr>
 <tr>
 <td>R3</td>
@@ -3062,25 +2310,25 @@ monorepo：模块共享一个内核、一个 Doctrine EntityManager、一个缓�
 <td>R5</td>
 <td>服务</td>
 <td>存储库</td>
-<td>是</td>
+<td><strong>是</strong></td>
 </tr>
 <tr>
 <td>R6</td>
 <td>服务</td>
 <td>实体</td>
-<td>是</td>
+<td><strong>是</strong></td>
 </tr>
 <tr>
 <td>R7</td>
 <td>服务</td>
 <td>实体管理器</td>
-<td>是</td>
+<td><strong>是</strong></td>
 </tr>
 <tr>
 <td>R8</td>
 <td>服务</td>
 <td>其他服务</td>
-<td>是（通过 DI，接口优先）</td>
+<td><strong>是</strong>（通过 DI）</td>
 </tr>
 <tr>
 <td>R9</td>
@@ -3102,201 +2350,243 @@ monorepo：模块共享一个内核、一个 Doctrine EntityManager、一个缓�
 </tr>
 </tbody>
 </table>
-<h2 id="_5">关键设计模式<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h2>
-<h3 id="restcontroller-view-mixins">RestController + View Mixins<a class="headerlink" href="#restcontroller-view-mixins" title="Permanent link">&para;</a></h3>
-<p>每个业务控制器都扩展<code>App\Core\Controller\RestController</code>
-(<code>src/Core/Controller/RestController.php</code>)，提供<code>success()</code>/<code>warning()</code>
-JSON 信封、分页和 <code>@display</code>/<code>@expands</code> 响应整形。</p>
-<p>CRUD 端点由 <code>src/Core/View/</code> 下的可重用 mixin 组装而成：</p>
+<p>控制器接收<code>Request</code>/<code>Response</code>对象；服务永远不会。服务自有
+通过 <code>BaseServiceInfrastructureTrait::wrapInTransaction()</code> 的事务边界。</p>
+<h2 id="3-monorepo">3. Monorepo 布局<a class="headerlink" href="#3-monorepo" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>crud-platform/
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>├── apps/                      # Independently deployable business services
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>│   ├── common/                #   CMS + Storage
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>│   ├── identity/              #   Auth + WeChat login
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>│   ├── trade/                 #   Commerce + Promotion
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>│   ├── store/                 #   Store operations
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>│   ├── inventory/             #   Stock &amp; reservation
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>│   ├── payment/               #   Invoices &amp; gateways
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>│   └── wallet/                #   Balances &amp; transactions
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>├── packages/                  # Reusable PHP libraries
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>│   ├── platform-kernel/       #   Framework core (App\Core)
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>│   ├── integration-contracts/ #   Transport-neutral event carriers
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>│   └── legacy-messenger-compat/ #  Historical wrapper FQCNs
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>├── src/                       # Root monolith (bridges only during transition)
+<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>│   ├── Kernel.php
+<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>│   └── Bridge/                #   Temporary adapters (e.g., PaymentWallet)
+<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>├── config/                    # Root monolith configuration
+<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>│   ├── services.yaml
+<a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a>│   ├── routes.yaml
+<a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>│   └── packages/
+<a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a>├── migrations/                # Root monolith migration chain (historical)
+<a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a>├── translations/              # i18n YAML files (en, zh, zh_Hant, ja)
+<a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a>├── tests/                     # Root integration tests (963 tests)
+<a id="__codelineno-1-24" name="__codelineno-1-24" href="#__codelineno-1-24"></a>├── docs/                      # All documentation
+<a id="__codelineno-1-25" name="__codelineno-1-25" href="#__codelineno-1-25"></a>│   ├── manual/                #   Developer manuals (this collection)
+<a id="__codelineno-1-26" name="__codelineno-1-26" href="#__codelineno-1-26"></a>│   ├── design/                #   Architecture contracts
+<a id="__codelineno-1-27" name="__codelineno-1-27" href="#__codelineno-1-27"></a>│   ├── ai/                    #   AI context snapshots
+<a id="__codelineno-1-28" name="__codelineno-1-28" href="#__codelineno-1-28"></a>│   └── openapi/               #   Frontend integration guides
+<a id="__codelineno-1-29" name="__codelineno-1-29" href="#__codelineno-1-29"></a>├── scripts/                   # Utility scripts (tests, coverage, smoke)
+<a id="__codelineno-1-30" name="__codelineno-1-30" href="#__codelineno-1-30"></a>├── compose.yaml               # Docker Compose (22 services)
+<a id="__codelineno-1-31" name="__codelineno-1-31" href="#__codelineno-1-31"></a>├── compose.override.yaml      # Dev overrides
+<a id="__codelineno-1-32" name="__codelineno-1-32" href="#__codelineno-1-32"></a>├── compose.prod.yaml          # Production overlay
+<a id="__codelineno-1-33" name="__codelineno-1-33" href="#__codelineno-1-33"></a>└── Dockerfile                 # Root monolith FrankenPHP image
+</code></pre></div>
+<h3 id="apps-packages"><code>apps/</code> 与 <code>packages/</code> 的区别<a class="headerlink" href="#apps-packages" title="Permanent link">&para;</a></h3>
 <ul>
-<li><code>ListApiViewMixin</code> / <code>ScopedListApiViewMixin</code> — 列表+分页</li>
-<li><code>DetailApiViewMixin</code> / <code>ScopedDetailApiViewMixin</code> — 单个记录</li>
-<li><code>CreateApiViewMixin</code>、<code>UpdateApiViewMixin</code>、<code>DeleteApiViewMixin</code> — 突变端点</li>
-<li><code>SingleCreateAndUpdateApiViewMixin</code>、<code>SingleDetailApiViewMixin</code> — 单例资源</li>
-<li><code>WorkflowApiViewMixin</code> — 由控制器驱动的工作流程转换</li>
+<li><strong><code>apps/</code></strong>：具有自己的内核、数据库的可部署业务服务，
+  迁移、测试和 Docker 镜像。拥有业务实体和逻辑。</li>
+<li><strong><code>packages/</code></strong>：可重用的 PHP 库。包含框架实用程序、合同、
+  或兼容性垫片。不得包含业务实体或特定于服务的
+  应用逻辑。</li>
 </ul>
-<h3 id="_6">基础服务 + 特征<a class="headerlink" href="#_6" title="Permanent link">&para;</a></h3>
-<p>服务扩展<code>App\Core\Service\BaseService</code>并实现模块接口。
-<code>BaseService</code> 包含三个特征：</p>
-<ul>
-<li><code>BaseServiceInfrastructureTrait</code> — 容器/EntityManager/存储库连接</li>
-<li><code>BaseServiceReadListTrait</code> — 通用列表/过滤器实现</li>
-<li><code>BaseServiceMutationTrait</code> — 通用创建/更新/删除行为</li>
-</ul>
-<p>结果是每个实体都有一个通用的 CRUD 服务，具体服务会覆盖该服务
-域规则需要它的地方。每个模块服务还声明一个接口
-（例如<code>OrderServiceInterface extends BaseServiceInterface</code>）。</p>
-<h3 id="_7">表达式动态查询引擎<a class="headerlink" href="#_7" title="Permanent link">&para;</a></h3>
-<p>列表端点接受解析为 DQL 的表达式查询参数：</p>
+<h2 id="4">4. 提取状态<a class="headerlink" href="#4" title="Permanent link">&para;</a></h2>
+<p>所有 8 个有界上下文都已提取到 <code>apps/</code>。根整体负载
+每个通过 Composer 路径包 (<code>crud-platform/{name}-app</code>) 作为过渡主机。</p>
 <table>
 <thead>
 <tr>
-<th>参数</th>
-<th>意义</th>
+<th>背景</th>
+<th>作曲家包</th>
+<th>来源地点</th>
+<th>实体去前缀</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>@filter</code></td>
-<td>声明式过滤条件</td>
+<td>商店</td>
+<td><code>crud-platform/store-app</code></td>
+<td><code>apps/store/src/</code></td>
+<td><code>StoreMembership</code> → <code>Membership</code>、<code>StoreConsumedEvent</code> → <code>InboxMessage</code>、<code>StoreOutboxMessage</code> → <code>OutboxMessage</code>、<code>StoreTradeOrderCancellation</code> → <code>TradeOrderCancellation</code></td>
 </tr>
 <tr>
-<td><code>@sort</code> / <code>@order</code></td>
-<td>订购条款</td>
+<td>库存</td>
+<td><code>crud-platform/inventory-app</code></td>
+<td><code>apps/inventory/src/</code></td>
+<td>N/A（提取后创建）</td>
 </tr>
 <tr>
-<td><code>@dql</code></td>
-<td>原始 DQL 片段/嵌入表达式</td>
+<td>付款</td>
+<td><code>crud-platform/payment-app</code></td>
+<td><code>apps/payment/src/</code></td>
+<td>N/A（提取后创建）</td>
 </tr>
 <tr>
-<td><code>@select</code></td>
-<td>选定字段的投影</td>
+<td>钱包</td>
+<td><code>crud-platform/wallet-app</code></td>
+<td><code>apps/wallet/src/</code></td>
+<td>旧版 <code>user_id</code> FK 已删除；仅使用 <code>ownerUuid</code></td>
+</tr>
+<tr>
+<td>身份</td>
+<td><code>crud-platform/identity-app</code></td>
+<td><code>apps/identity/src/</code></td>
+<td>不适用</td>
+</tr>
+<tr>
+<td>常见</td>
+<td><code>crud-platform/common-app</code></td>
+<td><code>apps/common/src/</code></td>
+<td>不适用</td>
+</tr>
+<tr>
+<td>贸易</td>
+<td><code>crud-platform/trade-app</code></td>
+<td><code>apps/trade/src/</code></td>
+<td>N/A（拥有贸易+促销）</td>
 </tr>
 </tbody>
 </table>
-<p>实现位于 <code>src/Core/Parser/</code> (<code>ExpressionDqlParser</code>,
-<code>ExpressionQueryBuilderAssembler</code>) 并通过执行
-<code>App\Core\Service\ExpressionService</code> 与 <code>QueryBuilderFactory</code>。</p>
-<h3 id="_8">定价管道<a class="headerlink" href="#_8" title="Permanent link">&para;</a></h3>
-<p>订单定价是一个按优先顺序排列的计算器链，全部标记为
-<code>trade.price_calculator</code> 并按 <code>getPriority()</code> 升序排序：</p>
-<table>
-<thead>
-<tr>
-<th>订单</th>
-<th>计算器</th>
-<th>优先</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>1</td>
-<td><code>BasePriceCalculator</code> (<code>src/Trade/Service/Pricing/</code>)</td>
-<td>-100</td>
-</tr>
-<tr>
-<td>2</td>
-<td><code>QuantityCalculator</code></td>
-<td>50</td>
-</tr>
-<tr>
-<td>3</td>
-<td><code>TotalAggregator</code></td>
-<td>55</td>
-</tr>
-<tr>
-<td>4</td>
-<td><code>PromotionCalculator</code> (<code>src/Promotion/Service/</code>)</td>
-<td>60</td>
-</tr>
-</tbody>
-</table>
-<p><code>OrderService</code> 使用 <code>#[AutowireIterator('trade.price_calculator')]</code> 收集它们
-并按优先顺序应用它们。添加新的定价步骤 = 实施
-<code>PriceCalculatorInterface</code>，标记它，完成。</p>
-<h3 id="_9">支付网关注册<a class="headerlink" href="#_9" title="Permanent link">&para;</a></h3>
-<p><code>PaymentGatewayInterface</code> 实现（模拟、钱包、微信等）已注册
-针对 <code>payment.gateway</code> 标签
-<code>src/Payment/Resources/config/services_payment.yaml</code> 并在运行时通过
-<code>PaymentGatewayRegistry</code> — 支持根据发票切换提供商并发送至
-具有与提供商无关的发票事件的 webhooks (<code>PaymentNotifyController</code>)。</p>
-<h3 id="_10">发件箱/收件箱模式<a class="headerlink" href="#_10" title="Permanent link">&para;</a></h3>
-<p>跨模块写入永远不会同步调用目标模块：</p>
-<ul>
-<li><strong>发件箱</strong> — 每个发布模块都在发件箱中保留自己的 <code>*OutboxMessage</code> 实体
-  与变更相同的交易。 <code>scheduler</code> 服务轮询
-  <code>app:{module}:outbox:publish</code> 命令（贸易、商店、库存、结算）
-  将消息刷新到 Messenger。</li>
-<li><strong>收件箱/处理程序</strong> — 消费模块中的消息处理程序 (<code>MessageHandler/</code>)
-  是这些事件的唯一读者，并维护自己的诚信和
-  幂等性（例如 inventory <code>ReservationRequestedHandler</code>、store
-  <code>TradeOrderCreatedHandler</code>，结算<code>SettlementFundingConfirmedHandler</code>）。</li>
-</ul>
-<h3 id="_11">其他值得注意的模式<a class="headerlink" href="#_11" title="Permanent link">&para;</a></h3>
+<p><strong>切换状态</strong>：所有服务独立启动。巨石仍然是
+生产主机。根<code>src/</code>仅保留<code>Bridge/</code>适配器；业务来源是
+由<code>apps/</code>完全拥有。</p>
+<h2 id="5">5. 事件驱动的集成流程<a class="headerlink" href="#5" title="Permanent link">&para;</a></h2>
+<p>主要集成链是<strong>贸易→商店→库存</strong>：</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>Trade order created (trade.order.created.v1)
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>  → Store Outbox/Inbox receives event
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>  → Store creates StoreOrder, validates
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>  → Store publishes inventory.reservation.requested.v1 (if INVENTORY_ENABLED)
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>  → Inventory receives, resolves recipes, reserves stock
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>  → Inventory publishes confirmed or rejected outcome
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>  → Store receives outcome, accepts or rejects StoreOrder
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>  → Store publishes store.order.accepted.v1 or store.order.rejected.v1
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>  → Trade receives, applies workflow transition
+</code></pre></div>
+<p><strong>支付→交易</strong>使用相同的模式：
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>Payment invoice lifecycle change (payment.invoice.paid.v1, etc.)
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>  → Payment writes to PaymentOutbox
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>  → Trade Inbox receives, updates order
+</code></pre></div></p>
+<p><strong>商店→交易（目录同步）</strong>：
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>Store directory changes → StoreDirectoryOutboxListener → store.directory.upserted.v1
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>  → Trade maintains local trade_store_directory projection
+</code></pre></div></p>
+<p>所有链均使用 <strong>发件箱/收件箱</strong> 模式，并通过 <code>eventId</code> 实现幂等性。
+相关 ID 通过链传播以进行分布式跟踪。</p>
+<h2 id="6">6. 关键设计模式<a class="headerlink" href="#6" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
 <th>图案</th>
 <th>哪里</th>
+<th>详情</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>聚合上的 UUID 身份</td>
-<td>跨模块引用是 UUID (<code>Core\Utils\UUID</code>)；持久密钥永远不会像普通整数 ID 那样跨越边界</td>
+<td><strong>发件箱/收件箱</strong></td>
+<td>贸易、商店、库存、付款</td>
+<td>在本地事务中写入发件箱的事件；通过调度程序中继；通过 <code>eventId</code> 键控的收件箱幂等消耗</td>
 </tr>
 <tr>
-<td>钱包乐观锁定</td>
-<td><code>Wallet</code> 携带整数<code>version</code> 列；并发余额更新检测冲突而不是覆盖</td>
+<td><strong>UUID 身份</strong></td>
+<td>贸易、钱包、商店</td>
+<td><code>UUID::v4()</code> 用于外部聚合身份；永远不要跨服务边界公开自动增量 PK</td>
 </tr>
 <tr>
-<td>软删除</td>
-<td><code>Product</code> / <code>Specification</code> 使用 <code>isDeleted</code> 标志 (<code>Trade\Entity</code>)，以便定价和历史记录仍然可以引用已删除的记录</td>
+<td><strong>定价渠道</strong></td>
+<td>贸易</td>
+<td><code>PriceCalculatorInterface</code> 实现按优先级排序：BasePriceCalculator(-100) → QuantityCalculator(50) → TotalAggregator(55) → PromotionCalculator(60)</td>
 </tr>
 <tr>
-<td>代币轮换</td>
-<td>刷新令牌以散列方式存储 (HMAC-SHA256)，并在每次使用时轮换并进行重用检测 (<code>Identity\Security\TokenManager</code>)</td>
+<td><strong>网关注册表</strong></td>
+<td>付款</td>
+<td><code>PaymentGatewayInterface</code> 实现自动标记 <code>payment.gateway</code>，通过 <code>#[AutowireIterator]</code> 收集</td>
 </tr>
 <tr>
-<td>精确资金结算</td>
-<td><code>QuantumAmount</code> (<code>Settlement\Service\Money</code>) 是固定比例的以 10 为基数的整数量程（默认 18，<code>brick/math</code>），避免浮点错误； <code>AllocationRoundingService</code> 处理余数分布（最大余数）</td>
+<td><strong>快照</strong></td>
+<td>贸易</td>
+<td><code>OrderItem</code> 在创建时捕获 <code>specSnapshot</code>/<code>productSnapshot</code></td>
 </tr>
 <tr>
-<td>注册表模式</td>
-<td><code>PaymentGatewayRegistry</code>、<code>PaymentAdjustmentRegistry</code>、<code>DepositProviderRegistry</code>、<code>WithdrawProviderRegistry</code>、<code>MediaStorageRegistry</code>、<code>SettlementContextResolverRegistry</code></td>
+<td><strong>乐观锁定</strong></td>
+<td>钱包</td>
+<td><code>Wallet</code> 实体上的 <code>#[ORM\Version]</code> 用于并发访问安全</td>
+</tr>
+<tr>
+<td><strong>软删除</strong></td>
+<td>贸易</td>
+<td><code>isDeleted</code> 布尔值 <code>Product</code>、<code>Specification</code></td>
+</tr>
+<tr>
+<td><strong>通用过滤器</strong></td>
+<td>控制器</td>
+<td>数组条件或 QueryBuilder 作用域：<code>[]</code> = 管理员、<code>['user' =&gt; $user]</code> = 用户范围、<code>['id' =&gt; -1]</code> = 阻止所有</td>
+</tr>
+<tr>
+<td><strong>代币轮换</strong></td>
+<td>身份</td>
+<td>具有重用检测功能的 HMAC-SHA256 刷新令牌</td>
+</tr>
+<tr>
+<td><strong>相关性追踪</strong></td>
+<td>整合事件</td>
+<td><code>correlationId</code>通过Trade→Store→Inventory链传播； <code>causationId</code> 是直接父级 <code>eventId</code></td>
+</tr>
+<tr>
+<td><strong>调整提供商注册表</strong></td>
+<td>付款</td>
+<td><code>PaymentAdjustmentProviderInterface</code> 实现自动标记；钱包提供<code>WalletBalanceAdjustmentProvider</code></td>
+</tr>
+<tr>
+<td><strong>存储驱动程序注册表</strong></td>
+<td>存储</td>
+<td><code>MediaStorageInterface</code> 实现标记为 <code>media.storage</code>；可通过多部分 <code>storage</code> 字段进行选择</td>
+</tr>
+<tr>
+<td><strong>促销策略标签</strong></td>
+<td>促销</td>
+<td><code>promotion.strategy</code> 自动标记，通过 <code>#[AutowireIterator]</code> 收集（7 种策略）</td>
+</tr>
+<tr>
+<td><strong>余额审计</strong></td>
+<td>钱包</td>
+<td><code>GET /app/wallets/balance</code>（用户范围）和 <code>GET /manage/wallets/balance</code>（全局）并进行协调</td>
+</tr>
+<tr>
+<td><strong>表达式查询引擎</strong></td>
+<td>核心</td>
+<td><code>@filter</code>、<code>@dql</code>、<code>@order</code>、<code>@select</code>、<code>@groupBy</code>、<code>@sort</code>、<code>@expands</code>、<code>@display</code>、<code>@transform</code> 参数</td>
 </tr>
 </tbody>
 </table>
-<h2 id="_12">跨模块依赖规则<a class="headerlink" href="#_12" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>关注</th>
-<th>规则</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>教义协会</td>
-<td><strong>没有跨模块的 Doctrine 关联/关系。</strong> 实体永远不会通过外键引用另一个模块的实体</td>
-</tr>
-<tr>
-<td>耐用的参考资料</td>
-<td>在模块之间，引用通过 <strong>UUID</strong> （或明确记录的业务密钥）聚合，而不是本地自动增量 id</td>
-</tr>
-<tr>
-<td>合同</td>
-<td>跨模块服务调用交换 <strong>仅标量值/快照/DTO</strong> — 没有跨边界的实体、存储库或 EntityManager</td>
-</tr>
-<tr>
-<td>写</td>
-<td>使用<strong>发件箱</strong>模式：在一个事务中持久保存更改和发件箱消息；目标模块使用它自己的收件箱消息</td>
-</tr>
-<tr>
-<td>阅读</td>
-<td>使用<strong>收件箱/消息处理程序</strong>作为消耗另一个模块状态的入口点；禁止跨模块直接存储库读取</td>
-</tr>
-<tr>
-<td>依赖方向</td>
-<td>业务模块可以自动装配 <code>Core</code> 和（接口优先）彼此； <code>Core</code> 绝不能导入业务模块；禁止循环模块依赖</td>
-</tr>
-<tr>
-<td>共享状态</td>
-<td>事件有效负载仅携带标量快照和外部身份；接收模块仍然强制执行自己的授权</td>
-</tr>
-</tbody>
-</table>
-<h3 id="_13">这在实践中表现出来<a class="headerlink" href="#_13" title="Permanent link">&para;</a></h3>
-<ul>
-<li><code>Trade</code>发布<code>TradeOrderCreatedMessage</code>/<code>TradeOrderCancelledMessage</code>； <code>Store</code>
-  消耗它们将订单分发到商店 (<code>StoreOrder</code>)。</li>
-<li><code>Store</code>发布<code>StoreOrderAcceptedMessage</code>/<code>StoreOrderRejectedMessage</code>； <code>Trade</code>
-  消耗它们来移动订单状态。</li>
-<li><code>Trade</code>通过<code>ReservationRequestedMessage</code>请求库存预订；
-  <code>Inventory</code> 通过<code>ReservationConfirmed/RejectedMessage</code>确认/拒绝。</li>
-<li><code>Payment</code> 发出 <code>InvoicePaidEvent</code>、<code>InvoiceRefundedEvent</code> 等； <code>Wallet</code>
-  网关和<code>Settlement</code>资金流通过它们自己的处理程序做出反应。</li>
-</ul>
+<h2 id="7">7. 跨服务依赖规则<a class="headerlink" href="#7" title="Permanent link">&para;</a></h2>
+<p>这些规则控制服务在过渡期间如何通信：</p>
+<ol>
+<li><strong>没有跨服务的 Doctrine 关联</strong> — 服务拥有其数据库并
+   没有 FK、存储库访问或跨越其他服务的事务。</li>
+<li><strong>持久引用使用 UUID</strong> — 永远不要引用另一个服务的本地
+   整数主键。</li>
+<li><strong>仅限标量合约</strong> - 服务边界接受标量命令/查询
+   并发出标量快照。没有 Doctrine 实体、存储库或 Symfony
+   请求跨越边界。</li>
+<li><strong>写入发件箱</strong> — 每个状态更改集成事件都被写入
+   生产者本地事务中的发件箱。</li>
+<li><strong>用于阅读的收件箱</strong> — 消费者使用由 <code>eventId</code> 键控的持久收件箱。</li>
+<li><strong>拥有的队列</strong> - 每个消费者都拥有自己的队列、重试策略、死信
+   处理、工人和预定作业。</li>
+<li><strong>共享包仅是实用程序</strong> — <code>packages/</code> 中没有业务实体。</li>
+</ol>
+<p>当前的边界风险（有待在完全独立之前解决）：
+- 同步<code>InvoiceService</code>→交易订单更新（被发件箱/收件箱取代）
+- 支付/微信插件合约暴露 Doctrine/Symfony 类型
+- 历史队列记录中的旧版本机 PHP Messenger 包装器 FQCN
+- 耦合支付和钱包的根<code>Bridge/</code>适配器</p>
 
 
 
@@ -3356,10 +2646,6 @@ JSON 信封、分页和 <code>@display</code>/<code>@expands</code> 响应整形
     
     
       <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
-      
-        <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
-      
-        <script src="../../javascripts/mermaid-init.js"></script>
       
     
   </body>

@@ -6,11 +6,11 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="Symfony 8.1 API backend skeleton with modular architecture">
+        <meta name="description" content="A production-oriented Symfony microservices platform evolved from modular monolith architecture, featuring DDD, service isolation, and event-driven communication.">
       
       
       
-        <link rel="canonical" href="https://immane.github.io/crud-skeleton/manual/development-workflow/">
+        <link rel="canonical" href="https://immane.github.io/crud-platform/manual/development-workflow/">
       
       
         <link rel="prev" href="../query-system/">
@@ -20,9 +20,9 @@
       
       
         
-          <link rel="alternate" href="/crud-skeleton/" hreflang="en">
+          <link rel="alternate" href="/crud-platform/" hreflang="en">
         
-          <link rel="alternate" href="/crud-skeleton/zh/" hreflang="zh">
+          <link rel="alternate" href="/crud-platform/zh/" hreflang="zh">
         
       
       
@@ -31,7 +31,7 @@
     
     
       
-        <title>Development Workflow - CRUD Skeleton</title>
+        <title>Development Workflow - CRUD Platform</title>
       
     
     
@@ -98,7 +98,7 @@
 
 <header class="md-header md-header--shadow" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../.." title="CRUD Skeleton" class="md-header__button md-logo" aria-label="CRUD Skeleton" data-md-component="logo">
+    <a href="../.." title="CRUD Platform" class="md-header__button md-logo" aria-label="CRUD Platform" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -112,7 +112,7 @@
       <div class="md-header__ellipsis">
         <div class="md-header__topic">
           <span class="md-ellipsis">
-            CRUD Skeleton
+            CRUD Platform
           </span>
         </div>
         <div class="md-header__topic" data-md-component="header-topic">
@@ -165,13 +165,13 @@
       <ul class="md-select__list">
         
           <li class="md-select__item">
-            <a href="/crud-skeleton/" hreflang="en" class="md-select__link">
+            <a href="/crud-platform/" hreflang="en" class="md-select__link">
               English
             </a>
           </li>
         
           <li class="md-select__item">
-            <a href="/crud-skeleton/zh/" hreflang="zh" class="md-select__link">
+            <a href="/crud-platform/zh/" hreflang="zh" class="md-select__link">
               中文
             </a>
           </li>
@@ -226,7 +226,7 @@
     
     
       <div class="md-header__source">
-        <a href="https://github.com/immane/crud-skeleton" title="Go to repository" class="md-source" data-md-component="source">
+        <a href="https://github.com/immane/crud-platform" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
@@ -262,17 +262,17 @@
 
 <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../.." title="CRUD Skeleton" class="md-nav__button md-logo" aria-label="CRUD Skeleton" data-md-component="logo">
+    <a href="../.." title="CRUD Platform" class="md-nav__button md-logo" aria-label="CRUD Platform" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
 
     </a>
-    CRUD Skeleton
+    CRUD Platform
   </label>
   
     <div class="md-nav__source">
-      <a href="https://github.com/immane/crud-skeleton" title="Go to repository" class="md-source" data-md-component="source">
+      <a href="https://github.com/immane/crud-platform" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
@@ -316,6 +316,922 @@
       
   
   
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Design Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Design Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/system-architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    System Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/microservice-transition/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Microservice Transition
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/store-extraction-readiness/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Store Extraction Readiness
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/inventory-extraction-readiness/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Inventory Extraction Readiness
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/payment-extraction-readiness/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Payment Extraction Readiness
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/wallet-extraction-readiness.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Wallet Extraction Readiness
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/api-design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/data-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/module-design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Module Design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/controller-design/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Controller Design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/api-documentation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Documentation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/system-contracts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    System Contracts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bundles
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Bundles
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/core/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core Framework
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/common/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Common (CMS)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/trade/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Trade (E-Commerce)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/store/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Store (Multi-Store Operations)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/inventory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Inventory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/payment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Payment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/wallet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Wallet
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/identity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Identity (Auth)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/bundles/wechat/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Wechat (Login + Pay)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Research
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Research
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../research/easywechat-6.x-usage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    EasyWeChat 6.x Usage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../research/huifu-payment-api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Huifu Payment API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Issues
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Issues
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../issues/architecture-review-2026-06-26/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture Review 2026-06-26
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
     
   
   
@@ -334,10 +1250,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
         
           
-          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
             
   
   
@@ -355,8 +1271,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
-          <label class="md-nav__title" for="__nav_2">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_6">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -380,35 +1296,7 @@
   <span class="md-ellipsis">
     
   
-    Manual Index
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../getting-started/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Getting Started
+    Overview
   
 
     
@@ -437,6 +1325,34 @@
     
   
     Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
   
 
     
@@ -637,58 +1553,14 @@
     </span>
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#2-coding-standards" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        2. Coding Standards
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#3-static-analysis" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        3. Static Analysis
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="3. Static Analysis">
+    <nav class="md-nav" aria-label="1. Branching Model">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#31-phpstan-level-8" class="md-nav__link">
+  <a href="#workflow" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3.1 PHPStan (Level 8)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#32-rector-type-rules-only-in-ci" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        3.2 Rector (type rules only in CI)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#33-adding-a-fix-baseline-entry" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        3.3 Adding a fix / baseline entry
+        Workflow
       
     </span>
   </a>
@@ -701,13 +1573,163 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#4-commit-conventions" class="md-nav__link">
+  <a href="#2-coding-standards" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. Commit Conventions
+        2. Coding Standards
       
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="2. Coding Standards">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#psr-12" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PSR-12
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#declarestrict_types1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        declare(strict_types=1)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#final-classes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        final Classes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#type-declarations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Type Declarations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phpdoc" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PHPDoc
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-static-analysis-gates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Static Analysis Gates
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Static Analysis Gates">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#phpstan-level-8" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PHPStan — Level 8
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deptrac-architecture-boundaries" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deptrac — Architecture Boundaries
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rector-type-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rector — Type Rules
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#service-container-lint" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Service Container Lint
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-commit-message-conventions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Commit Message Conventions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Commit Message Conventions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Examples
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -723,22 +1745,33 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#6-ci-pipeline" class="md-nav__link">
+  <a href="#6-code-review-expectations" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6. CI Pipeline
+        6. Code Review Expectations
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="6. CI Pipeline">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-ci-pipeline-overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. CI Pipeline Overview
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. CI Pipeline Overview">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#61-ciyml-phpstan-phpunit-with-coverage-rector" class="md-nav__link">
+  <a href="#jobs" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6.1 ci.yml — PHPStan + PHPUnit (with coverage) + Rector
+        Jobs
       
     </span>
   </a>
@@ -746,10 +1779,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#62-migrationsyml-mysql-migration-chain" class="md-nav__link">
+  <a href="#environment" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6.2 migrations.yml — MySQL migration chain
+        Environment
       
     </span>
   </a>
@@ -757,10 +1790,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#63-docsyml-docs-build-github-pages-deploy" class="md-nav__link">
+  <a href="#coverage-gate" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6.3 docs.yml — Docs build &amp; GitHub Pages deploy
+        Coverage Gate
       
     </span>
   </a>
@@ -773,24 +1806,52 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#7-local-vs-ci-database" class="md-nav__link">
+  <a href="#8-local-development-tips" class="md-nav__link">
     <span class="md-ellipsis">
       
-        7. Local vs CI Database
+        8. Local Development Tips
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. Local Development Tips">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#running-static-analysis-locally" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Running Static Analysis Locally
       
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#8-definition-of-done" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#pre-commit-checks" class="md-nav__link">
     <span class="md-ellipsis">
       
-        8. Definition of Done
+        Pre-Commit Checks
       
     </span>
   </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ide-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        IDE Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -1040,1604 +2101,6 @@
   
   
   
-    
-    
-    
-    
-      
-        
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
-        
-          
-          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Design Contracts
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Design Contracts
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/system-architecture/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    System Architecture
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/api-design/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    API Design
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/data-model/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Data Model
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/module-design/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Module Design
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/controller-design/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Controller Design
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/api-documentation/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    API Documentation
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/system-contracts/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    System Contracts
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/naming-convention/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Naming Convention
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    
-    
-    
-    
-      
-        
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
-        
-          
-          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Bundles
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Bundles
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/bundles/core/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Core Framework
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/bundles/common/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Common (CMS)
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/bundles/trade/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Trade (E-Commerce)
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/bundles/store/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Store (Multi-Store Operations)
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/bundles/inventory/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Inventory
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/bundles/payment/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Payment
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/bundles/wallet/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Wallet
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/bundles/settlement/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Settlement (Allocation + Finality)
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/bundles/exchange/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Exchange (Pool-backed Economy)
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/bundles/identity/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Identity (Auth)
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/bundles/wechat/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Wechat (Login + Pay)
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    
-    
-    
-    
-      
-        
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
-        
-          
-          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Runbooks
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_5">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Runbooks
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../runbooks/common/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Common
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../runbooks/core/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Core
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../runbooks/exchange/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Exchange
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../runbooks/identity/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Identity
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../runbooks/inventory/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Inventory
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../runbooks/payment/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Payment
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../runbooks/promotion/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Promotion
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../runbooks/settlement/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Settlement
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../runbooks/storage/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Storage
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../runbooks/store/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Store
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../runbooks/trade/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Trade
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../runbooks/wallet/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Wallet
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../runbooks/wechat/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    WeChat
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    
-    
-    
-    
-      
-        
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
-        
-          
-          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Research
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_6">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Research
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../research/easywechat-6.x-usage/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    EasyWeChat 6.x Usage
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../research/huifu-payment-api/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Huifu Payment API
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    
-    
-    
-    
-      
-        
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
-        
-          
-          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Issues
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_7">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Issues
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../issues/architecture-review-2026-06-26/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Architecture Review 2026-06-26
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    
-    
-    
-    
-      
-        
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
-        
-          
-          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Testing
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_8">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Testing
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../testing/crud-skeleton-production/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Production Validation Overview
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../testing/crud-skeleton-production/TEST_STRATEGY/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Test Strategy
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../testing/crud-skeleton-production/SYSTEM_WALKTHROUGH/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    System Walkthrough And Test Seams
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../testing/crud-skeleton-production/TEST_MATRIX/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Test Matrix
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../testing/crud-skeleton-production/BUSINESS_INVARIANTS/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Business Invariants
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../testing/crud-skeleton-production/ARCHITECTURE_TEST_MAPPING/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Architecture Test Mapping
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../testing/crud-skeleton-production/FAILURE_MODES/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Failure Modes
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../testing/crud-skeleton-production/PRODUCTION_VALIDATION/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Release Validation
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../testing/crud-skeleton-production/AI_DEVELOPMENT_PROCESS/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    AI Development Process
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
     <li class="md-nav__item">
       <a href="../../ai/context/" class="md-nav__link">
         
@@ -2721,58 +2184,14 @@
     </span>
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#2-coding-standards" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        2. Coding Standards
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#3-static-analysis" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        3. Static Analysis
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="3. Static Analysis">
+    <nav class="md-nav" aria-label="1. Branching Model">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#31-phpstan-level-8" class="md-nav__link">
+  <a href="#workflow" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3.1 PHPStan (Level 8)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#32-rector-type-rules-only-in-ci" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        3.2 Rector (type rules only in CI)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#33-adding-a-fix-baseline-entry" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        3.3 Adding a fix / baseline entry
+        Workflow
       
     </span>
   </a>
@@ -2785,13 +2204,163 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#4-commit-conventions" class="md-nav__link">
+  <a href="#2-coding-standards" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. Commit Conventions
+        2. Coding Standards
       
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="2. Coding Standards">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#psr-12" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PSR-12
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#declarestrict_types1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        declare(strict_types=1)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#final-classes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        final Classes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#type-declarations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Type Declarations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#phpdoc" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PHPDoc
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-static-analysis-gates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Static Analysis Gates
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Static Analysis Gates">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#phpstan-level-8" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PHPStan — Level 8
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deptrac-architecture-boundaries" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deptrac — Architecture Boundaries
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rector-type-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rector — Type Rules
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#service-container-lint" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Service Container Lint
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-commit-message-conventions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Commit Message Conventions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Commit Message Conventions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Examples
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -2807,22 +2376,33 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#6-ci-pipeline" class="md-nav__link">
+  <a href="#6-code-review-expectations" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6. CI Pipeline
+        6. Code Review Expectations
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="6. CI Pipeline">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-ci-pipeline-overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. CI Pipeline Overview
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. CI Pipeline Overview">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#61-ciyml-phpstan-phpunit-with-coverage-rector" class="md-nav__link">
+  <a href="#jobs" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6.1 ci.yml — PHPStan + PHPUnit (with coverage) + Rector
+        Jobs
       
     </span>
   </a>
@@ -2830,10 +2410,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#62-migrationsyml-mysql-migration-chain" class="md-nav__link">
+  <a href="#environment" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6.2 migrations.yml — MySQL migration chain
+        Environment
       
     </span>
   </a>
@@ -2841,10 +2421,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#63-docsyml-docs-build-github-pages-deploy" class="md-nav__link">
+  <a href="#coverage-gate" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6.3 docs.yml — Docs build &amp; GitHub Pages deploy
+        Coverage Gate
       
     </span>
   </a>
@@ -2857,24 +2437,52 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#7-local-vs-ci-database" class="md-nav__link">
+  <a href="#8-local-development-tips" class="md-nav__link">
     <span class="md-ellipsis">
       
-        7. Local vs CI Database
+        8. Local Development Tips
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. Local Development Tips">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#running-static-analysis-locally" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Running Static Analysis Locally
       
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#8-definition-of-done" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#pre-commit-checks" class="md-nav__link">
     <span class="md-ellipsis">
       
-        8. Definition of Done
+        Pre-Commit Checks
       
     </span>
   </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ide-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        IDE Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -2899,410 +2507,337 @@
 
 
 <h1 id="development-workflow">Development Workflow<a class="headerlink" href="#development-workflow" title="Permanent link">&para;</a></h1>
-<blockquote>
-<p>How this repository is branched, reviewed, analyzed, and verified in CI. Follow this
-process for every change, from a one-line fix to a new module.</p>
-</blockquote>
-<hr />
 <h2 id="1-branching-model">1. Branching Model<a class="headerlink" href="#1-branching-model" title="Permanent link">&para;</a></h2>
-<p>The repository uses a trunk-based flow with a long-lived integration branch:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>main  ──────────────────────────────────────────────►  stable / release (PR target)
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>   \                                                /
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>    └── dev ───────────────────────────────►  integration (PR target for features)
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>           \
-<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>            ├── feat/xxx         feature branch (merged into dev)
-<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>            ├── fix/yyy          bug-fix branch (merged into main or dev)
-<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>            └── chore/zzz        tooling / docs / refactor branches
-</code></pre></div>
-<table>
-<thead>
-<tr>
-<th>Branch</th>
-<th>Purpose</th>
-<th>CI runs on</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>main</code></td>
-<td>Stable trunk; only reviewed, tested, migration-verified code lands here</td>
-<td>push + pull_request</td>
-</tr>
-<tr>
-<td><code>dev</code></td>
-<td>Integration branch where features accumulate before release</td>
-<td>pull_request only (ci/migrations), push for docs deploy</td>
-</tr>
-<tr>
-<td><code>feat/*</code>, <code>fix/*</code>, <code>chore/*</code></td>
-<td>Short-lived working branches, one per PR</td>
-<td>pull_request (targeting <code>main</code>/<code>dev</code>)</td>
-</tr>
-</tbody>
-</table>
-<p>Rules:</p>
 <ul>
-<li><strong>Never push directly to <code>main</code> or <code>dev</code>.</strong> All changes arrive via pull requests.</li>
-<li>Open PRs against <strong><code>main</code></strong> (releases, hotfixes) or <strong><code>dev</code></strong> (features, larger changes).</li>
-<li>Rebase or merge frequently so branches stay close to their target.</li>
-<li>A newer push supersedes in-flight checks for the same PR or branch (CI is configured
-  with <code>concurrency: cancel-in-progress: true</code>).</li>
+<li><strong><code>main</code></strong> — Production-ready code. Protected branch. Deployable at any time.</li>
+<li><strong><code>dev</code></strong> — Integration branch. Feature branches merge here first.</li>
+<li><strong>Feature branches</strong> — <code>feature/{description}</code> or <code>fix/{description}</code>. Created
+  from <code>main</code> (for hotfixes) or <code>dev</code> (for features). Merged via PR.</li>
+<li><strong>Release branches</strong> — (if used) <code>release/{version}</code>, prepared from <code>dev</code>.</li>
 </ul>
-<hr />
+<h3 id="workflow">Workflow<a class="headerlink" href="#workflow" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>git<span class="w"> </span>checkout<span class="w"> </span>dev
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>git<span class="w"> </span>pull<span class="w"> </span>origin<span class="w"> </span>dev
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>git<span class="w"> </span>checkout<span class="w"> </span>-b<span class="w"> </span>feature/my-feature
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="c1"># ... develop, commit ...</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>git<span class="w"> </span>push<span class="w"> </span>origin<span class="w"> </span>feature/my-feature
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="c1"># Create PR to dev on GitHub</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="c1"># After review and CI green → merge to dev</span>
+</code></pre></div>
 <h2 id="2-coding-standards">2. Coding Standards<a class="headerlink" href="#2-coding-standards" title="Permanent link">&para;</a></h2>
-<p>PHP 8.4+ is required for all tooling.</p>
-<table>
-<thead>
-<tr>
-<th>Requirement</th>
-<th>Standard</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>PHP version</td>
-<td><code>&gt;= 8.4</code> (<code>composer.json</code> <code>require.php</code>)</td>
-</tr>
-<tr>
-<td>Namespace</td>
-<td>PSR-4 <code>App\</code> under <code>src/</code>, <code>App\Tests\</code> under <code>tests/</code></td>
-</tr>
-<tr>
-<td>Scalar/return types</td>
-<td>Explicit everywhere possible; strict typing (<code>declare(strict_types=1)</code>) expected in new code</td>
-</tr>
-<tr>
-<td>Property types</td>
-<td>Explicit (never docblock-only)</td>
-</tr>
-<tr>
-<td>Nullable</td>
-<td><code>?Type</code> syntax</td>
-</tr>
-<tr>
-<td>Use statements</td>
-<td>Alphabetically ordered</td>
-</tr>
-<tr>
-<td>One class per file</td>
-<td>File name equals class / trait / interface name</td>
-</tr>
-<tr>
-<td>Comments</td>
-<td>PHPDoc on interfaces and abstract methods only; no comments on self-documenting code</td>
-</tr>
-<tr>
-<td>Naming</td>
-<td>See the <a href="../../design/naming-convention/">naming convention</a> — module namespace carries ownership, service/controller/repository mirror the entity name</td>
-</tr>
-</tbody>
-</table>
-<hr />
-<h2 id="3-static-analysis">3. Static Analysis<a class="headerlink" href="#3-static-analysis" title="Permanent link">&para;</a></h2>
-<p>Static analysis runs exactly as CI runs it — locally, they must be green before a PR.</p>
-<h3 id="31-phpstan-level-8">3.1 PHPStan (Level 8)<a class="headerlink" href="#31-phpstan-level-8" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>composer<span class="w"> </span>phpstan
-</code></pre></div>
-<p>Configured in <code>phpstan.neon</code>:</p>
-<table>
-<thead>
-<tr>
-<th>Setting</th>
-<th>Value</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Level</td>
-<td><code>8</code></td>
-</tr>
-<tr>
-<td>Paths</td>
-<td><code>src/</code></td>
-</tr>
-<tr>
-<td>Excluded</td>
-<td><code>src/*/Exception/*</code>, <code>src/Identity/Sms/AliyunSmsProvider.php</code></td>
-</tr>
-<tr>
-<td>Bootstrap</td>
-<td><code>vendor/autoload.php</code></td>
-</tr>
-<tr>
-<td>Symfony integration</td>
-<td><code>vendor/phpstan/phpstan-symfony/extension.neon</code> (reads <code>var/cache/dev/App_KernelDevDebugContainer.xml</code>)</td>
-</tr>
-<tr>
-<td>Doctrine integration</td>
-<td><code>vendor/phpstan/phpstan-doctrine/extension.neon</code> with <code>objectManagerLoader: phpstan-bootstrap.php</code></td>
-</tr>
-<tr>
-<td>PHPDoc certainty</td>
-<td><code>treatPhpDocTypesAsCertain: false</code> (controllers use <code>$this-&gt;service</code>/<code>$this-&gt;get()</code> from trait mixins)</td>
-</tr>
-<tr>
-<td>Universal object crates</td>
-<td>EasyWeChat <code>AccessToken</code> / <code>Server</code> contracts</td>
-</tr>
-</tbody>
-</table>
-<p><code>phpstan-bootstrap.php</code> boots a minimal <code>App\Kernel</code> and returns the Doctrine
-<code>EntityManager</code> so PHPStan can resolve repository/Doctrine metadata. In CI it runs
-with an isolated SQLite URL (<code>var/phpstan.db</code>), so it never touches a real database.</p>
-<p>Generate or refresh a baseline (only if a strictness bump forces it):</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>composer<span class="w"> </span>phpstan-baseline
-</code></pre></div>
-<h3 id="32-rector-type-rules-only-in-ci">3.2 Rector (type rules only in CI)<a class="headerlink" href="#32-rector-type-rules-only-in-ci" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>composer<span class="w"> </span>rector:types:check<span class="w">      </span><span class="c1"># dry-run — the CI gate</span>
-<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>composer<span class="w"> </span>rector:types<span class="w">            </span><span class="c1"># actually apply the type rules</span>
-</code></pre></div>
-<p><code>rector-types.php</code> enables exactly two rules over <code>src/</code>:</p>
-<table>
-<thead>
-<tr>
-<th>Rule</th>
-<th>What it enforces</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>AddAnnotationToRepositoryRector</code></td>
-<td>Doctrine 3.6+ repositories must carry <code>@extends ServiceEntityRepository&lt;...&gt;</code></td>
-</tr>
-<tr>
-<td><code>CompleteReturnDocblockFromToManyRector</code></td>
-<td><code>-&gt;mappedBy</code>/<code>-&gt;inversedBy</code> OneToMany/ManyToMany return PHPDoc collections</td>
-</tr>
-</tbody>
-</table>
-<p><code>composer rector</code> (broader opt-in refactoring) is <strong>not</strong> part of CI — review its diff
-carefully before applying:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>composer<span class="w"> </span>rector<span class="w">      </span><span class="c1"># dry-run of the broad rule set</span>
-<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>composer<span class="w"> </span>rector:fix<span class="w">  </span><span class="c1"># apply it</span>
-</code></pre></div>
-<h3 id="33-adding-a-fix-baseline-entry">3.3 Adding a fix / baseline entry<a class="headerlink" href="#33-adding-a-fix-baseline-entry" title="Permanent link">&para;</a></h3>
-<p>Do not silence PHPStan wholesale. If a genuine boundary case cannot be typed, add a
-scoped <code>ignoreErrors</code> entry in <code>phpstan.neon</code> <strong>with a comment explaining why</strong> — the
-existing entries all carry an explanation (optional SDKs, trait mixins, lifecycle
-callbacks).</p>
-<hr />
-<h2 id="4-commit-conventions">4. Commit Conventions<a class="headerlink" href="#4-commit-conventions" title="Permanent link">&para;</a></h2>
+<h3 id="psr-12">PSR-12<a class="headerlink" href="#psr-12" title="Permanent link">&para;</a></h3>
+<p>All PHP code follows <a href="https://www.php-fig.org/psr/psr-12/">PSR-12</a>. No custom
+deviations.</p>
+<h3 id="declarestrict_types1"><code>declare(strict_types=1)</code><a class="headerlink" href="#declarestrict_types1" title="Permanent link">&para;</a></h3>
+<p>Every PHP file MUST start with:
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="cp">&lt;?php</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="k">declare</span><span class="p">(</span><span class="nx">strict_types</span><span class="o">=</span><span class="mi">1</span><span class="p">);</span>
+</code></pre></div></p>
+<h3 id="final-classes"><code>final</code> Classes<a class="headerlink" href="#final-classes" title="Permanent link">&para;</a></h3>
+<p>Use <code>final</code> on classes that are not designed for inheritance. Controllers,
+commands, message handlers, and entity classes should typically be <code>final</code>.
+Services and interfaces are not final (to allow decoration and mocking).</p>
+<h3 id="type-declarations">Type Declarations<a class="headerlink" href="#type-declarations" title="Permanent link">&para;</a></h3>
 <ul>
-<li><strong>Conventional Commits</strong>, English only.</li>
-<li>Format: <code>type(scope): subject</code> — e.g. <code>feat(settlement): add rule version diffing</code>,
-  <code>fix(inventory): recover EM after rollback</code>, <code>test(wallet): cover concurrent transfers</code>.</li>
+<li>All method parameters and return types must be explicitly typed (PHP 8.4).</li>
+<li>Use <code>mixed</code> only where unavoidable (e.g., generic <code>BaseService::get()</code>).</li>
+<li>Prefer union types over PHPDoc-only types.</li>
+<li>Use PHPDoc <code>@template TEntity</code> for generic service propagation.</li>
 </ul>
+<h3 id="phpdoc">PHPDoc<a class="headerlink" href="#phpdoc" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Required on all non-private methods.</li>
+<li><code>@param</code>, <code>@return</code>, <code>@throws</code> must be present and accurate.</li>
+<li><code>@extends</code> / <code>@implements</code> required on all generic subclasses (PHPStan Level 8).</li>
+</ul>
+<h2 id="3-static-analysis-gates">3. Static Analysis Gates<a class="headerlink" href="#3-static-analysis-gates" title="Permanent link">&para;</a></h2>
+<h3 id="phpstan-level-8">PHPStan — Level 8<a class="headerlink" href="#phpstan-level-8" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># Run PHPStan</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>composer<span class="w"> </span>phpstan
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="c1"># Configuration: phpstan.dist.neon</span>
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="c1"># Expected: zero errors in configured scope</span>
+</code></pre></div>
+<p>PHPStan runs at <strong>Level 8</strong> with zero tolerated errors. The scope excludes:
+- Optional SDK code (<code>qiniu/php-sdk</code>)
+- Exception classes (which may intentionally extend without type additions)
+- Documented false-positive suppressions</p>
+<h3 id="deptrac-architecture-boundaries">Deptrac — Architecture Boundaries<a class="headerlink" href="#deptrac-architecture-boundaries" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># Run Deptrac</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>composer<span class="w"> </span>deptrac
+</code></pre></div>
+<p>Enforces that:
+- <code>App\Core\*</code> has no dependency on any business module
+- No new cross-module Entity/Repository dependencies are created
+- <code>deptrac-baseline.yaml</code> records exact legacy source-to-target debt</p>
+<h3 id="rector-type-rules">Rector — Type Rules<a class="headerlink" href="#rector-type-rules" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c1"># Apply type improvements</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>composer<span class="w"> </span>rector:types
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="c1"># CI dry-run check (must pass)</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>composer<span class="w"> </span>rector:types:check
+</code></pre></div>
+<p>Automates Doctrine Collection/Repository PHPDoc generation and other type
+standardization.</p>
+<h3 id="service-container-lint">Service Container Lint<a class="headerlink" href="#service-container-lint" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="c1"># Check container compiles without errors</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>composer<span class="w"> </span>lint:container
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="c1"># Per-app:</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="nb">cd</span><span class="w"> </span>apps/store<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>php<span class="w"> </span>bin/console<span class="w"> </span>lint:container
+</code></pre></div>
+<h2 id="4-commit-message-conventions">4. Commit Message Conventions<a class="headerlink" href="#4-commit-message-conventions" title="Permanent link">&para;</a></h2>
+<p>Follow <a href="https://www.conventionalcommits.org/">Conventional Commits</a>:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>&lt;type&gt;(&lt;scope&gt;): &lt;description&gt;
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>[optional body]
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>[optional footer]
+</code></pre></div>
 <table>
 <thead>
 <tr>
 <th>Type</th>
-<th>Use for</th>
+<th>Usage</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td><code>feat</code></td>
-<td>New capability</td>
+<td>New feature</td>
 </tr>
 <tr>
 <td><code>fix</code></td>
-<td>Bug correction</td>
+<td>Bug fix</td>
 </tr>
 <tr>
 <td><code>refactor</code></td>
-<td>Behaviour-preserving restructuring</td>
+<td>Code change that neither fixes a bug nor adds a feature</td>
 </tr>
 <tr>
 <td><code>test</code></td>
-<td>Tests only</td>
+<td>Adding or updating tests</td>
 </tr>
 <tr>
 <td><code>docs</code></td>
-<td>Documentation / comments</td>
+<td>Documentation changes</td>
 </tr>
 <tr>
 <td><code>chore</code></td>
-<td>Tooling, CI, dependencies, housekeeping</td>
+<td>Build, CI, dependencies, tooling</td>
 </tr>
 <tr>
-<td><code>ci</code></td>
-<td>Workflow file changes</td>
+<td><code>style</code></td>
+<td>Formatting, whitespace</td>
 </tr>
 <tr>
 <td><code>perf</code></td>
-<td>Performance work</td>
+<td>Performance improvement</td>
 </tr>
 </tbody>
 </table>
-<ul>
-<li>Subject: imperative mood, no trailing period, lowercase (except nouns/proper names).</li>
-<li>Body (optional): what and why, not how. Reference issues with <code>Closes #123</code>.</li>
-<li>Keep each commit focused; one logical change per commit.</li>
-<li>Commit messages are written in <strong>English only</strong> — this is a hard rule.</li>
-</ul>
-<hr />
+<table>
+<thead>
+<tr>
+<th>Scope</th>
+<th>Usage</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>core</code></td>
+<td><code>packages/platform-kernel/</code> changes</td>
+</tr>
+<tr>
+<td><code>common</code>, <code>identity</code>, <code>trade</code>, <code>store</code>, <code>inventory</code>, <code>payment</code>, <code>wallet</code></td>
+<td>Per-service changes</td>
+</tr>
+<tr>
+<td><code>ci</code></td>
+<td>GitHub Actions workflows</td>
+</tr>
+<tr>
+<td><code>docker</code></td>
+<td>Docker config changes</td>
+</tr>
+<tr>
+<td><code>integration</code></td>
+<td>Integration contracts changes</td>
+</tr>
+<tr>
+<td><code>i18n</code></td>
+<td>Translation changes</td>
+</tr>
+</tbody>
+</table>
+<h3 id="examples">Examples<a class="headerlink" href="#examples" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>feat(store): add StoreDirectoryOutboxListener for trade_store_directory projection
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>fix(payment): handle null payer in Invoice notification
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>test(trade): add OrderService pricing calculator integration tests
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>chore(ci): add per-app PHPUnit suite jobs
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>refactor(wallet): remove legacy user_id FK, use ownerUuid only
+</code></pre></div>
 <h2 id="5-pull-request-checklist">5. Pull Request Checklist<a class="headerlink" href="#5-pull-request-checklist" title="Permanent link">&para;</a></h2>
-<p>Every PR must satisfy the repo template (<code>.github/pull_request_template.md</code>):</p>
+<p>Before creating a PR, verify:</p>
 <ul>
-<li>[ ] Branch is up-to-date with <code>main</code></li>
-<li>[ ] Summary describes the change; related issues linked</li>
-<li>[ ] Type of change flagged (bug / feature / docs / tests / refactor / CI / i18n)</li>
-<li>[ ] <code>./vendor/bin/phpunit</code> — all tests pass</li>
-<li>[ ] Coverage does not drop below <strong>90%</strong></li>
-<li>[ ] <code>composer phpstan</code> — Level 8 check passes</li>
-<li>[ ] <code>composer rector:types:check</code> — no PHPDoc type changes required</li>
-<li>[ ] Manual smoke test performed (described in the PR)</li>
-<li>[ ] Commits follow Conventional Commits</li>
-<li>[ ] New features include tests</li>
-<li>[ ] API changes documented with <code>#[OA\*]</code> attributes</li>
-<li>[ ] Behaviour changes reflected in <code>docs/ai/context.md</code> where appropriate</li>
-<li>[ ] i18n translation keys added for new user-facing messages (en, zh, zh_Hant, ja)</li>
+<li>[ ] All tests pass: <code>composer test</code> (root) + per-app <code>composer test</code></li>
+<li>[ ] PHPStan Level 8: <code>composer phpstan</code> — zero errors</li>
+<li>[ ] Deptrac boundaries: <code>composer deptrac</code> — no new violations</li>
+<li>[ ] Rector types check: <code>composer rector:types:check</code> — clean</li>
+<li>[ ] Container lint (root + affected apps): <code>composer lint:container</code></li>
+<li>[ ] New code has tests (unit for services, integration for controllers/endpoints)</li>
+<li>[ ] New entities have matching repository + migration</li>
+<li>[ ] New integration events have carrier classes in <code>packages/integration-contracts/</code></li>
+<li>[ ] API changes are reflected in <code>#[OA\*]</code> attributes (NelmioApiDoc)</li>
+<li>[ ] Translations added for any new user-facing strings</li>
+<li>[ ] No cross-service Doctrine associations or FKs</li>
+<li>[ ] Commit history is clean (squash where appropriate)</li>
 </ul>
-<hr />
-<h2 id="6-ci-pipeline">6. CI Pipeline<a class="headerlink" href="#6-ci-pipeline" title="Permanent link">&para;</a></h2>
-<p>Three workflows live in <code>.github/workflows/</code>. All are <strong>path-triggered</strong> — unrelated
-changes do not re-run the whole pipeline.</p>
-<h3 id="61-ciyml-phpstan-phpunit-with-coverage-rector">6.1 <code>ci.yml</code> — PHPStan + PHPUnit (with coverage) + Rector<a class="headerlink" href="#61-ciyml-phpstan-phpunit-with-coverage-rector" title="Permanent link">&para;</a></h3>
-<p><strong>Triggers</strong> — push to <code>main</code>/<code>master</code> and pull requests against <code>main</code>, <code>master</code>, or
-<code>dev</code>, limited to these paths:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>src/**            tests/**          config/**         migrations/**
-<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>bin/**            composer.json     composer.lock     symfony.lock
-<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>phpunit.dist.xml  phpstan.neon      phpstan-bootstrap.php
-<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>rector*.php       .env.test         .github/workflows/ci.yml
-</code></pre></div>
-<p><strong>Jobs</strong> (PHP 8.4 on <code>ubuntu-latest</code>):</p>
+<h2 id="6-code-review-expectations">6. Code Review Expectations<a class="headerlink" href="#6-code-review-expectations" title="Permanent link">&para;</a></h2>
+<p>Reviewers check for:</p>
+<ol>
+<li><strong>Correctness</strong> — Does the code do what it claims? Are edge cases handled?</li>
+<li><strong>Architecture compliance</strong> — Layer rules (Controller → Service → Repository),
+   no cross-service FKs, Outbox for cross-service state changes.</li>
+<li><strong>Idempotency</strong> — Integration event consumers must be idempotent by <code>eventId</code>.</li>
+<li><strong>Transaction boundaries</strong> — State change + Outbox write in the same DB transaction.</li>
+<li><strong>Security</strong> — <code>commonFilter()</code> scoping, input validation, no secrets in code.</li>
+<li><strong>Test coverage</strong> — New logic has tests. Coverage must stay ≥ 90%.</li>
+<li><strong>Static analysis</strong> — No new PHPStan/Deptrac/Rector violations.</li>
+<li><strong>Code style</strong> — PSR-12, <code>strict_types</code>, <code>final</code> where appropriate.</li>
+<li><strong>Naming</strong> — Follows conventions (see <a href="../project-structure/">Project Structure</a>).</li>
+<li><strong>Documentation</strong> — API doc attributes updated, user-facing strings translated.</li>
+</ol>
+<h2 id="7-ci-pipeline-overview">7. CI Pipeline Overview<a class="headerlink" href="#7-ci-pipeline-overview" title="Permanent link">&para;</a></h2>
+<p>The CI pipeline runs on every PR via <code>.github/workflows/ci.yml</code>:</p>
+<h3 id="jobs">Jobs<a class="headerlink" href="#jobs" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
 <tr>
 <th>Job</th>
-<th>What it runs</th>
-<th>Notes</th>
+<th>Command</th>
+<th>Requirement</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>phpstan</code></td>
+<td><strong>PHPUnit — Root Integration</strong></td>
+<td><code>composer test</code> in root</td>
+<td>Must pass (963 tests)</td>
+</tr>
+<tr>
+<td><strong>PHPUnit — Common</strong></td>
+<td><code>composer test</code> in <code>apps/common/</code></td>
+<td>Must pass (74 tests)</td>
+</tr>
+<tr>
+<td><strong>PHPUnit — Identity</strong></td>
+<td><code>composer test</code> in <code>apps/identity/</code></td>
+<td>Must pass (209 tests)</td>
+</tr>
+<tr>
+<td><strong>PHPUnit — Trade</strong></td>
+<td><code>composer test</code> in <code>apps/trade/</code></td>
+<td>Must pass (412 tests)</td>
+</tr>
+<tr>
+<td><strong>PHPUnit — Wallet</strong></td>
+<td><code>composer test</code> in <code>apps/wallet/</code></td>
+<td>Must pass (60 tests)</td>
+</tr>
+<tr>
+<td><strong>PHPUnit — Payment</strong></td>
+<td><code>composer test</code> in <code>apps/payment/</code></td>
+<td>Must pass (37 tests)</td>
+</tr>
+<tr>
+<td><strong>PHPUnit — Store</strong></td>
+<td><code>composer test</code> in <code>apps/store/</code></td>
+<td>Must pass (20 tests)</td>
+</tr>
+<tr>
+<td><strong>PHPUnit — Inventory</strong></td>
+<td><code>composer test</code> in <code>apps/inventory/</code></td>
+<td>Must pass (11 tests)</td>
+</tr>
+<tr>
+<td><strong>Coverage Merge</strong></td>
+<td><code>phpcov merge</code> across all suites</td>
+<td>Aggregate ≥ 90%</td>
+</tr>
+<tr>
+<td><strong>PHPStan</strong></td>
 <td><code>composer phpstan</code></td>
-<td><code>DATABASE_URL=sqlite:///.../var/phpstan.db</code></td>
+<td>Zero errors (Level 8)</td>
 </tr>
 <tr>
-<td><code>tests</code></td>
-<td><code>composer install</code> → boot Postgres 16 service → create <code>app_test_1..4</code> → run <strong>ParaTest with 4 workers</strong> + PCOV coverage → enforce 90% line threshold</td>
-<td>matrix: <code>php: ['8.4']</code></td>
+<td><strong>Deptrac</strong></td>
+<td><code>composer deptrac</code></td>
+<td>No new violations</td>
 </tr>
 <tr>
-<td><code>rector</code></td>
-<td><code>composer rector:types:check</code> (dry-run)</td>
-<td><code>DATABASE_URL=sqlite:///.../var/rector.db</code></td>
+<td><strong>Rector Types</strong></td>
+<td><code>composer rector:types:check</code></td>
+<td>Clean dry-run</td>
+</tr>
+<tr>
+<td><strong>Container Lint</strong></td>
+<td><code>composer lint:container</code> + per-app</td>
+<td>Must compile</td>
 </tr>
 </tbody>
 </table>
-<p><strong>The parallel test job in detail:</strong></p>
-<ol>
-<li><code>shivammathur/setup-php</code> with <code>coverage: pcov</code>, <code>ini-values: pcov.directory=src</code>
-   — so PCOV measures only application code under <code>src/</code>.</li>
-<li>A <code>postgres:16</code> service container is started with <code>app</code>/<code>app_secret</code> credentials and
-   health checks.</li>
-<li><code>app_test_1</code> … <code>app_test_4</code> databases are created via <code>psql</code>.</li>
-<li>Tests run with:</li>
-</ol>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="nv">PCOV_ENABLED</span><span class="o">=</span><span class="m">1</span><span class="w"> </span><span class="nv">PARATEST</span><span class="o">=</span><span class="m">1</span><span class="w"> </span>php<span class="w"> </span>vendor/bin/paratest<span class="w"> </span><span class="se">\</span>
-<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">  </span>--processes<span class="o">=</span><span class="m">4</span><span class="w"> </span>--coverage-text<span class="o">=</span>/tmp/coverage.txt<span class="w"> </span>--display-deprecations
+<h3 id="environment">Environment<a class="headerlink" href="#environment" title="Permanent link">&para;</a></h3>
+<ul>
+<li>CI runs on <strong>PHP 8.4</strong></li>
+<li>Tests use <strong>SQLite</strong> in-memory (<code>DATABASE_URL="sqlite:///var/test.db"</code>)</li>
+<li>No Docker required for test jobs</li>
+<li>Coverage artifacts produced by each PHPUnit job, merged by <code>phpcov</code></li>
+</ul>
+<h3 id="coverage-gate">Coverage Gate<a class="headerlink" href="#coverage-gate" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="c1"># Merge all coverage artifacts</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>phpcov<span class="w"> </span>merge<span class="w"> </span>build/coverage<span class="w"> </span>--clover<span class="w"> </span>build/coverage/merged.xml
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="c1"># Check ≥ 90% threshold</span>
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="c1"># Current: 91.36% aggregate (1785 tests, 6098 assertions)</span>
 </code></pre></div>
-<p>Each ParaTest worker (tokens 1–4) gets its own Postgres database through
-   <code>PARATEST_DATABASE_URL_TEMPLATE=postgresql://.../app_test_{token}?...</code> — concurrent
-   schema drops/creates can never race.
-5. The 90% gate parses <code>Lines: &lt;pct&gt;</code> from the coverage text and fails via
-   <code>bc</code> comparison if it drops below <code>90.0</code>.</p>
-<p>Full env for the <code>tests</code> job mirrors <code>.env.test</code> (JWT keys at
-<code>tests/Identity/Security/</code>, <code>APP_ENV=test</code>, <code>MESSENGER_TRANSPORT_DSN=doctrine://default?auto_setup=0</code>,
-<code>MAILER_DSN=null://null</code>, <code>OTP_REDIS_DSN</code>, Aliyun SMS test values with dry-run on).</p>
-<h3 id="62-migrationsyml-mysql-migration-chain">6.2 <code>migrations.yml</code> — MySQL migration chain<a class="headerlink" href="#62-migrationsyml-mysql-migration-chain" title="Permanent link">&para;</a></h3>
-<p><strong>Triggers</strong> — push to <code>main</code>/<code>master</code> and PRs against <code>main</code>/<code>master</code>/<code>dev</code>, on
-<code>migrations/**</code>, <code>config/**</code>, <code>bin/**</code>, <code>composer.json</code>, <code>composer.lock</code>,
-<code>symfony.lock</code>, and the workflow file itself.</p>
-<p><strong>Job <code>mysql-migration-chain</code>:</strong></p>
-<ol>
-<li>Start <code>mysql:8.4</code> service (<code>crud_skeleton_test</code> database, user <code>app</code>/<code>app</code>).</li>
-<li><code>composer install</code> with <code>DATABASE_URL=mysql://app:app@127.0.0.1:3306/crud_skeleton_test?serverVersion=8.4&amp;charset=utf8mb4</code>.</li>
-<li><code>php bin/console doctrine:migrations:migrate --no-interaction --env=dev</code></li>
-<li><code>php bin/console doctrine:migrations:status --env=dev</code></li>
-</ol>
-<p>This proves the full <strong>migration chain</strong> works against a real MySQL 8.4 instance
-(downstream of the schema-tool-based test schema).</p>
-<h3 id="63-docsyml-docs-build-github-pages-deploy">6.3 <code>docs.yml</code> — Docs build &amp; GitHub Pages deploy<a class="headerlink" href="#63-docsyml-docs-build-github-pages-deploy" title="Permanent link">&para;</a></h3>
-<p><strong>Triggers</strong> — push to <code>main</code>/<code>dev</code> and PRs against <code>main</code>/<code>master</code>/<code>dev</code>, on
-<code>docs/**</code>, <code>README*.md</code>, <code>scripts/build-docs.sh</code>, <code>scripts/translate-docs.py</code>,
-<code>mkdocs.yml</code>, and the workflow file itself.</p>
-<table>
-<thead>
-<tr>
-<th>Job</th>
-<th>Runs on</th>
-<th>Action</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>build</code></td>
-<td>pull_request only</td>
-<td><code>pip install mkdocs-material deep-translator</code> → <code>bash scripts/build-docs.sh</code> (bilingual site build)</td>
-</tr>
-<tr>
-<td><code>deploy</code></td>
-<td>push only</td>
-<td>same build, then <code>peaceiris/actions-gh-pages</code> publishes <code>./site</code> to the <code>gh-pages</code> branch</td>
-</tr>
-</tbody>
-</table>
-<p><code>scripts/translate-docs.py</code> + <code>build-docs.sh</code> produce the bilingual
-(English/Chinese) mkdocs site — do not bypass it by committing generated files.</p>
-<hr />
-<h2 id="7-local-vs-ci-database">7. Local vs CI Database<a class="headerlink" href="#7-local-vs-ci-database" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>Context</th>
-<th>Database</th>
-<th>How it is isolated</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>tests</code> job (CI)</td>
-<td>PostgreSQL 16 (<code>app_test_1..4</code>)</td>
-<td>one DB per ParaTest token</td>
-</tr>
-<tr>
-<td>Local parallel run</td>
-<td>SQLite per worker (<code>var/test_paratest_{pid}.db</code>)</td>
-<td>one file per process</td>
-</tr>
-<tr>
-<td>Local serial run</td>
-<td>SQLite (<code>var/test.db</code>)</td>
-<td>single file</td>
-</tr>
-</tbody>
-</table>
-<p><code>tests/bootstrap.php</code> decides: if <code>PARATEST=1</code> and no explicit <code>DATABASE_URL</code> template
-is provided, it switches each worker to its own <code>var/test_paratest_{pid}.db</code> and eagerly
-creates the schema. When CI provides <code>PARATEST_DATABASE_URL_TEMPLATE</code>, it substitutes
-the worker token instead. An explicit <code>DATABASE_URL</code> from the real environment is never
-clobbered by the sqlite fallback.</p>
-<p>Coverage is always measured with <strong>PCOV</strong> (<code>PCOV_ENABLED=1</code> / <code>coverage: pcov</code>).
-Xdebug-based coverage (<code>XDEBUG_MODE=coverage</code>) works locally but is not used in CI.</p>
-<hr />
-<h2 id="8-definition-of-done">8. Definition of Done<a class="headerlink" href="#8-definition-of-done" title="Permanent link">&para;</a></h2>
-<p>A change is done when, on top of the PR checklist:</p>
-<ol>
-<li><code>composer phpstan</code> — Level 8 clean (no new baseline entries without justification).</li>
-<li><code>composer rector:types:check</code> — no required type-rule changes.</li>
-<li><code>./vendor/bin/phpunit</code> (or <code>PARATEST=1 ./vendor/bin/paratest --processes 8 --runner WrapperRunner</code>) — green, coverage ≥ 90% Lines.</li>
-<li>Migration chain verified against MySQL (CI <code>migrations.yml</code> job).</li>
-<li>OpenAPI <code>#[OA\*]</code> attributes updated for any endpoint change.</li>
-<li>User-facing strings have translation keys (en, zh, zh_Hant, ja).</li>
-</ol>
+<h2 id="8-local-development-tips">8. Local Development Tips<a class="headerlink" href="#8-local-development-tips" title="Permanent link">&para;</a></h2>
+<h3 id="running-static-analysis-locally">Running Static Analysis Locally<a class="headerlink" href="#running-static-analysis-locally" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="c1"># PHPStan</span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>composer<span class="w"> </span>phpstan
+<a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>
+<a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="c1"># Deptrac</span>
+<a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>composer<span class="w"> </span>deptrac
+<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>
+<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="c1"># Rector (apply)</span>
+<a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a>composer<span class="w"> </span>rector:types
+<a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a>
+<a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a><span class="c1"># Rector (check only)</span>
+<a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a>composer<span class="w"> </span>rector:types:check
+<a id="__codelineno-9-12" name="__codelineno-9-12" href="#__codelineno-9-12"></a>
+<a id="__codelineno-9-13" name="__codelineno-9-13" href="#__codelineno-9-13"></a><span class="c1"># Container lint (root)</span>
+<a id="__codelineno-9-14" name="__codelineno-9-14" href="#__codelineno-9-14"></a>composer<span class="w"> </span>lint:container
+<a id="__codelineno-9-15" name="__codelineno-9-15" href="#__codelineno-9-15"></a>
+<a id="__codelineno-9-16" name="__codelineno-9-16" href="#__codelineno-9-16"></a><span class="c1"># Container lint (all apps)</span>
+<a id="__codelineno-9-17" name="__codelineno-9-17" href="#__codelineno-9-17"></a><span class="k">for</span><span class="w"> </span>app<span class="w"> </span><span class="k">in</span><span class="w"> </span>common<span class="w"> </span>identity<span class="w"> </span>trade<span class="w"> </span>store<span class="w"> </span>inventory<span class="w"> </span>payment<span class="w"> </span>wallet<span class="p">;</span><span class="w"> </span><span class="k">do</span>
+<a id="__codelineno-9-18" name="__codelineno-9-18" href="#__codelineno-9-18"></a><span class="w">  </span><span class="nb">cd</span><span class="w"> </span>apps/<span class="nv">$app</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>php<span class="w"> </span>bin/console<span class="w"> </span>lint:container<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nb">cd</span><span class="w"> </span>../..
+<a id="__codelineno-9-19" name="__codelineno-9-19" href="#__codelineno-9-19"></a><span class="k">done</span>
+</code></pre></div>
+<h3 id="pre-commit-checks">Pre-Commit Checks<a class="headerlink" href="#pre-commit-checks" title="Permanent link">&para;</a></h3>
+<p>Before committing, run the full local check suite:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="c1"># Root</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>composer<span class="w"> </span>phpstan<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>composer<span class="w"> </span>deptrac<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>composer<span class="w"> </span>rector:types:check<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>composer<span class="w"> </span><span class="nb">test</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>composer<span class="w"> </span>lint:container
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="c1"># Each modified app</span>
+<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="nb">cd</span><span class="w"> </span>apps/store<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>composer<span class="w"> </span>phpstan<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>composer<span class="w"> </span><span class="nb">test</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>php<span class="w"> </span>bin/console<span class="w"> </span>lint:container
+</code></pre></div>
+<h3 id="ide-configuration">IDE Configuration<a class="headerlink" href="#ide-configuration" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Psalm / PHPStan plugin</strong>: Use <code>phpstan.dist.neon</code> as the project config.</li>
+<li><strong>PHP CS Fixer</strong>: Follow PSR-12. No custom rulesets.</li>
+<li><strong>Doctrine</strong>: Enable ORM annotations/attributes support for entity mapping.</li>
+</ul>
 
 
 
@@ -3362,10 +2897,6 @@ Xdebug-based coverage (<code>XDEBUG_MODE=coverage</code>) works locally but is n
     
     
       <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
-      
-        <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
-      
-        <script src="../../javascripts/mermaid-init.js"></script>
       
     
   </body>

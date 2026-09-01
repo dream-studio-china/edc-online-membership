@@ -6,7 +6,7 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="Symfony 8.1 API backend skeleton with modular architecture">
+        <meta name="description" content="A production-oriented Symfony microservices platform evolved from modular monolith architecture, featuring DDD, service isolation, and event-driven communication.">
       
       
       
@@ -14,25 +14,25 @@
       
       
         
-          <link rel="alternate" href="/crud-skeleton/" hreflang="en">
+          <link rel="alternate" href="/crud-platform/" hreflang="en">
         
-          <link rel="alternate" href="/crud-skeleton/zh/" hreflang="zh">
+          <link rel="alternate" href="/crud-platform/zh/" hreflang="zh">
         
       
       
-      <link rel="icon" href="/crud-skeleton/assets/images/favicon.png">
+      <link rel="icon" href="/crud-platform/assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
     
     
       
-        <title>CRUD Skeleton</title>
+        <title>CRUD Platform</title>
       
     
     
-      <link rel="stylesheet" href="/crud-skeleton/assets/stylesheets/main.ec1eaa64.min.css">
+      <link rel="stylesheet" href="/crud-platform/assets/stylesheets/main.ec1eaa64.min.css">
       
         
-        <link rel="stylesheet" href="/crud-skeleton/assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="/crud-platform/assets/stylesheets/palette.ab4e12ef.min.css">
       
       
 
@@ -51,7 +51,7 @@
       
     
     
-    <script>__md_scope=new URL("/crud-skeleton/",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("/crud-platform/",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -87,7 +87,7 @@
 
 <header class="md-header md-header--shadow" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="/crud-skeleton/." title="CRUD Skeleton" class="md-header__button md-logo" aria-label="CRUD Skeleton" data-md-component="logo">
+    <a href="/crud-platform/." title="CRUD Platform" class="md-header__button md-logo" aria-label="CRUD Platform" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -101,7 +101,7 @@
       <div class="md-header__ellipsis">
         <div class="md-header__topic">
           <span class="md-ellipsis">
-            CRUD Skeleton
+            CRUD Platform
           </span>
         </div>
         <div class="md-header__topic" data-md-component="header-topic">
@@ -154,13 +154,13 @@
       <ul class="md-select__list">
         
           <li class="md-select__item">
-            <a href="/crud-skeleton/" hreflang="en" class="md-select__link">
+            <a href="/crud-platform/" hreflang="en" class="md-select__link">
               English
             </a>
           </li>
         
           <li class="md-select__item">
-            <a href="/crud-skeleton/zh/" hreflang="zh" class="md-select__link">
+            <a href="/crud-platform/zh/" hreflang="zh" class="md-select__link">
               中文
             </a>
           </li>
@@ -215,7 +215,7 @@
     
     
       <div class="md-header__source">
-        <a href="https://github.com/immane/crud-skeleton" title="Go to repository" class="md-source" data-md-component="source">
+        <a href="https://github.com/immane/crud-platform" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
@@ -251,17 +251,17 @@
 
 <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="/crud-skeleton/." title="CRUD Skeleton" class="md-nav__button md-logo" aria-label="CRUD Skeleton" data-md-component="logo">
+    <a href="/crud-platform/." title="CRUD Platform" class="md-nav__button md-logo" aria-label="CRUD Platform" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
 
     </a>
-    CRUD Skeleton
+    CRUD Platform
   </label>
   
     <div class="md-nav__source">
-      <a href="https://github.com/immane/crud-skeleton" title="Go to repository" class="md-source" data-md-component="source">
+      <a href="https://github.com/immane/crud-platform" title="Go to repository" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
@@ -281,7 +281,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/crud-skeleton/." class="md-nav__link">
+      <a href="/crud-platform/." class="md-nav__link">
         
   
   
@@ -333,7 +333,7 @@
   <span class="md-ellipsis">
     
   
-    Development Manual
+    Design Contracts
   
 
     
@@ -349,7 +349,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    Development Manual
+    Design Contracts
   
 
           </label>
@@ -362,14 +362,14 @@
   
   
     <li class="md-nav__item">
-      <a href="/crud-skeleton/manual/" class="md-nav__link">
+      <a href="/crud-platform/design/system-architecture/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Manual Index
+    System Architecture
   
 
     
@@ -390,14 +390,14 @@
   
   
     <li class="md-nav__item">
-      <a href="/crud-skeleton/manual/getting-started/" class="md-nav__link">
+      <a href="/crud-platform/design/microservice-transition/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Getting Started
+    Microservice Transition
   
 
     
@@ -418,14 +418,14 @@
   
   
     <li class="md-nav__item">
-      <a href="/crud-skeleton/manual/architecture/" class="md-nav__link">
+      <a href="/crud-platform/design/store-extraction-readiness/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Architecture
+    Store Extraction Readiness
   
 
     
@@ -446,14 +446,14 @@
   
   
     <li class="md-nav__item">
-      <a href="/crud-skeleton/manual/project-structure/" class="md-nav__link">
+      <a href="/crud-platform/design/inventory-extraction-readiness/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Project Structure
+    Inventory Extraction Readiness
   
 
     
@@ -474,14 +474,14 @@
   
   
     <li class="md-nav__item">
-      <a href="/crud-skeleton/manual/core-framework/" class="md-nav__link">
+      <a href="/crud-platform/design/payment-extraction-readiness/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Core Framework
+    Payment Extraction Readiness
   
 
     
@@ -502,14 +502,14 @@
   
   
     <li class="md-nav__item">
-      <a href="/crud-skeleton/manual/core-usage/" class="md-nav__link">
+      <a href="/crud-platform/design/wallet-extraction-readiness.md" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Core Usage
+    Wallet Extraction Readiness
   
 
     
@@ -530,14 +530,14 @@
   
   
     <li class="md-nav__item">
-      <a href="/crud-skeleton/manual/query-system/" class="md-nav__link">
+      <a href="/crud-platform/design/api-design/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Query System
+    API Design
   
 
     
@@ -558,14 +558,14 @@
   
   
     <li class="md-nav__item">
-      <a href="/crud-skeleton/manual/development-workflow/" class="md-nav__link">
+      <a href="/crud-platform/design/data-model/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Development Workflow
+    Data Model
   
 
     
@@ -586,14 +586,14 @@
   
   
     <li class="md-nav__item">
-      <a href="/crud-skeleton/manual/testing/" class="md-nav__link">
+      <a href="/crud-platform/design/module-design/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Testing
+    Module Design
   
 
     
@@ -614,14 +614,14 @@
   
   
     <li class="md-nav__item">
-      <a href="/crud-skeleton/manual/api-contracts/" class="md-nav__link">
+      <a href="/crud-platform/design/controller-design/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    API Contracts
+    Controller Design
   
 
     
@@ -642,14 +642,14 @@
   
   
     <li class="md-nav__item">
-      <a href="/crud-skeleton/manual/development-contracts/" class="md-nav__link">
+      <a href="/crud-platform/design/api-documentation/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Development Contracts
+    API Documentation
   
 
     
@@ -670,126 +670,14 @@
   
   
     <li class="md-nav__item">
-      <a href="/crud-skeleton/manual/integration-events/" class="md-nav__link">
+      <a href="/crud-platform/design/system-contracts/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Integration Events
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="/crud-skeleton/manual/database-and-migrations/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Database & Migrations
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="/crud-skeleton/manual/deployment/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Deployment
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="/crud-skeleton/manual/extracting-a-service/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Extracting a Service
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="/crud-skeleton/manual/i18n/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Internationalization
+    System Contracts
   
 
     
@@ -842,7 +730,7 @@
   <span class="md-ellipsis">
     
   
-    Design Contracts
+    Bundles
   
 
     
@@ -858,7 +746,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    Design Contracts
+    Bundles
   
 
           </label>
@@ -871,14 +759,14 @@
   
   
     <li class="md-nav__item">
-      <a href="/crud-skeleton/design/system-architecture/" class="md-nav__link">
+      <a href="/crud-platform/design/bundles/core/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    System Architecture
+    Core Framework
   
 
     
@@ -899,14 +787,14 @@
   
   
     <li class="md-nav__item">
-      <a href="/crud-skeleton/design/api-design/" class="md-nav__link">
+      <a href="/crud-platform/design/bundles/common/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    API Design
+    Common (CMS)
   
 
     
@@ -927,14 +815,14 @@
   
   
     <li class="md-nav__item">
-      <a href="/crud-skeleton/design/data-model/" class="md-nav__link">
+      <a href="/crud-platform/design/bundles/trade/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Data Model
+    Trade (E-Commerce)
   
 
     
@@ -955,14 +843,14 @@
   
   
     <li class="md-nav__item">
-      <a href="/crud-skeleton/design/module-design/" class="md-nav__link">
+      <a href="/crud-platform/design/bundles/store/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Module Design
+    Store (Multi-Store Operations)
   
 
     
@@ -983,14 +871,14 @@
   
   
     <li class="md-nav__item">
-      <a href="/crud-skeleton/design/controller-design/" class="md-nav__link">
+      <a href="/crud-platform/design/bundles/inventory/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Controller Design
+    Inventory
   
 
     
@@ -1011,14 +899,14 @@
   
   
     <li class="md-nav__item">
-      <a href="/crud-skeleton/design/api-documentation/" class="md-nav__link">
+      <a href="/crud-platform/design/bundles/payment/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    API Documentation
+    Payment
   
 
     
@@ -1039,14 +927,14 @@
   
   
     <li class="md-nav__item">
-      <a href="/crud-skeleton/design/system-contracts/" class="md-nav__link">
+      <a href="/crud-platform/design/bundles/wallet/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    System Contracts
+    Wallet
   
 
     
@@ -1067,14 +955,42 @@
   
   
     <li class="md-nav__item">
-      <a href="/crud-skeleton/design/naming-convention/" class="md-nav__link">
+      <a href="/crud-platform/design/bundles/identity/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Naming Convention
+    Identity (Auth)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="/crud-platform/design/bundles/wechat/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Wechat (Login + Pay)
   
 
     
@@ -1127,7 +1043,7 @@
   <span class="md-ellipsis">
     
   
-    Bundles
+    Research
   
 
     
@@ -1143,7 +1059,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    Bundles
+    Research
   
 
           </label>
@@ -1156,14 +1072,14 @@
   
   
     <li class="md-nav__item">
-      <a href="/crud-skeleton/design/bundles/core/" class="md-nav__link">
+      <a href="/crud-platform/research/easywechat-6.x-usage/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Core Framework
+    EasyWeChat 6.x Usage
   
 
     
@@ -1184,266 +1100,14 @@
   
   
     <li class="md-nav__item">
-      <a href="/crud-skeleton/design/bundles/common/" class="md-nav__link">
+      <a href="/crud-platform/research/huifu-payment-api/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Common (CMS)
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="/crud-skeleton/design/bundles/trade/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Trade (E-Commerce)
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="/crud-skeleton/design/bundles/store/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Store (Multi-Store Operations)
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="/crud-skeleton/design/bundles/inventory/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Inventory
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="/crud-skeleton/design/bundles/payment/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Payment
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="/crud-skeleton/design/bundles/wallet/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Wallet
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="/crud-skeleton/design/bundles/settlement/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Settlement (Allocation + Finality)
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="/crud-skeleton/design/bundles/exchange/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Exchange (Pool-backed Economy)
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="/crud-skeleton/design/bundles/identity/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Identity (Auth)
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="/crud-skeleton/design/bundles/wechat/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Wechat (Login + Pay)
+    Huifu Payment API
   
 
     
@@ -1496,7 +1160,7 @@
   <span class="md-ellipsis">
     
   
-    Runbooks
+    Issues
   
 
     
@@ -1512,7 +1176,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    Runbooks
+    Issues
   
 
           </label>
@@ -1525,350 +1189,14 @@
   
   
     <li class="md-nav__item">
-      <a href="/crud-skeleton/runbooks/common/" class="md-nav__link">
+      <a href="/crud-platform/issues/architecture-review-2026-06-26/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Common
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="/crud-skeleton/runbooks/core/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Core
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="/crud-skeleton/runbooks/exchange/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Exchange
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="/crud-skeleton/runbooks/identity/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Identity
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="/crud-skeleton/runbooks/inventory/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Inventory
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="/crud-skeleton/runbooks/payment/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Payment
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="/crud-skeleton/runbooks/promotion/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Promotion
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="/crud-skeleton/runbooks/settlement/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Settlement
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="/crud-skeleton/runbooks/storage/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Storage
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="/crud-skeleton/runbooks/store/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Store
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="/crud-skeleton/runbooks/trade/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Trade
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="/crud-skeleton/runbooks/wallet/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Wallet
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="/crud-skeleton/runbooks/wechat/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    WeChat
+    Architecture Review 2026-06-26
   
 
     
@@ -1921,7 +1249,7 @@
   <span class="md-ellipsis">
     
   
-    Research
+    Development Manual
   
 
     
@@ -1937,7 +1265,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    Research
+    Development Manual
   
 
           </label>
@@ -1950,14 +1278,14 @@
   
   
     <li class="md-nav__item">
-      <a href="/crud-skeleton/research/easywechat-6.x-usage/" class="md-nav__link">
+      <a href="/crud-platform/manual/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    EasyWeChat 6.x Usage
+    Overview
   
 
     
@@ -1978,14 +1306,14 @@
   
   
     <li class="md-nav__item">
-      <a href="/crud-skeleton/research/huifu-payment-api/" class="md-nav__link">
+      <a href="/crud-platform/manual/architecture/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Huifu Payment API
+    Architecture
   
 
     
@@ -1998,67 +1326,6 @@
   
 
               
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    
-    
-    
-    
-      
-        
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
-        
-          
-          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Issues
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_7">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Issues
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
             
               
                 
@@ -2067,14 +1334,14 @@
   
   
     <li class="md-nav__item">
-      <a href="/crud-skeleton/issues/architecture-review-2026-06-26/" class="md-nav__link">
+      <a href="/crud-platform/manual/getting-started/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Architecture Review 2026-06-26
+    Getting Started
   
 
     
@@ -2088,40 +1355,155 @@
 
               
             
-          </ul>
-        </nav>
-      
-    </li>
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="/crud-platform/manual/project-structure/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project Structure
   
 
     
-      
-      
+  </span>
   
   
+
+      </a>
+    </li>
   
-  
-    
-    
-    
-    
-      
-        
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
-        
-          
-          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="">
+
+              
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="/crud-platform/manual/core-framework/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core Framework
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="/crud-platform/manual/core-usage/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core Usage
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="/crud-platform/manual/query-system/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Query System
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="/crud-platform/manual/development-workflow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Development Workflow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="/crud-platform/manual/testing/" class="md-nav__link">
+        
   
   
   <span class="md-ellipsis">
@@ -2135,19 +1517,11 @@
   
   
 
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_8">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Testing
+      </a>
+    </li>
   
 
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
+              
             
               
                 
@@ -2156,14 +1530,14 @@
   
   
     <li class="md-nav__item">
-      <a href="/crud-skeleton/testing/crud-skeleton-production/" class="md-nav__link">
+      <a href="/crud-platform/manual/api-contracts/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Production Validation Overview
+    API Contracts
   
 
     
@@ -2184,14 +1558,14 @@
   
   
     <li class="md-nav__item">
-      <a href="/crud-skeleton/testing/crud-skeleton-production/TEST_STRATEGY/" class="md-nav__link">
+      <a href="/crud-platform/manual/development-contracts/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Test Strategy
+    Development Contracts
   
 
     
@@ -2212,14 +1586,14 @@
   
   
     <li class="md-nav__item">
-      <a href="/crud-skeleton/testing/crud-skeleton-production/SYSTEM_WALKTHROUGH/" class="md-nav__link">
+      <a href="/crud-platform/manual/integration-events/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    System Walkthrough And Test Seams
+    Integration Events
   
 
     
@@ -2240,14 +1614,14 @@
   
   
     <li class="md-nav__item">
-      <a href="/crud-skeleton/testing/crud-skeleton-production/TEST_MATRIX/" class="md-nav__link">
+      <a href="/crud-platform/manual/database-and-migrations/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Test Matrix
+    Database & Migrations
   
 
     
@@ -2268,14 +1642,14 @@
   
   
     <li class="md-nav__item">
-      <a href="/crud-skeleton/testing/crud-skeleton-production/BUSINESS_INVARIANTS/" class="md-nav__link">
+      <a href="/crud-platform/manual/deployment/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Business Invariants
+    Deployment
   
 
     
@@ -2296,14 +1670,14 @@
   
   
     <li class="md-nav__item">
-      <a href="/crud-skeleton/testing/crud-skeleton-production/ARCHITECTURE_TEST_MAPPING/" class="md-nav__link">
+      <a href="/crud-platform/manual/extracting-a-service/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Architecture Test Mapping
+    Extracting a Service
   
 
     
@@ -2324,70 +1698,14 @@
   
   
     <li class="md-nav__item">
-      <a href="/crud-skeleton/testing/crud-skeleton-production/FAILURE_MODES/" class="md-nav__link">
+      <a href="/crud-platform/manual/i18n/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Failure Modes
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="/crud-skeleton/testing/crud-skeleton-production/PRODUCTION_VALIDATION/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Release Validation
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="/crud-skeleton/testing/crud-skeleton-production/AI_DEVELOPMENT_PROCESS/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    AI Development Process
+    Internationalization
   
 
     
@@ -2415,7 +1733,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/crud-skeleton/ai/context/" class="md-nav__link">
+      <a href="/crud-platform/ai/context/" class="md-nav__link">
         
   
   
@@ -2442,7 +1760,7 @@
   
   
     <li class="md-nav__item">
-      <a href="/crud-skeleton/openapi/endpoints.yaml" class="md-nav__link">
+      <a href="/crud-platform/openapi/endpoints.yaml" class="md-nav__link">
         
   
   
@@ -2535,14 +1853,10 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "/crud-skeleton/", "features": ["navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "/crud-skeleton/assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "/crud-platform/", "features": ["navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "/crud-platform/assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="/crud-skeleton/assets/javascripts/bundle.d7400e89.min.js"></script>
-      
-        <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
-      
-        <script src="/crud-skeleton/javascripts/mermaid-init.js"></script>
+      <script src="/crud-platform/assets/javascripts/bundle.d7400e89.min.js"></script>
       
     
   </body>

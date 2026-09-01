@@ -6,11 +6,11 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width,initial-scale=1">
       
-        <meta name="description" content="Symfony 8.1 API backend skeleton with modular architecture">
+        <meta name="description" content="A production-oriented Symfony microservices platform evolved from modular monolith architecture, featuring DDD, service isolation, and event-driven communication.">
       
       
       
-        <link rel="canonical" href="https://immane.github.io/crud-skeleton/zh/manual/development-contracts/">
+        <link rel="canonical" href="https://immane.github.io/crud-platform/zh/manual/development-contracts/">
       
       
         <link rel="prev" href="../api-contracts/">
@@ -20,9 +20,9 @@
       
       
         
-          <link rel="alternate" href="/crud-skeleton/" hreflang="en">
+          <link rel="alternate" href="/crud-platform/" hreflang="en">
         
-          <link rel="alternate" href="/crud-skeleton/zh/" hreflang="zh">
+          <link rel="alternate" href="/crud-platform/zh/" hreflang="zh">
         
       
       
@@ -31,7 +31,7 @@
     
     
       
-        <title>开发合同 - CRUD Skeleton</title>
+        <title>Development Contracts - CRUD Platform</title>
       
     
     
@@ -82,7 +82,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#_1" class="md-skip">
+        <a href="#development-contracts" class="md-skip">
           跳转至
         </a>
       
@@ -98,7 +98,7 @@
 
 <header class="md-header md-header--shadow" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="页眉">
-    <a href="../.." title="CRUD Skeleton" class="md-header__button md-logo" aria-label="CRUD Skeleton" data-md-component="logo">
+    <a href="../.." title="CRUD Platform" class="md-header__button md-logo" aria-label="CRUD Platform" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -112,13 +112,13 @@
       <div class="md-header__ellipsis">
         <div class="md-header__topic">
           <span class="md-ellipsis">
-            CRUD Skeleton
+            CRUD Platform
           </span>
         </div>
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              开发合同
+              Development Contracts
             
           </span>
         </div>
@@ -165,13 +165,13 @@
       <ul class="md-select__list">
         
           <li class="md-select__item">
-            <a href="/crud-skeleton/" hreflang="en" class="md-select__link">
+            <a href="/crud-platform/" hreflang="en" class="md-select__link">
               English
             </a>
           </li>
         
           <li class="md-select__item">
-            <a href="/crud-skeleton/zh/" hreflang="zh" class="md-select__link">
+            <a href="/crud-platform/zh/" hreflang="zh" class="md-select__link">
               中文
             </a>
           </li>
@@ -226,7 +226,7 @@
     
     
       <div class="md-header__source">
-        <a href="https://github.com/immane/crud-skeleton" title="前往仓库" class="md-source" data-md-component="source">
+        <a href="https://github.com/immane/crud-platform" title="前往仓库" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
@@ -262,17 +262,17 @@
 
 <nav class="md-nav md-nav--primary" aria-label="导航栏" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../.." title="CRUD Skeleton" class="md-nav__button md-logo" aria-label="CRUD Skeleton" data-md-component="logo">
+    <a href="../.." title="CRUD Platform" class="md-nav__button md-logo" aria-label="CRUD Platform" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
 
     </a>
-    CRUD Skeleton
+    CRUD Platform
   </label>
   
     <div class="md-nav__source">
-      <a href="https://github.com/immane/crud-skeleton" title="前往仓库" class="md-source" data-md-component="source">
+      <a href="https://github.com/immane/crud-platform" title="前往仓库" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
@@ -316,845 +316,6 @@
       
   
   
-    
-  
-  
-  
-    
-    
-    
-    
-      
-        
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
-      
-        
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
-        
-          
-          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    开发手册
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
-          <label class="md-nav__title" for="__nav_2">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    开发手册
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    手册索引
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../getting-started/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    入门
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../architecture/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Architecture
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../project-structure/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    项目结构
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../core-framework/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Core 框架
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../core-usage/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    核心用法
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../query-system/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    查询系统
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../development-workflow/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    开发流程
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../testing/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Testing
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../api-contracts/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    API合约
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-    
-  
-  
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    开发合同
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    开发合同
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="目录">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      目录
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#1" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        1. 图层规则
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="1. 图层规则">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#_2" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        交易合约
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#_3" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        抛出和捕获异常的地方
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#2" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        2. 跨模块通信
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="2. 跨模块通信">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#_4" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        信使路由（异步传输）
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#_5" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        注册表用于横切扩展而不是直接连线
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#3" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        3. 服务边界
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="3. 服务边界">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#_6" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        服务形态
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#_7" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        存储库形状
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#_8" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        控制器形状
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#4" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        4. 命名约定
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="4. 命名约定">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#_9" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        受保护的跨模块冲突组（永远不要删除前缀）
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#5" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        5. 代码风格
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#6" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        6. 性能
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#7" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        7. 安全
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="7. 安全">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#_10" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        身份验证
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#_11" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        授权
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#_12" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        验证顺序
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#_13" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        速率限制
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#_14" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        记录卫生
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#_15" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        金钱和身份
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#8" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        8. 重大变更政策
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#9" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        9. 另请参阅
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../integration-events/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    整合活动
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../database-and-migrations/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    数据库和迁移
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../deployment/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Deployment
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../extracting-a-service/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    提取服务
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../i18n/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Internationalization
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-    
-      
-      
-  
-  
   
   
     
@@ -1173,10 +334,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
         
           
-          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
             
   
   
@@ -1194,8 +355,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1220,6 +381,146 @@
     
   
     系统架构
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/microservice-transition/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Microservice Transition
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/store-extraction-readiness/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Store Extraction Readiness
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/inventory-extraction-readiness/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Inventory Extraction Readiness
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/payment-extraction-readiness/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Payment Extraction Readiness
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../design/wallet-extraction-readiness.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Wallet Extraction Readiness
   
 
     
@@ -1401,34 +702,6 @@
 
               
             
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/naming-convention/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    命名约定
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
           </ul>
         </nav>
       
@@ -1458,10 +731,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
         
           
-          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
             
   
   
@@ -1479,8 +752,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_4">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1588,7 +861,7 @@
   <span class="md-ellipsis">
     
   
-    商店（多商店运营）
+    Store (Multi-Store Operations)
   
 
     
@@ -1693,62 +966,6 @@
   
   
     <li class="md-nav__item">
-      <a href="../../design/bundles/settlement/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    结算（分配+最终确定）
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../design/bundles/exchange/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    交易所（矿池支持经济）
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
       <a href="../../design/bundles/identity/" class="md-nav__link">
         
   
@@ -1784,7 +1001,7 @@
   <span class="md-ellipsis">
     
   
-    微信（登录+支付）
+    Wechat (Login + Pay)
   
 
     
@@ -1827,435 +1044,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
         
           
-          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Runbooks
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_5">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Runbooks
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../runbooks/common/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Common
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../runbooks/core/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Core
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../runbooks/exchange/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Exchange
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../runbooks/identity/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Identity
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../runbooks/inventory/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Inventory
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../runbooks/payment/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Payment (支付)
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../runbooks/promotion/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Promotion
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../runbooks/settlement/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Settlement
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../runbooks/storage/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Storage
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../runbooks/store/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Store
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../runbooks/trade/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Trade
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../runbooks/wallet/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Wallet (钱包)
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../runbooks/wechat/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    WeChat
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    
-    
-    
-    
-      
-        
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
-        
-          
-          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
             
   
   
@@ -2273,8 +1065,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_6">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -2369,10 +1161,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
         
           
-          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
             
   
   
@@ -2390,8 +1182,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_7">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -2415,7 +1207,7 @@
   <span class="md-ellipsis">
     
   
-    架构回顾 2026-06-26
+    Architecture Review 2026-06-26
   
 
     
@@ -2440,8 +1232,10 @@
       
   
   
+    
   
   
+  
     
     
     
@@ -2452,23 +1246,21 @@
       
     
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
         
           
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
-        
-          
-          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="">
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
             
   
   
   <span class="md-ellipsis">
     
   
-    Testing
+    Development Manual
   
 
     
@@ -2479,12 +1271,12 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_8">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_6">
             <span class="md-nav__icon md-icon"></span>
             
   
-    Testing
+    Development Manual
   
 
           </label>
@@ -2497,14 +1289,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../testing/crud-skeleton-production/" class="md-nav__link">
+      <a href="../" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    生产验证概述
+    Overview
   
 
     
@@ -2525,14 +1317,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../testing/crud-skeleton-production/TEST_STRATEGY/" class="md-nav__link">
+      <a href="../architecture/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    测试策略
+    Architecture
   
 
     
@@ -2553,14 +1345,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../testing/crud-skeleton-production/SYSTEM_WALKTHROUGH/" class="md-nav__link">
+      <a href="../getting-started/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    系统演练和测试接缝
+    Getting Started
   
 
     
@@ -2581,14 +1373,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../testing/crud-skeleton-production/TEST_MATRIX/" class="md-nav__link">
+      <a href="../project-structure/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    测试矩阵
+    项目结构
   
 
     
@@ -2609,14 +1401,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../testing/crud-skeleton-production/BUSINESS_INVARIANTS/" class="md-nav__link">
+      <a href="../core-framework/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    业务不变量
+    Core 框架
   
 
     
@@ -2637,14 +1429,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../testing/crud-skeleton-production/ARCHITECTURE_TEST_MAPPING/" class="md-nav__link">
+      <a href="../core-usage/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    架构测试映射
+    Core Usage
   
 
     
@@ -2665,14 +1457,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../testing/crud-skeleton-production/FAILURE_MODES/" class="md-nav__link">
+      <a href="../query-system/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    失效模式
+    Query System
   
 
     
@@ -2693,14 +1485,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../testing/crud-skeleton-production/PRODUCTION_VALIDATION/" class="md-nav__link">
+      <a href="../development-workflow/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    发布验证
+    开发流程
   
 
     
@@ -2721,14 +1513,795 @@
   
   
     <li class="md-nav__item">
-      <a href="../../testing/crud-skeleton-production/AI_DEVELOPMENT_PROCESS/" class="md-nav__link">
+      <a href="../testing/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    人工智能开发流程
+    Testing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api-contracts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Contracts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Development Contracts
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Development Contracts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-layer-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Layer Rules
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-cross-module-communication" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Cross-Module Communication
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Cross-Module Communication">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-allowed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 Allowed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-forbidden" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 Forbidden
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23-cross-boundary-identity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3 Cross-Boundary Identity
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-service-boundary-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Service Boundary Rules
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-namespace-conventions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Namespace Conventions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-file-naming" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. File Naming
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-class-conventions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Class Conventions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. Class Conventions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#61-required" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.1 Required
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#62-phpdoc" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.2 PHPDoc
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#63-visibility" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.3 Visibility
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-code-style" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Code Style
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Code Style">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#71-psr-12" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.1 PSR-12
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#72-phpstan-level-8" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.2 PHPStan Level 8
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#73-deptrac-architecture-boundaries" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.3 Deptrac Architecture Boundaries
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#74-rector-type-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.4 Rector Type Rules
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#75-naming-conventions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.5 Naming Conventions
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-testing-contracts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Testing Contracts
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. Testing Contracts">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#81-unit-vs-integration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.1 Unit vs Integration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#82-test-naming" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.2 Test Naming
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#83-coverage-requirements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.3 Coverage Requirements
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#84-test-database" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.4 Test Database
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-git-workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Git Workflow
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="9. Git Workflow">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#91-feature-branches" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.1 Feature Branches
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#92-conventional-commits" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.2 Conventional Commits
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#93-pr-template" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.3 PR Template
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#94-review-requirements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.4 Review Requirements
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-breaking-changes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Breaking Changes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10. Breaking Changes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#101-what-constitutes-a-breaking-change" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.1 What Constitutes a Breaking Change
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#102-migration-compatibility" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.2 Migration Compatibility
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-documentation-requirements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. Documentation Requirements
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="11. Documentation Requirements">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#111-when-adding-a-module" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11.1 When Adding a Module
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#112-when-adding-a-service" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11.2 When Adding a Service
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#113-when-adding-an-endpoint" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11.3 When Adding an Endpoint
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12-performance-guidelines" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12. Performance Guidelines
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="12. Performance Guidelines">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#121-n1-prevention" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12.1 N+1 Prevention
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#122-query-optimization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12.2 Query Optimization
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#123-caching" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12.3 Caching
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#13-security-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13. Security Rules
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="13. Security Rules">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#131-safe-select" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13.1 Safe Select
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#132-privileged-parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13.2 Privileged Parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#133-commonfilter" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13.3 commonFilter
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#134-csrf-xss" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13.4 CSRF / XSS
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../integration-events/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    整合活动
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../database-and-migrations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    数据库和迁移
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../deployment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../extracting-a-service/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Extracting a Service
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../i18n/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Internationalization
   
 
     
@@ -2830,22 +2403,33 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#1" class="md-nav__link">
+  <a href="#1-layer-rules" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. 图层规则
+        1. Layer Rules
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="1. 图层规则">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-cross-module-communication" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Cross-Module Communication
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Cross-Module Communication">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#_2" class="md-nav__link">
+  <a href="#21-allowed" class="md-nav__link">
     <span class="md-ellipsis">
       
-        交易合约
+        2.1 Allowed
       
     </span>
   </a>
@@ -2853,10 +2437,21 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#_3" class="md-nav__link">
+  <a href="#22-forbidden" class="md-nav__link">
     <span class="md-ellipsis">
       
-        抛出和捕获异常的地方
+        2.2 Forbidden
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23-cross-boundary-identity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3 Cross-Boundary Identity
       
     </span>
   </a>
@@ -2869,22 +2464,55 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2" class="md-nav__link">
+  <a href="#3-service-boundary-rules" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. 跨模块通信
+        3. Service Boundary Rules
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="2. 跨模块通信">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-namespace-conventions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Namespace Conventions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-file-naming" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. File Naming
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-class-conventions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Class Conventions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. Class Conventions">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#_4" class="md-nav__link">
+  <a href="#61-required" class="md-nav__link">
     <span class="md-ellipsis">
       
-        信使路由（异步传输）
+        6.1 Required
       
     </span>
   </a>
@@ -2892,10 +2520,21 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#_5" class="md-nav__link">
+  <a href="#62-phpdoc" class="md-nav__link">
     <span class="md-ellipsis">
       
-        注册表用于横切扩展而不是直接连线
+        6.2 PHPDoc
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#63-visibility" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.3 Visibility
       
     </span>
   </a>
@@ -2908,22 +2547,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#3" class="md-nav__link">
+  <a href="#7-code-style" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. 服务边界
+        7. Code Style
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="3. 服务边界">
+    <nav class="md-nav" aria-label="7. Code Style">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#_6" class="md-nav__link">
+  <a href="#71-psr-12" class="md-nav__link">
     <span class="md-ellipsis">
       
-        服务形态
+        7.1 PSR-12
       
     </span>
   </a>
@@ -2931,10 +2570,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#_7" class="md-nav__link">
+  <a href="#72-phpstan-level-8" class="md-nav__link">
     <span class="md-ellipsis">
       
-        存储库形状
+        7.2 PHPStan Level 8
       
     </span>
   </a>
@@ -2942,10 +2581,32 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#_8" class="md-nav__link">
+  <a href="#73-deptrac-architecture-boundaries" class="md-nav__link">
     <span class="md-ellipsis">
       
-        控制器形状
+        7.3 Deptrac Architecture Boundaries
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#74-rector-type-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.4 Rector Type Rules
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#75-naming-conventions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.5 Naming Conventions
       
     </span>
   </a>
@@ -2958,22 +2619,55 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#4" class="md-nav__link">
+  <a href="#8-testing-contracts" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. 命名约定
+        8. Testing Contracts
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="4. 命名约定">
+    <nav class="md-nav" aria-label="8. Testing Contracts">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#_9" class="md-nav__link">
+  <a href="#81-unit-vs-integration" class="md-nav__link">
     <span class="md-ellipsis">
       
-        受保护的跨模块冲突组（永远不要删除前缀）
+        8.1 Unit vs Integration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#82-test-naming" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.2 Test Naming
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#83-coverage-requirements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.3 Coverage Requirements
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#84-test-database" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.4 Test Database
       
     </span>
   </a>
@@ -2986,44 +2680,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#5" class="md-nav__link">
+  <a href="#9-git-workflow" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5. 代码风格
+        9. Git Workflow
       
     </span>
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#6" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        6. 性能
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#7" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        7. 安全
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="7. 安全">
+    <nav class="md-nav" aria-label="9. Git Workflow">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#_10" class="md-nav__link">
+  <a href="#91-feature-branches" class="md-nav__link">
     <span class="md-ellipsis">
       
-        身份验证
+        9.1 Feature Branches
       
     </span>
   </a>
@@ -3031,10 +2703,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#_11" class="md-nav__link">
+  <a href="#92-conventional-commits" class="md-nav__link">
     <span class="md-ellipsis">
       
-        授权
+        9.2 Conventional Commits
       
     </span>
   </a>
@@ -3042,10 +2714,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#_12" class="md-nav__link">
+  <a href="#93-pr-template" class="md-nav__link">
     <span class="md-ellipsis">
       
-        验证顺序
+        9.3 PR Template
       
     </span>
   </a>
@@ -3053,32 +2725,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#_13" class="md-nav__link">
+  <a href="#94-review-requirements" class="md-nav__link">
     <span class="md-ellipsis">
       
-        速率限制
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#_14" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        记录卫生
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#_15" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        金钱和身份
+        9.4 Review Requirements
       
     </span>
   </a>
@@ -3091,24 +2741,202 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#8" class="md-nav__link">
+  <a href="#10-breaking-changes" class="md-nav__link">
     <span class="md-ellipsis">
       
-        8. 重大变更政策
+        10. Breaking Changes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10. Breaking Changes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#101-what-constitutes-a-breaking-change" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.1 What Constitutes a Breaking Change
       
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
-  <a href="#9" class="md-nav__link">
+        
+          <li class="md-nav__item">
+  <a href="#102-migration-compatibility" class="md-nav__link">
     <span class="md-ellipsis">
       
-        9. 另请参阅
+        10.2 Migration Compatibility
       
     </span>
   </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-documentation-requirements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. Documentation Requirements
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="11. Documentation Requirements">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#111-when-adding-a-module" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11.1 When Adding a Module
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#112-when-adding-a-service" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11.2 When Adding a Service
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#113-when-adding-an-endpoint" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11.3 When Adding an Endpoint
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12-performance-guidelines" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12. Performance Guidelines
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="12. Performance Guidelines">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#121-n1-prevention" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12.1 N+1 Prevention
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#122-query-optimization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12.2 Query Optimization
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#123-caching" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12.3 Caching
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#13-security-rules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13. Security Rules
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="13. Security Rules">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#131-safe-select" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13.1 Safe Select
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#132-privileged-parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13.2 Privileged Parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#133-commonfilter" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13.3 commonFilter
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#134-csrf-xss" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13.4 CSRF / XSS
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -3132,542 +2960,644 @@
   
 
 
-<h1 id="_1">开发合同<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h1>
-<blockquote>
-<p>保持模块化整体连贯的规则：层边界、跨模块
-通信、服务边界、命名、代码风格、性能和安全性。
-这些是面向开发人员的规范设计文档的配套文件
-(<code>docs/design/system-architecture.md</code>、<code>docs/design/system-contracts.md</code>、
-<code>docs/design/module-design.md</code>、<code>docs/design/naming-convention.md</code>)。</p>
-</blockquote>
+<h1 id="development-contracts">Development Contracts<a class="headerlink" href="#development-contracts" title="Permanent link">&para;</a></h1>
+<p>Development rules, conventions, and quality gates that all contributors MUST follow.
+Derived from <code>docs/design/system-architecture.md</code>, <code>docs/design/system-contracts.md</code>,
+and the actual codebase patterns.</p>
 <hr />
-<h2 id="1">1. 图层规则<a class="headerlink" href="#1" title="Permanent link">&para;</a></h2>
-<p>请求通过严格的单向链移动：</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>HTTP (Controllers / View mixins)  →  Service  →  Repository  →  Entity  →  Infrastructure
-</code></pre></div>
+<h2 id="1-layer-rules">1. Layer Rules<a class="headerlink" href="#1-layer-rules" title="Permanent link">&para;</a></h2>
+<p>Layer dependency table from <code>docs/design/system-architecture.md</code> section 1.1:</p>
 <table>
 <thead>
 <tr>
-<th>规则</th>
-<th>来自</th>
-<th>至</th>
-<th>允许吗？</th>
-<th>为什么</th>
+<th>Rule</th>
+<th>From</th>
+<th>To</th>
+<th>Allowed</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td>R1</td>
-<td>控制器</td>
-<td>服务</td>
-<td>是</td>
-<td>正常流量</td>
+<td>Controller</td>
+<td>Service</td>
+<td><strong>YES</strong></td>
 </tr>
 <tr>
 <td>R2</td>
-<td>控制器</td>
-<td>实体</td>
-<td>是</td>
-<td>仅输入提示/返回</td>
+<td>Controller</td>
+<td>Entity</td>
+<td><strong>YES</strong> (type hints/returns only)</td>
 </tr>
 <tr>
 <td>R3</td>
-<td>控制器</td>
-<td>存储库</td>
-<td><strong>不</strong></td>
-<td>浏览服务</td>
+<td>Controller</td>
+<td>Repository</td>
+<td><strong>NO</strong> — go through Service</td>
 </tr>
 <tr>
 <td>R4</td>
-<td>控制器</td>
-<td>实体管理器</td>
-<td><strong>不</strong></td>
-<td>浏览服务</td>
+<td>Controller</td>
+<td>EntityManager</td>
+<td><strong>NO</strong> — go through Service</td>
 </tr>
 <tr>
 <td>R5</td>
-<td>服务</td>
-<td>存储库</td>
-<td>是</td>
-<td>数据访问</td>
+<td>Service</td>
+<td>Repository</td>
+<td><strong>YES</strong></td>
 </tr>
 <tr>
 <td>R6</td>
-<td>服务</td>
-<td>实体</td>
-<td>是</td>
-<td>域名运营</td>
+<td>Service</td>
+<td>Entity</td>
+<td><strong>YES</strong></td>
 </tr>
 <tr>
 <td>R7</td>
-<td>服务</td>
-<td>实体管理器</td>
-<td>是</td>
-<td>交易</td>
+<td>Service</td>
+<td>EntityManager</td>
+<td><strong>YES</strong></td>
 </tr>
 <tr>
 <td>R8</td>
-<td>服务</td>
-<td>其他服务</td>
-<td>是</td>
-<td>DI，接口优先</td>
+<td>Service</td>
+<td>Other Services</td>
+<td><strong>YES</strong> (via DI)</td>
 </tr>
 <tr>
 <td>R9</td>
-<td>实体</td>
-<td>存储库</td>
-<td><strong>不</strong></td>
-<td>实体是纯粹的</td>
+<td>Entity</td>
+<td>Repository</td>
+<td><strong>NO</strong></td>
 </tr>
 <tr>
 <td>R10</td>
-<td>实体</td>
-<td>服务</td>
-<td><strong>不</strong></td>
-<td>没有业务逻辑部门</td>
+<td>Entity</td>
+<td>Service</td>
+<td><strong>NO</strong></td>
 </tr>
 <tr>
 <td>R11</td>
-<td>实体</td>
-<td>实体管理器</td>
-<td><strong>不</strong></td>
-<td>持久是外在的</td>
+<td>Entity</td>
+<td>EntityManager</td>
+<td><strong>NO</strong></td>
 </tr>
 </tbody>
 </table>
-<h3 id="_2">交易合约<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h3>
-<ul>
-<li>事务仅存在于 <strong>服务层</strong> - 控制器从不调用
-  <code>beginTransaction()</code> / <code>commit()</code> / <code>rollback()</code> (T4)。</li>
-<li>相关实体的多个突变包含在 <code>wrapInTransaction()</code> (T1) 中。</li>
-<li>钱包转账使用实体的显式 <code>beginTransaction</code>/<code>commit</code>/<code>rollback</code>
-  锁定 (<code>PESSIMISTIC_WRITE</code>) (T2)，并且 EntityManager 在经过一段时间后恢复
-  使用 <code>$em-&gt;isOpen()</code> 防护 (T3) 进行回滚。</li>
-<li>Mixin 驱动的突变（<code>createAction</code>、<code>batchUpdateAction</code>）自动换行
-  除非<code>@partial=true</code>。 <code>@partial=true</code> 独立处理每一项；否则
-  所有项目一起提交或回滚。</li>
-</ul>
-<h3 id="_3">抛出和捕获异常的地方<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h3>
-<table>
-<thead>
-<tr>
-<th>层</th>
-<th>可能会抛出</th>
-<th>必须抓住</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>实体</td>
-<td><strong>不</strong></td>
-<td>—</td>
-</tr>
-<tr>
-<td>存储库</td>
-<td>仅原则例外</td>
-<td>—</td>
-</tr>
-<tr>
-<td>服务</td>
-<td>业务异常（<code>InsufficientFundsException</code>、<code>OrderInvalidTransitionException</code>、...）</td>
-<td>—</td>
-</tr>
-<tr>
-<td>控制器</td>
-<td><strong>否</strong> — 转换为 <code>warning()</code></td>
-<td>域例外 → <code>warning()</code> 为 400/404/500</td>
-</tr>
-</tbody>
-</table>
-<p><code>/api/*</code> 上未处理的异常通过以下方式转换为 JSON <code>{code, message, class}</code>
-<code>ExceptionInterceptor</code>（在开发中绕过）。</p>
+<p><strong>Controllers MUST NOT</strong>:
+- Inject <code>EntityManager</code>
+- Call <code>beginTransaction()</code>, <code>commit()</code>, <code>rollback()</code>
+- Call Repository directly
+- Use <code>$_GET</code>, <code>$_POST</code>, <code>$_REQUEST</code> superglobals
+- Contain business logic (delegate to services)</p>
+<p><strong>Services MUST</strong>:
+- Own all business logic, transactions, validation
+- Use <code>wrapInTransaction()</code> for multi-entity mutations
+- Return entities or DTOs (never raw database results to controllers)</p>
 <hr />
-<h2 id="2">2. 跨模块通信<a class="headerlink" href="#2" title="Permanent link">&para;</a></h2>
-<p>模块共享一个内核、一个 EntityManager、一个缓存和一个 Messenger 总线 — 但是
-必须表现得就像它们是独立的服务一样。</p>
+<h2 id="2-cross-module-communication">2. Cross-Module Communication<a class="headerlink" href="#2-cross-module-communication" title="Permanent link">&para;</a></h2>
+<h3 id="21-allowed">2.1 Allowed<a class="headerlink" href="#21-allowed" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
 <tr>
-<th>关注</th>
-<th>合同</th>
+<th>From</th>
+<th>To</th>
+<th>Mechanism</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>教义协会</td>
-<td><strong>没有跨模块关联。</strong> 实体永远不会将另一个模块的实体作为关系/FK</td>
+<td>Any Business Module</td>
+<td>Core</td>
+<td>DI (autowire Core services)</td>
 </tr>
 <tr>
-<td>耐用的参考资料</td>
-<td>引用通过 <strong>UUID</strong> (<code>App\Core\Utils\UUID</code>) 或明确记录的业务密钥跨模块进行聚合 - 绝不是本地自动增量 ID</td>
+<td>Business Module A</td>
+<td>Business Module B</td>
+<td>DI (autowire B's service <strong>interface</strong>)</td>
 </tr>
 <tr>
-<td>合同输入，标量数据输出</td>
-<td>跨模块服务调用交换 <strong>仅标量/快照/DTO</strong> — 绝不是实体、存储库或 EntityManager</td>
-</tr>
-<tr>
-<td>写</td>
-<td><strong>发件箱</strong>：发布模块将 <code>*OutboxMessage</code> 实体持久保存在<em>同一事务</em>中作为更改； <code>app:{module}:outbox:publish</code> 命令将其刷新到 Messenger</td>
-</tr>
-<tr>
-<td>阅读</td>
-<td><strong>收件箱/消息处理程序</strong>：使用模块通过它们自己的 <code>MessageHandler/</code> 处理程序读取另一个模块的状态，这些处理程序强制执行完整性和幂等性</td>
-</tr>
-<tr>
-<td>直接存储库跨模块读取</td>
-<td><strong>禁止</strong></td>
-</tr>
-<tr>
-<td>依赖方向</td>
-<td>业务模块可以自动装配 <code>Core</code> 和（接口优先）彼此； <code>Core</code> 绝不能导入业务模块；禁止循环模块依赖</td>
+<td>Any Module</td>
+<td>Identity</td>
+<td>Current principal abstraction or exported service</td>
 </tr>
 </tbody>
 </table>
-<h3 id="_4">信使路由（异步传输）<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h3>
-<p>注册消息包括：交易订单创建/取消/商店接受/拒绝，
-库存预留请求/确认/拒绝/释放，结算资金确认和
-分配过帐。处理程序位于消费模块的 <code>MessageHandler/</code> 中
-目录（例如<code>src/Store/MessageHandler/TradeOrderCreatedHandler.php</code>，
-<code>src/Inventory/MessageHandler</code>）。失败传输是 <code>failed</code> 并重试 3 次，
-加倍退避。</p>
-<h3 id="_5">注册表用于横切扩展而不是直接连线<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h3>
-<p>可热插拔的协作者通过标记的迭代器进行收集并通过
-注册表 — 非硬连线：<code>PaymentGatewayRegistry</code> (<code>payment.gateway</code>)，
-<code>PaymentAdjustmentRegistry</code>、<code>DepositProviderRegistry</code>、<code>WithdrawProviderRegistry</code>、
-<code>MediaStorageRegistry</code>、<code>SettlementContextResolverRegistry</code> 和
-<code>trade.price_calculator</code> 定价链（优先排序，促销60）。</p>
-<hr />
-<h2 id="3">3. 服务边界<a class="headerlink" href="#3" title="Permanent link">&para;</a></h2>
-<h3 id="_6">服务形态<a class="headerlink" href="#_6" title="Permanent link">&para;</a></h3>
-<ul>
-<li>每个服务都实现一个模块接口：<code>{Entity}ServiceInterface extends
-  App\Core\Service\BaseServiceInterface</code>。</li>
-<li>实现扩展<code>App\Core\Service\BaseService</code>，它组成
-  <code>BaseServiceInfrastructureTrait</code>（容器/EM/存储库/记录器/序列化器，
-  交易包装器、验证器）、<code>BaseServiceReadListTrait</code>（<code>get</code>/<code>list</code>、
-  QueryBuilder 列表、DQL 编译）和 <code>BaseServiceMutationTrait</code>
-  （<code>new</code>/<code>update</code>/<code>remove</code>、关系/日期映射、序列化器 + 验证器集成）。</li>
-<li>服务<strong>不得</strong>返回原始 HTTP 响应（控制器的工作）并且不得触及
-  直接使用 <code>Request</code> — 使用 <code>getCurrentRequest()</code>。</li>
-</ul>
-<h3 id="_7">存储库形状<a class="headerlink" href="#_7" title="Permanent link">&para;</a></h3>
-<ul>
-<li>存储库扩展<code>ServiceEntityRepository</code>，将<code>ManagerRegistry</code>放入
-  构造函数，并返回实体/数组/标量。</li>
-<li>存储库不得**将原始 <code>QueryBuilder</code> 返回给消费者 - 即
-  服务层的关注点——并且在被使用时可能会暴露 <code>*RepositoryInterface</code>
-  其他模块。</li>
-<li>Doctrine 3.6+ 存储库带有 <code>@extends ServiceEntityRepository&lt;...&gt;</code> PHPDoc
-  （由 Rector 的 <code>AddAnnotationToRepositoryRector</code> 强制执行）。</li>
-</ul>
-<h3 id="_8">控制器形状<a class="headerlink" href="#_8" title="Permanent link">&para;</a></h3>
-<ul>
-<li><code>App</code> 控制器（公共读取）用 <code>ApiView</code> 扩展 <code>RestController</code>，
-  <code>DetailApiViewMixin</code>、<code>ListApiViewMixin</code>；他们设置 <code>$serviceClass</code> 并可能覆盖
-  <code>commonFilter()</code> 用于行级范围。没有创建/更新/删除。</li>
-<li><code>Manage</code> 控制器（管理 CRUD）添加 <code>Create/Update/DeleteApiViewMixin</code> 并且是
-  在类级别保护<code>#[IsGranted('ROLE_ADMIN')]</code>。</li>
-<li>控制器仅声明特定于模块的构造函数依赖项 - <code>RequestStack</code>，
-  <code>SerializerInterface</code>、<code>TranslatorInterface</code>，集装箱经<code>#[Required]</code>到达
-  <code>RestController</code> 上的 setter 注入。</li>
-</ul>
-<hr />
-<h2 id="4">4. 命名约定<a class="headerlink" href="#4" title="Permanent link">&para;</a></h2>
-<p>命名空间承载着模块；类名带有域概念。
-<code>docs/design/naming-convention.md</code>具有权威性；这四项规则是：</p>
+<h3 id="22-forbidden">2.2 Forbidden<a class="headerlink" href="#22-forbidden" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
 <tr>
-<th>＃</th>
-<th>规则</th>
+<th>Pattern</th>
+<th>Reason</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>N1</td>
-<td>类名=领域概念（裸首选）；所有权存在于名称空间中</td>
+<td>Direct cross-module Entity access</td>
+<td>Use explicit module API or scalar reference/snapshot</td>
 </tr>
 <tr>
-<td>氮气</td>
-<td>仅在 (a) 跨模块冲突/歧义或 (b) 模块内基础设施（发件箱/注册表/网关/提供商）时添加模块前缀</td>
+<td>Direct cross-module Repository access</td>
+<td>Use service interface</td>
 </tr>
 <tr>
-<td>N3</td>
-<td>Service / Controller / Repository / Event / Exception 严格镜像实体名称：<code>{Entity}Service</code>、<code>{Entity}Controller</code>、<code>{Entity}Repository</code></td>
+<td>Circular module dependencies</td>
+<td>Violates layer architecture</td>
 </tr>
 <tr>
-<td>N4</td>
-<td>前缀策略在模块内是一致的——绝不混合使用前缀和裸</td>
+<td>Core importing business modules</td>
+<td>Core is foundational</td>
 </tr>
 </tbody>
 </table>
-<h3 id="_9">受保护的跨模块冲突组（永远不要删除前缀）<a class="headerlink" href="#_9" title="Permanent link">&para;</a></h3>
+<h3 id="23-cross-boundary-identity">2.3 Cross-Boundary Identity<a class="headerlink" href="#23-cross-boundary-identity" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
 <tr>
-<th>概念</th>
-<th>保留类名</th>
+<th>Context</th>
+<th>Identifier</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>订单</td>
-<td><code>Trade\Order</code>、<code>Store\StoreOrder</code></td>
+<td>Local Doctrine relation inside one module</td>
+<td>Integer <code>id</code> is allowed</td>
 </tr>
 <tr>
-<td>用户</td>
-<td><code>Identity\User</code>、<code>Wechat\WechatUser</code></td>
+<td>Public API route/response</td>
+<td>UUID</td>
 </tr>
 <tr>
-<td>发件箱留言</td>
-<td><code>Trade\TradeOutboxMessage</code>、<code>Store\StoreOutboxMessage</code>、<code>Inventory\InventoryOutboxMessage</code></td>
+<td>Service interface crossing module boundary</td>
+<td>UUID or documented immutable business key</td>
 </tr>
 <tr>
-<td>消费事件</td>
-<td><code>Store\StoreConsumedEvent</code>、<code>Inventory\InventoryConsumedEvent</code></td>
-</tr>
-</tbody>
-</table>
-<p>（2026-08-15 前缀重构删除了 <code>Wallet*</code>/<code>Inventory*</code>/<code>Store*</code> 前缀
-独特的概念 - <code>WalletTransaction→Transaction</code>，<code>InventoryStock→Stock</code>，
-<code>StoreMembership→Membership</code> — 零迁移或 API 损坏；表名、URL
-并且路线名称未更改。）</p>
-<p>禁止：发明服务后缀（实体 <code>Category</code> 的 <code>CategoryService</code> 是
-很好，但是为非服务类添加任意 <code>XxxService</code> 名称则不行），
-模块内的前缀不一致、非镜像控制器/服务名称。</p>
-<hr />
-<h2 id="5">5. 代码风格<a class="headerlink" href="#5" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>面积</th>
-<th>规则</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>PHP</td>
-<td>新代码中的 <code>&gt;= 8.4</code>、<code>declare(strict_types=1)</code></td>
+<td>Integration event aggregate/source/correlation id</td>
+<td>UUID</td>
 </tr>
 <tr>
-<td>属性/回报</td>
-<td>显式类型，绝不仅限文档块；可以为 null 作为 <code>?Type</code></td>
-</tr>
-<tr>
-<td>命名空间</td>
-<td><code>src/</code> 下的 PSR-4 <code>App\</code></td>
-</tr>
-<tr>
-<td>使用语句</td>
-<td>按字母顺序排列</td>
-</tr>
-<tr>
-<td>文件</td>
-<td>每个文件一个类/特征/接口，文件名=类名</td>
-</tr>
-<tr>
-<td>课程</td>
-<td>帕斯卡案例；方法/属性驼峰命名法；常量 <code>UPPER_SNAKE</code></td>
-</tr>
-<tr>
-<td>接口</td>
-<td><code>*Interface</code>后缀；摘要<code>Abstract*</code> / <code>Base*</code>；特征 <code>*Trait</code> 或描述性 (<code>ListApiViewMixin</code>)</td>
-</tr>
-<tr>
-<td>测试</td>
-<td><code>*Test</code> 后缀，命名空间 <code>App\Tests\...</code></td>
-</tr>
-<tr>
-<td>评论</td>
-<td>关于接口/抽象方法的 PHPDoc；对自记录代码没有评论； <code>@deprecated</code> + 删除的迁移说明</td>
+<td>Future service database relation</td>
+<td>UUID/business key only; no cross-service FK</td>
 </tr>
 </tbody>
 </table>
 <hr />
-<h2 id="6">6. 性能<a class="headerlink" href="#6" title="Permanent link">&para;</a></h2>
+<h2 id="3-service-boundary-rules">3. Service Boundary Rules<a class="headerlink" href="#3-service-boundary-rules" title="Permanent link">&para;</a></h2>
+<p>From <code>docs/design/microservice-transition.md</code>, the 7 rules before extraction:</p>
+<ol>
+<li>A service owns its database and has no cross-service Doctrine association, foreign key,
+   repository access, or transaction.</li>
+<li>Durable cross-service references use UUIDs or documented immutable business keys, never
+   another service's local integer primary key.</li>
+<li>A service boundary accepts scalar commands/queries and emits scalar snapshots. It never
+   exposes Doctrine entities, repositories, EntityManagers, Symfony requests/responses, or
+   mutable in-process contexts.</li>
+<li>A state-changing integration event is written to an Outbox in the producer's local
+   transaction. Consumers use a durable Inbox keyed by <code>eventId</code>.</li>
+<li>Each consumer owns its queue, retry policy, dead-letter handling, worker, and scheduled
+   jobs. A shared Doctrine Messenger queue is not a service boundary.</li>
+<li>Shared packages may provide framework utilities, schemas, and test support. They MUST NOT
+   contain business entities, repositories, or service-specific application logic.</li>
+<li>Public routes remain stable through an API gateway or routing layer while ownership moves
+   between services.</li>
+</ol>
+<p><strong>Pre-Extraction Checklist</strong>:
+- [ ] All cross-module references use UUIDs or immutable business keys
+- [ ] No shared Doctrine associations or cross-module FK
+- [ ] Integration events use Outbox/Inbox pattern
+- [ ] Service has its own <code>composer.json</code>, <code>Kernel.php</code>, <code>config/</code>, <code>migrations/</code>, <code>public/</code>,
+  <code>bin/</code>, <code>tests/</code>, Docker definition
+- [ ] Architecture checks (deptrac) pass without new baseline entries
+- [ ] Legacy test suite remains green</p>
+<hr />
+<h2 id="4-namespace-conventions">4. Namespace Conventions<a class="headerlink" href="#4-namespace-conventions" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
-<th>实践</th>
-<th>它出现在哪里</th>
+<th>Layer</th>
+<th>Namespace</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>对每个列表进行分页</td>
-<td><code>RestController::pagination()</code> — 默认限制 100，QueryBuilder 的 Doctrine Paginator</td>
+<td>Core Framework</td>
+<td><code>App\Core\*</code> (in <code>packages/platform-kernel/src/</code>)</td>
 </tr>
 <tr>
-<td>项目列而不是获取所有内容</td>
-<td><code>@select</code>、<code>@display</code>（例如 <code>reduce</code> = 仅 id + <code>__toString</code>）</td>
+<td>Module Controllers</td>
+<td><code>App\{Module}\Controller\Manage\</code> or <code>App\{Module}\Controller\App\</code></td>
 </tr>
 <tr>
-<td>将过滤推送到数据库</td>
-<td>表达式 DSL 编译为 DQL (<code>ExpressionDqlParser</code>)；内存中的后备只是一个后备</td>
+<td>Module Entities</td>
+<td><code>App\{Module}\Entity\</code></td>
 </tr>
 <tr>
-<td>避免隐式关系加载</td>
-<td>关系加载缓慢；通过 <code>@expands</code></td>
+<td>Module Repositories</td>
+<td><code>App\{Module}\Repository\</code></td>
 </tr>
 <tr>
-<td>并发写入受到保护</td>
-<td><code>Wallet</code> 使用乐观锁定（<code>version</code> 列）和悲观写入进行传输；令牌轮换使用重用检测</td>
+<td>Module Services</td>
+<td><code>App\{Module}\Service\</code></td>
 </tr>
 <tr>
-<td>成本高昂的查找被索引/简短</td>
-<td>关于聚合的 UUID/IAM 参考；存储库公开有针对性的查询</td>
+<td>Module Exceptions</td>
+<td><code>App\{Module}\Exception\</code></td>
 </tr>
 <tr>
-<td>批量管理员写入保持事务性</td>
-<td><code>@partial=true</code> 用于每项模式，否则单事务</td>
+<td>Module Event Listeners</td>
+<td><code>App\{Module}\EventListener\</code></td>
 </tr>
 <tr>
-<td>长时间运行的工作变为异步</td>
-<td>Messenger 异步传输 + 发件箱发布命令</td>
+<td>Module Commands</td>
+<td><code>App\{Module}\Command\</code></td>
+</tr>
+<tr>
+<td>Bridge Adapters</td>
+<td><code>App\Bridge\{Module}\</code></td>
+</tr>
+<tr>
+<td>Integration Contracts</td>
+<td><code>App\Contracts\Integration\</code></td>
+</tr>
+</tbody>
+</table>
+<p>Route naming: <code>{scope}-{resource}-{action}</code> (e.g., <code>manage-categories-list</code>,
+<code>app-orders-create</code>, <code>system-router-list</code>).</p>
+<hr />
+<h2 id="5-file-naming">5. File Naming<a class="headerlink" href="#5-file-naming" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Rule</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>One class per file</td>
+<td>No exceptions</td>
+</tr>
+<tr>
+<td>File name = class name</td>
+<td><code>CategoryService.php</code> contains <code>class CategoryService</code></td>
+</tr>
+<tr>
+<td>Trait files</td>
+<td>Same name as trait</td>
+</tr>
+<tr>
+<td>Interface files</td>
+<td>Same name as interface</td>
+</tr>
+<tr>
+<td>Tests</td>
+<td><code>{Class}Test.php</code></td>
+</tr>
+<tr>
+<td>PSR-4 autoloading</td>
+<td>Directory mirrors namespace, case-sensitive</td>
 </tr>
 </tbody>
 </table>
 <hr />
-<h2 id="7">7. 安全<a class="headerlink" href="#7" title="Permanent link">&para;</a></h2>
-<h3 id="_10">身份验证<a class="headerlink" href="#_10" title="Permanent link">&para;</a></h3>
-<ul>
-<li><code>JwtAuthenticator</code> 提取并验证 <code>Authorization: Bearer</code> JWT 并构建
-  护照； <code>TokenManager</code> 颁发/撤销令牌并管理刷新令牌生命周期。</li>
-</ul>
-<table>
-<thead>
-<tr>
-<th>＃</th>
-<th>规则</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>S1</td>
-<td>访问令牌：RS256 签名、7200s TTL</td>
-</tr>
-<tr>
-<td>S2</td>
-<td>刷新令牌：不透明，在数据库中进行 HMAC-SHA256 哈希处理，1 年 TTL</td>
-</tr>
-<tr>
-<td>S3</td>
-<td>刷新令牌在每次使用时轮换</td>
-</tr>
-<tr>
-<td>S4</td>
-<td>重复使用已撤销/替换的刷新令牌会撤销所有用户的令牌</td>
-</tr>
-<tr>
-<td>S5</td>
-<td>已撤销的访问令牌 JTI 将被列入黑名单，直至自然到期</td>
-</tr>
-<tr>
-<td>S6</td>
-<td>私钥永远不会被提交</td>
-</tr>
-<tr>
-<td>S7</td>
-<td>生产中的 HTTPS</td>
-</tr>
-</tbody>
-</table>
-<h3 id="_11">授权<a class="headerlink" href="#_11" title="Permanent link">&para;</a></h3>
-<ul>
-<li>访问控制集中在<code>config/packages/security.yaml</code>：<code>/api/v1/manage</code>
-  → <code>ROLE_ADMIN</code>; <code>/api</code>→<code>IS_AUTHENTICATED_FULLY</code>；公共列表（授权流程，
-  注册、微信登录、付款通知、文档、<code>GET /api/v1/public</code>）是
-  <code>PUBLIC_ACCESS</code>。</li>
-<li>行级范围是通过 <code>commonFilter()</code>/<code>listFilter()</code> 覆盖的每个控制器
-  （例如，用户只能看到自己的记录；应用程序端过滤器强制执行）。</li>
-<li>管理控制器还带有类级别<code>#[IsGranted('ROLE_ADMIN')]</code>。</li>
-<li>角色层次结构：<code>ROLE_ADMIN: [ROLE_USER]</code>。</li>
-</ul>
-<h3 id="_12">验证顺序<a class="headerlink" href="#_12" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>Controller field whitelist ($requiredCreateProperties / $acceptedCreateProperties)
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>  → controller hook validation (processCreateContent / processUpdateContent)
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>    → @transform expression
-<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>      → Service::update() → Symfony Validator → entity #[Assert\*] constraints
+<h2 id="6-class-conventions">6. Class Conventions<a class="headerlink" href="#6-class-conventions" title="Permanent link">&para;</a></h2>
+<h3 id="61-required">6.1 Required<a class="headerlink" href="#61-required" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="cp">&lt;?php</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="k">declare</span><span class="p">(</span><span class="nx">strict_types</span><span class="o">=</span><span class="mi">1</span><span class="p">);</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="k">namespace</span> <span class="nx">App\Common\Service</span><span class="p">;</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="k">use</span> <span class="nx">App\Common\Entity\Category</span><span class="p">;</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="k">use</span> <span class="nx">App\Core\Service\BaseService</span><span class="p">;</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="sd">/** @extends BaseService&lt;\App\Common\Entity\Category&gt; */</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="k">class</span> <span class="nc">CategoryService</span> <span class="k">extends</span> <span class="nx">BaseService</span> <span class="k">implements</span> <span class="nx">CategoryServiceInterface</span>
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="p">{</span>
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>    <span class="k">public</span> <span class="k">function</span> <span class="fm">__construct</span><span class="p">(</span><span class="cm">/* ... */</span><span class="p">)</span> <span class="p">{</span> <span class="cm">/* ... */</span> <span class="p">}</span>
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="p">}</span>
 </code></pre></div>
-<h3 id="_13">速率限制<a class="headerlink" href="#_13" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>declare(strict_types=1)</code> at the top of every PHP file</li>
+<li><code>final</code> where applicable (prevent unintended extension)</li>
+<li><code>readonly</code> for constructor-injected dependencies where possible</li>
+<li><code>#[ORM\*]</code> PHP attributes for Doctrine mapping (not annotations)</li>
+<li><code>#[OA\*]</code> PHP attributes for OpenAPI documentation</li>
+</ul>
+<h3 id="62-phpdoc">6.2 PHPDoc<a class="headerlink" href="#62-phpdoc" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Required on interfaces and abstract methods (contract documentation)</li>
+<li><code>@extends</code> / <code>@implements</code> for generic types on BaseService subclasses</li>
+<li><code>@param</code> / <code>@return</code> only when types cannot be expressed in native PHP</li>
+<li>No comments on self-documenting code (well-named methods/variables)</li>
+</ul>
+<h3 id="63-visibility">6.3 Visibility<a class="headerlink" href="#63-visibility" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Constructor-injected services: <code>protected readonly</code></li>
+<li>Internal state properties: <code>private</code></li>
+<li>Hook methods: <code>protected</code> (overridable)</li>
+<li>Public methods: only on interfaces and action methods</li>
+</ul>
+<hr />
+<h2 id="7-code-style">7. Code Style<a class="headerlink" href="#7-code-style" title="Permanent link">&para;</a></h2>
+<h3 id="71-psr-12">7.1 PSR-12<a class="headerlink" href="#71-psr-12" title="Permanent link">&para;</a></h3>
+<p>Standard code style. Enforced by convention.</p>
+<h3 id="72-phpstan-level-8">7.2 PHPStan Level 8<a class="headerlink" href="#72-phpstan-level-8" title="Permanent link">&para;</a></h3>
+<p>Run <code>composer phpstan</code>. Configured over <code>src/</code> scope. Level 8 is the strictest level
+(excluding Level 9's <code>mixed</code> checks for now).</p>
+<h3 id="73-deptrac-architecture-boundaries">7.3 Deptrac Architecture Boundaries<a class="headerlink" href="#73-deptrac-architecture-boundaries" title="Permanent link">&para;</a></h3>
+<p>Run <code>composer deptrac</code>. Enforces:
+- Core MUST NOT depend on a business module
+- A module MUST NOT add a dependency on another module's <code>Entity</code> or <code>Repository</code></p>
+<p>The <code>deptrac-baseline.yaml</code> contains reviewed historical violations. New entries require an
+explicit architecture decision.</p>
+<h3 id="74-rector-type-rules">7.4 Rector Type Rules<a class="headerlink" href="#74-rector-type-rules" title="Permanent link">&para;</a></h3>
+<p>Run <code>composer rector:types:check</code> (CI dry-run). Enforces Doctrine <code>Collection</code> /
+<code>Repository</code> PHPDoc generics. Broader Rector (<code>composer rector</code>) is opt-in and must be
+reviewed.</p>
+<h3 id="75-naming-conventions">7.5 Naming Conventions<a class="headerlink" href="#75-naming-conventions" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
 <tr>
-<th>资源</th>
-<th>限制</th>
+<th>Element</th>
+<th>Convention</th>
+<th>Example</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>OTP 请求（每部电话）</td>
-<td>每 60 秒冷却时间 1 次</td>
+<td>Classes</td>
+<td>PascalCase</td>
+<td><code>CategoryService</code></td>
 </tr>
 <tr>
-<td>OTP 验证（每部手机）</td>
-<td>最多尝试 5 次</td>
+<td>Methods</td>
+<td>camelCase</td>
+<td><code>getEnabledCategories()</code></td>
+</tr>
+<tr>
+<td>Properties</td>
+<td>camelCase</td>
+<td><code>$serviceClass</code></td>
+</tr>
+<tr>
+<td>Constants</td>
+<td>UPPER_SNAKE</td>
+<td><code>UNKNOWN_ERROR</code></td>
+</tr>
+<tr>
+<td>Interfaces</td>
+<td><code>*Interface</code> suffix</td>
+<td><code>BaseServiceInterface</code></td>
+</tr>
+<tr>
+<td>Abstract classes</td>
+<td><code>Abstract*</code> or <code>Base*</code> prefix</td>
+<td><code>BaseService</code></td>
+</tr>
+<tr>
+<td>Traits</td>
+<td><code>*Trait</code> suffix or descriptive</td>
+<td><code>ListApiViewMixin</code></td>
+</tr>
+<tr>
+<td>Tests</td>
+<td><code>*Test</code> suffix</td>
+<td><code>CategoryTest</code></td>
 </tr>
 </tbody>
 </table>
-<p>由 Redis (<code>OTP_REDIS_DSN</code>) 或本地缓存后备 (<code>LocalCacheOtpStorage</code>) 支持。</p>
-<h3 id="_14">记录卫生<a class="headerlink" href="#_14" title="Permanent link">&para;</a></h3>
-<ul>
-<li>PUT/POST 上的请求正文记录在 INFO 中，用户 ID、URI、正文被截断为
-  1 KB。</li>
-<li><strong>切勿在生产中记录</strong>明文密码、令牌、OTP 代码或 PII。</li>
-<li>频道：<code>app</code>、<code>doctrine</code>（开发）、<code>security</code>。</li>
-</ul>
-<h3 id="_15">金钱和身份<a class="headerlink" href="#_15" title="Permanent link">&para;</a></h3>
-<ul>
-<li>货币是整数美分或固定规模的量子（<code>QuantumAmount</code>，18 位十进制，
-  <code>brick/math</code>) — 永远不会浮动。</li>
-<li>跨模块的聚合引用是 UUID — 绝不是原始 FK 或自动增量 id。</li>
-</ul>
 <hr />
-<h2 id="8">8. 重大变更政策<a class="headerlink" href="#8" title="Permanent link">&para;</a></h2>
+<h2 id="8-testing-contracts">8. Testing Contracts<a class="headerlink" href="#8-testing-contracts" title="Permanent link">&para;</a></h2>
+<h3 id="81-unit-vs-integration">8.1 Unit vs Integration<a class="headerlink" href="#81-unit-vs-integration" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
 <tr>
-<th>改变</th>
-<th>允许吗？</th>
+<th>Category</th>
+<th>Extends</th>
+<th>Purpose</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>具有默认实现的新 mixin 特征/钩子</td>
-<td>是的，已记录</td>
+<td>Unit</td>
+<td><code>PHPUnit\Framework\TestCase</code></td>
+<td>Isolated logic (entities, utils, calculators)</td>
 </tr>
 <tr>
-<td>更改钩子签名/删除 mixin 方法/更改响应信封</td>
-<td><strong>否</strong> — 主要版本</td>
+<td>Kernel</td>
+<td><code>IntegrationKernelTestCase</code></td>
+<td>With booted kernel, service access, DB</td>
 </tr>
 <tr>
-<td>添加查询参数</td>
-<td>是（向后兼容）</td>
+<td>Web</td>
+<td><code>IntegrationWebTestCase</code></td>
+<td>Full HTTP request/response cycle</td>
 </tr>
 <tr>
-<td>删除支持的查询参数</td>
-<td><strong>否</strong> — 弃用 + 主要版本</td>
-</tr>
-<tr>
-<td>更改 <code>BaseServiceInterface</code></td>
-<td><strong>否</strong> — 跨模块影响评估</td>
-</tr>
-<tr>
-<td>添加模块</td>
-<td>是的，遵循模块清单 (<code>docs/design/module-design.md</code>)</td>
+<td>Regression</td>
+<td>Varies</td>
+<td>API contract stability</td>
 </tr>
 </tbody>
 </table>
-<hr />
-<h2 id="9">9. 另请参阅<a class="headerlink" href="#9" title="Permanent link">&para;</a></h2>
+<h3 id="82-test-naming">8.2 Test Naming<a class="headerlink" href="#82-test-naming" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Pattern</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>{Class}Test</code></td>
+<td><code>CategoryTest.php</code>, <code>OrderServiceTest.php</code></td>
+</tr>
+<tr>
+<td><code>{Module}ApiRegressionTest</code></td>
+<td><code>CommonModulesApiRegressionTest.php</code></td>
+</tr>
+<tr>
+<td><code>{Module}IntegrationTest</code></td>
+<td><code>WalletApiIntegrationTest.php</code></td>
+</tr>
+</tbody>
+</table>
+<p>Tests in <code>tests/{Module}/</code> mirror the <code>src/{Module}/</code> structure.</p>
+<h3 id="83-coverage-requirements">8.3 Coverage Requirements<a class="headerlink" href="#83-coverage-requirements" title="Permanent link">&para;</a></h3>
 <ul>
-<li><a href="../development-workflow/">Development Workflow</a> — 分支、CI、静态分析门</li>
-<li><a href="../testing/">Testing</a> — 套件、助手、90% 覆盖率门</li>
-<li><a href="../api-contracts/">API Contracts</a> — 信封、身份验证、URL、分页、webhooks</li>
-<li><a href="../architecture/">Architecture</a> — 模块模型和模式的实用概述</li>
-<li>规范性合同：<code>docs/design/system-architecture.md</code>、<code>system-contracts.md</code>、
-  <code>module-design.md</code>、<code>naming-convention.md</code>、<code>controller-design.md</code>、每个模块
-  <code>docs/design/bundles/*.md</code></li>
+<li><strong>Minimum</strong>: 90% line coverage (enforced in CI via PHPUnit)</li>
+<li><strong>Test environment</strong>: <code>APP_ENV=test</code>, SQLite database</li>
+<li>Each test method starts with a clean schema (Doctrine schema tool, not migrations)</li>
+<li>Transactions are wrapped per test and rolled back</li>
+</ul>
+<h3 id="84-test-database">8.4 Test Database<a class="headerlink" href="#84-test-database" title="Permanent link">&para;</a></h3>
+<p>The test database schema is created from Doctrine schema tool — not from migrations.
+<code>DatabaseBootstrapTrait</code> handles schema setup. Each test starts with a clean schema.</p>
+<hr />
+<h2 id="9-git-workflow">9. Git Workflow<a class="headerlink" href="#9-git-workflow" title="Permanent link">&para;</a></h2>
+<h3 id="91-feature-branches">9.1 Feature Branches<a class="headerlink" href="#91-feature-branches" title="Permanent link">&para;</a></h3>
+<p>Branch naming: <code>feature/{description}</code>, <code>fix/{description}</code>, <code>refactor/{description}</code>.</p>
+<h3 id="92-conventional-commits">9.2 Conventional Commits<a class="headerlink" href="#92-conventional-commits" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>type(scope): description
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>feat(identity): add phone verification OTP flow
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>fix(order): prevent double-submission of payments
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>refactor(core): extract QueryBuilderFactory from BaseService
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>docs(manual): add API contracts documentation
+</code></pre></div>
+<p>Types: <code>feat</code>, <code>fix</code>, <code>refactor</code>, <code>docs</code>, <code>test</code>, <code>ci</code>, <code>chore</code>.</p>
+<h3 id="93-pr-template">9.3 PR Template<a class="headerlink" href="#93-pr-template" title="Permanent link">&para;</a></h3>
+<p>Available in <code>.github/pull_request_template.md</code>. Must include:
+- Summary of changes
+- Testing performed
+- Breaking changes (if any)
+- Checklist (tests pass, static analysis passes, documentation updated)</p>
+<h3 id="94-review-requirements">9.4 Review Requirements<a class="headerlink" href="#94-review-requirements" title="Permanent link">&para;</a></h3>
+<ul>
+<li>CI must pass (PHPStan Level 8, Rector dry-run, PHPUnit with 90%+ coverage)</li>
+<li>At least one approving review for changes to shared Core classes</li>
+<li>Migration files require explicit review for rollback compatibility</li>
+</ul>
+<hr />
+<h2 id="10-breaking-changes">10. Breaking Changes<a class="headerlink" href="#10-breaking-changes" title="Permanent link">&para;</a></h2>
+<h3 id="101-what-constitutes-a-breaking-change">10.1 What Constitutes a Breaking Change<a class="headerlink" href="#101-what-constitutes-a-breaking-change" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Change</th>
+<th>Breaking?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Change hook method signature</td>
+<td><strong>Yes</strong> — major version bump</td>
+</tr>
+<tr>
+<td>Remove mixin method</td>
+<td><strong>Yes</strong> — major version bump</td>
+</tr>
+<tr>
+<td>Change response envelope format</td>
+<td><strong>Yes</strong> — major version bump</td>
+</tr>
+<tr>
+<td>Remove supported query parameter</td>
+<td><strong>Yes</strong> — deprecation notice + major version bump</td>
+</tr>
+<tr>
+<td>Change <code>BaseServiceInterface</code></td>
+<td><strong>Yes</strong> — cross-module impact assessment</td>
+</tr>
+<tr>
+<td>Change entity field type</td>
+<td><strong>Yes</strong> — migration required</td>
+</tr>
+<tr>
+<td>Add new mixin trait</td>
+<td><strong>No</strong> — documentation only</td>
+</tr>
+<tr>
+<td>Add new hook method with default impl</td>
+<td><strong>No</strong> — documentation only</td>
+</tr>
+<tr>
+<td>Add query parameter</td>
+<td><strong>No</strong> — backward compatible</td>
+</tr>
+<tr>
+<td>Add new module</td>
+<td><strong>No</strong> — follow module contract</td>
+</tr>
+</tbody>
+</table>
+<h3 id="102-migration-compatibility">10.2 Migration Compatibility<a class="headerlink" href="#102-migration-compatibility" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Schema changes require a backward-compatible migration (old code reads with new schema)</li>
+<li>Irreversible migrations (e.g., column drops) are prohibited without explicit approval</li>
+<li>Migrations organize by module — one migration file per module change set</li>
+</ul>
+<hr />
+<h2 id="11-documentation-requirements">11. Documentation Requirements<a class="headerlink" href="#11-documentation-requirements" title="Permanent link">&para;</a></h2>
+<h3 id="111-when-adding-a-module">11.1 When Adding a Module<a class="headerlink" href="#111-when-adding-a-module" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Required Document</th>
+<th>Contents</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Design doc (<code>docs/design/{module}.md</code>)</td>
+<td>Business flow, API design, data model sketch</td>
+</tr>
+<tr>
+<td>Bundle doc (<code>docs/design/bundles/{module}.md</code>)</td>
+<td>Module scope, dependencies, exported interfaces</td>
+</tr>
+<tr>
+<td>OpenAPI spec (code <code>#[OA\*]</code>)</td>
+<td>Auto-generated at <code>/api/doc</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="112-when-adding-a-service">11.2 When Adding a Service<a class="headerlink" href="#112-when-adding-a-service" title="Permanent link">&para;</a></h3>
+<ul>
+<li>PHPDoc <code>@extends BaseService&lt;EntityClass&gt;</code> on the service class</li>
+<li>Service interface in the same namespace</li>
+<li>Register in module's service configuration if not autowired</li>
+</ul>
+<h3 id="113-when-adding-an-endpoint">11.3 When Adding an Endpoint<a class="headerlink" href="#113-when-adding-an-endpoint" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>#[Route]</code> attribute with proper <code>name</code> following <code>{scope}-{resource}-{action}</code> convention</li>
+<li><code>#[OA\*]</code> attributes for NelmioApiDoc</li>
+<li><code>#[IsGranted]</code> for authorization</li>
+<li>Update <code>OpenApiEnricherListener::META</code> if endpoint needs custom summary/description</li>
+</ul>
+<hr />
+<h2 id="12-performance-guidelines">12. Performance Guidelines<a class="headerlink" href="#12-performance-guidelines" title="Permanent link">&para;</a></h2>
+<h3 id="121-n1-prevention">12.1 N+1 Prevention<a class="headerlink" href="#121-n1-prevention" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Use <code>@expands</code> to eager-load relations in list endpoints</li>
+<li>Use <code>detailProcessor()</code> to call <code>$entity-&gt;getItems()-&gt;toArray()</code> for detail views</li>
+<li>Avoid <code>@sort</code> (in-memory) — prefer <code>@order</code> (DQL)</li>
+</ul>
+<h3 id="122-query-optimization">12.2 Query Optimization<a class="headerlink" href="#122-query-optimization" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Use <code>@select</code> to project only needed fields</li>
+<li>Use <code>@filter</code> to push filtering to the database</li>
+<li>Avoid <code>@dql</code> subqueries unless necessary (use <code>@filter</code> instead)</li>
+<li>Use Doctrine's <code>indexBy</code> in repositories for eager loading</li>
+</ul>
+<h3 id="123-caching">12.3 Caching<a class="headerlink" href="#123-caching" title="Permanent link">&para;</a></h3>
+<ul>
+<li>ExpressionService can use a PSR-16 cache to avoid re-parsing filters</li>
+<li><code>cache.app</code> is available for application-level caching</li>
+<li>JWT blacklist uses cache (TTL-based)</li>
+</ul>
+<hr />
+<h2 id="13-security-rules">13. Security Rules<a class="headerlink" href="#13-security-rules" title="Permanent link">&para;</a></h2>
+<h3 id="131-safe-select">13.1 Safe Select<a class="headerlink" href="#131-safe-select" title="Permanent link">&para;</a></h3>
+<p><code>@select</code> is block-listed for identity-sensitive fields (<code>user</code>, <code>profile</code>, <code>password</code>,
+<code>roles</code>, <code>email</code>, <code>phone</code>, <code>phoneVerified</code>, <code>refreshToken</code>, <code>sessionKey</code>, <code>rawData</code>) and
+for any query targeting <code>App\Identity\*</code> entities.</p>
+<h3 id="132-privileged-parameters">13.2 Privileged Parameters<a class="headerlink" href="#132-privileged-parameters" title="Permanent link">&para;</a></h3>
+<p><code>@dql</code>, <code>@sort</code>, <code>@hints</code> are restricted to <code>ROLE_ADMIN</code>. <code>@showDQL</code> requires <code>dev</code>
+environment.</p>
+<h3 id="133-commonfilter">13.3 commonFilter<a class="headerlink" href="#133-commonfilter" title="Permanent link">&para;</a></h3>
+<p>Every controller with list/detail mixins MUST override <code>commonFilter()</code> to enforce
+ownership and visibility. For user-scoped endpoints, always return <code>['id' =&gt; -1]</code> as a
+fallback when the user is not authenticated.</p>
+<h3 id="134-csrf-xss">13.4 CSRF / XSS<a class="headerlink" href="#134-csrf-xss" title="Permanent link">&para;</a></h3>
+<ul>
+<li>All API authentication uses JWT Bearer tokens (no session, no cookies)</li>
+<li>JSON responses use <code>Content-Type: application/json</code></li>
+<li>No HTML rendering from API endpoints</li>
+<li>Input sanitization is not performed at the framework level; rely on Doctrine parameter
+  binding for SQL injection prevention</li>
 </ul>
 
 
@@ -3728,10 +3658,6 @@
     
     
       <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
-      
-        <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
-      
-        <script src="../../javascripts/mermaid-init.js"></script>
       
     
   </body>
