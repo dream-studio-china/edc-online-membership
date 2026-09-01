@@ -1,6 +1,6 @@
 # CRUD Skeleton - Full Codebase Context
 
-> Context snapshot. Last updated: 2026-08-15
+> Context snapshot. Last updated: 2026-09-01
 
 ---
 
@@ -9,8 +9,8 @@
 **CRUD Skeleton** is a Symfony 8.1 API backend skeleton with:
 - **PHP 8.4+**, Doctrine ORM 3.6, MySQL 8 (Docker), SQLite (tests)
 - JWT authentication (RS256), OTP/SMS login, WeChat Mini Program / Official Account login
-- Expression-based dynamic query engine (`@filter`, `@sort`, `@dql`)
-- Modular architecture: **Core** (framework), **Common** (CMS), **Promotion** (DSL-driven promotions), **Identity** (auth), **Trade** (commercial orders), **Store** (multi-store operations), **Payment** (invoices), **Wallet** (balances), **Inventory** (stock & reservation), **Wechat** (login + pay), **Storage** (file upload drivers)
+- Expression-based dynamic query engine (`@filter`, `@sort`, `@dql`) + server-owned row-scope `DqlExpression` (`entity.getUser() == this.getUser()`, `in`/`not in` with empty-collection safety)
+- Modular architecture: **Core** (framework + DqlExpression), **Common** (CMS + Content `metadata` field-grant pilot), **Authorization** (independent RBAC — scoped Store grants, strict field grants, audit, `AuthorizationVoter`), **Promotion** (DSL-driven promotions), **Identity** (auth), **Trade** (commercial orders), **Store** (multi-store operations and approved shared/private catalog target), **Payment** (invoices), **Wallet** (balances), **Inventory** (stock & reservation), **Wechat** (login + pay), **Storage** (file upload drivers)
 - EasyWeChat 6.x integration (Mini Program, Official Account OAuth, WeChat Pay V3)
 - NelmioApiDoc (Swagger at `/api/doc`), PHPUnit 12.5, Docker Compose (7 services: app, worker, scheduler, nginx, MySQL, Redis, Mailpit)
 - MkDocs Material + GitHub Pages documentation (**mermaid diagram rendering enabled** via CDN + `pymdownx.superfences` custom fence)
@@ -28,20 +28,32 @@
 ├── src/Core/                     # Framework core
 │   ├── Controller/RestController.php    # Base API controller (success/warning/pagination)
 │   ├── Controller/System/               # System introspection (EntityController, RouterController)
-│   ├── View/                     # PHP traits: List, Detail, Create, Update, Delete, Workflow, Single, Transform
+│   ├── View/                     # PHP traits: List, Detail, Create, Update, Delete, Workflow, Single, Transform + ApiView (commonFilter/DqlExpression binding)
 │   ├── View/ApiViewMessages.php         # Extracted message constants for View traits (ENTITY_NOT_FOUND, SUCCESS, INVALID_JSON, propertyRequired(), etc.)
 │   ├── Service/BaseService.php          # Abstract CRUD service (@template TEntity generics)
-│   ├── Service/Concern/                 # Traits: Infrastructure, ReadList, Mutation (@template TEntity)
-│   ├── Parser/ExpressionDqlParser.php   # Expression → DQL compiler
+│   ├── Service/Concern/                 # Traits: Infrastructure, ReadList (DqlExpression fail-closed, @filter/@dql), Mutation (@template TEntity)
+│   ├── Parser/ExpressionDqlParser.php   # Expression → DQL compiler (NameNode variable binding, in/not in array handling)
+│   ├── Query/DqlExpression.php          # Immutable server-owned row-scope value object (expression/values/criteria/this)
 │   ├── Serializer/FlatNormalizer.php    # Custom object normalizer (Doctrine internal objects → class names)
 │   ├── EventListener/                   # ExceptionInterceptor, ControllerListener, OpenApiEnricherListener, LocaleListener, AccessLogListener
 │   └── Utils/                           # UUID, Math, RSA, Location, Inflect, etc.
 │
-├── src/Common/                   # CMS module: Category, Tag, Content, Comment, Page, Media, Setting, Picture
-│   ├── Entity/                   # 8 entities
+├── src/Common/                   # CMS module: Category, Tag, Content (`metadata` field-grant pilot), Comment, Page, Media, Setting, Picture
+│   ├── Entity/                   # 8 entities (Content has nullable `metadata` json — no `storeUuid`)
 │   ├── Repository/
 │   ├── Service/
-│   └── Controller/App/ + Manage/ + Public/
+│   └── Controller/App/ + Manage/ + Public/  # Manage/ContentController accepts `metadata` as whitelisted field for pilot
+│
+├── src/Authorization/            # Independent authorization boundary (replaces coarse ROLE_ADMIN)
+│   ├── Entity/                   # Permission, Role (global/store), Assignment (userUuid/role/scope + scopeKey for portable UNIQUE), RoleFieldGrant (json), AuditLog (append-only)
+│   ├── Repository/               # PermissionRepository, RoleRepository, AssignmentRepository (active+scope indexes), RoleFieldGrantRepository, AuditLogRepository
+│   ├── Service/                  # AuthorizationService (can/require/allowedStoreUuids/effective, cache.app fallback), FieldAuthorizationService (strict field grant), AuthorizationResourceRegistry (common:content), AuthorizationAuditService, AuthorizationCacheInvalidator, AuthorizationScope, ScopedResourceInterface
+│   ├── Security/AuthorizationVoter.php  # Voter for permission strings + AuthorizationScope subjects, admin bypass
+│   ├── Command/SeedAuthorizationCommand.php # app:authorization:seed (11 permissions, 3 roles, 4 field grants, idempotent, registry-validated)
+│   ├── Controller/Manage/        # PermissionController (/manage/permissions — List/Detail, read-only), RoleController (/manage/roles + /{uuid}/permissions + /{uuid}/field-grants/{resource}/{action} — system 403), AssignmentController (/manage/assignments — List/Detail/Create/Update/Delete via mixins, idempotent grant, soft revoke via processDeletion), AuditLogController (/manage/audit-logs) — all ROLE_ADMIN
+│   ├── Controller/App/MyAuthorizationController.php # GET /app/authorization/me (permissions/storeScopes/fieldGrants)
+│   └── Resources/config/services_authorization.yaml
+│   Manual/Runbook: docs/manual/authorization.md + docs/runbooks/authorization.md — how to seed and operate Authorization
 │
 ├── src/Identity/                 # Authentication & Identity
 │   ├── Entity/User.php, RefreshToken.php, Profile.php     # User has __toString(): username fallback to email; User::$profile (OneToOne→Profile)
@@ -50,22 +62,25 @@
 │   ├── Command/CreateUserCommand.php
 │   └── Controller/AuthController.php, App/UserController.php, App/ProfileController.php, Manage/UserController.php, Manage/ProfileController.php
 │
-├── src/Trade/                    # E-commerce module
-│   ├── Entity/                   # Product, Specification, Order, OrderItem, TradeOutboxMessage
-│   ├── Service/OrderService.php        # StoreContext-aware creation + price pipeline
+├── src/Trade/                    # E-commerce module (orders + pricing, Store catalog via CatalogResolver)
+│   ├── Entity/                   # Order, OrderItem (scalar specificationUuid + snapshots), TradeOutboxMessage
+│   ├── Service/Catalog/                # CatalogResolverInterface + CatalogItem (Trade-owned port/DTO, Store implements)
+│   ├── Service/OrderService.php        # StoreContext-aware creation + price pipeline (Store visibility via CatalogResolver)
 │   ├── Command/PublishOutboxCommand.php # app:trade:outbox:publish
 │   ├── MessageHandler/           # Store acceptance/rejection consumers
-│   ├── Service/Pricing/                # PriceCalculatorInterface (Base, Quantity, Total)
+│   ├── Service/Pricing/                # PriceCalculatorInterface (Base via CatalogResolver, Quantity, Total)
 │   ├── EventListener/OrderWorkflowListener.php
 │   ├── Exception/                      # OrderInvalidTransitionException, SpecificationNotFoundException
-│   └── Controller/App/ + Manage/       # CRUD + workflow + pay/refund/fulfill + items + cancel + spec browse/v2
+│   └── Controller/App/ + Manage/       # CRUD + workflow + pay/refund/fulfill + items + cancel (catalog via Store)
 │
-├── src/Store/                    # Multi-store operational boundary
-│   ├── Entity/                   # Store, membership, StoreOrder, Outbox, Inbox
-│   ├── Service/                  # Context, membership, StoreOrder, Outbox services
+├── src/Store/                    # Multi-store operational boundary + catalog
+│   ├── Entity/                   # Store, Product (trade_product, nullable store), Specification (trade_specification), membership, StoreOrder, Outbox, Inbox
+│   ├── Repository/               # ProductRepository, SpecificationRepository (Store-owned)
+│   ├── Service/                  # ProductService, SpecificationService, Context, membership, StoreOrder, Outbox services
+│   ├── Service/Catalog/StoreCatalogResolver.php  # Implements Trade CatalogResolverInterface (Store visibility: global or owned)
 │   ├── MessageHandler/           # Inbox-idempotent Trade order consumer; Inventory outcome consumers
 │   ├── Command/PublishOutboxCommand.php # app:store:outbox:publish
-│   └── Controller/App/ + Manage/ + Staff/
+│   └── Controller/App/ + Manage/ + Staff/ # App/Manage Product/Specification + StoreOrder + Staff membership checks (DqlExpression row-scope: !entity.getStore() / !entity.getProduct().getStore())
 │
 ├── src/Payment/                  # Payment module
 │   ├── Entity/Invoice.php              # Payment invoice (pending→paying→paid→refunded)
@@ -129,35 +144,35 @@
 │   └── Controller/Manage/        # Material, Stock, Recipe, Reservation, Ledger admin APIs
 │
 ├── config/
-│   ├── services.yaml             # Service wiring + imports src/*/Resources/config + exclusions
-│   ├── routes.yaml               # Route imports (wechat, wechat_app, wechat_manage added)
+│   ├── services.yaml             # Service wiring + imports src/*/Resources/config (incl. Authorization) + exclusions
+│   ├── routes.yaml               # Route imports: /api/v1 for Common/Trade/Store/Wallet/Payment/Promotion/Wechat/Inventory/Settlement/Authorization (/api/v1/manage/permissions etc.), /api/auth (Identity), /api/wechat (Wechat login), /system (introspection), /api/payment/notify (webhook)
 │   └── packages/
-│       ├── nelmio_api_doc.yaml   # OpenAPI 3.1 config: System + Wechat tags
-│       ├── security.yaml         # PUBLIC_ACCESS: docs/auth/webhooks/wechat + GET /api/v1/public/*
+│       ├── nelmio_api_doc.yaml   # OpenAPI 3.1 config: System + Wechat + Authorization tags
+│       ├── security.yaml         # PUBLIC_ACCESS: docs/auth/webhooks/wechat + GET /api/v1/public/*; /api/v1/manage → ROLE_ADMIN
 │       ├── translation.yaml      # Translator config: default_locale en, translations/ path
 │       ├── workflow.yaml         # Order state machine, including Store acceptance
 │       ├── messenger.yaml        # Trade/Store integration messages to async transport
 │       └── ...
-├── migrations/                   # 24 migrations (latest: wallet_voucher_comment, 2026-08-15)
+├── migrations/                   # 31 migrations (latest: 20260902000000 `store_id` nullable + 20260903000000/20260903000001 OrderItem `specificationUuid` two-step, irreversible)
 ├── translations/                 # i18n translation files (messages.en/zh/zh_Hant/ja.yaml)
 ├── docs/
 │   ├── ai/context.md             # This file
 │   ├── design/                   # Design contracts (incl. security-hardening.md)
-│   │   └── bundles/              # Per-module design docs (core, common, trade, wallet, identity, wechat, payment, storage, promotion, store, inventory, exchange)
+│   │   └── bundles/              # Per-module design docs (core, common, trade, wallet, identity, wechat, payment, storage, promotion, store, inventory, authorization, exchange)
 │   ├── testing/                  # Test-quality contract: TEST_STRATEGY, TEST_MATRIX, BUSINESS_INVARIANTS, FAILURE_MODES, PRODUCTION_VALIDATION, SYSTEM_WALKTHROUGH, AI_DEVELOPMENT_PROCESS (+ reusable framework-template/)
 │   ├── issues/                   # Audit & coverage reports (coverage-2026-08-09/, test-audit-2026-08-09/)
 │   └── openapi/                       # endpoints.yaml + order/payment frontend flow docs
 ├── scripts/tests/                # API smoke, Store orchestration smoke, trade workflow scripts
-├── tests/                        # 312 PHPUnit test files, organized by layer:
+├── tests/                        # 320+ PHPUnit test files, organized by layer:
 │   ├── UnitTest/                 #   197 files — pure unit tests (no kernel/DB), App\Tests\UnitTest\...
-│   ├── Integration/              #   72 files — kernel/DB/HTTP tests + helpers (DatabaseBootstrapTrait, IntegrationWebTestCase), App\Tests\Integration\...
+│   ├── Integration/              #   73 files — kernel/DB/HTTP tests + helpers (DatabaseBootstrapTrait, IntegrationWebTestCase) incl. AuthorizationContentPilotTest (store_content_editor vs metadata_editor field-grant, /app/authorization/me)
 │   └── LowValue/                 #   43 files — deprecated/low-value tests, excluded from default run, App\Tests\LowValue\...
-│                                 主套件 = UnitTest + Integration（2311 tests）；低价值可 --group low-value 显式运行
-├── README.md                     # English README
+│                                 主套件 = UnitTest + Integration（2394 tests, 159 notices）；低价值可 --group low-value 显式运行
+├── README.md                     # English README (vertical chain Clients→Api→Core→Identity/Authorization/Common/Storage/Promotion→Trade→Store&Inventory/Payment&Wallet→Settlement/Exchange→Messaging→Persistence)
 ├── README.zh-cn.md               # Chinese (Simplified) README
 ├── README.zh-hant.md             # Chinese (Traditional) README
 ├── README.ja.md                  # Japanese README
-├── mkdocs.yml                    # MkDocs Material config
+├── mkdocs.yml                    # MkDocs Material config (Bundles: Authorization, Exchange, etc.)
 ├── compose.yaml                  # Production deployment: app (PHP-FPM), nginx, MySQL, Redis, Mailpit
 ├── compose.override.yaml         # Dev overrides (source mount, debug, exposed ports)
 ├── Dockerfile                    # PHP 8.4-FPM Alpine with openssl + JWT key entrypoint
@@ -171,12 +186,16 @@
     └── docs.yml                  # GitHub Pages deploy
 ```
 
+### Store Catalog (Implemented)
+
+`docs/design/store-catalog.md` is the implemented catalog model: `Store` owns `Product`/`Specification` (`store` nullable, `NULL` = shared/global; tables `trade_product`/`trade_specification` retained via `Version20260902000000` (`store_id`) and `Version20260903000000`/`Version20260903000001` two-step `specificationUuid` backfill (irreversible)). `App\Store\Controller\App\ProductController` / `SpecificationController` enforce row-scope via `DqlExpression` (`!entity.getStore()` / `!entity.getProduct().getStore()` and `||` with `ExpressionDqlParser`-validated syntax) and `Trade\Service\Pricing\BasePriceCalculator` resolves via `Trade\Service\Catalog\CatalogResolverInterface` implemented by `Store\Service\Catalog\StoreCatalogResolver` (`X-Store-Code` → `StoreContext`). `Trade` remains order authority; `Inventory` and `OrderItem` remain scalar `specificationUuid` snapshots. PHPStan Level 8 passes with no Authorization `ignoreErrors` suppressions.
+
 ## 3. Request Lifecycle
 
 1. `public/index.php` → `App\Kernel` (MicroKernelTrait)
-2. `config/routes.yaml` imports: `/api/v1` (Common/Trade/Store/Wallet/Payment/Promotion/Wechat App+Manage), `/api/auth` (Identity), `/api/wechat` (Wechat login), `/system` (introspection), `/api/payment/notify` (webhook)
-3. `JwtAuthenticator` intercepts all `/api` routes (except public paths listed in security.yaml)
-4. Controller action (trait mixin or custom method) → `BaseService` methods → Doctrine EntityManager → DB
+2. `config/routes.yaml` imports: `/api/v1` (Authorization/Common/Trade/Store/Wallet/Payment/Promotion/Wechat/Inventory/Settlement App+Manage), `/api/auth` (Identity), `/api/wechat` (Wechat login), `/system` (introspection), `/api/payment/notify` (webhook)
+3. `JwtAuthenticator` intercepts all `/api` routes (except public paths listed in security.yaml); `AuthorizationVoter` enforces `common:content:*`/`authorization:*`/`store:order:*` after authentication
+4. Controller action (ApiView mixin lifecycle: `commonFilter` → `listFilter`/`processCreateContent` → `BaseService` → Doctrine → DB) — Manage controllers use `#[IsGranted('ROLE_ADMIN')]` + `List/Detail/Create/Update/Delete` mixins, Store-scoped controllers enforce `Membership` + `AuthorizationService` + `FieldAuthorizationService`
 5. `RestController::success()` / `warning()` → JSON `{data, code, message, paginator}`
 
 ## 4. Authentication Flow
@@ -230,6 +249,19 @@ Profile is auto-created on User registration via a Doctrine lifecycle listener. 
 
 **Translation**: AuthController, OtpController, LoginController inject `TranslatorInterface` and pass error messages through `trans()`. JwtAuthenticator also translates `onAuthenticationFailure()` messages.
 
+### 4.5 Authorization (Manage + App)
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET | `/api/v1/manage/permissions` | ROLE_ADMIN | List permission catalogue (seeded, **read-only** — no HTTP create/update/delete) |
+| GET/POST/PUT/DELETE | `/api/v1/manage/roles/*` | ROLE_ADMIN | Roles (List/Detail/Create/Update/Delete) + `POST /{uuid}/permissions` replace, `PUT /{uuid}/field-grants/{resource}/{action}` replace; system roles are 403 on update/delete/replace |
+| GET/POST/PUT/DELETE | `/api/v1/manage/assignments` `/manage/assignments/{uuid}` | ROLE_ADMIN | List (filter userUuid/scope), grant (idempotent batch, scope-compat, audit+cache), detail, update (re-validated, audit `assignment.updated`), revoke (soft `revokedAt`, audit, cache evict) |
+| GET | `/api/v1/manage/audit-logs` | ROLE_ADMIN | Paginated audit history (`targetType`, `actorUuid`) |
+| GET | `/api/v1/app/authorization/me` | ROLE_USER | Current user effective permissions/storeScopes/fieldGrants (UI only) |
+| `common:content` `metadata` | `metadata` (json) | `Content.metadata` field-grant pilot (editor vs metadata_editor via `FieldAuthorizationService`) |
+
+Setup: `php bin/console doctrine:migrations:migrate && php bin/console app:authorization:seed` (idempotent, registry-validated; see `docs/manual/authorization.md` and `docs/runbooks/authorization.md`). `AuthorizationService` uses `cache.app` (`authorization_effective_*`, 300s, DB fallback, admin bypass). `Assignment` uniqueness is `UNIQUE(user_uuid, role_id, scope_type, scope_key)` (`scope_key=''` for global) so global grants are portable across MySQL/PostgreSQL/SQLite.
+
 ## 5. Dynamic Query System
 
 `BaseServiceReadListTrait::list()` supports:
@@ -247,7 +279,9 @@ Profile is auto-created on User registration via a Doctrine lifecycle listener. 
 | `@transform` | Field transformation | `Math.mul(value, 100)` |
 | `page`, `limit` | Pagination | `page=1&limit=20` |
 
-**Expression syntax**: `==`, `!=`, `>`, `<`, `>=`, `<=`, `&&`, `||`, `!`, `matches`, chained attributes, `Math`, `ArrayCommon`, `FilterDateTime` functions. Falls back to in-memory `LegacyEvaluator` when DQL compilation fails.
+**Expression syntax**: `==`, `!=`, `>`, `<`, `>=`, `<=`, `&&`, `||`, `!`, `matches`, `in`/`not in` (array-bound, empty `in []` → `1=0`, empty `not in` → `1=1`), chained attributes, `Math`, `ArrayCommon`, `FilterDateTime` functions. Falls back to in-memory `LegacyEvaluator` when DQL compilation fails.
+
+**Server-owned row-scope**: `DqlExpression` (`src/Core/Query/DqlExpression.php`) — immutable `expression/values/criteria/this`, compiled via `ExpressionDqlParser` + `ExpressionQueryBuilderAssembler` in `BaseServiceReadListTrait`, `ApiView::resolvedCommonFilter()` binds `this`, `BaseService` validates criteria against Doctrine metadata, fail-closed `500` on error (no `LegacyEvaluator`).
 
 ## 6. BaseService Architecture
 
@@ -257,17 +291,18 @@ Profile is auto-created on User registration via a Doctrine lifecycle listener. 
 flowchart TD
     base["BaseService<Order> (abstract, @template TEntity, @implements BaseServiceInterface<TEntity>)"]
     base --> infra["BaseServiceInfrastructureTrait # EM, Logger, Serializer, Validator, Transactions"]
-    base --> readList["BaseServiceReadListTrait<TEntity> # get(mixed): TEntity|null, list(): mixed"]
+    base --> readList["BaseServiceReadListTrait<TEntity> # get(mixed): TEntity|null, list(): mixed (QueryBuilder/DqlExpression/array)"]
     base --> mutation["BaseServiceMutationTrait<TEntity> # new(): object, update(mixed): object|false, remove(): bool"]
 ```
 
 Key PHPDoc contracts:
-- **`get(mixed $criteria)`**: Accepts `TEntity|int|string|array<string, mixed>|QueryBuilder` → returns `TEntity|null`
-- **`list(array $params)`**: Returns `mixed` (QueryBuilder, Entity[], or scalar arrays depending on @select/@groupBy)
+- **`get(mixed $criteria)`**: Accepts `TEntity|int|string|array<string, mixed>|QueryBuilder|DqlExpression` → returns `TEntity|null`
+- **`list(array|QueryBuilder|DqlExpression $filter)`**: Returns `mixed` (QueryBuilder, Entity[], or scalar arrays depending on @select/@groupBy); `disableRequest=false` enables `@filter/@dql` from Request
 - **`new()`**: Returns `object` (native), `@return TEntity` (PHPDoc)
 - **`update(mixed $object, ?array $data)`**: Returns `object|false` — native `mixed` param with PHPDoc `@param mixed` for trait compatibility
 - **`remove($object)`**: Accepts `TEntity|int|string|array<string, mixed>`
 - **`wrapInTransaction(callable $fn)`**: Transaction with commit/rollback
+- **`commonFilter`**: May return `array|QueryBuilder|DqlExpression`; `DqlExpression` supports `this` shorthand and `in`/`not in`
 
 ## 7. Trade Module — Order Lifecycle
 
@@ -592,23 +627,23 @@ Placed in `src/Core/Controller/System/` (framework layer). NelmioApiDoc path_pat
 
 | Pattern | Where | Detail |
 |---------|-------|--------|
-| **Trait mixins** | View layer | 9 PHP traits composed into controllers |
+| **Trait mixins** | View layer | 9 PHP traits composed into controllers; Manage Authorization controllers use `ApiView` + `List/Detail/Create/Update/Delete` mixins |
 | **View message constants** | Core/View | `ApiViewMessages` extracts all hardcoded strings from View traits into constants + formatters |
 | **Generic services** | Core/Service | `@template TEntity` + `@extends BaseService<Entity>` enables static analysis inference across the service layer |
-| **Field whitelisting** | Controllers | `$requiredCreateProperties`, `$acceptedCreateProperties`, `$acceptedUpdateProperties` |
+| **Field whitelisting** | Controllers | `$requiredCreateProperties`, `$acceptedCreateProperties`, `$acceptedUpdateProperties` (Role: `code/name/scopeType`; Assignment: `userUuid/roleUuid/scopeType/scopeUuid`; Content: `title/body/category/tags/metadata`) |
 | **Money in cents** | Wallet + Trade + Payment | `bigint` cents, API boundary converts ×/÷100 |
-| **UUID v4** | Trade + Wallet | `UUID::v4()` for external identity |
+| **UUID v4** | Trade + Wallet + Authorization + Store | `UUID::v4()` for external identity |
 | **Soft delete** | Trade | `isDeleted` boolean on Product, Specification |
 | **Snapshot** | Trade | `OrderItem` captures `specSnapshot`/`productSnapshot` at creation |
 | **Order metadata** | Trade | App order creation accepts optional `metadata` JSON and persists it as-is to `trade_order.metadata`, useful for receiver/address snapshots and frontend extension data |
 | **State machine** | Trade | Symfony Workflow for orders |
 | **Token rotation + reuse detection** | Identity | HMAC-SHA256 refresh tokens |
-| **Idempotency** | Wallet | `referenceId` unique constraint on Transaction |
+| **Idempotency** | Wallet + Authorization Assignment | `referenceId` unique constraint on Transaction; `UNIQUE(user_uuid, role_id, scope_type, scope_uuid)` on Assignment with reactivation of revoked rows |
 | **Pipeline** | Trade | `PriceCalculatorInterface` with priority ordering |
 | **Meta channel** | Trade | `PriceCalculationContext.meta` / `PriceCalculationResult.meta` — bidirectional opaque channel. Calculators read/write module-specific keys (`meta['promotion']`, `meta['coupon']`). Trade never inspects content. |
 | **Optimistic locking** | Wallet | `SELECT … FOR UPDATE` pessimistic locking + manual `version` counter (`SET version = version + 1`); no `#[ORM\Version]` attribute |
 | **Post-response enrichment** | Core | `OpenApiEnricherListener` post-processes `/api/doc` and `/api/doc.json` |
-| **commonFilter** | Controllers | Array criteria or QueryBuilder injected into all queries. `[]` = no filter (admin), `['user' => $user]` = user-scoped, `['id' => -1]` = block all, QueryBuilder required for `IS NULL` filters |
+| **commonFilter** | Controllers | Array criteria or `QueryBuilder` or `DqlExpression` injected into all queries. `[]` = no filter (admin), `['user' => $user]` = user-scoped, `['id' => -1]` = block all, `DqlExpression('entity.getStoreUuid() == storeUuid')` for readable Store scope, QueryBuilder required for `IS NULL` filters |
 | **Payment via wallet** | Trade | `POST /app/orders/{id}/payment` with `payment: "wallet"` creates Invoice → WalletGateway deducts user wallet |
 | **Payment integration migration** | Payment -> Trade | Next phase replaces synchronous Invoice domain-event consumption with Payment Outbox and Trade Inbox; Payment request Inbox/Saga remains deferred |
 | **Balance audit** | Wallet | `GET /app/wallets/balance` audits only current user's wallets; `GET /manage/wallets/balance` is global; `POST /manage/wallets/reconcile` fixes per-wallet gaps with `TYPE_ADJUSTMENT` |
@@ -636,6 +671,8 @@ Placed in `src/Core/Controller/System/` (framework layer). NelmioApiDoc path_pat
 | **Inventory global bypass** | Store + Inventory | INVENTORY_ENABLED env var allows deployments without inventory management |
 | **Per-stock negative inventory** | Inventory | Each Stock has allowNegativeStock flag; independent per store/material pair |
 | **Outbox claim pattern** | Inventory + Store + Trade | Outbox publishers atomically claim rows via UPDATE WHERE, preventing concurrent delivery |
+| **Authorization RBAC** | Authorization | Scoped RBAC (`global`/`store`, `UNIQUE(user,role,scope_type,scope_key)`), `AuthorizationService::can/require/allowedStoreUuids` (cache `authorization_effective_*` 300s, DB fallback, admin bypass), `FieldAuthorizationService` (union of `RoleFieldGrant` intersected with controller `accepted*Properties`, strict 403), `AuthorizationVoter`; Store membership (`Membership.isActive`) composes with Authorization for Store resources (`store:order:*`) |
+| **Content field-grant pilot** | Common + Authorization | `common_content.metadata` json only (no `store_uuid`); `FieldAuthorizationService` demonstrates `metadata` vs non-`metadata` grants (editor vs metadata_editor) |
 
 ## 14. API Documentation System
 
@@ -671,13 +708,15 @@ Enriches all endpoints (90+):
 | `manage-promotions-*`, `app-promotions-*` | Promotions |
 | `manage-promotion-templates-*`, `app-promotion-templates-*` | PromotionTemplates |
 | `manage-wallets-*`, `manage-transactions-*`, `manage-transfers-*` | Wallet |
+| `manage-roles-*`, `manage-permissions-*`, `manage-assignments-*`, `manage-audit-logs-*`, `app-authorization-*` | Authorization |
+| `manage-stores-*`, `app-stores-*`, `store-contents-*` | Store (+ Store Content pilot) |
 | Any other `manage-{X}-*` | {X} (auto-title-cased) |
 
 ### 14.4 Schema Configuration (`config/packages/nelmio_api_doc.yaml`)
 
-44+ named schemas across 13 tags (Auth, Products, Orders, Categories, Tags, Contents, Comments, Pages, Media, Settings, Promotions, PromotionTemplates, Wallet, System, Wechat). Each with field-level type, description, enum, and example values. `path_patterns` includes both `^/api` and `^/system`.
+44+ named schemas across 13 tags (Auth, Products, Orders, Categories, Tags, Contents, Comments, Pages, Media, Settings, Promotions, PromotionTemplates, Wallet, System, Wechat, Authorization, Store). Each with field-level type, description, enum, and example values. `path_patterns` includes both `^/api` and `^/system`.
 
-## 15. Database Tables (24 Migrations)
+## 15. Database Tables (26 Migrations)
 
 | Version | Tables |
 |---------|--------|
@@ -700,6 +739,8 @@ Enriches all endpoints (90+):
 | 20260815010000 | `wallet.held` column (frozen/available balance separation) |
 | 20260815020000 | `wallet_voucher` (boundary ledger: credit/debit vouchers, unique `reference_id` + `(voucher_type, voucher_id)`, FK to `wallet`) |
 | 20260815030000 | `wallet_voucher_comment` (append-only annotations on vouchers, FK cascade) |
+| 20260901000000 | Authorization foundation: `authorization_permission`, `authorization_role`, `authorization_role_permission`, `authorization_assignment` (with `UNIQUE(user_uuid, role_id, scope_type, scope_uuid)` + indexes), `authorization_role_field_grant`, `authorization_audit_log` |
+| 20260901000001 | Content pilot: `common_content.store_uuid` nullable indexed + `common_content.metadata` json |
 
 ## 16. Documentation Assets
 
@@ -722,6 +763,7 @@ Enriches all endpoints (90+):
 | `docs/design/bundles/storage.md` | Storage module design (pluggable file upload drivers) |
 | `docs/design/bundles/promotion.md` | Promotion module design (DSL engine, 7 strategy types, tagged calculator) |
 | `docs/design/bundles/inventory.md` | Inventory module design (materials, stock, recipes, reservations, inbox/outbox) |
+| `docs/design/bundles/authorization.md` | Authorization bundle design (independent RBAC, scoped Store grants, field grants, audit, DqlExpression row-scope + Phase 1 Content pilot) |
 | `docs/design/bundles/exchange.md` | Exchange bundle design (pool-backed points economy: effective-dated rates, bcmath conversion, pledge/mint/exchange/redemption) |
 | `docs/openapi/order-payment-flow.md` | Frontend order/payment/cancel/refund API integration guide, including WeChat Mini Program pay |
 | `docs/openapi/order-payment-flow.zh.md` | Chinese translation of the frontend order/payment/cancel/refund API guide |
@@ -730,7 +772,7 @@ Enriches all endpoints (90+):
 | `docs/issues/coverage-2026-08-09/` | 24-agent coverage campaign: 96 new test files → 99.46% lines; documents 74 bugs (2 CRITICAL, 8 HIGH, 30 MEDIUM, 34 LOW) with file:line + proposed fixes |
 | `docs/issues/test-audit-2026-08-09/` | 14-agent test audit: 412 redundant-test candidates (190 HIGH) for later deletion; baseline run + timing analysis |
 | `docs/ai/context.md` | This file — AI context snapshot |
-| `mkdocs.yml` | MkDocs Material site config (mermaid rendering: `pymdownx.superfences` custom fence + mermaid@11 CDN + `javascripts/mermaid-init.js`) |
+| `mkdocs.yml` | MkDocs Material site config (mermaid rendering: `pymdownx.superfences` custom fence + mermaid@11 CDN + `javascripts/mermaid-init.js`; Bundles nav includes Authorization) |
 | `scripts/tests/simulate-trade.php` | Generates 100 orders across all 8 statuses into `var/test.db` |
 | `scripts/tests/demo-trade-workflow.php` | E2E workflow demo (all transitions + guards) |
 
@@ -740,8 +782,8 @@ Enriches all endpoints (90+):
 - **Layout**: tests are organized by layer, not by module — `tests/UnitTest/` (pure unit tests, no kernel/DB), `tests/Integration/` (kernel + DB + HTTP tests, plus helpers `DatabaseBootstrapTrait`/`IntegrationWebTestCase`/`IntegrationKernelTestCase`/`StoreTradeFlowTestCase`), `tests/LowValue/` (deprecated/low-value tests excluded from the default run). Namespace `App\Tests\` mirrors the layout: `App\Tests\UnitTest\...`, `App\Tests\Integration\...`, `App\Tests\LowValue\...`. Test-support resources: `tests/bootstrap.php` and JWT test keys under `tests/Identity/Security/` (referenced by `.env.test` and CI).
 - **Low-value exclusion mechanism**: `phpunit.dist.xml` defines the "Project Test Suite" (UnitTest + Integration dirs) and a separate "Low Value" suite; a global `<exclude><group>low-value</group></exclude>` removes every test carrying `#[Group('low-value')]` (class- or method-level) from the default run — covering both whole LowValue files and individual flagged methods inside kept files (from the 2026-08-09 test audit). Run them explicitly with `php bin/phpunit --group low-value` (~480 tests).
 - **DB**: local tests default to SQLite `var/test.db` (paratest uses per-worker SQLite files); CI tests job runs on **PostgreSQL 16**; `migrations.yml` validates the migration chain on **MySQL 8.4**
-- **Coverage**: 90% minimum (enforced in CI), currently **99.46% lines (8511/8557)** from latest local Xdebug run (2026-08-09)
-- **Test count**: **2311 tests / 8374 assertions** in the default suite (UnitTest + Integration), plus ~480 low-value tests excluded by default; 31 skipped tests document real `src/` bugs (see §23 and `docs/issues/coverage-2026-08-09/`); **never delete or un-skip them** without fixing the underlying bug
+- **Coverage**: 90% minimum (enforced in CI), currently **99.46% lines (8511/8557)** from latest local Xdebug run (2026-08-09); Authorization pilot adds 1 integration test (27 assertions) with `DqlExpression` + `in` coverage
+- **Test count**: **2394 tests / 8658 assertions** in the default suite (UnitTest + Integration), plus ~480 low-value tests excluded by default; 31 skipped tests document real `src/` bugs (see §23 and `docs/issues/coverage-2026-08-09/`); **never delete or un-skip them** without fixing the underlying bug
 - **Suite runtime**: serial ≈ 59 s (kernel-bootstrapping integration tests dominate). Run parallel with paratest for ~2.3× speedup: `PARATEST=1 php vendor/bin/paratest --processes 8 --runner WrapperRunner` (≈26 s; per-worker SQLite isolation is handled by `tests/bootstrap.php`)
 - **PHPUnit Notices**: 159 pre-existing mock/no-expectation noise (does not fail the run); new tests should avoid adding more
 - **Memory**: `phpunit.dist.xml` sets test-process `memory_limit=512M` (OpenAPI integration builds the full spec in-process)
@@ -751,7 +793,7 @@ Enriches all endpoints (90+):
 - **HTML coverage report**: `XDEBUG_MODE=coverage ./vendor/bin/phpunit --coverage-html var/coverage`
 - **Key test groups** (after the 2026-08-09 layer re-organization; module folders now live under each layer):
   - `tests/UnitTest/`: 197 files — pure unit tests (entities, utils, DSL, strategies, mock-based services/controllers, workflow state machine, listeners)
-  - `tests/Integration/`: 72 files — kernel+DB+HTTP (module integration flows, API regressions, outbox/inbox, concurrency, cross-module flows, health/metrics/rate-limit endpoints) plus the 4 shared helpers; Trade integration remains the slowest area (see test-audit)
+  - `tests/Integration/`: 73 files — kernel+DB+HTTP (module integration flows, API regressions, outbox/inbox, concurrency, cross-module flows, health/metrics/rate-limit endpoints, AuthorizationContentPilotTest) plus the 4 shared helpers; Trade integration remains the slowest area (see test-audit)
   - `tests/LowValue/`: 43 files — flagged by the 2026-08-09 audit as duplicates/coverage-chasing; excluded from default runs (`--group low-value` to execute)
   - `scripts/tests/api-smoke.sh`: real HTTP auth/catalog/wallet/order/payment smoke; strict 401/403/404 checks
   - `scripts/tests/store-smoke.sh`: real HTTP Store-scoped order, Trade Outbox, Messenger consumer, Store Outbox, and `store_accepted` assertion
@@ -792,6 +834,7 @@ Qiniu configuration is intentionally **not** environment-variable based. Configu
 docker compose up -d --build
 docker compose exec app php bin/console doctrine:migrations:migrate --no-interaction
 docker compose exec app php bin/console app:identity:user:create admin@example.com admin 'P@ssw0rd' --admin
+docker compose exec app php bin/console app:authorization:seed
 ```
 
 - `compose.override.yaml` auto-loads — sets `APP_ENV=dev`, `APP_DEBUG=1`, source mount
@@ -811,6 +854,7 @@ Requires `.env.prod.local` copied from `.env.prod.example` with `APP_SECRET`, `R
 | Command | Module | Purpose |
 |---------|--------|---------|
 | `app:identity:user:create` | Identity | Create user: email, username, password, --phone, --role, --admin, --phone-verified |
+| `app:authorization:seed` | Authorization | Seed permissions/roles/field-grants (11/3/4, idempotent, registry-validated) |
 | `app:storage:qiniu:settings:init` | Storage | Initialize missing Qiniu `common_setting` records (`qiniu.access_key`, `qiniu.secret_key`, `qiniu.bucket`, `qiniu.domain`) without overwriting existing values |
 | `app:trade:outbox:publish` | Trade | Relay unpublished Trade integration events to Messenger |
 | `app:store:outbox:publish` | Store | Relay Store acceptance/rejection events to Messenger |
@@ -835,6 +879,7 @@ Requires `.env.prod.local` copied from `.env.prod.example` with `APP_SECRET`, `R
 - `WechatService` explicitly defined in `services_wechat.yaml` with `%env()` parameter bindings
 - `WechatPayGateway` explicitly defined in `services_wechat.yaml` (excluded from global autowiring scan)
 - `WalletGateway` autowired in Wallet via `PaymentGatewayInterface` tag (no explicit exclusion needed)
+- `AuthorizationVoter` auto-tagged `security.voter`; `AuthorizationResourceRegistry` hardened with default `common:content` registry
 
 ## 22. Inventory Module — Stock & Reservation System
 
@@ -853,7 +898,7 @@ covered by concurrency tests. The disabled schema/module may be deployed safely.
 |--------|---------|
 | `Material` | Raw material or finished good. code is unique, immutably frozen upon stock mutation |
 | `Stock` | Per-store per-material balance with onHandQuantity, reservedQuantity, allowNegativeStock flag |
-| `SpecificationRecipe` | One active recipe per Trade Specification UUID; stores material BOM lines |
+| `SpecificationRecipe` | One active recipe per catalog Specification UUID; stores material BOM lines |
 | `RecipeLine` | Quantity of a material required per unit of the parent Specification |
 | `Reservation` | Idempotent reservation aggregate with status: requested, confirmed, rejected, released, consumed |
 | `ReservationLine` | Immutable snapshot of material demand and reserved quantity per reservation |
@@ -964,3 +1009,15 @@ Implementation notes:
 - `compose.yaml` nginx healthcheck runs `wget -q -O /dev/null http://localhost/health/ready` (full-path readiness: nginx → FPM → Symfony → DB/Redis).
 - Both endpoints are added to NelmioApiDoc `path_patterns` (tag `System`).
 - Tests: `tests/Integration/Core/Controller/HealthControllerTest.php`, `tests/Integration/Core/Controller/MetricsControllerTest.php`, `tests/Integration/Core/EventListener/RateLimitListenerTest.php` (real `RateLimiterFactory` + `InMemoryStorage`, so global test limits are untouched).
+
+## 25. Authorization Module (Phase 1)
+
+**Bundle**: `src/Authorization/` — independent `Authorization` boundary (see `docs/design/bundles/authorization.md`).
+- **Entities**: `Permission` (code/module/resource/action), `Role` (global/store, `isSystem`), `Assignment` (userUuid/role/scope, soft revoke), `RoleFieldGrant` (resource/action→fields json), `AuditLog` (append-only)
+- **Services**: `AuthorizationService` (admin bypass, global vs store `can`, `allowedStoreUuids`, `effectivePermissions` via `cache.app` `authorization_effective_*` 300s + DB fallback), `FieldAuthorizationService` (union of grants ∩ controller `accepted*Properties`, strict 403), `AuthorizationResourceRegistry` (`common:content` create/update), `AuthorizationAuditService`, `AuthorizationCacheInvalidator`
+- **Security**: `AuthorizationScope` (`global`/`store`), `ScopedResourceInterface`, `AuthorizationVoter` (permission string + scope subject)
+- **Seed**: `app:authorization:seed` — 11 permissions, 3 roles (`store_content_editor`, `store_content_metadata_editor`, `authorization_administrator`), 4 field grants
+- **Manage APIs** (`ROLE_ADMIN`, `ApiView` mixins): `GET /manage/permissions` (list), `GET/POST/PUT/DELETE /manage/roles` + `POST /{uuid}/permissions` + `PUT /{uuid}/field-grants/{resource}/{action}`, `GET/POST/DELETE /manage/assignments` (idempotent grant, scope-compat, soft revoke), `GET /manage/audit-logs` (paginated)
+- **App**: `GET /app/authorization/me` — effective permissions/storeScopes/fieldGrants for current user
+- **Content pilot**: `common_content.store_uuid` nullable indexed + `metadata` json; `Common/Controller/Store/ContentController` at `POST/GET/PUT/DELETE /store/{storeUuid}/contents` enforces `Membership.isActive` + `common:content:*` via `AuthorizationScope::store` + `FieldAuthorizationService` (metadata_editor vs editor); `Common/Controller/Manage/ContentController` now allows `metadata` in `accepted*Properties`
+- **DqlExpression**: `src/Core/Query/DqlExpression` + `ExpressionDqlParser` `in`/`not in` (array-bound, `1=0`/`1=1` for empty) used as readable row-scope primitive for future Authorization scopes

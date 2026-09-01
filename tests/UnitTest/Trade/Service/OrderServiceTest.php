@@ -6,14 +6,14 @@ namespace App\Tests\UnitTest\Trade\Service;
 
 use App\Identity\Entity\User;
 use App\Trade\Entity\Order;
-use App\Trade\Entity\Product;
-use App\Trade\Entity\Specification;
+use App\Trade\Service\Catalog\CatalogItem;
+use App\Trade\Service\Catalog\CatalogResolverInterface;
 use App\Trade\Service\OrderService;
 use App\Trade\Service\Pricing\BasePriceCalculator;
 use App\Trade\Service\Pricing\PriceCalculationResult;
 use App\Trade\Service\Pricing\QuantityCalculator;
 use App\Trade\Service\Pricing\TotalAggregator;
-use App\Trade\Service\SpecificationServiceInterface;
+// removed
 use App\Wallet\Entity\Transaction;
 use App\Wallet\Entity\Wallet;
 use App\Wallet\Repository\WalletRepository;
@@ -47,18 +47,24 @@ final class OrderServiceTest extends TestCase
 
     public function testCalculatePricesDelegatesToPipeline(): void
     {
-        $product = new Product();
-        $product->setName('Phone');
-        $spec = new Specification();
-        $spec->setProduct($product);
-        $spec->setName('Red');
-        $spec->setPrice(500);
-
-        $specService = $this->createMock(SpecificationServiceInterface::class);
-        $specService->method('get')->willReturn($spec);
+        $catalogItem = new CatalogItem(
+            id: 1,
+            uuid: '00000000-0000-0000-0000-000000000001',
+            name: 'Red',
+            price: 500,
+            status: 'active',
+            isDeleted: false,
+            productId: 10,
+            productUuid: '00000000-0000-0000-0000-000000000010',
+            productName: 'Phone',
+            productIsDeleted: false,
+            productStatus: 'active',
+        );
+        $resolver = $this->createMock(CatalogResolverInterface::class);
+        $resolver->method('resolveForPricing')->willReturn($catalogItem);
 
         $calculators = [
-            new BasePriceCalculator($specService),
+            new BasePriceCalculator($resolver),
             new QuantityCalculator(),
             new TotalAggregator(),
         ];
@@ -79,15 +85,24 @@ final class OrderServiceTest extends TestCase
 
     public function testCalculatePricesWithCustomCurrency(): void
     {
-        $product = new Product();
-        $spec = new Specification();
-        $spec->setProduct($product);
-
-        $specService = $this->createMock(SpecificationServiceInterface::class);
-        $specService->method('get')->willReturn($spec);
+        $catalogItem = new CatalogItem(
+            id: 1,
+            uuid: '00000000-0000-0000-0000-000000000002',
+            name: 'Spec',
+            price: 100,
+            status: 'active',
+            isDeleted: false,
+            productId: 10,
+            productUuid: '00000000-0000-0000-0000-000000000011',
+            productName: 'Product',
+            productIsDeleted: false,
+            productStatus: 'active',
+        );
+        $resolver = $this->createMock(CatalogResolverInterface::class);
+        $resolver->method('resolveForPricing')->willReturn($catalogItem);
 
         $calculators = [
-            new BasePriceCalculator($specService),
+            new BasePriceCalculator($resolver),
             new QuantityCalculator(),
             new TotalAggregator(),
         ];
@@ -115,16 +130,24 @@ final class OrderServiceTest extends TestCase
     #[DataProvider('pricingCalculationsProvider')]
     public function testPricingCalculations(int $unitPrice, int $quantity, int $expectedTotal): void
     {
-        $product = new Product();
-        $spec = new Specification();
-        $spec->setProduct($product);
-        $spec->setPrice($unitPrice);
-
-        $specService = $this->createMock(SpecificationServiceInterface::class);
-        $specService->method('get')->willReturn($spec);
+        $catalogItem = new CatalogItem(
+            id: 1,
+            uuid: '00000000-0000-0000-0000-000000000003',
+            name: 'Spec',
+            price: $unitPrice,
+            status: 'active',
+            isDeleted: false,
+            productId: 10,
+            productUuid: '00000000-0000-0000-0000-000000000012',
+            productName: 'Product',
+            productIsDeleted: false,
+            productStatus: 'active',
+        );
+        $resolver = $this->createMock(CatalogResolverInterface::class);
+        $resolver->method('resolveForPricing')->willReturn($catalogItem);
 
         $calculators = [
-            new BasePriceCalculator($specService),
+            new BasePriceCalculator($resolver),
             new QuantityCalculator(),
             new TotalAggregator(),
         ];

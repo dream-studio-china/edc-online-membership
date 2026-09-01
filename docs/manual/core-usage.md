@@ -93,7 +93,8 @@ has an analogous pair: `requiredUpdateProperties` and
 
 ### Scoping lists by the current user
 
-Override `commonFilter()` to restrict every list/detail on the controller:
+Override `commonFilter()` to restrict every list/detail on the controller. The
+classic array form is sufficient for simple equality:
 
 ```php
 /** @return array<string, mixed> */
@@ -108,6 +109,51 @@ This is exactly how `src/Trade/Controller/App/OrderController` keeps a user from
 seeing other users' orders, and how `src/Common/Controller/App/MediaController`
 does `['user' => $this->getUser()]`.
 
+For collection membership or combined predicates, return a server-owned
+`DqlExpression` instead. It is compiled to DQL, validated against Doctrine
+metadata, fail-closed (500 on error), and automatically `AND`ed with the
+`id`/`uuid` added by `mixIdToCommonFilter` so detail/update/delete cannot be
+bypassed:
+
+```php
+use App\Core\Query\DqlExpression;
+
+// Ownership + status via explicit variables
+protected function commonFilter(): DqlExpression
+{
+    return new DqlExpression(
+        'entity.getUser() == user && entity.getStatus() != deleted',
+        ['user' => $this->getUser(), 'deleted' => 'deleted']
+    );
+}
+
+// Controller `this` shorthand — only inside commonFilter()
+protected function commonFilter(): DqlExpression
+{
+    return new DqlExpression('entity.getUser() == this.getUser()');
+}
+
+// Multi-value Store scope with empty-collection safety
+protected function commonFilter(): DqlExpression
+{
+    // $allowedStoreUuids may be empty → compiled to 1 = 0 (no rows)
+    return new DqlExpression(
+        'entity.getStoreUuid() in storeUuids',
+        ['storeUuids' => $this->access->allowedStoreUuids($this->getUser(), 'common:content:read')]
+    );
+}
+
+// `this` collection shorthand
+protected function commonFilter(): DqlExpression
+{
+    return new DqlExpression('entity.getStoreUuid() in this.getAllowedStoreUuids()');
+}
+```
+
+> `DqlExpression` is **server-owned only**: never construct it from HTTP input,
+> database rows, or administrator-managed data. Compilation failures are 500
+> configuration errors, never an in-memory fallback.
+
 ### Locking down public detail/filter behavior
 
 `src/Common/Controller/App/CategoryController` is read-only public and always
@@ -119,7 +165,8 @@ protected function commonFilter(): array
     return ['enabled' => true];
 }
 
-protected function detailFilter(array|\Doctrine\ORM\QueryBuilder|null $filter = null)
+/** @param array<string,mixed>|\Doctrine\ORM\QueryBuilder|\App\Core\Query\DqlExpression|null $filter */
+protected function detailFilter(array|\Doctrine\ORM\QueryBuilder|\App\Core\Query\DqlExpression|null $filter = null)
 {
     if (is_array($filter)) {
         unset($filter['enabled']);   // allow fetching a disabled category by id
@@ -127,6 +174,10 @@ protected function detailFilter(array|\Doctrine\ORM\QueryBuilder|null $filter = 
     return $filter;
 }
 ```
+
+For `DqlExpression` the `enabled` predicate is part of the expression itself, so
+`detailFilter` should return the expression unchanged (or map it to a separate
+read scope) rather than trying to unset an array key.
 
 ---
 
@@ -337,7 +388,20 @@ transport-level errors, though domain actions typically still map to
 
 ---
 
-## 6. Access Control (`IsGranted`)
+## 6. Row-Level Scoping with `DqlExpression` vs `commonFilter` Array vs `QueryBuilder`
+
+| Filter type | When to use |
+|-------------|-------------|
+| Array criteria | Simple equality such as `['user' => $this->getUser()]` |
+| `DqlExpression` | Readable ownership / Store / status / collection-membership rules: `entity.getUser() == this.getUser()`, `entity.getStoreUuid() in storeUuids`, `entity.getStatus() != archived`. Compiled via `ExpressionDqlParser` + `ExpressionQueryBuilderAssembler`, fail-closed, automatically `AND`ed with `id`/`uuid`. |
+| `QueryBuilder` | Aggregation, subqueries, database functions, or custom join shapes |
+
+`DqlExpression` shares the same expression syntax as `@filter` but with two critical
+differences: (1) it is constructed in PHP code, not from a query string, and (2) it
+never uses `LegacyEvaluator`. An empty `in []` becomes `1 = 0` (no rows) rather than
+`IN ()` so that a missing scope yields no data.
+
+## 7. Access Control (`IsGranted`)
 
 Add `#[IsGranted(...)]` at the class or method level.
 
@@ -371,7 +435,7 @@ compare ownership in the controller via `$this->getUser()` (see the App
 
 ---
 
-## 7. Transactions (`wrapInTransaction`)
+## 8. Transactions (`wrapInTransaction`)
 
 `wrapInTransaction(callable $fn)` runs a callable inside a DB transaction with
 all-or-nothing semantics; it flushes before commit and rolls back on any
@@ -406,7 +470,7 @@ wallet transfer can itself call `wrapInTransaction`.
 
 ---
 
-## 8. API Documentation (NelmioApiDoc)
+## 9. API Documentation (NelmioApiDoc)
 
 NelmioApiDoc serves Swagger at `/api/doc` (JSON at `/api/doc.json`).
 
@@ -453,7 +517,7 @@ explicit `OA` attributes and/or a `META` entry only when you need richer text.
 
 ---
 
-## 9. Putting It Together: Minimal New CRUD Module
+## 10. Putting It Together: Minimal New CRUD Module
 
 1. **Entity** — `src/{Module}/Entity/{Thing}.php` (Doctrine attributes).
 2. **Repository** — `src/{Module}/Repository/{Thing}Repository.php` extending

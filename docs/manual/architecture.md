@@ -37,8 +37,8 @@ one Messenger bus, but they must behave as if they were independent services.
 | `Core` | Framework abstractions: `RestController`, `BaseService`, View mixins, Expression query engine, serialization |
 | `Common` | CMS primitives: Category, Tag, Content, Comment, Page, Media, Picture, Setting |
 | `Identity` | Authentication & accounts: User, Profile, RefreshToken, JWT/OTP flows |
-| `Trade` | E-commerce core: Product, Specification, Order, OrderItem, pricing pipeline |
-| `Store` | Multi-store operations: Store, Membership, StoreOrder distribution |
+| `Trade` | E-commerce transactions: Order, OrderItem, pricing pipeline, payment orchestration; references Store catalog |
+| `Store` | Multi-store operations: Store, Membership, StoreOrder distribution; owns Product and Specification catalog (shared `NULL` / store-private, [Store Catalog Model](../design/store-catalog.md)) |
 | `Inventory` | Stock, materials, recipes, reservations, ledger |
 | `Payment` | Invoice lifecycle, gateway abstraction, webhooks, events |
 | `Wallet` | Balances, atomic transfers, deposits/withdrawals, vouchers, deductions |
@@ -46,6 +46,7 @@ one Messenger bus, but they must behave as if they were independent services.
 | `Settlement` | Rule-driven funding allocation and settlement finality |
 | `Storage` | Media storage abstraction (local / Qiniu) |
 | `Wechat` | WeChat login (Mini Program / Official Account) and WeChat Pay V3 gateway |
+| `Authorization` | Scoped RBAC (`global`/`store`), `DqlExpression` row scopes, Store-scoped grants, strict field grants, audit log, `AuthorizationVoter` (see `docs/design/bundles/authorization.md` and `manual/authorization.md`) |
 
 ## Layer Architecture
 
@@ -110,20 +111,28 @@ The result is a generic CRUD service per entity that concrete services override
 where domain rules require it. Every module service also declares an interface
 (e.g. `OrderServiceInterface extends BaseServiceInterface`).
 
-### Expression Dynamic Query Engine
+### Expression Dynamic Query Engine & `DqlExpression`
 
 List endpoints accept expression query parameters that are parsed to DQL:
 
 | Parameter | Meaning |
 |-----------|---------|
-| `@filter` | Declarative filter conditions |
+| `@filter` | Declarative filter conditions (client-supplied, `GET` only) |
 | `@sort` / `@order` | Ordering clauses |
 | `@dql` | Raw DQL fragments / embedded expressions |
 | `@select` | Projection of selected fields |
 
-Implementation lives in `src/Core/Parser/` (`ExpressionDqlParser`,
-`ExpressionQueryBuilderAssembler`) and is executed through
-`App\Core\Service\ExpressionService` with `QueryBuilderFactory`.
+Shared syntax is implemented in `src/Core/Parser/` (`ExpressionDqlParser`,
+`ExpressionQueryBuilderAssembler`) and executed through
+`App\Core\Service\ExpressionService` with `QueryBuilderFactory`. The same syntax
+powers server-owned `DqlExpression` (`src/Core/Query/DqlExpression.php`) for
+row-level authorization: `commonFilter()` may return
+`new DqlExpression('entity.getUser() == this.getUser()')` or
+`new DqlExpression('entity.getStoreUuid() in storeUuids', ['storeUuids' => $allowed])`,
+compiled via `ExpressionDqlParser` + `ExpressionQueryBuilderAssembler` and
+automatically `AND`ed with `id`/`uuid` criteria. Unlike `@filter`, it is
+fail-closed (500 on error) and supports `in`/`not in` with empty-collection
+safety.
 
 ### Pricing Pipeline
 
@@ -168,7 +177,7 @@ Cross-module writes never call the target module synchronously:
 |---------|-------|
 | UUID identity on aggregates | Cross-module references are UUIDs (`Core\Utils\UUID`); durable keys never cross a boundary as plain integer IDs |
 | Optimistic locking on Wallet | `Wallet` carries an integer `version` column; concurrent balance updates detect conflicts instead of overwriting |
-| Soft delete | `Product` / `Specification` use an `isDeleted` flag (`Trade\Entity`) so pricing and history can still reference removed records |
+| Soft delete | `Product` / `Specification` (`Store` entities, tables `trade_product`/`trade_specification`) use an `isDeleted` flag while retaining immutable order snapshots |
 | Token rotation | Refresh tokens are stored hashed (HMAC-SHA256) and rotated on every use with reuse detection (`Identity\Security\TokenManager`) |
 | Exact-money settlement | `QuantumAmount` (`Settlement\Service\Money`) is a base-10 integer quantum of fixed scale (default 18, `brick/math`), avoiding float error; `AllocationRoundingService` handles remainder distribution (largest-remainder) |
 | Registry pattern | `PaymentGatewayRegistry`, `PaymentAdjustmentRegistry`, `DepositProviderRegistry`, `WithdrawProviderRegistry`, `MediaStorageRegistry`, `SettlementContextResolverRegistry` |

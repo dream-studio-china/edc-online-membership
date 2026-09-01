@@ -123,10 +123,10 @@ class OpenApiEnricherListener
         '/api/v1/app/stores/{id}' => ['summary' => ['get' => 'Get store detail']],
         '/api/v1/manage/store-orders' => ['summary' => ['get' => 'List store orders']],
         '/api/v1/app/store-orders' => ['summary' => ['get' => 'List my store orders']],
-        '/api/v1/store/stores/{scopeId}/orders' => ['summary' => ['get' => 'List scoped store orders'], 'desc' => ['get' => 'Staff scoped list via store uuid. Requires store membership.']],
-        '/api/v1/store/stores/{scopeId}/orders/{orderUuid}/accept' => ['summary' => ['post' => 'Accept store order'], 'desc' => ['post' => 'Staff accept pending order. Requires owner|manager|clerk.']],
-        '/api/v1/store/stores/{scopeId}/orders/{orderUuid}/reject' => ['summary' => ['post' => 'Reject store order'], 'desc' => ['post' => 'Body: code, reason. Requires owner|manager|clerk.']],
-        '/api/v1/store/stores/{scopeId}/orders/{orderUuid}/fulfill' => ['summary' => ['post' => 'Fulfill store order'], 'desc' => ['post' => 'Staff fulfillment step. Requires owner|manager|fulfillment.']],
+        '/api/v1/store/{scopeId}/orders' => ['summary' => ['get' => 'List scoped store orders'], 'desc' => ['get' => 'Staff scoped list via store uuid. Requires store membership.']],
+        '/api/v1/store/{scopeId}/orders/{orderUuid}/accept' => ['summary' => ['post' => 'Accept store order'], 'desc' => ['post' => 'Staff accept pending order. Requires owner|manager|clerk.']],
+        '/api/v1/store/{scopeId}/orders/{orderUuid}/reject' => ['summary' => ['post' => 'Reject store order'], 'desc' => ['post' => 'Body: code, reason. Requires owner|manager|clerk.']],
+        '/api/v1/store/{scopeId}/orders/{orderUuid}/fulfill' => ['summary' => ['post' => 'Fulfill store order'], 'desc' => ['post' => 'Staff fulfillment step. Requires owner|manager|fulfillment.']],
         '/api/v1/manage/inventory/materials' => ['summary' => ['get' => 'List materials', 'post' => 'Create material'], 'desc' => ['post' => 'code unique, immutably frozen after stock mutation.']],
         '/api/v1/manage/inventory/stocks/{storeUuid}/{materialUuid}' => ['summary' => ['get' => 'Get stock (virtual zero if absent)'], 'desc' => ['get' => 'Per-store per-material balance: onHand, reserved, allowNegativeStock.']],
         '/api/v1/manage/inventory/stocks/{storeUuid}/{materialUuid}/adjust' => ['summary' => ['post' => 'Adjust stock'], 'desc' => ['post' => 'Body: quantityDelta (string bcmath), reason, referenceId, allowNegativeStock. Append-only ledger.']],
@@ -141,6 +141,29 @@ class OpenApiEnricherListener
         '/api/v1/app/users/me' => ['summary' => ['get' => 'Get current user profile', 'put' => 'Update current user profile'], 'desc' => ['put' => 'Update email/username/phone, optional password.']],
         '/api/v1/app/users/change-password' => ['summary' => ['post' => 'Change own password'], 'desc' => ['post' => 'Requires current password.']],
         '/api/v1/manage/users/{id}/change-password' => ['summary' => ['post' => 'Admin change user password'], 'desc' => ['post' => 'ROLE_ADMIN. No current password required.']],
+
+        // --- Store: staff scoped products ---
+        '/api/v1/store/{scopeId}/products' => ['tag' => 'Store', 'summary' => ['get' => 'List scoped store products', 'post' => 'Create scoped store product'], 'desc' => ['get' => 'Staff scoped list via store uuid (scopeId). Paginated. Supports @filter, @order, @select, @sort, @expands, @display. Requires store membership (store:product:read). Auth: Bearer JWT, ROLE_USER.', 'post' => 'Create product bound to store scopeId. Body: name required, description, status in [active,inactive], metadata. Requires store:product:create. Example: {"name":"iPhone 15 Pro"}.']],
+        '/api/v1/store/{scopeId}/products/batch-update' => ['tag' => 'Store', 'summary' => ['post' => 'Batch update/upsert scoped store products'], 'desc' => ['post' => 'Batch upsert for store scopeId products. Query: @mode=mixed|strict|create, @basis=id,name, @partial bool. Body: array of product objects. Requires store:product:update|create.']],
+        '/api/v1/store/{scopeId}/products/{id}' => ['tag' => 'Store', 'summary' => ['get' => 'Get scoped store product detail', 'put' => 'Update scoped store product', 'delete' => 'Delete scoped store product'], 'desc' => ['get' => 'Detail by id within scopeId store. Path params: scopeId (store UUID), id (product id|uuid). Requires store:product:read.', 'put' => 'Update fields: name, description, status, metadata within scopeId. Requires store:product:update.', 'delete' => 'Soft delete (isDeleted=true) within scopeId. Returns 204. Requires store:product:delete.']],
+        '/api/v1/store/{scopeId}/products/{productUuid}/specifications' => ['tag' => 'Store', 'summary' => ['get' => 'List scoped specifications for product', 'post' => 'Create scoped specification (SKU)'], 'desc' => ['get' => 'List specifications filtered by productUuid within store scopeId. Requires store:specification:read. Path params: scopeId, productUuid.', 'post' => 'Create specification under productUuid in store scopeId. Body: name required, price in cents (e.g. 699900), status, sort. Requires store:specification:create.']],
+        '/api/v1/store/{scopeId}/products/{productUuid}/specifications/batch-update' => ['tag' => 'Store', 'summary' => ['post' => 'Batch update/upsert scoped specifications'], 'desc' => ['post' => 'Batch upsert specifications for productUuid in store scopeId. Query: @mode, @basis, @partial. Body: array of spec objects. Requires store:specification:update|create.']],
+        '/api/v1/store/{scopeId}/products/{productUuid}/specifications/{id}' => ['tag' => 'Store', 'summary' => ['get' => 'Get scoped specification detail', 'put' => 'Update scoped specification', 'delete' => 'Delete scoped specification'], 'desc' => ['get' => 'Detail by id within productUuid + scopeId. Path params: scopeId, productUuid, id. Requires store:specification:read.', 'put' => 'Update name, price, status, sort within scopeId/product. Requires store:specification:update.', 'delete' => 'Soft delete within scopeId/product. Requires store:specification:delete.']],
+        '/api/v1/store/{scopeId}/orders/{id}' => ['tag' => 'Store', 'summary' => ['get' => 'Get scoped store order detail'], 'desc' => ['get' => 'Staff scoped order detail via store uuid (scopeId) + order id/uuid. Requires store membership (store:order:read).']],
+
+        // --- Authorization: assignments / roles / permissions / audit-logs ---
+        '/api/v1/manage/assignments' => ['tag' => 'Authorization', 'summary' => ['get' => 'List assignments (grants)', 'post' => 'Create assignment (grant role)'], 'desc' => ['get' => 'Paginated. Filters: userUuid, scopeType=global|store, scopeUuid, includeRevoked bool, roleId. ROLE_ADMIN. Requires bearer JWT.', 'post' => 'Grant role to user. Body: userUuid (UUID) required, roleUuid|role_uuid|roleId required (UUID|id|code), scopeType=global|store required, scopeUuid (UUID, null for global, required for store). Example: {"userUuid":"...","roleUuid":"...","scopeType":"store","scopeUuid":"..."}. ROLE_ADMIN. Audited + cache invalidated.']],
+        '/api/v1/manage/assignments/batch-update' => ['tag' => 'Authorization', 'summary' => ['post' => 'Batch update/upsert assignments'], 'desc' => ['post' => 'Batch upsert assignments. Query: @mode, @basis, @partial. Body: array of assignment objects. ROLE_ADMIN.']],
+        '/api/v1/manage/assignments/{id}' => ['tag' => 'Authorization', 'summary' => ['get' => 'Get assignment detail', 'put' => 'Update assignment', 'delete' => 'Revoke assignment'], 'desc' => ['get' => 'Get assignment by id/uuid. ROLE_ADMIN.', 'put' => 'Update userUuid, roleUuid, scopeType, scopeUuid. Validates role scope compatibility, uniqueness. Audited. ROLE_ADMIN.', 'delete' => 'Soft revoke (sets revokedAt). Already revoked → 204. Audited + cache invalidated. ROLE_ADMIN.']],
+        '/api/v1/manage/roles' => ['tag' => 'Authorization', 'summary' => ['get' => 'List roles', 'post' => 'Create role'], 'desc' => ['get' => 'Paginated role list. ROLE_ADMIN.', 'post' => 'Create non-system role. Body: code required [a-z0-9_], name required, scopeType=global|store required, uuid optional. Example: {"code":"store_manager","name":"Store Manager","scopeType":"store"}. ROLE_ADMIN. Audited.']],
+        '/api/v1/manage/roles/batch-update' => ['tag' => 'Authorization', 'summary' => ['post' => 'Batch update/upsert roles'], 'desc' => ['post' => 'Batch upsert roles. ROLE_ADMIN. Query: @mode, @basis, @partial.']],
+        '/api/v1/manage/roles/{id}' => ['tag' => 'Authorization', 'summary' => ['get' => 'Get role detail', 'put' => 'Update role', 'delete' => 'Delete role'], 'desc' => ['get' => 'Get role by id/uuid. ROLE_ADMIN.', 'put' => 'Update code [a-z0-9_] and name. System roles cannot be modified. ROLE_ADMIN. Cache invalidated for assigned users.', 'delete' => 'Delete non-system role. System → 403. ROLE_ADMIN.']],
+        '/api/v1/manage/roles/{uuid}/permissions' => ['tag' => 'Authorization', 'summary' => ['post' => 'Replace role permissions'], 'desc' => ['post' => 'Replace all permissions for role uuid. Body: permissions|!codes|array of codes [a-z0-9:_] required. Example: {"permissions":["store:product:read","store:order:accept"]}. Validates existence. System role → 403. Audited + cache invalidated. ROLE_ADMIN. Path params: uuid (role UUID).']],
+        '/api/v1/manage/roles/{uuid}/field-grants/{resource}/{action}' => ['tag' => 'Authorization', 'summary' => ['put' => 'Replace role field grant'], 'desc' => ['put' => 'Create or update field grant for role uuid + resource + action. Body: fields|array of field names required (array of strings, unique). Validates via AuthorizationResourceRegistry. System role → 403. Audited + cache invalidated. ROLE_ADMIN. Path params: uuid, resource, action. Example: {"fields":["name","price"]}.']],
+        '/api/v1/manage/permissions' => ['tag' => 'Authorization', 'summary' => ['get' => 'List permissions'], 'desc' => ['get' => 'Paginated list of registered permissions (code, module, resource, action). ROLE_ADMIN. Read-only.']],
+        '/api/v1/manage/permissions/{id}' => ['tag' => 'Authorization', 'summary' => ['get' => 'Get permission detail'], 'desc' => ['get' => 'Get permission by id. ROLE_ADMIN.']],
+        '/api/v1/manage/audit-logs' => ['tag' => 'Authorization', 'summary' => ['get' => 'List audit logs'], 'desc' => ['get' => 'Paginated audit trail for authorization changes. Filters: targetType, actorUuid. ROLE_ADMIN.']],
+        '/api/v1/manage/audit-logs/{id}' => ['tag' => 'Authorization', 'summary' => ['get' => 'Get audit log detail'], 'desc' => ['get' => 'Get audit log entry by id. ROLE_ADMIN.']],
     ];
 
     public function onKernelResponse(ResponseEvent $event): void
@@ -214,10 +237,11 @@ class OpenApiEnricherListener
             ['name' => 'Promotions', 'description' => 'Promotion DSL and order discounts'],
             ['name' => 'PromotionTemplates', 'description' => 'Promotion template CRUD, validation, and dry-run'],
             ['name' => 'Settlement', 'description' => 'Settlement rules, plans, allocations, and outbox'],
+            ['name' => 'Authorization', 'description' => 'RBAC: roles, permissions, assignments, field grants, audit logs'],
             ['name' => 'System', 'description' => 'Entity metadata introspection and route listing'],
             ['name' => 'Wechat', 'description' => 'WeChat Mini Program / Official Account login and WeChat Pay'],
         ] as $t) {
-            $this->ensureTag($spec['tags'], $t['name']);
+            $this->ensureTag($spec['tags'], (string) $t['name']);
         }
 
         foreach ($spec['paths'] as $path => &$methods) {
@@ -232,17 +256,17 @@ class OpenApiEnricherListener
             foreach ($methods as $method => &$op) {
                 if (!is_array($op)) continue;
                 $op['tags'] = [$tag];
+                // @phpstan-ignore-next-line
                 $this->ensureTag($spec['tags'], $tag);
                 if ($meta && isset($meta['summary'][$method])) $op['summary'] = $meta['summary'][$method];
                 if ($meta && isset($meta['desc'][$method])) $op['description'] = $meta['desc'][$method];
                 // Central requestBody injection — single place for all custom endpoints (no controller OA needed)
-                if (!isset($op['requestBody'])) {
-                    $body = $this->centralRequestBody($path, $method);
-                    if ($body !== null) {
-                        $op['requestBody'] = $body;
-                    } elseif ($method === 'post' && in_array($path, ['/api/v1/app/media/upload', '/api/v1/manage/media/upload'], true)) {
-                        $op['requestBody'] = $this->mediaUploadRequestBody();
-                    }
+                // Central definitions take precedence over generic OA\RequestBody from mixins.
+                $body = $this->centralRequestBody($path, $method);
+                if ($body !== null) {
+                    $op['requestBody'] = $body;
+                } elseif (!isset($op['requestBody']) && $method === 'post' && in_array($path, ['/api/v1/app/media/upload', '/api/v1/manage/media/upload'], true)) {
+                    $op['requestBody'] = $this->mediaUploadRequestBody();
                 }
                 // Ensure path parameters from URL template are documented
                 $this->ensurePathParameters($op, $path);
@@ -257,7 +281,8 @@ class OpenApiEnricherListener
 
         // Remove generic operation-type tags (List, Detail, Create, Update, Delete)
         // that come from View mixin OA attributes — we use module tags instead.
-        $genericTags = ['List', 'Detail', 'Create', 'Update', 'Delete', 'Workflow'];
+        // Also purge stale split Authorization tags (now consolidated under Authorization).
+        $genericTags = ['List', 'Detail', 'Create', 'Update', 'Delete', 'Workflow', 'Assignments', 'Roles', 'Permissions', 'Audit'];
         $spec['tags'] = array_values(array_filter($spec['tags'], fn($t) => !in_array($t['name'], $genericTags, true)));
 
         return $spec;
@@ -369,12 +394,19 @@ class OpenApiEnricherListener
             'post:/api/v1/app/vouchers/withdraw' => $inline(['walletId'=>['type'=>'integer'],'amount'=>['type'=>'integer'],'voucherType'=>['type'=>'string'],'voucherId'=>['type'=>'string'],'referenceId'=>['type'=>'string'],'reason'=>['type'=>'string']], ['walletId','amount','voucherType','voucherId','referenceId']),
             'post:/api/v1/app/vouchers/{uuid}/reverse' => $inline(['reason'=>['type'=>'string']], [], false),
             'post:/api/v1/manage/wallets/reconcile' => $inline([], [], false),
-            // ---- Store ----
+            // ---- Store: scoped products/specifications/orders ----
+            'post:/api/v1/store/{scopeId}/products' => $inline(['name'=>['type'=>'string','example'=>'iPhone 15 Pro','description'=>'Required. Product name.'],'description'=>['type'=>'string','example'=>'The latest iPhone with A17 Pro chip','nullable'=>true],'status'=>['type'=>'string','enum'=>['active','inactive'],'example'=>'active'],'metadata'=>['type'=>'object','nullable'=>true,'description'=>'Opaque metadata']], ['name']),
+            'put:/api/v1/store/{scopeId}/products/{id}' => $inline(['name'=>['type'=>'string','example'=>'iPhone 15 Pro Max'],'description'=>['type'=>'string','nullable'=>true],'status'=>['type'=>'string','enum'=>['active','inactive']],'metadata'=>['type'=>'object','nullable'=>true]], [], false),
+            'post:/api/v1/store/{scopeId}/products/batch-update' => $inline(['items'=>['type'=>'array','description'=>'Array of product objects for batch upsert','items'=>['type'=>'object','properties'=>['name'=>['type'=>'string'],'description'=>['type'=>'string'],'status'=>['type'=>'string','enum'=>['active','inactive']],'metadata'=>['type'=>'object']]]]], [], false),
+            'post:/api/v1/store/{scopeId}/products/{productUuid}/specifications' => $inline(['name'=>['type'=>'string','example'=>'128GB 银色'],'price'=>['type'=>'integer','description'=>'Price in cents (e.g. 699900 = ¥6999)','example'=>699900],'status'=>['type'=>'string','enum'=>['active','inactive'],'example'=>'active'],'sort'=>['type'=>'integer','example'=>1]], ['name','price']),
+            'put:/api/v1/store/{scopeId}/products/{productUuid}/specifications/{id}' => $inline(['name'=>['type'=>'string','example'=>'256GB 深空黑'],'price'=>['type'=>'integer','description'=>'Price in cents'],'status'=>['type'=>'string','enum'=>['active','inactive']],'sort'=>['type'=>'integer']], [], false),
+            'post:/api/v1/store/{scopeId}/products/{productUuid}/specifications/batch-update' => $inline(['items'=>['type'=>'array','description'=>'Array of specification objects for batch upsert','items'=>['type'=>'object','properties'=>['name'=>['type'=>'string'],'price'=>['type'=>'integer'],'status'=>['type'=>'string','enum'=>['active','inactive']],'sort'=>['type'=>'integer']]]]], [], false),
+            // ---- Store: manage stores + scoped orders ----
             'post:/api/v1/manage/stores/{uuid}/status/{status}' => $inline([], [], false),
             'post:/api/v1/manage/stores/{uuid}/members' => $inline(['userUuid'=>['type'=>'string','format'=>'uuid','example'=>'550e8400-e29b-41d4-a716-446655440000'],'role'=>['type'=>'string','enum'=>['owner','manager','clerk','fulfillment'],'example'=>'manager']], ['userUuid','role']),
-            'post:/api/v1/store/stores/{scopeId}/orders/{orderUuid}/accept' => $inline(['reservationId'=>['type'=>'string','description'=>'Optional reservation id']], [], false),
-            'post:/api/v1/store/stores/{scopeId}/orders/{orderUuid}/reject' => $inline(['code'=>['type'=>'string','example'=>'out_of_stock'],'reason'=>['type'=>'string','example'=>'Insufficient stock']], ['code','reason']),
-            'post:/api/v1/store/stores/{scopeId}/orders/{orderUuid}/fulfill' => $inline(['fulfillmentData'=>['type'=>'object','description'=>'Optional fulfillment payload']], [], false),
+            'post:/api/v1/store/{scopeId}/orders/{orderUuid}/accept' => $inline(['reservationId'=>['type'=>'string','description'=>'Optional reservation id']], [], false),
+            'post:/api/v1/store/{scopeId}/orders/{orderUuid}/reject' => $inline(['code'=>['type'=>'string','example'=>'out_of_stock'],'reason'=>['type'=>'string','example'=>'Insufficient stock']], ['code','reason']),
+            'post:/api/v1/store/{scopeId}/orders/{orderUuid}/fulfill' => $inline(['fulfillmentData'=>['type'=>'object','description'=>'Optional fulfillment payload']], [], false),
             // ---- Inventory ----
             'post:/api/v1/manage/inventory/stocks/{storeUuid}/{materialUuid}/adjust' => $inline(['quantityDelta'=>['type'=>'string','example'=>'10.000','description'=>'BCMath string'],'reason'=>['type'=>'string'],'referenceId'=>['type'=>'string'],'allowNegativeStock'=>['type'=>'boolean']], ['quantityDelta','reason']),
             'put:/api/v1/manage/inventory/stocks/{storeUuid}/{materialUuid}/policy' => $inline(['allowNegativeStock'=>['type'=>'boolean']], ['allowNegativeStock']),
@@ -390,6 +422,15 @@ class OpenApiEnricherListener
             'put:/api/v1/app/users/me' => $inline(['email'=>['type'=>'string','format'=>'email'],'username'=>['type'=>'string'],'phone'=>['type'=>'string','nullable'=>true],'password'=>['type'=>'string','format'=>'password','nullable'=>true]], [], false),
             'post:/api/v1/app/users/change-password' => $inline(['currentPassword'=>['type'=>'string','format'=>'password'],'newPassword'=>['type'=>'string','format'=>'password']], ['currentPassword','newPassword']),
             'post:/api/v1/manage/users/{id}/change-password' => $inline(['newPassword'=>['type'=>'string','format'=>'password']], ['newPassword']),
+            // ---- Authorization: assignments / roles ----
+            'post:/api/v1/manage/assignments' => $inline(['userUuid'=>['type'=>'string','format'=>'uuid','example'=>'550e8400-e29b-41d4-a716-446655440000','description'=>'User UUID (global user)'],'roleUuid'=>['type'=>'string','description'=>'Role UUID or id or code','example'=>'550e8400-e29b-41d4-a716-446655440001'],'role_uuid'=>['type'=>'string','format'=>'uuid','description'=>'Alias for roleUuid'],'roleId'=>['type'=>'string','description'=>'Alias for roleUuid (id|code)'],'scopeType'=>['type'=>'string','enum'=>['global','store'],'example'=>'store'],'scopeUuid'=>['type'=>'string','format'=>'uuid','nullable'=>true,'example'=>'550e8400-e29b-41d4-a716-446655440002','description'=>'Store UUID for store scope, null for global'],'scope_type'=>['type'=>'string','enum'=>['global','store'],'description'=>'Alias for scopeType'],'scope_uuid'=>['type'=>'string','format'=>'uuid','description'=>'Alias for scopeUuid']], ['userUuid','scopeType']),
+            'put:/api/v1/manage/assignments/{id}' => $inline(['userUuid'=>['type'=>'string','format'=>'uuid'],'roleUuid'=>['type'=>'string'],'role_uuid'=>['type'=>'string'],'roleId'=>['type'=>'string'],'scopeType'=>['type'=>'string','enum'=>['global','store']],'scopeUuid'=>['type'=>'string','format'=>'uuid','nullable'=>true],'scope_type'=>['type'=>'string'],'scope_uuid'=>['type'=>'string']], [], false),
+            'post:/api/v1/manage/assignments/batch-update' => $inline(['items'=>['type'=>'array','description'=>'Array of assignment objects','items'=>['type'=>'object','properties'=>['userUuid'=>['type'=>'string','format'=>'uuid'],'roleUuid'=>['type'=>'string'],'scopeType'=>['type'=>'string','enum'=>['global','store']],'scopeUuid'=>['type'=>'string','format'=>'uuid']]]]], [], false),
+            'post:/api/v1/manage/roles' => $inline(['code'=>['type'=>'string','pattern'=>'^[a-z0-9_]+$','example'=>'store_manager','description'=>'Unique role code [a-z0-9_]'],'name'=>['type'=>'string','example'=>'Store Manager'],'scopeType'=>['type'=>'string','enum'=>['global','store'],'example'=>'store'],'uuid'=>['type'=>'string','format'=>'uuid','description'=>'Optional UUID, auto-generated if omitted']], ['code','name','scopeType']),
+            'put:/api/v1/manage/roles/{id}' => $inline(['code'=>['type'=>'string','pattern'=>'^[a-z0-9_]+$','example'=>'store_manager_v2'],'name'=>['type'=>'string','example'=>'Store Manager V2']], [], false),
+            'post:/api/v1/manage/roles/batch-update' => $inline(['items'=>['type'=>'array','description'=>'Array of role objects','items'=>['type'=>'object','properties'=>['code'=>['type'=>'string'],'name'=>['type'=>'string'],'scopeType'=>['type'=>'string','enum'=>['global','store']]]]]], [], false),
+            'post:/api/v1/manage/roles/{uuid}/permissions' => $inline(['permissions'=>['type'=>'array','items'=>['type'=>'string','example'=>'store:product:read'],'description'=>'Array of permission codes [a-z0-9:_]'],'codes'=>['type'=>'array','items'=>['type'=>'string'],'description'=>'Alias for permissions']], [], false),
+            'put:/api/v1/manage/roles/{uuid}/field-grants/{resource}/{action}' => $inline(['fields'=>['type'=>'array','items'=>['type'=>'string','example'=>'name'],'description'=>'Array of allowed field names (unique)','example'=>['name','price']]], [], false),
             // ---- Media upload handled separately ----
             default => null,
         };
@@ -478,6 +519,12 @@ class OpenApiEnricherListener
                 'user' => 'Auth', 'users' => 'Auth',
                 'profile' => 'Auth', 'profiles' => 'Auth',
                 'wechat_user' => 'Wechat', 'wechat_users' => 'Wechat',
+                'assignment' => 'Authorization', 'assignments' => 'Authorization',
+                'role' => 'Authorization', 'roles' => 'Authorization',
+                'permission' => 'Authorization', 'permissions' => 'Authorization',
+                'audit_log' => 'Authorization', 'audit_logs' => 'Authorization', 'audit' => 'Authorization',
+                'role_field_grant' => 'Authorization', 'role_field_grants' => 'Authorization',
+                'field_grant' => 'Authorization', 'field_grants' => 'Authorization',
             ];
             if (isset($known[$resource])) return $known[$resource];
 

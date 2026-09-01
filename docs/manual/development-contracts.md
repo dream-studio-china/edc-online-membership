@@ -215,6 +215,14 @@ inconsistent prefixes inside a module, non-mirrored controller/service names.
   `PUBLIC_ACCESS`.
 - Row-level scoping is per-controller via `commonFilter()`/`listFilter()` overrides
   (e.g. a user only ever sees their own records; the App-side filter enforces it).
+  `commonFilter()` may return an array (`['user' => $this->getUser()]`), a
+  `QueryBuilder`, or a server-owned `DqlExpression` such as
+  `new DqlExpression('entity.getUser() == this.getUser()')` or
+  `new DqlExpression('entity.getStoreUuid() in storeUuids', ['storeUuids' => $allowed])`.
+  `DqlExpression` shares the `@filter` syntax (including `in`/`not in` with empty-
+  collection safety) but is fail-closed and never uses the in-memory fallback. The
+  designed `Authorization` bundle (`docs/design/bundles/authorization.md`) will build on this
+  primitive for scoped RBAC, Store-scoped grants, field grants, and audit logging.
 - Manage controllers also carry class-level `#[IsGranted('ROLE_ADMIN')]`.
 - Role hierarchy: `ROLE_ADMIN: [ROLE_USER]`.
 
