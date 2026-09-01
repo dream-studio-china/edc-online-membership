@@ -1,6 +1,6 @@
 services:
   # ========================
-  # Application (PHP-FPM)
+  # Application (FrankenPHP)
   # ========================
   app:
     build:
@@ -57,6 +57,8 @@ services:
 
     volumes:
       - ./var:/var/www/html/var
+    ports:
+      - "${APP_PORT:-8080}:80"
     depends_on:
       database:
         condition: service_healthy
@@ -71,6 +73,12 @@ services:
   worker:
     extends:
       service: app
+    ports: !reset []
+    environment:
+      APP_ENV: ${WORKER_APP_ENV:-prod}
+      APP_DEBUG: "0"
+    healthcheck:
+      disable: true
     command: ["php", "bin/console", "messenger:consume", "async", "--time-limit=3600", "--memory-limit=256M", "--no-interaction"]
     depends_on:
       app:
@@ -82,17 +90,23 @@ services:
   scheduler:
     extends:
       service: app
+    ports: !reset []
+    environment:
+      APP_ENV: ${WORKER_APP_ENV:-prod}
+      APP_DEBUG: "0"
+    healthcheck:
+      disable: true
     command:
       - /bin/sh
       - -ec
       - |
+        rm -rf var/cache/prod
         while :; do
           php bin/console app:trade:outbox:publish --no-interaction
           php bin/console app:store:outbox:publish --no-interaction
           php bin/console app:inventory:outbox:publish --no-interaction
+          php bin/console app:payment:outbox:publish --no-interaction
           php bin/console app:inventory:reservations:release-expired --no-interaction
-          php bin/console app:settlement:allocations:requeue-due --no-interaction
-          php bin/console app:settlement:outbox:publish --no-interaction
           sleep "${OUTBOX_PUBLISH_INTERVAL:-5}"
         done
     depends_on:
@@ -100,28 +114,309 @@ services:
         condition: service_started
 
   # ========================
-  # Web Server (nginx)
+  # Store application (FrankenPHP, independent database baseline)
   # ========================
-  nginx:
-    image: nginx:alpine
+  store-app:
+    build:
+      context: .
+      dockerfile: apps/store/Dockerfile
     restart: unless-stopped
+    environment:
+      APP_ENV: ${STORE_APP_ENV:-dev}
+      APP_DEBUG: "1"
+      APP_SECRET: ${STORE_APP_SECRET:-store-dev-secret-change-me}
+      DATABASE_URL: "mysql://${STORE_MYSQL_USER:-store}:${STORE_MYSQL_PASSWORD:-!StoreChangeMe!}@store-database:3306/${STORE_MYSQL_DATABASE:-store}?serverVersion=8.4&charset=utf8mb4"
+      MESSENGER_TRANSPORT_DSN: "doctrine://default?auto_setup=0"
     ports:
-      - "${APP_PORT:-8080}:80"
-    volumes:
-      - ./public:/var/www/html/public:ro
-      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - "${STORE_APP_PORT:-8081}:80"
     depends_on:
-      - app
+      store-database:
+        condition: service_healthy
     networks:
       - internal
-    # Full-path readiness: nginx -> PHP-FPM -> Symfony -> DB/Redis (via
-    # /health/ready). The app is not marked healthy until dependencies respond.
+
+  store-database:
+    image: mysql:${MYSQL_VERSION:-8.4}
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${STORE_MYSQL_DATABASE:-store}
+      MYSQL_USER: ${STORE_MYSQL_USER:-store}
+      MYSQL_PASSWORD: ${STORE_MYSQL_PASSWORD:-!StoreChangeMe!}
+      MYSQL_ROOT_PASSWORD: ${STORE_MYSQL_ROOT_PASSWORD:-!StoreRootChangeMe!}
     healthcheck:
-      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://localhost/health/ready"]
-      interval: 30s
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u$${MYSQL_USER} -p$${MYSQL_PASSWORD} --silent"]
       timeout: 5s
       retries: 5
-      start_period: 30s
+      start_period: 60s
+    volumes:
+      - store_mysql_data:/var/lib/mysql:rw
+    networks:
+      - internal
+
+  # Inventory application (FrankenPHP, independent database baseline)
+  # ========================
+  inventory-app:
+    build:
+      context: .
+      dockerfile: apps/inventory/Dockerfile
+    restart: unless-stopped
+    environment:
+      APP_ENV: ${INVENTORY_APP_ENV:-dev}
+      APP_DEBUG: "1"
+      APP_SECRET: ${INVENTORY_APP_SECRET:-inventory-dev-secret-change-me}
+      DATABASE_URL: "mysql://${INVENTORY_MYSQL_USER:-inventory}:${INVENTORY_MYSQL_PASSWORD:-!InventoryChangeMe!}@inventory-database:3306/${INVENTORY_MYSQL_DATABASE:-inventory}?serverVersion=8.4&charset=utf8mb4"
+      MESSENGER_TRANSPORT_DSN: "doctrine://default?auto_setup=0"
+    ports:
+      - "${INVENTORY_APP_PORT:-8082}:80"
+    depends_on:
+      inventory-database:
+        condition: service_healthy
+    networks:
+      - internal
+
+  inventory-database:
+    image: mysql:${MYSQL_VERSION:-8.4}
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${INVENTORY_MYSQL_DATABASE:-inventory}
+      MYSQL_USER: ${INVENTORY_MYSQL_USER:-inventory}
+      MYSQL_PASSWORD: ${INVENTORY_MYSQL_PASSWORD:-!InventoryChangeMe!}
+      MYSQL_ROOT_PASSWORD: ${INVENTORY_MYSQL_ROOT_PASSWORD:-!InventoryRootChangeMe!}
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u$${MYSQL_USER} -p$${MYSQL_PASSWORD} --silent"]
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+    volumes:
+      - inventory_mysql_data:/var/lib/mysql:rw
+    networks:
+      - internal
+
+  # ========================
+  # Payment application (FrankenPHP, independent database baseline)
+  # ========================
+  payment-app:
+    build:
+      context: .
+      dockerfile: apps/payment/Dockerfile
+    restart: unless-stopped
+    environment:
+      APP_ENV: ${PAYMENT_APP_ENV:-dev}
+      APP_DEBUG: "1"
+      APP_SECRET: ${PAYMENT_APP_SECRET:-payment-dev-secret-change-me}
+      DATABASE_URL: "mysql://${PAYMENT_MYSQL_USER:-payment}:${PAYMENT_MYSQL_PASSWORD:-!PaymentChangeMe!}@payment-database:3306/${PAYMENT_MYSQL_DATABASE:-payment}?serverVersion=8.4&charset=utf8mb4"
+      MESSENGER_TRANSPORT_DSN: "doctrine://default?auto_setup=0"
+    ports:
+      - "${PAYMENT_APP_PORT:-8083}:80"
+    depends_on:
+      payment-database:
+        condition: service_healthy
+    networks:
+      - internal
+
+  payment-database:
+    image: mysql:${MYSQL_VERSION:-8.4}
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${PAYMENT_MYSQL_DATABASE:-payment}
+      MYSQL_USER: ${PAYMENT_MYSQL_USER:-payment}
+      MYSQL_PASSWORD: ${PAYMENT_MYSQL_PASSWORD:-!PaymentChangeMe!}
+      MYSQL_ROOT_PASSWORD: ${PAYMENT_MYSQL_ROOT_PASSWORD:-!PaymentRootChangeMe!}
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u$${MYSQL_USER} -p$${MYSQL_PASSWORD} --silent"]
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+    volumes:
+      - payment_mysql_data:/var/lib/mysql:rw
+    networks:
+      - internal
+
+  wallet-app:
+    build:
+      context: .
+      dockerfile: apps/wallet/Dockerfile
+    restart: unless-stopped
+    environment:
+      APP_ENV: ${WALLET_APP_ENV:-dev}
+      APP_DEBUG: "1"
+      APP_SECRET: ${WALLET_APP_SECRET:-wallet-dev-secret-change-me}
+      DATABASE_URL: "mysql://${WALLET_MYSQL_USER:-wallet}:${WALLET_MYSQL_PASSWORD:-!WalletChangeMe!}@wallet-database:3306/${WALLET_MYSQL_DATABASE:-wallet}?serverVersion=8.4&charset=utf8mb4"
+    ports:
+      - "${WALLET_APP_PORT:-8084}:80"
+    depends_on:
+      wallet-database:
+        condition: service_healthy
+    networks:
+      - internal
+
+  wallet-database:
+    image: mysql:${MYSQL_VERSION:-8.4}
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${WALLET_MYSQL_DATABASE:-wallet}
+      MYSQL_USER: ${WALLET_MYSQL_USER:-wallet}
+      MYSQL_PASSWORD: ${WALLET_MYSQL_PASSWORD:-!WalletChangeMe!}
+      MYSQL_ROOT_PASSWORD: ${WALLET_MYSQL_ROOT_PASSWORD:-!WalletRootChangeMe!}
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u$${MYSQL_USER} -p$${MYSQL_PASSWORD} --silent"]
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+    volumes:
+      - wallet_mysql_data:/var/lib/mysql:rw
+    networks:
+      - internal
+
+  # ========================
+  # Identity application (FrankenPHP, independent database baseline)
+  # ========================
+  identity-app:
+    build:
+      context: .
+      dockerfile: apps/identity/Dockerfile
+    restart: unless-stopped
+    environment:
+      APP_ENV: ${IDENTITY_APP_ENV:-dev}
+      APP_DEBUG: "1"
+      APP_SECRET: ${IDENTITY_APP_SECRET:-identity-dev-secret-change-me}
+      DATABASE_URL: "mysql://${IDENTITY_MYSQL_USER:-identity}:${IDENTITY_MYSQL_PASSWORD:-!IdentityChangeMe!}@identity-database:3306/${IDENTITY_MYSQL_DATABASE:-identity}?serverVersion=8.4&charset=utf8mb4"
+      JWT_PRIVATE_KEY_PATH: ${JWT_PRIVATE_KEY_PATH:-/workspace/apps/identity/var/jwt/jwt_private.pem}
+      JWT_PUBLIC_KEY_PATH: ${JWT_PUBLIC_KEY_PATH:-/workspace/apps/identity/var/jwt/jwt_public.pem}
+      JWT_PASSPHRASE: ${JWT_PASSPHRASE:-}
+      ACCESS_TOKEN_TTL: ${ACCESS_TOKEN_TTL:-7200}
+      REFRESH_TOKEN_TTL: ${REFRESH_TOKEN_TTL:-31536000}
+      REFRESH_TOKEN_SECRET: ${REFRESH_TOKEN_SECRET:-identity-dev-refresh-secret}
+      OTP_REDIS_DSN: ${OTP_REDIS_DSN:-redis://redis:6379/0}
+      ALIYUN_ACCESS_KEY_ID: ${ALIYUN_ACCESS_KEY_ID:-}
+      ALIYUN_ACCESS_KEY_SECRET: ${ALIYUN_ACCESS_KEY_SECRET:-}
+      ALIYUN_SMS_REGION: ${ALIYUN_SMS_REGION:-cn-hangzhou}
+      ALIYUN_SMS_SIGN_NAME: ${ALIYUN_SMS_SIGN_NAME:-}
+      ALIYUN_SMS_TEMPLATE_LOGIN_OTP: ${ALIYUN_SMS_TEMPLATE_LOGIN_OTP:-}
+      ALIYUN_SMS_TEMPLATE_VERIFY_PHONE: ${ALIYUN_SMS_TEMPLATE_VERIFY_PHONE:-}
+      ALIYUN_SMS_DRY_RUN: ${ALIYUN_SMS_DRY_RUN:-true}
+      WECHAT_MINIAPP_APP_ID: ${WECHAT_MINIAPP_APP_ID:-}
+      WECHAT_MINIAPP_SECRET: ${WECHAT_MINIAPP_SECRET:-}
+      WECHAT_OFFICIAL_APP_ID: ${WECHAT_OFFICIAL_APP_ID:-}
+      WECHAT_OFFICIAL_SECRET: ${WECHAT_OFFICIAL_SECRET:-}
+      WECHAT_OFFICIAL_TOKEN: ${WECHAT_OFFICIAL_TOKEN:-}
+      WECHAT_OFFICIAL_AES_KEY: ${WECHAT_OFFICIAL_AES_KEY:-}
+    ports:
+      - "${IDENTITY_APP_PORT:-8085}:80"
+    depends_on:
+      identity-database:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    networks:
+      - internal
+
+  identity-database:
+    image: mysql:${MYSQL_VERSION:-8.4}
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${IDENTITY_MYSQL_DATABASE:-identity}
+      MYSQL_USER: ${IDENTITY_MYSQL_USER:-identity}
+      MYSQL_PASSWORD: ${IDENTITY_MYSQL_PASSWORD:-!IdentityChangeMe!}
+      MYSQL_ROOT_PASSWORD: ${IDENTITY_MYSQL_ROOT_PASSWORD:-!IdentityRootChangeMe!}
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u$${MYSQL_USER} -p$${MYSQL_PASSWORD} --silent"]
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+    volumes:
+      - identity_mysql_data:/var/lib/mysql:rw
+    networks:
+      - internal
+
+  # ========================
+  # Common CMS and media application (FrankenPHP, independent database baseline)
+  # ========================
+  common-app:
+    build:
+      context: .
+      dockerfile: apps/common/Dockerfile
+    restart: unless-stopped
+    environment:
+      APP_ENV: ${COMMON_APP_ENV:-dev}
+      APP_DEBUG: "1"
+      APP_SECRET: ${COMMON_APP_SECRET:-common-dev-secret-change-me}
+      DATABASE_URL: "mysql://${COMMON_MYSQL_USER:-common}:${COMMON_MYSQL_PASSWORD:-!CommonChangeMe!}@common-database:3306/${COMMON_MYSQL_DATABASE:-common}?serverVersion=8.4&charset=utf8mb4"
+      MEDIA_STORAGE_DEFAULT: ${MEDIA_STORAGE_DEFAULT:-local}
+    ports:
+      - "${COMMON_APP_PORT:-8086}:80"
+    depends_on:
+      common-database:
+        condition: service_healthy
+    networks:
+      - internal
+
+  common-database:
+    image: mysql:${MYSQL_VERSION:-8.4}
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${COMMON_MYSQL_DATABASE:-common}
+      MYSQL_USER: ${COMMON_MYSQL_USER:-common}
+      MYSQL_PASSWORD: ${COMMON_MYSQL_PASSWORD:-!CommonChangeMe!}
+      MYSQL_ROOT_PASSWORD: ${COMMON_MYSQL_ROOT_PASSWORD:-!CommonRootChangeMe!}
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u$${MYSQL_USER} -p$${MYSQL_PASSWORD} --silent"]
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+    volumes:
+      - common_mysql_data:/var/lib/mysql:rw
+    networks:
+      - internal
+
+  # Trade and Promotion application (FrankenPHP, independent database baseline)
+  # ========================
+  trade-app:
+    build:
+      context: .
+      dockerfile: apps/trade/Dockerfile
+    restart: unless-stopped
+    environment:
+      APP_ENV: ${TRADE_APP_ENV:-dev}
+      APP_DEBUG: "1"
+      APP_SECRET: ${TRADE_APP_SECRET:-trade-dev-secret-change-me}
+      DATABASE_URL: "mysql://${TRADE_MYSQL_USER:-trade}:${TRADE_MYSQL_PASSWORD:-!TradeChangeMe!}@trade-database:3306/${TRADE_MYSQL_DATABASE:-trade}?serverVersion=8.4&charset=utf8mb4"
+      MESSENGER_TRANSPORT_DSN: "doctrine://default?auto_setup=0"
+      WECHAT_MINIAPP_APP_ID: ${WECHAT_MINIAPP_APP_ID:-}
+      WECHAT_MINIAPP_SECRET: ${WECHAT_MINIAPP_SECRET:-}
+      WECHAT_PAY_MCH_ID: ${WECHAT_PAY_MCH_ID:-}
+      WECHAT_PAY_SECRET_KEY: ${WECHAT_PAY_SECRET_KEY:-}
+      WECHAT_PAY_PRIVATE_KEY: ${WECHAT_PAY_PRIVATE_KEY:-}
+      WECHAT_PAY_CERTIFICATE: ${WECHAT_PAY_CERTIFICATE:-}
+      WECHAT_PAY_PLATFORM_CERT: ${WECHAT_PAY_PLATFORM_CERT:-}
+      WECHAT_PAY_PUB_KEY_ID: ${WECHAT_PAY_PUB_KEY_ID:-}
+      WECHAT_PAY_PUB_KEY_PATH: ${WECHAT_PAY_PUB_KEY_PATH:-}
+      WECHAT_PAY_NOTIFY_URL: ${WECHAT_PAY_NOTIFY_URL:-}
+    ports:
+      - "${TRADE_APP_PORT:-8087}:80"
+    depends_on:
+      trade-database:
+        condition: service_healthy
+    networks:
+      - internal
+
+  trade-database:
+    image: mysql:${MYSQL_VERSION:-8.4}
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${TRADE_MYSQL_DATABASE:-trade}
+      MYSQL_USER: ${TRADE_MYSQL_USER:-trade}
+      MYSQL_PASSWORD: ${TRADE_MYSQL_PASSWORD:-!TradeChangeMe!}
+      MYSQL_ROOT_PASSWORD: ${TRADE_MYSQL_ROOT_PASSWORD:-!TradeRootChangeMe!}
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u$${MYSQL_USER} -p$${MYSQL_PASSWORD} --silent"]
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+    volumes:
+      - trade_mysql_data:/var/lib/mysql:rw
+    networks:
+      - internal
 
   # ========================
   # Database (MySQL 8)
@@ -175,3 +470,10 @@ networks:
 volumes:
   mysql_data:
   redis_data:
+  store_mysql_data:
+  inventory_mysql_data:
+  payment_mysql_data:
+  wallet_mysql_data:
+  identity_mysql_data:
+  common_mysql_data:
+  trade_mysql_data:

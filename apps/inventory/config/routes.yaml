@@ -1,0 +1,5 @@
+inventory_controllers:
+    resource:
+        path: ../src/Controller/
+        namespace: App\Inventory\Controller
+    type: attribute

@@ -4,13 +4,13 @@
 
 ## Overview
 
-A standalone module `src/Wechat/` implementing full WeChat Mini Program login, Official Account OAuth login, phone number binding, and WeChat Pay. It does not modify the `User` entity; user identity is extended via a OneToOne `WechatUser`.
+独立模块 `src/Wechat/`，实现微信小程序登录、公众号 OAuth 登录、手机号绑定、微信支付全功能。不改动 `User` entity，通过 OneToOne 的 `WechatUser` 扩展用户身份。
 
 ---
 
 ## Directory Structure
 
-```text
+```
 src/Wechat/
 ├── Controller/
 │   └── LoginController.php              # Route: /api/wechat
@@ -21,15 +21,15 @@ src/Wechat/
 ├── Service/
 │   ├── Payment/
 │   │   └── WechatPayGateway.php         # implements PaymentGatewayInterface
-│   ├── WechatAuthService.php            # login orchestration service
-│   └── WechatService.php                # EasyWeChat three-in-one factory
+│   ├── WechatAuthService.php            # 登录编排服务
+│   └── WechatService.php                # EasyWeChat 三合一工厂
 ├── Resources/config/
 │   └── services_wechat.yaml
 ```
 
 ### Tests
 
-```text
+```
 tests/Wechat/
 ├── Entity/
 │   └── WechatUserTest.php
@@ -48,30 +48,47 @@ tests/Wechat/
 
 ### Dependency Graph
 
-```mermaid
-flowchart TD
-    easyWeChat["EasyWeChat SDK<br/>(w7corp/easywechat)"]
-    wechatService["WechatService<br/>- getMiniApp()<br/>- getOfficialAccount()<br/>- getPayApp()<br/>- code2Session()<br/>- getOAuthUser()<br/>- getPhoneNumber()"]
-    wechatAuthService["WechatAuthService<br/>authenticate()<br/>bindPhone()"]
-    loginController["LoginController<br/>POST /login<br/>POST /phone<br/>POST /oauth/url<br/>POST /oauth/cb"]
-    wechatPayGateway["WechatPayGateway<br/>pay()<br/>notify()<br/>refund()"]
-    wechatUserRepo["WechatUserRepo<br/>UserRepository<br/>EntityManager"]
-    tokenManager["TokenManager<br/>(signs JWT)<br/>← Identity"]
-    easyWeChat --> wechatService
-    wechatService --> wechatAuthService
-    wechatService --> loginController
-    wechatService --> wechatPayGateway
-    wechatAuthService --> wechatUserRepo
-    loginController --> tokenManager
+```
+                        ┌──────────────────┐
+                        │ EasyWeChat SDK    │
+                        │ (w7corp/easywechat)│
+                        └────────┬─────────┘
+                                 │
+                    ┌────────────┴────────────┐
+                    │     WechatService        │
+                    │  - getMiniApp()          │
+                    │  - getOfficialAccount()  │
+                    │  - getPayApp()           │
+                    │  - code2Session()        │
+                    │  - getOAuthUser()        │
+                    │  - getPhoneNumber()      │
+                    └────────┬────────────────┘
+                             │
+        ┌────────────────────┼────────────────────┐
+        │                    │                    │
+        ▼                    ▼                    ▼
+┌───────────────┐  ┌─────────────────┐  ┌──────────────────┐
+│WechatAuthService│  │ LoginController │  │ WechatPayGateway │
+│ authenticate() │  │ POST /login     │  │ pay()            │
+│ bindPhone()    │  │ POST /phone     │  │ notify()         │
+└───────┬───────┘  │ POST /oauth/url │  │ refund()         │
+        │          │ POST /oauth/cb   │  └──────────────────┘
+        ▼          └────────┬────────┘
+┌───────────────┐          │
+│WechatUserRepo │          ▼
+│UserRepository │  ┌──────────────┐
+│EntityManager  │  │ TokenManager │  ← Identity
+└───────────────┘  │ (签 JWT)     │
+                   └──────────────┘
 ```
 
-### Impact on the Existing System
+### 对现有系统的侵入度
 
-| Change | File Count | Description |
+| 改动 | 文件数 | 说明 |
 |------|--------|------|
-| New files | 9 | All Wechat module code |
-| Modified existing files | 5 | composer.json, services.yaml, routes.yaml, security.yaml, Invoice.php |
-| **Unchanged** | `User.php` | WechatUser is linked via OneToOne; the existing User requires zero changes |
+| 新增文件 | 9 | Wechat 模块全部代码 |
+| 修改现有文件 | 5 | composer.json, services.yaml, routes.yaml, security.yaml, Invoice.php |
+| **不改动** | `User.php` | 通过 OneToOne 关联 WechatUser，现有 User 零改动 |
 
 ---
 
@@ -82,29 +99,27 @@ flowchart TD
 | Column | Type | Constraints | Description |
 |--------|------|-------------|-------------|
 | `id` | int | PK, auto | |
-| `user_id` | int | FK → users.id, ON DELETE CASCADE | OneToOne association |
+| `user_id` | int | FK → users.id, ON DELETE CASCADE | OneToOne 关联 |
 | `openid` | string(64) | UNIQUE, NOT NULL | |
-| `unionid` | string(64) | nullable | Cross-application unified ID |
-| `session_key` | string(64) | nullable | Mini Program only |
-| `nickname` | string(128) | nullable | Official Account OAuth only |
-| `avatar` | string(512) | nullable | Official Account OAuth only |
-| `sex` | int | nullable | Official Account OAuth only |
-| `province` | string(64) | nullable | Official Account OAuth only |
-| `city` | string(64) | nullable | Official Account OAuth only |
-| `country` | string(64) | nullable | Official Account OAuth only |
+| `unionid` | string(64) | nullable | 跨应用统一 ID |
+| `session_key` | string(64) | nullable | 仅小程序 |
+| `nickname` | string(128) | nullable | 仅公众号 OAuth |
+| `avatar` | string(512) | nullable | 仅公众号 OAuth |
+| `sex` | int | nullable | 仅公众号 OAuth |
+| `province` | string(64) | nullable | 仅公众号 OAuth |
+| `city` | string(64) | nullable | 仅公众号 OAuth |
+| `country` | string(64) | nullable | 仅公众号 OAuth |
 | `app_type` | string(20) | NOT NULL | `miniapp` / `official` |
-| `raw_data` | json | nullable | Raw WeChat API response |
+| `raw_data` | json | nullable | WeChat API 原始响应 |
 | `last_login_at` | datetime_immutable | NOT NULL | |
 | `created_at` | datetime_immutable | NOT NULL | |
 | `updated_at` | datetime_immutable | nullable | |
 
 ### Relationship
 
-```mermaid
-flowchart LR
-    user["User (users.id)<br/>unchanged"]
-    wechatUser["WechatUser (wechat_user.user_id)<br/>new table"]
-    user <-->|"OneToOne"| wechatUser
+```
+User (users.id) ←── OneToOne ──→ WechatUser (wechat_user.user_id)
+    不修改                                         新表
 ```
 
 ### Mapping
@@ -115,7 +130,7 @@ flowchart LR
 #[ORM\UniqueConstraint(name: 'uniq_wechat_user_openid', columns: ['openid'])]
 class WechatUser
 {
-    #[ORM\OneToOne(targetEntity: \App\Identity\Entity\User::class)]
+    #[ORM\OneToOne(targetEntity: \App\Identity\Main\Entity\User::class)]
     #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', nullable: false, onDelete: 'CASCADE')]
     private User $user;
 
@@ -127,7 +142,7 @@ class WechatUser
 
 ## Service: WechatService
 
-EasyWeChat Application factory; the upper layers read the `%wechat.*%` configuration via Container parameters.
+EasyWeChat Application 工厂，上层通过 Container 参数读取 `%wechat.*%` 配置。
 
 ### Constructor Signature
 
@@ -154,18 +169,18 @@ public function __construct(
 ### Method Contract
 
 ```php
-/** Mini Program */
-getMiniApp(): \EasyWeChat\MiniApp\Application    // singleton cache
+/** 小程序 */
+getMiniApp(): \EasyWeChat\MiniApp\Application    // 单例缓存
 code2Session(string $jsCode): array              // → {openid, unionid, session_key}
 getPhoneNumber(string $code): array              // → {phoneNumber}
 
-/** Official Account */
-getOfficialAccount(): \EasyWeChat\OfficialAccount\Application  // singleton cache
-getOAuthRedirectUrl(string $callbackUrl): string // Generate snsapi_userinfo redirect URL
+/** 公众号 */
+getOfficialAccount(): \EasyWeChat\OfficialAccount\Application  // 单例缓存
+getOAuthRedirectUrl(string $callbackUrl): string // 生成 snsapi_userinfo 跳转 URL
 getOAuthUser(string $code): array                // → {openid, nickname, avatar, sex, province, city, country}
 
-/** WeChat Pay */
-getPayApp(): \EasyWeChat\Pay\Application          // singleton cache
+/** 微信支付 */
+getPayApp(): \EasyWeChat\Pay\Application          // 单例缓存
 ```
 
 ### AppType Constants
@@ -193,32 +208,37 @@ public function __construct(
 ### Method Contract
 
 ```php
-/** Mini Program login — js_code → User */
+/** 小程序登录 — js_code → User */
 authenticateFromMiniApp(string $jsCode): User
 
-/** Official Account login — oauth code → User */
+/** 公众号登录 — oauth code → User */
 authenticateFromOfficialAccount(string $code): User
 
-/** Bind phone number (logged-in user) */
+/** 绑定手机号（已登录用户） */
 bindPhone(User $user, string $code): void
 ```
 
 ### Login Orchestration (internal)
 
-```mermaid
-flowchart TD
-    S1["WechatService.code2Session(jsCode)<br/>WechatService.getOAuthUser(code)<br/>→ {openid, unionid, session_key, ...}"]
-    S2["WechatUserRepository.findByOpenid(openid)"]
-    S2 -->|"Hit"| H["Update sessionKey/nickname/avatar/lastLoginAt<br/>→ Return the associated User"]
-    S2 -->|"Miss"| M["new User()<br/>email: wx_{openid_suffix}@wechat.local<br/>username: wx_{openid_suffix}<br/>password: random_bytes(32) + bin2hex"]
-    M --> M2["new WechatUser(user, openid, ...)<br/>em->persist(user), em->persist(wechatUser)"]
-    S1 --> S2
-    H --> FL["em->flush()"]
-    M2 --> FL
-    FL --> R["return User"]
+```
+1. WechatService.code2Session(jsCode)  → {openid, unionid, session_key}
+   WechatService.getOAuthUser(code)    → {openid, nickname, avatar, ...}
+
+2. WechatUserRepository.findByOpenid(openid):
+   ├─ Hit  → 更新 sessionKey/nickname/avatar/lastLoginAt
+   │         → 返回关联的 User
+   └─ Miss → new User()
+               email:    "wx_{openid_suffix}@wechat.local"
+               username: "wx_{openid_suffix}"
+               password: random_bytes(32) + bin2hex  (不可密码登录)
+             → new WechatUser(user, openid, ...)
+             → em->persist(user), em->persist(wechatUser)
+
+3. em->flush()
+4. return User
 ```
 
-**Design decision: random password for new Users** — WeChat users don't need a password; a JWT is issued directly. A random password prevents privilege escalation through password-login vulnerabilities.
+**设计决策：新 User 密码随机** — 微信用户无需密码，直接签发 JWT。密码随机防止通过密码登录漏洞提升权限。
 
 ---
 
@@ -231,7 +251,7 @@ flowchart TD
 class LoginController
 ```
 
-Follows the `AuthController` pattern: does not extend `RestController`, manually returns `JsonResponse`, and has a private `error()` method.
+模仿 `AuthController` 模式：不继承 `RestController`，手动返回 `JsonResponse`，有私有 `error()` 方法。
 
 ### Constructor Signature
 
@@ -245,7 +265,7 @@ public function __construct(
 
 ### Endpoints
 
-#### `POST /api/wechat/miniapp/login` — Mini Program login (PUBLIC_ACCESS)
+#### `POST /api/wechat/miniapp/login` — 小程序登录 (PUBLIC_ACCESS)
 
 ```php
 Request:  { "js_code": "081abc..." }
@@ -274,7 +294,7 @@ public function miniappLogin(Request $request): JsonResponse
 }
 ```
 
-#### `POST /api/wechat/miniapp/phone` — Bind phone number (IS_AUTHENTICATED_FULLY)
+#### `POST /api/wechat/miniapp/phone` — 绑定手机号 (IS_AUTHENTICATED_FULLY)
 
 ```php
 Request:  { "code": "xxx" }
@@ -305,7 +325,7 @@ public function miniappPhone(Request $request): JsonResponse
 }
 ```
 
-#### `GET /api/wechat/oauth/url` — Get Official Account OAuth redirect URL (PUBLIC_ACCESS)
+#### `GET /api/wechat/oauth/url` — 获取公众号 OAuth 跳转 URL (PUBLIC_ACCESS)
 
 ```php
 Query:    ?redirect_uri=https://example.com/wechat/callback
@@ -328,7 +348,7 @@ public function oauthUrl(Request $request): JsonResponse
 }
 ```
 
-#### `POST /api/wechat/oauth/callback` — Official Account OAuth callback (PUBLIC_ACCESS)
+#### `POST /api/wechat/oauth/callback` — 公众号 OAuth 回调 (PUBLIC_ACCESS)
 
 ```php
 Request:  { "code": "081abc..." }
@@ -381,7 +401,7 @@ private function error(string $message, int $status = 400): JsonResponse
 getName() → 'wechat'
 ```
 
-Consistent with the `Invoice::PAYMENT_WECHAT = 'wechat'` constant.
+与 `Invoice::PAYMENT_WECHAT = 'wechat'` 常量一致。
 
 ### Constructor Signature
 
@@ -397,14 +417,14 @@ public function __construct(
 
 #### `pay(Invoice $invoice, array $options = []): PaymentResult`
 
-Dispatches based on `$invoice->getTradeType()`:
+根据 `$invoice->getTradeType()` 分派：
 
 | tradeType | WeChat API | response |
 |-----------|-----------|----------|
 | `'jsapi'` | `POST v3/pay/transactions/jsapi` | `payload` = `buildMiniAppConfig(prepayId)` |
 | `'native'` | `POST v3/pay/transactions/native` | `payUrl` = `code_url` |
 
-JSAPI requires the payer's openid, obtained from `$invoice->getPayer()` via `WechatUserRepository`:
+JSAPI 需要 payer openid，通过 `WechatUserRepository` 从 `$invoice->getPayer()` 获取：
 ```php
 $wechatUser = $this->wechatUserRepository->findByUser($invoice->getPayer());
 $openid = $wechatUser->getOpenid();
@@ -430,12 +450,12 @@ $openid = $wechatUser->getOpenid();
 #### `getNotifySuccessResponse(PaymentNotifyResult $result): Response`
 
 ```php
-return new JsonResponse(['code' => 'SUCCESS', 'message' => 'Success']);
+return new JsonResponse(['code' => 'SUCCESS', 'message' => '成功']);
 ```
 
-### Automatic Registration
+### 自动注册
 
-Once `WechatPayGateway` implements `PaymentGatewayInterface`, no manual configuration is needed. The existing `_instanceof` rule in `config/services.yaml`:
+`WechatPayGateway` 实现 `PaymentGatewayInterface` 后无需手动配置。`config/services.yaml` 已有的 `_instanceof` 规则：
 
 ```yaml
 _instanceof:
@@ -443,11 +463,11 @@ _instanceof:
         tags: ['payment.gateway']
 ```
 
-`PaymentGatewayRegistry` auto-discovers it via `#[AutowireIterator('payment.gateway')]`.
+`PaymentGatewayRegistry` 通过 `#[AutowireIterator('payment.gateway')]` 自动发现。
 
 ---
 
-## API Endpoint Summary
+## API 端点汇总
 
 | Method | Path | Auth | Controller Method | Service Call |
 |--------|------|------|-------------------|-------------|
@@ -455,11 +475,11 @@ _instanceof:
 | POST | `/api/wechat/miniapp/phone` | FULLY_AUTH | `miniappPhone()` | `WechatAuthService::bindPhone()` |
 | GET | `/api/wechat/oauth/url` | PUBLIC | `oauthUrl()` | `WechatService::getOAuthRedirectUrl()` |
 | POST | `/api/wechat/oauth/callback` | PUBLIC | `oauthCallback()` | `WechatAuthService::authenticateFromOfficialAccount()` |
-| POST | `/api/payment/notify/wechat` | PUBLIC | (existing `PaymentNotifyController`) | `WechatPayGateway::notify()` |
+| POST | `/api/payment/notify/wechat` | PUBLIC | (现有 `PaymentNotifyController`) | `WechatPayGateway::notify()` |
 
 ---
 
-## Existing Files to Modify
+## 需改动的现有文件
 
 ### 1. `composer.json`
 
@@ -481,7 +501,7 @@ wechat:
     prefix: /api/wechat
     resource:
         path: ../src/Wechat/Controller/
-        namespace: App\Wechat\Controller
+        namespace: App\Identity\Wechat\Controller
     type: attribute
 ```
 
@@ -534,7 +554,7 @@ services:
         autowire: true
         autoconfigure: true
 
-    App\Wechat\Service\WechatService:
+    App\Identity\Wechat\Service\WechatService:
         arguments:
             $miniappAppId: '%env(WECHAT_MINIAPP_APP_ID)%'
             $miniappSecret: '%env(WECHAT_MINIAPP_SECRET)%'
@@ -547,21 +567,21 @@ services:
             $payPrivateKeyPath: '%env(WECHAT_PAY_PRIVATE_KEY)%'
             $payCertificatePath: '%env(WECHAT_PAY_CERTIFICATE)%'
 
-    App\Wechat\Service\Payment\WechatPayGateway:
+    App\Payment\Service\Gateway\WechatPayGateway:
         arguments:
             $notifyUrl: '%env(WECHAT_PAY_NOTIFY_URL)%'
 ```
 
-### Gateway Auto-Registration (No Extra Configuration)
+### 网关自动注册（无需额外配置）
 
-Handled automatically by the `_instanceof` rule in `config/services.yaml`:
+`config/services.yaml` 的 `_instanceof` 规则自动处理：
 ```yaml
 _instanceof:
     App\Payment\Service\PaymentGatewayInterface:
         tags: ['payment.gateway']
 ```
 
-`PaymentGatewayRegistry` auto-discovers all implementations via `#[AutowireIterator('payment.gateway')]`.
+`PaymentGatewayRegistry` 通过 `#[AutowireIterator('payment.gateway')]` 自动发现所有实现。
 
 ---
 
@@ -591,16 +611,16 @@ class WechatUserRepository extends ServiceEntityRepository
 
 ## OpenAPI Tags & Documentation
 
-Following the AuthController pattern, each `LoginController` endpoint is annotated with `#[OA\*]` attributes, using the tag `Wechat`.
+沿用 AuthController pattern，`LoginController` 各端点使用 `#[OA\*]` 属性标注，tag 为 `Wechat`。
 
-### NelmioApiDoc Configuration Update
+### NelmioApiDoc 配置更新
 
-Add to `config/packages/nelmio_api_doc.yaml`:
+`config/packages/nelmio_api_doc.yaml` 新增：
 ```yaml
 - { name: Wechat, description: 'WeChat login, OAuth, and payment' }
 ```
 
-Add tag matching to `OpenApiEnricherListener`:
+`OpenApiEnricherListener` 新增 tag 匹配：
 ```php
 if (str_starts_with($opId, 'wechat-')) return 'Wechat';
 ```
@@ -609,37 +629,55 @@ if (str_starts_with($opId, 'wechat-')) return 'Wechat';
 
 ## Login Flow Diagrams
 
-### Mini Program Login
+### 小程序登录
 
-```mermaid
-sequenceDiagram
-    participant MP as Mini Program
-    participant BE as Backend
-    participant API as WeChat API
-    MP->>BE: wx.login() → js_code → POST /miniapp/login {js_code}
-    BE->>API: WechatService.code2Session()
-    API-->>BE: {openid, unionid, session_key}
-    Note over BE: WechatAuthService.authenticateFromMiniApp()<br/>findOrCreateUser:<br/>- findByOpenid: hit → update / miss → create<br/>- em->flush()
-    BE->>BE: TokenManager.createTokens()
-    BE-->>MP: {access_token, refresh_token, expires_in}
+```
+Mini Program                  Backend                         WeChat API
+     │                           │                                │
+     │  wx.login() → js_code     │                                │
+     │──POST /miniapp/login──────>                                │
+     │  {js_code}                 │                                │
+     │                           │──WechatService.code2Session()──>
+     │                           │<──{openid, unionid, session_key}
+     │                           │                                │
+     │                           │──WechatAuthService             │
+     │                           │   .authenticateFromMiniApp()   │
+     │                           │  ┌──────────────────┐         │
+     │                           │  │ findOrCreateUser  │         │
+     │                           │  │  ├ findByOpenid   │         │
+     │                           │  │  │ ├ hit→update   │         │
+     │                           │  │  │ └ miss→create  │         │
+     │                           │  │  └ em->flush()    │         │
+     │                           │  └──────────────────┘         │
+     │                           │                                │
+     │                           │──TokenManager.createTokens()   │
+     │<──{access_token, refresh_token, expires_in}                │
+     │                           │                                │
 ```
 
-### Official Account OAuth
+### 公众号 OAuth
 
-```mermaid
-sequenceDiagram
-    participant B as Browser
-    participant BE as Backend
-    participant W as WeChat
-    B->>BE: GET /oauth/url?redirect_uri=...
-    BE-->>B: {url: "https://open.weixin.qq.com/..."}
-    B->>W: Redirect to open.weixin... (user authorization)
-    W-->>B: Redirects to redirect_uri?code=xxx
-    B->>BE: POST /oauth/callback {code}
-    BE->>W: WechatService.getOAuthUser(code)
-    W-->>BE: {openid, nickname, ...}
-    Note over BE: WechatAuthService.authenticateFromOfficialAccount()
-    BE-->>B: {access_token, ...}
+```
+Browser                     Backend                    WeChat
+   │                          │                          │
+   │──GET /oauth/url           │                          │
+   │   ?redirect_uri=...──>   │                          │
+   │<──{url: "https://open.."}│──                          │
+   │                          │                          │
+   │──跳转 open.weixin...─────────────────────────────→  │
+   │                          │     用户授权              │
+   │<──重定向 redirect_uri?code=xxx────────────────── │
+   │                          │                          │
+   │──POST /oauth/callback    │                          │
+   │  {code} ──────────────> │                          │
+   │                          │──WechatService           │
+   │                          │   .getOAuthUser(code)  ──>
+   │                          │<──{openid, nickname, ...}│
+   │                          │                          │
+   │                          │──WechatAuthService       │
+   │                          │   .authenticateFromOff..│
+   │                          │                          │
+   │<──{access_token, ...}── │                          │
 ```
 
 ---
@@ -649,14 +687,14 @@ sequenceDiagram
 | Step | Files | Description |
 |------|-------|-------------|
 | 1 | `WechatUser.php` + `WechatUserRepository.php` | Entity + Repository |
-| 2 | `WechatService.php` | EasyWeChat three-in-one factory |
-| 3 | `WechatAuthService.php` | Login orchestration |
-| 4 | `LoginController.php` | 4 endpoints |
-| 5 | `services_wechat.yaml` | DI configuration |
-| 6 | `WechatPayGateway.php` | Payment gateway |
+| 2 | `WechatService.php` | EasyWeChat 三合一工厂 |
+| 3 | `WechatAuthService.php` | 登录编排 |
+| 4 | `LoginController.php` | 4 个端点 |
+| 5 | `services_wechat.yaml` | DI 配置 |
+| 6 | `WechatPayGateway.php` | 支付网关 |
 | 7 | config edits | composer, services, routes, security, Invoice, .env |
-| 8 | tests | Full coverage of Entity, Service, Controller, Gateway |
-| 9 | API docs | Update `#[OA\*]` + Nelmio + Enricher |
+| 8 | tests | Entity, Service, Controller, Gateway 全覆盖 |
+| 9 | API docs | `#[OA\*]` + Nelmio + Enricher 更新 |
 
 ---
 
@@ -664,9 +702,9 @@ sequenceDiagram
 
 | Class | Coverage Target |
 |-------|----------------|
-| `WechatUser` | 100% — basic getter/setter assertions |
+| `WechatUser` | 100% — getter/setter 基础断言 |
 | `WechatUserRepository` | 100% — findByOpenid / findByUser |
-| `WechatService` | 100% — the three Application factories, code2Session, getOAuthUser, getPhoneNumber |
-| `WechatAuthService` | 100% — both login flows, bindPhone, new/reused User logic |
-| `LoginController` | 100% — 4 endpoints, error handling |
-| `WechatPayGateway` | 100% — pay (jsapi/native), notify, refund, signature verification |
+| `WechatService` | 100% — 三大 Application 工厂、code2Session、getOAuthUser、getPhoneNumber |
+| `WechatAuthService` | 100% — 两种登录、bindPhone、新建/复用 User 逻辑 |
+| `LoginController` | 100% — 4 端点、错误处理 |
+| `WechatPayGateway` | 100% — pay (jsapi/native)、notify、refund、验签 |

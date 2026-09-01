@@ -1,82 +1,78 @@
-# CRUD Skeleton
+# CRUD Platform
 
-Symfony 8.1 API backend skeleton with modular architecture, JWT authentication, dynamic query engine, and pluggable business modules.
+CRUD Platform evolves the `crud-skeleton` Symfony backend into a
+multi-application microservice platform.
 
-## Architecture
+## Current Status
 
-```text
-src/
-├── Core/       # Framework core (RestController, BaseService, View Mixins, Expression Parser)
-├── Common/     # CMS module (Category, Tag, Content, Comment, Page, Media, Setting)
-├── Trade/      # E-Commerce (Product, Specification, Order, OrderItem, Pricing Pipeline)
-├── Payment/    # Payments (Invoice, Gateway abstraction, Webhooks, Events)
-├── Wallet/     # Wallet (Balance, Atomic Transfers, Idempotency)
-├── Wechat/     # WeChat (Mini Program/Official Account Login, WeChat Pay V3, Gateway)
-└── Identity/   # Authentication (JWT RS256, OTP SMS, Refresh Token Rotation)
-```
+The codebase is currently a **modular monolith** with Store and Inventory extracted
+into independently bootable applications:
 
-## Tech Stack
+- One Symfony Kernel for the monolith; Store and Inventory have their own Kernels.
+- One Composer project, service container, database, migration chain,
+  Messenger queue, worker, scheduler, and Docker image for the monolith.
+- Store and Inventory each have config, a MySQL 8.4 database, migration baseline,
+  and FrankenPHP container.
+- Domain modules include Identity, CMS, Commerce, Store, Inventory, Payment, Wallet,
+  Promotion, WeChat adapters, and Storage adapters.
+- The `Trade -> Store -> Inventory` Outbox/Inbox flow is the strongest existing
+  extraction seam.
+- Store source lives exclusively in `apps/store/src` with de-prefixed entities
+  (`Membership`, `InboxMessage`, `OutboxMessage`, `TradeOrderCancellation`).
+- Inventory source lives exclusively in `apps/inventory/src`; its nine owned
+  `inventory_*` tables retain their names and use scalar Store/Trade UUID references.
+- Trade resolves `X-Store-Code` through a local `trade_store_directory` projection
+  fed by the `store.directory.upserted.v1` event.
 
-| Component | Technology |
-|-----------|-----------|
-| Framework | Symfony 8.1 |
-| Language | PHP 8.4+ |
-| ORM | Doctrine ORM 3.6 |
-| Database | MySQL 8 |
-| Auth | JWT (RS256) + OTP (SMS via Alibaba Cloud) |
-| API Docs | Swagger UI (`/api/doc`) via NelmioApiDocBundle |
-| Testing | PHPUnit 12.5 (90% coverage minimum) |
-| Static analysis | PHPStan Level 8 + Rector type-rule dry-run |
-| Frontend | [crud-admin](https://github.com/immane/crud-admin) — configuration-driven admin panel |
+This is not yet a set of independently deployed services. Gateway cutover and
+standalone worker/scheduler operation are deferred until remaining modules are
+extracted and a shared broker replaces the transitional Doctrine transport.
 
-## Key Features
+## Target
 
-- **Expression-based dynamic queries**: `@filter`, `@sort`, `@dql`, `@order`, `@select` query parameters with DQL compilation
-- **Trait-based controller composition**: 9 PHP traits (List, Detail, Create, Update, Delete, Workflow, etc.) assembled into controllers
-- **Pluggable price calculation pipeline**: Priority-ordered calculators for e-commerce order pricing
-- **State machine**: Symfony Workflow for order lifecycle (draft -> completed) and invoice lifecycle (pending -> paid/refunded)
-- **Invoice-based payment framework**: Gateway abstraction (mock/wallet/wechat), webhooks, provider-agnostic invoice events
-- **WeChat integration**: Mini Program and Official Account login, WeChat Pay V3 gateway, WechatUser entity (OneToOne→User)
-- **System introspection**: Entity metadata and route export via `/system/*` endpoints
-- **Atomic wallet transfers**: Deadlock prevention, optimistic locking, idempotency
-- **Token rotation with reuse detection**: Refresh tokens hashed (HMAC-SHA256), rotated on use
+The target is a monorepo with independently deployable Symfony applications. Each
+service owns its Kernel, configuration, database and migrations, queue, worker,
+scheduler, image, tests, and CI.
 
-## Quick Start
+Store and Inventory are extracted transition hosts. Inventory remains disabled by
+default and is not production-ready until its safety checklist is complete.
+
+Read the [Microservice Transition Contract](design/microservice-transition.md) for
+the target directory structure, service-boundary rules, event envelope, and
+extraction gates.
+
+## Local Run
 
 ```bash
-# Clone
-git clone https://github.com/immane/crud-skeleton.git
-cd crud-skeleton
-
-# Start all services
 docker compose up -d --build
-
-# Run migrations
 docker compose exec app php bin/console doctrine:migrations:migrate --no-interaction
-
-# Create an admin user
+docker compose exec store-app php bin/console doctrine:migrations:migrate --no-interaction
+docker compose exec inventory-app php bin/console doctrine:migrations:migrate --no-interaction
 docker compose exec app php bin/console app:identity:user:create admin@example.com admin 'P@ssw0rd' --admin
 ```
 
+- Monolith API: `http://localhost:8080`
+- Store API: `http://localhost:8081`
+- Inventory API: `http://localhost:8082`
+- OpenAPI: `http://localhost:8080/api/doc`
+- Mailpit: `http://localhost:8025`
+
 ## Documentation
 
-- **[Design Contracts](design/system-architecture.md)** -- System architecture rules, API design, data model, controller contract
-- **[Bundles](design/bundles/core.md)** -- Per-module design documents (Core, Common, Trade, Wallet, Identity)
-- **[API Docs](/api/doc)** -- Interactive Swagger UI (when running)
+- [Microservice Transition](design/microservice-transition.md)
+- [System Architecture](design/system-architecture.md)
+- [System Contracts](design/system-contracts.md)
+- [Module Design](design/module-design.md)
+- [API Design](design/api-design.md)
+- [AI Context](ai/context.md)
 
 ## Quality Checks
 
-Use PHP 8.4 or newer, then run the checks enforced by CI:
-
 ```bash
+./vendor/bin/phpunit
+composer deptrac
 composer phpstan
 composer rector:types:check
-XDEBUG_MODE=coverage vendor/bin/phpunit --coverage-text
 ```
 
-The PHPStan and Rector jobs use isolated SQLite URLs so Composer's cache-clear
-script can run without a locally configured development database.
-
-## License
-
-Apache-2.0
+Use PHP 8.4+ for local commands.

@@ -766,7 +766,7 @@ A standalone `HuifuSigner` helper replaces the SDK completely.
 
 ### 8.8 Recommended file structure
 
-```text
+```
 src/Payment/Service/Gateway/Huifu/
 ├── HuifuGateway.php      — implements PaymentGatewayInterface
 ├── HuifuPosGateway.php   — POS variant (future)

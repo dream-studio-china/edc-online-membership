@@ -76,14 +76,18 @@ Supported scopes: `common`, `trade`, `wallet`, `payment`, `wechat`, `identity`, 
 # Run PHPStan at Level 8
 composer phpstan
 
+# Enforce module dependency boundaries
+composer deptrac
+
 # Verify Doctrine Collection/Repository PHPDoc rules without modifying files
 composer rector:types:check
 
-# Run all tests (CI enforces 90% minimum coverage)
-XDEBUG_MODE=coverage vendor/bin/phpunit --coverage-text
+# Run every suite and enforce the 90% aggregate line-coverage gate
+# (prepare the root test database first)
+composer coverage
 
-# Run tests for a specific module (layered suites)
-vendor/bin/phpunit tests/UnitTest/Trade/ tests/Integration/Trade/
+# Run tests for a specific module
+vendor/bin/phpunit tests/Trade/
 
 # Apply the focused Rector type rules when needed
 composer rector:types
@@ -99,6 +103,7 @@ as a formatting step without reviewing its proposed changes.
 - [ ] All tests pass (`vendor/bin/phpunit`)
 - [ ] Coverage does not drop below 90% (CI enforced)
 - [ ] PHPStan passes (`composer phpstan`)
+- [ ] Deptrac passes (`composer deptrac`)
 - [ ] Rector type-rule check passes (`composer rector:types:check`)
 - [ ] New features include tests
 - [ ] Behavior changes are reflected in `docs/ai/context.md` where appropriate
@@ -106,12 +111,12 @@ as a formatting step without reviewing its proposed changes.
 
 ## Project Structure
 
-```text
+```
 src/
 ├── Core/         # Framework core (RestController, BaseService, View mixins, Expression parser)
 ├── Common/       # CMS module (Category, Tag, Content, Comment, Page, Media, Setting)
 ├── Trade/        # E-commerce module (Product, Specification, Order, OrderItem)
-├── Wallet/       # Wallet module (Wallet, Transaction, TransferService)
+├── Wallet/       # Wallet module (Wallet, WalletTransaction, Transfer)
 ├── Payment/      # Payment module (Invoice, Gateways, Adjustment providers)
 ├── Wechat/       # WeChat module (Mini Program, Official Account, Pay V3)
 ├── Storage/      # File storage module (LocalStorage, QiniuStorage)
@@ -169,6 +174,14 @@ To add translations for a new string:
 - Design contracts live in `docs/design/`
 - AI context snapshot is at `docs/ai/context.md` — update it when adding new modules, patterns, or significant structural changes
 - API documentation is generated via `#[OA\*]` attributes on controllers and enriched by `OpenApiEnricherListener`
+
+## Architecture Boundaries
+
+`composer deptrac` enforces that Core does not depend on business modules and
+that modules do not introduce new cross-module Entity or Repository dependencies.
+Existing violations are listed as exact source-to-target edges in
+`deptrac-baseline.yaml`; do not add baseline entries to bypass a new dependency.
+Removing a legacy dependency should remove its baseline entry in the same change.
 
 ## Reporting Issues
 

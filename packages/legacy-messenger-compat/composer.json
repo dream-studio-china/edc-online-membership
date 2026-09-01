@@ -1,0 +1,16 @@
+{
+    "name": "crud-platform/legacy-messenger-compat",
+    "description": "Historical native-PHP Messenger wrappers for queued CRUD Platform messages.",
+    "version": "1.0.0-dev",
+    "type": "library",
+    "license": "Apache-2.0",
+    "require": {
+        "php": ">=8.4"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\Trade\\Message\\": "src/Trade/Message/",
+            "App\\Inventory\\Message\\": "src/Inventory/Message/"
+        }
+    }
+}

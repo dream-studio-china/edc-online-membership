@@ -1,329 +1,326 @@
-# CRUD Skeleton
+# CRUD Platform
 
-一个面向模块化 CRUD 与高事务量 API 的 Symfony 8.1 后端基础。它将可复用的 API 约定、可组合的业务模块与运维保障相结合，而不要求每个应用都采用全部模块。
+CRUD Platform 是从 [crud-skeleton](https://github.com/immane/crud-skeleton) 演进而来的面向生产环境的 Symfony 微服务平台，从模块化单体架构演进而来，具备 DDD、服务隔离和事件驱动通信能力。
 
-> English: [README.md](README.md) · Chinese (Traditional): [README.zh-hant.md](README.zh-hant.md) · Japanese: [README.ja.md](README.ja.md)
+> English: [README.md](README.md) · 繁體中文: [README.zh-hant.md](README.zh-hant.md) · 日本語: [README.ja.md](README.ja.md)
 
-> 文档站点: [GitHub Pages](https://immane.github.io/crud-skeleton) | 开发手册: [docs/manual/index.md](docs/manual/index.md) | 架构: [docs/design/system-architecture.md](docs/design/system-architecture.md)
+---
+
+## 项目目标
+
+目标是构建一个**单仓库、多独立部署 Symfony 应用**的平台。每个服务将独立拥有
+Kernel、配置、数据库和迁移、消息队列、worker、定时任务、Docker 镜像、测试和 CI。
+
+当前仓库仍是**模块化单体**，不是已经完成的微服务系统：它共享一个 Kernel、Composer
+项目、容器、数据库、迁移链、Messenger 队列、worker、scheduler 和 Docker 镜像。
+`Trade → Store → Inventory` 的 Outbox/Inbox 链路是首个提取边界。
+
+目标目录、边界规则与提取准入条件见
+[微服务迁移契约](docs/design/microservice-transition.md)。
+
+---
 
 ## 架构
 
-应用是分层 Symfony API：控制器基于 trait 组合的视图 mixin 调用 `BaseService`（CRUD + 动态查询），服务承载业务规则，Doctrine ORM 持久化到 MySQL。它是一个模块化单体，各模块在同一个 Symfony 应用内通过显式的服务与事件边界协作。
+### 服务拓扑
 
-```mermaid
-flowchart TB
-    Core["<b>Core 框架</b><br/>BaseService · View Mixins · Expression→DQL"]
+```
+                    ┌──────────────────────────────────────────────┐
+                    │              API 网关 / 边缘路由              │
+                    └──────┬──────┬──────┬───────────┬────────┬────┘
+                           │      │      │           │        │ 
+    ┌──────────┐  ┌────────┴─┐ ┌──┴───┐ ┌┴──────┐ ┌──┴───┐ ┌──┴────┐
+    │ 身份认证 │  │  交易     │ │门店  │ │内容   │ │钱包  │ │支付   │
+    │  :8085   │  │  :8087   │ │:8081 │ │:8086  │ │:8084 │ │:8083  │
+    └────┬─────┘  └────┬─────┘ └──┬───┘ └──┬────┘ └──┬───┘ └───┬───┘
+         │             │          │        │         │         │
+    ┌────┴────┐   ┌────┴──────┐ ┌─┴───┐ ┌──┴───┐ ┌───┴───┐ ┌───┴───┐
+    │   DB    │   │    DB     │ │ DB  │ │  DB  │ │  DB   │ │  DB   │
+    │identity │   │  trade    │ │store│ │common│ │wallet │ │payment│
+    └─────────┘   └───────────┘ └─────┘ └──────┘ └───────┘ └───────┘
 
-    Identity["Identity<br/>鉴权 · JWT · OTP · User"]
-    Common["Common<br/>CMS（7 实体）"]
-    Storage["Storage<br/>媒体驱动"]
-    Wechat["Wechat<br/>登录 + 支付"]
-    Wallet["Wallet<br/>余额 · 转账 · 凭证"]
-    Payment["Payment<br/>发票 · 网关 · 抵扣"]
-    Trade["Trade<br/>订单 · 定价"]
-    Store["Store<br/>多门店 Outbox"]
-    Inventory["Inventory<br/>库存 · 预留"]
-    Promotion["Promotion<br/>DSL 引擎"]
-    Settlement["Settlement<br/>分账 · 终态"]
-    Exchange["Exchange（设计）<br/>汇率 · 资金池 · 发行"]
-
-    Identity --> Core
-    Common --> Core
-    Storage --> Core
-    Storage --> Common
-    Wechat --> Core
-    Wechat --> Identity
-    Wallet --> Core
-    Wallet --> Identity
-    Payment --> Core
-    Payment --> Wallet
-    Trade --> Core
-    Trade --> Payment
-    Trade --> Store
-    Trade --> Inventory
-    Promotion --> Core
-    Promotion --> Trade
-    Settlement --> Core
-    Settlement --> Wallet
-    Exchange -. "design" .-> Core
+    ┌──────────┐
+    │  库存    │  + 根单体 (app :8080) — 过渡宿主
+    │  :8082   │  + Worker + Scheduler（共享）
+    └────┬─────┘  + Redis + Mailpit
+    ┌────┴────┐
+    │   DB    │
+    │inventory│
+    └─────────┘
 ```
 
-业务操作遵循一致的“请求到事务”边界。例如，钱包支付在服务层解析其 provider，并在一次数据库事务中记录其效果：
+### 事件驱动集成（Outbox / Inbox）
 
-```mermaid
-sequenceDiagram
-    participant C as 客户端
-    participant Ctrl as 控制器
-    participant S as 服务
-    participant P as Provider
-    participant DB as Doctrine ORM / MySQL
-
-    C->>Ctrl: POST /api/v1/...（JSON body）
-    Ctrl->>S: 调用服务（校验后的载荷）
-    S->>P: 解析 provider + 校验权限
-    S->>DB: 事务：账本 + 审计写入
-    S-->>Ctrl: 结果 / 实体
-    Ctrl-->>C: 统一响应信封
+```
+  Trade                    Store                   Inventory
+  ┌──────────┐ outbox      ┌──────────┐ outbox     ┌──────────┐
+  │ 订单     │──订单──→   │ 门店     │──预留──→   │ 物料     │
+  │ 已创建   │ created.v1 │ 订单     │ request.v1 │ 预留     │
+  │          │←─接受────  │ 已接受   │←─确认────  │ 确认     │
+  │          │ accepted   │          │ confirmed  │          │
+  └──────────┘            └──────────┘            └──────────┘
+       │                        │                       │
+       └── store.directory.upserted.v1 ──→ 本地投影
 ```
 
-### 电商编排
+### 分层架构（每服务）
 
-订单履约会跨越同步事务边界与异步事件投递。结算在图中被刻意独立展示：它由外部确认的资金启动，而不是由尚未实现的 Payment-to-Settlement 事件触发。
-
-```mermaid
-sequenceDiagram
-    autonumber
-    participant T as Trade
-    participant TO as Trade Outbox
-    participant S as Store
-    participant SO as Store Outbox
-    participant I as Inventory
-    participant IO as Inventory Outbox
-    participant P as Payment
-    participant W as Wallet
-    participant Se as Settlement
-
-    T->>T: 创建门店订单（事务）<br/>store_submit
-    T->>TO: 同一事务：订单创建事件
-    TO-->>S: 异步投递与处理
-
-    alt 门店不可用
-        S->>SO: 同一事务：订单拒绝事件
-    else 库存功能关闭
-        S->>SO: 同一事务：订单接受事件
-    else 库存功能启用
-        S->>SO: 同一事务：库存预留请求
-        SO-->>I: 异步投递与处理
-        alt 预留被拒绝
-            I->>IO: 同一事务：预留拒绝事件
-        else 预留已确认
-            I->>IO: 同一事务：预留确认事件
-        end
-        IO-->>S: 异步投递与处理
-        S->>SO: 同一事务：订单接受或拒绝
-    end
-    SO-->>T: 异步投递与处理
-    T->>T: store_accept 或 store_reject
-
-    Note over T,P: 支付要求 store_accept，随后显式确认
-    T->>P: 创建并支付发票（同步）
-    opt 提供 walletAmount
-        P->>W: 立即钱包扣款 / 转账
-    end
-    alt 钱包支付或抵扣覆盖全额
-        P->>P: 将发票标记为已支付
-    else 外部网关
-        P->>P: 发票保持支付中，直至回调
-    end
-    P->>T: InvoicePaidEvent 同步更新订单
-
-    Note over P,Se: 尚未实现 Payment-to-Settlement 事件
-    Se->>Se: 外部资金确认（异步）
-    Se->>Se: 创建计划、分账与审计快照（事务）
-    Se->>Se: 结算 outbox 异步发布分账
-    Se->>W: 通过 Wallet port 进行凭证入账
+```
+  HTTP 控制器    ←  唯一接触 Request/Response 的层
+        │
+  服务层         ←  所有业务逻辑、事务、验证
+        │
+  仓库层         ←  数据访问（Doctrine）
+        │
+  实体 / 领域    ←  持久化和聚合不变性
+        │
+  基础设施       ←  ORM、缓存、序列化器（框架提供）
 ```
 
-## 目录
+### 仓库布局
 
-- [架构](#架构)
-- [快速上手指南](#快速上手指南)
-- [为什么使用这个项目](#为什么使用这个项目)
-- [内置能力](#内置能力)
-- [模块概览](#模块概览)
-- [如何创建自己的 CRUD 模块](#如何创建自己的-crud-模块)
-- [文档说明](#文档说明)
-- [测试](#测试)
-- [Docker 部署](#docker-部署)
-- [贡献指南](#贡献指南)
-- [许可证](#许可证)
+```
+├── apps/                         # 可独立部署的服务
+│   ├── identity/                 # App\Identity — 认证、JWT、OTP、微信登录
+│   │   ├── src/Main/             #   账户、Profile、Refresh Token
+│   │   └── src/Wechat/           #   微信小程序 / 公众号 OAuth 适配器
+│   ├── common/                   # App\Common — CMS、媒体、分类、标签
+│   │   ├── src/Main/             #   内容实体与 CRUD
+│   │   └── src/Storage/          #   可插拔文件上传（本地、七牛）
+│   ├── trade/                    # App\Trade — 订单、商品、定价
+│   │   ├── src/Trade/            #   订单工作流、Outbox、消息处理器
+│   │   └── src/Promotion/        #   DSL 驱动促销引擎，7 种策略
+│   ├── store/                    # App\Store — 多门店运营
+│   ├── inventory/                # App\Inventory — 库存预留、配方
+│   ├── payment/                  # App\Payment — 发票、网关、调整
+│   ├── wallet/                   # App\Wallet — 账本、转账、扣款
+├── packages/
+│   ├── platform-kernel/          # App\Core 框架（RestController、DQL、工具集）
+│   ├── integration-contracts/    # 版本化中性事件载体
+│   └── legacy-messenger-compat/  # 历史 Messenger 包装 FQCN
+├── src/                          # 根单体（仅过渡宿主）
+│   ├── Bridge/                   #   组合适配器（根 → 服务端口）
+│   └── Kernel.php                #   根 Kernel
+├── config/                       # 根服务装配、路由、Doctrine 映射
+├── docs/                         # 设计契约、AI 上下文
+└── scripts/                      # 冒烟测试、覆盖率工具、交易演示
+```
 
-## 快速上手指南
+### 提取状态
 
-如果你希望快速跑通本地登录与鉴权（JWT 密钥、数据库迁移、管理员用户、登录/鉴权测试），请直接看 [QUICKSTART.md](QUICKSTART.md)。
+| 目标上下文 | 已迁移至 | 状态 |
+|---|---|---|
+| Platform Kernel | `packages/platform-kernel` | 共享框架库 |
+| Commerce | `apps/trade`（Trade + Promotion） | 已提取；仍保留 Payment 直接依赖 |
+| Store Operations | `apps/store` | 已提取 |
+| Inventory | `apps/inventory` | 已提取；生产环境受限 |
+| Payments | `apps/payment`（网关、调整） | 已提取；网关由 Payment 应用持有 |
+| Wallet/Ledger | `apps/wallet` | 已提取；仅用 `ownerUuid` |
+| Identity & Access | `apps/identity`（Main + 微信登录） | 已提取 |
+| Content/Media | `apps/common`（CMS + Storage） | 已提取 |
 
-在 macOS 下建议优先使用 Homebrew PHP（`/opt/homebrew/bin/php`），避免与系统默认 PHP 版本冲突。
+---
 
-## 为什么使用这个项目
+## 当前能力
 
-CRUD Skeleton 面向那些需要超越生成式 CRUD、但暂时不需要分布式系统的应用。它让常规 API 工作保持一致，同时为领域特定行为提供清晰的扩展点。
+- **框架**：Symfony 8.1、PHP 8.4+、Doctrine ORM 3.6、MySQL 8、SQLite 测试环境。
+- **身份与访问**：RS256 JWT、Refresh Token 轮换、OTP/SMS（阿里云）、密码登录、
+  微信小程序 / 公众号 OAuth 登录。
+- **交易**：商品目录、订单状态机（draft→completed→refunded）、门店感知定价管线
+  （基础→数量→小计→促销）、多门店接单/拒绝工作流。
+- **促销引擎**：自定义 DSL 词法/语法分析器/解释器，7 种策略类型（折扣、赠品、
+  阶梯、满减、包邮、会员、第 N 件折扣）。
+- **门店运营**：多门店目录、门店范围订单、会员、员工订单管理。
+- **库存**：物料主数据、规格配方、原子库存预留、每店 `allowNegativeStock` 策略
+  （默认关闭，未达生产标准）。
+- **支付**：发票生命周期（pending→paid→refunded）、多网关注册中心（mock、钱包、
+  微信支付 V3）、支付前调整管线。
+- **钱包**：复式账本、转账、支付扣款、余额审计、乐观锁、幂等充值。
+- **CMS 与媒体**：分类、标签、内容、评论、页面、设置，可插拔媒体存储（本地、七牛）。
+- **集成**：版本化 Trade/Store/Inventory/Payment 事件，Outbox/Inbox 幂等，
+  correlation/causation 链路传播，10 个中性事件载体。
+- **国际化**：Symfony Translation — 英文、简体中文、繁体中文、日文（每语言 ~280 条）。
+- **API 文档**：NelmioApiDoc + Swagger UI `/api/doc`，自动标签，44+ 命名 Schema。
 
-- **可复用的 API 基础**：共享服务、控制器 mixin、校验、序列化与表达式驱动查询，减少重复的端点代码。
-- **可组合的业务领域**：电商、库存、支付、钱包、结算、身份、存储与促销围绕显式的服务与事件边界组织。
-- **开箱即用的运维默认值**：Docker Compose、异步 worker、outbox 处理、健康检查、指标、限流与 CI 质量门禁均已内置，而非留作集成工作。
-
-## 内置能力
-
-- **一致的 CRUD API**：共享服务行为、控制器组合，以及动态筛选、排序、投影与展开。
-- **事务性电商工作流**：订单、库存预留、发票、支付网关、钱包抵扣与结算分账。
-- **财务可审计性**：幂等转账、凭证背书的存款与取款、内部余额校验与对账，以及版本化结算规则。
-- **可扩展的集成**：JWT 与 OTP 鉴权、微信登录与支付、本地或七牛媒体存储，以及促销规则 DSL。
-- **访问控制与审计**：角色保护的管理端点、特权动态查询的防护，以及变更请求的有界审计日志。
-- **可靠的异步处理**：Messenger worker 与跨模块事件的 outbox/inbox 模式。
-- **生产诊断**：OpenAPI 文档、就绪与存活探针、Prometheus 指标与端点限流。
-- **强制的质量检查**：PHPUnit、PHPStan Level 8、Rector 类型规则，以及 CI 中 90% 的行覆盖率门槛。
-
-## 技术栈
-
-| 组件 | 技术 |
-|------|------|
-| 语言 | PHP `>= 8.4` |
-| 框架 | Symfony `8.1.*` |
-| ORM | Doctrine ORM `^3.6` |
-| 数据库 | MySQL 8（Docker/生产）/ SQLite（本地测试）/ PostgreSQL 16（CI 测试） |
-| 鉴权 | JWT (RS256) + OTP (短信) |
-| API 文档 | NelmioApiDocBundle (OpenAPI 3) |
-| 测试 | PHPUnit `^12.5`（支持 paratest 并行运行） |
-| 静态分析 | PHPStan Level 8 + Rector 类型规则 |
-| 前端 | [crud-admin](https://github.com/immane/crud-admin) — 配置驱动的管理后台 |
-| 文档 | MkDocs Material (GitHub Pages) |
-
-完整依赖请查看 `composer.json`。
-
-## 项目结构
-
-仓库是一个模块化单体：`src/` 存放应用代码（Core 框架以及 Common、Identity、Trade、Payment、Wallet、Storage 等业务模块），旁边是 `config/`、`migrations/`、`tests/`、`docs/` 以及 Docker/Compose 文件。
-
-完整的详细目录树（到每个模块的控制器、服务、实体、仓库层级），请参阅
-**[项目结构 — 开发手册](docs/manual/project-structure.md)**。
+---
 
 ## 快速开始
 
-本机与 Docker 安装方式、JWT 配置、首次运行验证与故障排查，请参阅 **[快速开始 — 开发手册](docs/manual/getting-started.md)**。
+Docker 是推荐的本地运行方式。在仓库根目录执行，主机只需要 Docker：
 
-Docker 开发环境无需创建 env 文件即可启动。本机 PHP/Symfony 运行时，请在 `.env.local` 中覆盖本地配置（见 [配置说明](#配置说明)）。
+```bash
+docker compose up -d --build
 
-## 配置说明
+# 根单体
+docker compose exec app php bin/console doctrine:migrations:migrate --no-interaction
 
-完整的环境变量参考——文件职责、全部变量、完整的 `.env.local` / `.env.prod.local` 示例、密钥生成——请参阅 **[部署 — 开发手册](docs/manual/deployment.md)**。
+# 已提取应用
+for svc in store-app inventory-app payment-app wallet-app identity-app common-app trade-app; do
+  docker compose exec $svc php bin/console doctrine:migrations:migrate --no-interaction
+done
 
-环境变量文件职责一览：
+# 创建管理员
+docker compose exec app php bin/console app:identity:user:create admin@example.com admin 'P@ssw0rd' --admin
 
-| 文件 | 用途 | 是否提交 |
-|------|------|----------|
-| `.env` | 已提交的 Symfony 默认值，不放密钥 | 是 |
-| `.env.dev`、`.env.test` | 已提交的开发/测试默认值 | 是 |
-| `.env.local`、`.env.*.local` | 本机覆盖值和密钥 | 否 |
-| `.env.example` | 本地开发变量参考 | 是 |
-| `.env.prod.example` | 生产 Docker 模板 | 是 |
-| `.env.prod.local` | 真实生产 Docker 配置 | 否 |
-
-生产环境请不要在仓库中提交明文密钥。使用真实系统环境变量，或使用本地生产 env 文件。
-
-### 媒体存储与七牛
-
-媒体上传通过统一的媒体存储接口支持多种存储驱动（`local` 内置，`qiniu` 可选）。默认驱动通过环境变量设置，上传时可通过 multipart 表单字段 `storage` 覆盖。
-
-完整参考——安装七牛 SDK、配置七牛凭据、启用驱动——请参阅
-**[媒体存储与七牛 — 开发手册](docs/manual/storage.md)**。
-
-## 本地运行
-
-完整的安装步骤（Docker 与本机 PHP、JWT 密钥、验证、故障排查）请参阅 **[快速开始 — 开发手册](docs/manual/getting-started.md)**。
-
-你可以用 PHP/Symfony 本机运行，或用 Docker Compose（app、nginx、MySQL、Redis、Mailpit）运行。应用运行在配置的本地端口上。
-
-## 模块概览
-
-| 模块 | 用途 | 核心特性 |
-|------|------|---------|
-| **Core** | API 基础 | REST 控制器支持、共享服务行为、视图 mixin、表达式查询 |
-| **Common** | CMS 与设置 | 分类、标签、内容、媒体、页面、评论与键值设置 |
-| **Trade** | 电商 | 产品、规格、订单工作流与价格计算 |
-| **Store** | 多门店运营 | 门店会员与可靠的订单事件交接 |
-| **Inventory** | 库存控制 | 门店库存、预留、配方与库存台账策略 |
-| **Payment** | 发票编排 | 发票生命周期、网关抽象、支付抵扣、Webhook |
-| **Wallet** | 余额操作 | 转账、存款、取款、凭证与对账 |
-| **Settlement** | 分账与终态 | 版本化规则、可审计分账与钱包入账 |
-| **Promotion** | 定价规则 | 促销 DSL、计算策略与活动路由 |
-| **Identity** | 鉴权 | JWT、OTP、注册、用户资料与管理 |
-| **Storage** | 媒体上传 | 本地与七牛 Kodo 存储驱动 |
-| **Wechat** | 微信集成 | 登录与微信支付 V3 |
-| **Exchange** *(设计)* | 点数经济 | 汇率与流动性池设计；尚未实现 |
-
-应用 API 端点返回统一的 JSON 信封。健康检查、指标与 Swagger/OpenAPI 端点使用各自格式。请求/响应格式、鉴权、分页与错误处理，请参阅
-**[API 契约 — 开发手册](docs/manual/api-contracts.md)**。
-
-## 服务层设计说明
-
-`BaseService` 组合了聚焦的 trait，提供基础设施访问、事务、带动态查询引擎的读/列表行为，以及变更行为（`new()`/`update()`/`remove()`），并通过 `BaseServiceInterface` 保持公共兼容性。
-
-深入讲解请参阅 **[核心框架 — 开发手册](docs/manual/core-framework.md)**
-与 **[核心用法 — 开发手册](docs/manual/core-usage.md)**。
-
-## 动态查询系统
-
-`list()` 方法支持分页以及表达式驱动的筛选、排序、排序、字段选择与展开参数（编译为 DQL，并具备内存回退）。完整参考请参阅 **[查询系统 — 开发手册](docs/manual/query-system.md)**。
-
-## 如何创建自己的 CRUD 模块
-
-简要步骤：创建 Doctrine 实体、继承 `BaseService` 的服务、仓库、使用 API mixin 的 App/Manage 控制器、注册路由，并添加迁移。
-
-最小控制器通过服务接口组合 API 视图 mixin：
-
-```php
-namespace App\Common\Controller\App;
-
-use App\Common\Service\ContentServiceInterface;
-use App\Core\Controller\RestController;
-use App\Core\View\ApiView;
-use App\Core\View\DetailApiViewMixin;
-use App\Core\View\ListApiViewMixin;
-
-class ContentController extends RestController
-{
-    use ApiView, DetailApiViewMixin, ListApiViewMixin;
-
-    public function __construct(
-        protected readonly ContentServiceInterface $service
-    ) {}
-}
+# 验证
+curl -X POST http://localhost:8080/api/auth/login \
+  -H 'Content-Type: application/json' \
+  -d '{"identifier":"admin@example.com","password":"P@ssw0rd"}'
 ```
 
-完整规范请参阅 **[模块设计契约](docs/design/module-design.md)**，实用配方请参阅 **[核心用法 — 开发手册](docs/manual/core-usage.md)**。
+| 服务 | 端口 | 数据库 | 状态 |
+|---|---|---|---|
+| 根单体 (app) | `8080` | `database` | 过渡宿主 |
+| 门店 | `8081` | `store-database` | 已提取 |
+| 库存 | `8082` | `inventory-database` | 已提取，受限 |
+| 支付 | `8083` | `payment-database` | 已提取 |
+| 钱包 | `8084` | `wallet-database` | 已提取 |
+| 身份 | `8085` | `identity-database` | 已提取 |
+| 内容 | `8086` | `common-database` | 已提取 |
+| 交易 | `8087` | `trade-database` | 已提取 |
 
-## 文档说明
+- OpenAPI UI：`http://localhost:8080/api/doc`
+- Mailpit（邮件测试）：`http://localhost:8025`
+- Worker/Scheduler 日志：`docker compose logs -f worker scheduler`
 
-- **[快速开始](QUICKSTART.md)** — 最小本地安装、首次迁移与鉴权检查
-- **[开发手册](docs/manual/index.md)** — 面向任务的安装、架构、框架用法、测试与部署指南
-- **[架构与设计契约](docs/design/system-architecture.md)** — 模块边界、API、数据模型与扩展契约
-- **[数据库与迁移](docs/manual/database-and-migrations.md)** — Doctrine 约定与可移植迁移工作流
-- **[集成事件](docs/manual/integration-events.md)** — 事务性 outbox/inbox、幂等消费者、重试与调度器操作
-- **[Bundle 设计文档](docs/design/bundles/)** — 已实现与设计阶段模块的设计说明
-- **[Runbooks 运维手册](docs/runbooks/)** — 各模块的操作流程
-- **[测试与生产验证](docs/testing/crud-skeleton-production/README.md)** — 按变更类型要求的验证证据
-- **[OpenAPI 规范](docs/openapi/endpoints.yaml)** 与 **[订单与支付流程](docs/openapi/order-payment-flow.md)** — API 参考与消费方工作流
-- **运行时 Swagger UI**：应用运行时访问 `http://localhost:8080/api/doc`
-- **[安全加固](docs/design/security-hardening.md)** 与 **[安全策略](SECURITY.md)** — 安全控制与负责任披露
+排障和本机 PHP 运行说明见 [QUICKSTART.zh-cn.md](QUICKSTART.zh-cn.md)。
 
-## 测试
+---
 
-测试套件覆盖单元、集成、低价值与冒烟层。CI 运行主套件并带覆盖率，强制 90% 的行覆盖率门槛，同时运行 PHPStan Level 8 与 Rector 类型规则检查。
+## 开发
 
-完整的测试结构、helper、运行方式（串行/并行/覆盖率）与 CI 覆盖率细节，请参阅 **[测试 — 开发手册](docs/manual/testing.md)**。
+```bash
+# 测试套件
+./vendor/bin/phpunit                           # 根集成测试 + 剩余单元测试
+composer coverage                              # 全部 8 套件 + 聚合门禁（>= 90%）
 
-## Docker 部署
+# 静态分析
+composer phpstan                                # PHPStan Level 8
+composer deptrac                                # 架构边界检查
+composer rector:types:check                     # Rector 类型规则 dry-run
 
-完整的部署参考——每个服务、全部环境变量、`.env` / `.env.prod.local` 配置、JWT 密钥、健康检查、调度命令与升级——请参阅 **[部署 — 开发手册](docs/manual/deployment.md)**。
+# 文档
+mkdocs build --strict
+```
 
-技术栈在 nginx（反向代理）之后运行 PHP-FPM，由 MySQL 与 Redis 支撑，并带有 Messenger worker 与 outbox 调度器。开发与生产覆盖通过 Compose 文件提供。
+**测试结构**：七个独立应用测试套件（common、identity、inventory、payment、store、
+trade、wallet）与根集成测试（963 个）独立运行。聚合行覆盖率为 **91.36%**（1,785
+个测试，6,098 个断言），通过 phpcov 合并门禁在 CI 中强制执行。
 
-## 常见问题
+本机命令需使用 PHP 8.4+。
 
-常见问题包括 PHP 版本不匹配、数据库连接错误、序列化问题与鉴权失败。完整的故障排查请参阅 **[快速开始 — 开发手册](docs/manual/getting-started.md)**。
+---
 
-## 贡献指南
+## 集成契约
 
-请遵循 **[贡献指南](CONTRIBUTING.md)** 了解分支、代码风格、测试、提交约定与 PR 期望。保持 PR 小而聚焦，行为变化请补充或更新测试。发现漏洞请通过 **[安全策略](SECURITY.md)** 报告，而非公开 issue。
+十个版本化中性载体连接各服务：
 
-## 国际化（i18n）
+| 类型 | 载体 | 方向 |
+|---|---|---|
+| 事件 | `trade.order.created.v1` | Trade → Store |
+| 事件 | `trade.order.cancelled.v1` | Trade → Store |
+| 事件 | `store.order.accepted.v1` | Store → Trade |
+| 事件 | `store.order.rejected.v1` | Store → Trade |
+| 事件 | `store.directory.upserted.v1` | Store → Trade（投影） |
+| 命令 | `inventory.reservation.requested.v1` | Store → Inventory |
+| 命令 | `inventory.reservation.release.requested.v1` | Store → Inventory |
+| 事件 | `inventory.reservation.confirmed.v1` | Inventory → Store |
+| 事件 | `inventory.reservation.rejected.v1` | Inventory → Store |
+| 事件 | `inventory.reservation.released.v1` | Inventory → Store |
+| 事件 | `payment.invoice.{paid,failed,cancelled,refunded}.v1` | Payment → Trade（进行中） |
 
-项目通过 Symfony Translation 组件支持 `en`、`zh`、`zh_Hant` 与 `ja`。语言根据请求、`Accept-Language` 请求头或默认值自动检测。
+每个信封包含 `eventId`、`type`、`version`、`aggregateType`、`aggregateId`、
+`occurredAt`、`correlationId`、`causationId` 和 `payload`。发布者在同一事务中
+原子写入 Outbox；消费者通过 `eventId` 实现 Inbox 幂等。
 
-完整的 i18n 参考（添加键、语言检测、文档翻译流程）请参阅 **[国际化 — 开发手册](docs/manual/i18n.md)**。
+---
 
-翻译版 README：[README.zh-hant.md](README.zh-hant.md) · [README.ja.md](README.ja.md)
+## 关键模式
+
+| 模式 | 位置 | 说明 |
+|---|---|---|
+| **Outbox/Inbox** | Trade、Store、Inventory、Payment | 持久事件投递，幂等保证 |
+| **链路追踪** | 所有 Outbox | cross-service 传播 `correlationId`/`causationId` |
+| **UUID 标识** | Trade、Wallet | `UUID::v4()` 作为外部引用标识 |
+| **货币以分为单位** | Wallet、Trade、Payment | `bigint` 分，API 边界 ×/÷100 |
+| **状态机** | Trade | Symfony Workflow 驱动订单生命周期 |
+| **定价管线** | Trade | 带优先级的 `PriceCalculatorInterface` |
+| **网关注册中心** | Payment | `#[AutowireIterator]` 可插拔支付网关 |
+| **调整管线** | Payment | 网关执行前的支付前扣减钩子 |
+| **乐观锁** | Wallet | `#[ORM\Version]` 在 Wallet 实体 |
+| **快照** | Trade | `OrderItem` 保存 `specSnapshot`/`productSnapshot` |
+| **软删除** | Trade | Product、Specification 的 `isDeleted` 标志 |
+| **commonFilter** | 控制器 | 用户范围或管理员范围的 QueryBuilder 注入 |
+| **促销 DSL** | Promotion | 自定义词法/语法解析器/解释器 |
+| **Dry-run 回填** | Trade、Store、Inventory | 可控分批复原的关联回填命令 |
+| **Token 轮换** | Identity | HMAC-SHA256 Refresh Token + 重用检测 |
+
+---
+
+## 控制台命令
+
+| 命令 | 服务 | 用途 |
+|---|---|---|
+| `app:identity:user:create` | Identity | 创建带角色的用户 |
+| `app:trade:outbox:publish` | Trade | 投递未发布的集成事件 |
+| `app:store:outbox:publish` | Store | 投递接单/拒绝事件 |
+| `app:inventory:outbox:publish` | Inventory | 投递预留结果 |
+| `app:payment:outbox:publish` | Payment | 投递发票生命周期事件 |
+| `app:trade:outbox:backfill-correlation` | Trade | 关联回填（dry-run / --apply） |
+| `app:store:outbox:backfill-correlation` | Store | 关联回填（dry-run / --apply） |
+| `app:inventory:outbox:backfill-correlation` | Inventory | 关联回填（dry-run / --apply） |
+| `app:payment:outbox:backfill-correlation` | Payment | 关联回填（dry-run / --apply） |
+| `app:store:outbox:backfill-directory` | Store | 回填门店目录事件 |
+| `app:inventory:reservations:release-expired` | Inventory | 释放过期预留 |
+| `app:storage:qiniu:settings:init` | Common | 初始化七牛设置 |
+
+---
+
+## Docker Compose 拓扑
+
+`compose.yaml` 共 **22 个服务**：
+
+| 分组 | 服务 |
+|---|---|
+| 根 | `app`（FrankenPHP）、`worker`（Messenger 异步）、`scheduler`（outbox 投递） |
+| 应用 | `store-app`、`inventory-app`、`payment-app`、`wallet-app`、`identity-app`、`common-app`、`trade-app` |
+| 数据库 | `database`（根）、`store-database`、`inventory-database`、`payment-database`、`wallet-database`、`identity-database`、`common-database`、`trade-database` |
+| 基础设施 | `redis`（OTP/缓存）、`mailer`（Mailpit） |
+
+Worker 消费共享 `async` 传输。Scheduler 轮询 Trade、Store、Inventory、Payment
+的 Outbox 发布，以及库存过期预留释放。
+
+---
+
+## 开发者入门
+
+新加入项目？按以下顺序阅读[开发手册](docs/manual/index.md)：
+
+1. [架构](docs/manual/architecture.md) — 理解服务拓扑、分层和模式
+2. [快速上手](docs/manual/getting-started.md) — 搭建 Docker 环境并验证
+3. [项目结构](docs/manual/project-structure.md) — 了解代码组织方式
+4. [核心框架](docs/manual/core-framework.md) — `RestController`、`BaseService`、View Mixin、EventListener、Utils
+5. [核心用法](docs/manual/core-usage.md) — 实战：构建 Controller、Service、文件上传、自定义 Action
+6. [查询系统](docs/manual/query-system.md) — 掌握 `@filter`、`@sort`、`@order`、`@dql`、`@select`、`@groupBy`、`@expands`、`@display`、`@transform`
+7. [API 契约](docs/manual/api-contracts.md) — 请求/响应信封、认证、分页、错误处理、API 文档
+8. [开发契约](docs/manual/development-contracts.md) — 编码规则、分层边界、命名、安全
+
+之后按需查阅：[测试](docs/manual/testing.md)、[集成事件](docs/manual/integration-events.md)、
+[数据库与迁移](docs/manual/database-and-migrations.md)、[部署](docs/manual/deployment.md)、
+[提取服务](docs/manual/extracting-a-service.md)、[国际化](docs/manual/i18n.md)。
+
+## 文档
+
+- [开发手册](docs/manual/index.md) — 完整开发者指南（16 份文档）
+- [微服务迁移契约](docs/design/microservice-transition.md)
+- [系统架构](docs/design/system-architecture.md)
+- [系统契约](docs/design/system-contracts.md)
+- [模块设计](docs/design/module-design.md)
+- [AI 上下文](docs/ai/context.md)
+- [文档站点](https://immane.github.io/crud-skeleton)
+
+---
 
 ## 许可证
 
-Apache-2.0。详见 [LICENSE](LICENSE)。
+Apache-2.0。见 [LICENSE](LICENSE)。

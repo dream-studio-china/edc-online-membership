@@ -1,0 +1,35 @@
+{
+    "name": "crud-platform/platform-kernel",
+    "description": "Shared Symfony platform kernel for CRUD Platform applications",
+    "version": "1.0.3-dev",
+    "type": "library",
+    "license": "Apache-2.0",
+    "require": {
+        "php": ">=8.4",
+        "doctrine/collections": "^2.4",
+        "doctrine/dbal": "^4.4",
+        "doctrine/orm": "^3.6",
+        "monolog/monolog": "^3.9",
+        "psr/log": "^3.0",
+        "psr/simple-cache": "^3.0",
+        "symfony/config": "8.1.*",
+        "symfony/dependency-injection": "8.1.*",
+        "symfony/expression-language": "8.1.*",
+        "symfony/framework-bundle": "8.1.*",
+        "symfony/http-foundation": "8.1.*",
+        "symfony/http-kernel": "8.1.*",
+        "symfony/property-access": "8.1.*",
+        "symfony/routing": "8.1.*",
+        "symfony/security-core": "8.1.*",
+        "symfony/security-http": "8.1.*",
+        "symfony/serializer": "8.1.*",
+        "symfony/translation-contracts": "^3.6",
+        "symfony/validator": "8.1.*",
+        "zircote/swagger-php": "^5.8"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\Core\\": "src/"
+        }
+    }
+}

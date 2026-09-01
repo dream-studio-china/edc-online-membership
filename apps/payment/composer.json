@@ -1,0 +1,63 @@
+{
+    "name": "crud-platform/payment-app",
+    "description": "Payment application for CRUD Platform",
+    "version": "1.0.0-dev",
+    "type": "project",
+    "license": "Apache-2.0",
+    "minimum-stability": "stable",
+    "prefer-stable": true,
+    "repositories": [
+        {
+            "type": "path",
+            "url": "../../packages/integration-contracts",
+            "options": { "symlink": false }
+        },
+        {
+            "type": "path",
+            "url": "../../packages/platform-kernel",
+            "options": { "symlink": false }
+        }
+    ],
+    "require": {
+        "php": ">=8.4",
+        "crud-platform/integration-contracts": "^1.1.1@dev",
+        "crud-platform/platform-kernel": "^1.0.3@dev",
+        "doctrine/doctrine-bundle": "^3.2",
+        "doctrine/doctrine-migrations-bundle": "^4.0",
+        "doctrine/orm": "^3.6",
+        "nyholm/psr7": "^1.8",
+        "symfony/console": "8.1.*",
+        "symfony/doctrine-messenger": "8.1.*",
+        "symfony/dotenv": "8.1.*",
+        "symfony/framework-bundle": "8.1.*",
+        "symfony/monolog-bundle": "^3.0|^4.0",
+        "symfony/psr-http-message-bridge": "^8.1",
+        "symfony/runtime": "8.1.*",
+        "symfony/security-bundle": "8.1.*",
+        "symfony/serializer": "8.1.*",
+        "symfony/translation": "8.1.*",
+        "symfony/workflow": "8.1.*",
+        "symfony/yaml": "8.1.*",
+        "w7corp/easywechat": "^6.19"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^12.5"
+    },
+    "autoload": {
+        "psr-4": { "App\\Payment\\": "src/" }
+    },
+    "autoload-dev": {
+        "psr-4": { "App\\Tests\\": "tests/" }
+    },
+    "config": {
+        "allow-plugins": { "symfony/runtime": true },
+        "sort-packages": true
+    },
+    "scripts": {
+        "cache:clear": "php bin/console cache:clear",
+        "test": "@php vendor/bin/phpunit --configuration phpunit.xml"
+    },
+    "extra": {
+        "symfony": { "allow-contrib": false, "require": "8.1.*" }
+    }
+}

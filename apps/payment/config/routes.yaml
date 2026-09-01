@@ -1,0 +1,19 @@
+payment_app_controllers:
+    prefix: /api/v1
+    resource:
+        path: ../src/Controller/App/
+        namespace: App\Payment\Controller\App
+    type: attribute
+
+payment_manage_controllers:
+    prefix: /api/v1
+    resource:
+        path: ../src/Controller/Manage/
+        namespace: App\Payment\Controller\Manage
+    type: attribute
+
+payment_webhook_controllers:
+    resource:
+        path: ../src/Controller/Webhook/
+        namespace: App\Payment\Controller\Webhook
+    type: attribute

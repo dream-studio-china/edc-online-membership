@@ -1,6 +1,6 @@
 # CRUD Skeleton - Full Codebase Context
 
-> Context snapshot. Last updated: 2026-08-15
+> Context snapshot. Last updated: 2026-07-31
 
 ---
 
@@ -12,20 +12,184 @@
 - Expression-based dynamic query engine (`@filter`, `@sort`, `@dql`)
 - Modular architecture: **Core** (framework), **Common** (CMS), **Promotion** (DSL-driven promotions), **Identity** (auth), **Trade** (commercial orders), **Store** (multi-store operations), **Payment** (invoices), **Wallet** (balances), **Inventory** (stock & reservation), **Wechat** (login + pay), **Storage** (file upload drivers)
 - EasyWeChat 6.x integration (Mini Program, Official Account OAuth, WeChat Pay V3)
-- NelmioApiDoc (Swagger at `/api/doc`), PHPUnit 12.5, Docker Compose (7 services: app, worker, scheduler, nginx, MySQL, Redis, Mailpit)
-- MkDocs Material + GitHub Pages documentation (**mermaid diagram rendering enabled** via CDN + `pymdownx.superfences` custom fence)
+- NelmioApiDoc (Swagger at `/api/doc`), PHPUnit 12.5, Docker Compose (16 services: app, worker, scheduler, Store/Inventory/Payment/Wallet/Identity/Common/Trade apps, MySQL x9, Redis, Mailpit — FrankenPHP)
+- MkDocs Material + GitHub Pages documentation
 - **i18n**: Symfony Translation with en, zh, zh_Hant, ja — all user-facing messages, entity/field names, and status values translated
-- **Wallet ledger**: voucher-backed single-sided deposits/withdrawals (`wallet_voucher` boundary ledger) with provider-owned voucher-type permissions; **Exchange** bundle design (pool-backed points economy) at `docs/design/bundles/exchange.md`
+
+### 1.1 Architecture Status And Migration Direction
+
+The current codebase is a **modular monolith**, not a collection of independently
+deployable microservices. It has one Kernel, Composer project, service container,
+database, migration history, Messenger queue, worker, scheduler, Docker image, and
+test suite. The `Trade -> Store -> Inventory` Outbox/Inbox flow is the strongest
+existing extraction seam; it does not yet make those modules separate services.
+
+The agreed target is a **multi-application monorepo**. Each extracted service will
+own its Kernel, configuration, database/migrations, queues, worker, scheduler,
+container image, tests, and CI. The first stage is directory and dependency
+governance, not a mass code move or database split. See
+[`docs/design/microservice-transition.md`](../design/microservice-transition.md).
+
+Current boundary risks that must be removed before extraction include shared
+`Identity\Entity\User` Doctrine associations, synchronous Trade/Payment
+calls, Payment/Wechat plugin contracts that expose Doctrine and Symfony types,
+and PHP-class-based Messenger contracts. Wallet's legacy Identity FK and User ORM
+association have been removed; Wallet identity uses `ownerUuid` only. `Core` is provided by
+`packages/platform-kernel`, while
+Promotion and Storage remain in-process plugins/adapters until scalar service
+contracts exist.
+
+All business modules have been extracted to `apps/`: Store, Inventory, Payment,
+Wallet, Identity, Common, and Trade (which includes Promotion).
+
+### 1.2 Target Monorepo Layout
+
+The future repository layout uses `apps/` for independently deployable business
+services, `packages/` for reusable PHP libraries, `contracts/` for published
+cross-service schemas, and `infrastructure/` for broker, gateway, local runtime,
+and deployment configuration. Do not use `*-service` suffixes under `apps/`.
+Services may retain the current pragmatic Symfony structure (`Controller/`,
+`Entity/`, `Repository/`, `Service/`, `MessageHandler/`, `Command/`, `DTO/`,
+`Exception/`) during extraction; independently deployable boundaries, database
+ownership, and contracts matter more than a simultaneous internal DDD rewrite.
+
+`infrastructure/` contains repository-level runtime configuration such as Docker,
+RabbitMQ, and gateway settings. Service-specific Doctrine, Messenger, HTTP-client,
+and third-party PHP adapters stay inside their owning `apps/*` application.
+
+`apps/store` now exists as a fully extracted, independently runnable Symfony
+application with its own `App\Store\Kernel`, Composer lock, config, migrations, tests,
+and FrankenPHP Docker image. It owns all Store source code under `apps/store/src/`
+with de-prefixed entities (`Membership`, `InboxMessage`, `OutboxMessage`,
+`TradeOrderCancellation`). The monolith loads Store through a Composer path package
+(`crud-platform/store-app`) solely as a transition host; it will be removed after
+Gateway cutover.
+
+### 1.3 Integration Contract Foundation
+
+`packages/integration-contracts` now provides transport-neutral v1 carrier classes
+for **ten** Trade/Store/Inventory messages (nine original + `store.directory.upserted.v1`).
+Trade maintains a local `trade_store_directory` projection from this event, eliminating
+its synchronous Store service dependency for `X-Store-Code` resolution.
+manifest, Draft 2020-12 envelope schema, per-message schemas, and fixtures. The
+canonical envelope requires `eventId`, unversioned `type`, `version`,
+`aggregateType`, `aggregateId`, `occurredAt`, `correlationId`, `causationId`, and
+`payload`; the broker topic is `type + ".v" + version`.
+
+Seven messages are Events (past-tense facts); `inventory.reservation.requested`
+and `inventory.reservation.release.requested` are Commands. This foundation does
+not change queues, routes, or the existing Outbox/Inbox storage model.
+`config/packages/messenger.yaml` explicitly retains Symfony's native PHP serializer
+because existing `async` and `failed` rows serialize the old `App\*\Message` wrapper
+FQCNs. Those wrappers remain until queued legacy messages are drained or migrated.
+
+All nine existing Trade/Store/Inventory consumers now also accept their matching
+neutral carrier through explicit Messenger handler methods. Each method adapts the
+carrier envelope to the existing legacy wrapper and reuses the original business
+logic, transaction boundaries, and Inbox behavior. All nine Publishers now emit
+only neutral carriers through the existing native PHP Messenger serializer. Do not
+dual-publish: several consumer effects are not universally Inbox-idempotent. Old
+wrappers remain compatibility input for historical queue records and as a
+topic-level Publisher rollback target.
+
+Every Publisher now emits the full canonical envelope from Outbox data, including
+`aggregateType`, `occurredAt`, `correlationId`, and `causationId`. A legacy Outbox
+row without a correlation ID falls back to its `eventId` during publication.
+
+Trade, Store, and Inventory Outboxes now have nullable `correlation_id` and
+`causation_id` schema columns. New root messages default correlation to their own
+`eventId` and retain a null causation ID; APIs and existing Publisher behavior are
+unchanged. The migration deliberately does not backfill or make either column
+non-null. A later operational command must backfill unpublished legacy rows in
+bounded, resumable batches before publisher cutover or constraint tightening.
+
+The Trade -> Store -> Inventory consumer chain now propagates trace metadata when
+it writes a derived Outbox event: `correlationId` is inherited and `causationId`
+is the input `eventId`. Legacy envelopes without a correlation ID use their own
+event ID as a compatibility root. HTTP actions and scheduled jobs still create new
+root correlations through the default Outbox behavior.
+
+Store extraction readiness is tracked in
+[`docs/design/store-extraction-readiness.md`](../design/store-extraction-readiness.md).
+**Store source has been fully moved** to `apps/store/src` (the single owner of
+`App\Store\*`). The monolith loads Store through a Composer `crud-platform/store-app`
+path package. Store's internal PHP entities were de-prefixed (`StoreMembership` →
+`Membership`, `StoreConsumedEvent` → `InboxMessage`, `StoreOutboxMessage` →
+`OutboxMessage`, `StoreTradeOrderCancellation` → `TradeOrderCancellation`) while
+physical `store_*` table names remain unchanged. Trade's synchronous StoreContext
+resolver was replaced by a `trade_store_directory` local projection driven by the
+`store.directory.upserted.v1` neutral event (the 10th integration event). Store
+directory changes write to Store Outbox via a Doctrine `onFlush` listener. The
+Store application boots independently as a FrankenPHP container with its own MySQL
+8.4 database, migration baseline, and 19 registered routes.
+
+`apps/payment` now exists as a fully extracted Symfony application with its own
+`App\Payment\Kernel`, Composer lock, config, migrations, tests, FrankenPHP Docker
+image, route smoke (`401` placeholder auth), and Payment Outbox publisher. It owns
+all Payment source under `apps/payment/src/` including `Invoice`, `PayerDirectory`,
+`PaymentOutboxMessage`, `MockGateway`, `InvoiceService`, and `PaymentGatewayInterface`.
+The monolith loads Payment through `crud-platform/payment-app` path package. Trade
+consumes `payment.invoice.{paid,failed,cancelled,refunded}.v1` neutral carriers via an
+Inbox handler for durable lifecycle integration. Cutover is deferred: the monolith
+remains the production host until all remaining modules are extracted and Gateway
+routing is ready.
+
+`apps/wallet` now exists as a fully extracted Symfony application with its own
+`App\Wallet\Kernel`, Composer lock, config, migrations, tests, and FrankenPHP
+Docker image. It owns all Wallet source under `apps/wallet/src/` — the single
+owner of `App\Wallet\*`. Wallet identity uses `ownerUuid` only; the legacy
+`user_id` FK and Identity ORM association have been removed. The monolith loads
+Wallet through `crud-platform/wallet-app` path package. Trade uses the neutral
+`WalletTransferPortInterface` from `packages/integration-contracts` for wallet
+transfers. Payment owns the Wallet gateway and adjustment-provider composition
+adapters; root `App\Bridge\PaymentWallet\WalletBalanceAdjustmentPort` translates
+the Payment scalar port to Wallet persistence. Cutover is deferred: the monolith remains the
+production host until all remaining modules are extracted and Gateway routing
+is ready.
+
+`apps/identity` now exists as a fully extracted Symfony application with its own
+`App\Identity\Kernel`, Composer lock, config, migrations, tests, and FrankenPHP
+Docker image. It owns both `App\Identity\Main\*` and `App\Identity\Wechat\*`.
+The monolith loads Identity through `crud-platform/identity-app` path package. Cutover is deferred: the monolith remains the production host until all remaining modules are extracted and Gateway routing is ready.
+
+`apps/common` now exists as a fully extracted Symfony application with its own
+`App\Common\Kernel`, Composer lock, config, migrations, tests, and FrankenPHP
+Docker image. It owns both `App\Common\Main\*` and `App\Common\Storage\*`.
+The monolith loads Common through `crud-platform/common-app` path package. Cutover is deferred: the monolith remains the production host until all remaining modules are extracted and Gateway routing is ready.
+
+`apps/trade` now exists as a fully extracted Symfony application with its own
+`App\Trade\Kernel`, Composer lock, configuration, migrations, tests, and FrankenPHP
+Docker image. It owns both `App\Trade\*` and `App\Promotion\*`; Payment remains a
+temporary direct composition dependency while Trade consumes its durable invoice
+lifecycle carriers. The monolith loads Trade through `crud-platform/trade-app`. Cutover is deferred: the monolith remains the production host until all remaining modules are extracted and Gateway routing is ready.
 
 ## 2. Directory Structure
 
-```text
+```
 ├── public/index.php              # Front controller
 ├── public/.htaccess              # Apache rewrite rules + Authorization header forwarding
 ├── src/Kernel.php                # Symfony Kernel (MicroKernelTrait)
 ├── bin/console                   # CLI entry point
 │
-├── src/Core/                     # Framework core
+├── apps/store/                   # Independently bootable Store application (fully extracted)
+│   ├── src/                      # App\Store namespace — single owner of Store source
+│   │   ├── Kernel.php             # App\Store\Kernel
+│   │   ├── Entity/                # Store, Membership, StoreOrder, InboxMessage, OutboxMessage, TradeOrderCancellation
+│   │   ├── Repository/            # MembershipRepository, InboxMessageRepository, OutboxMessageRepository, ...
+│   │   ├── Service/               # MembershipService, OutboxService, StoreService, StoreOrderService
+│   │   ├── MessageHandler/        # Trade order + Inventory outcome consumers
+│   │   ├── EventListener/         # StoreDirectoryOutboxListener
+│   │   ├── Controller/App/ + Manage/ + Staff/
+│   │   └── Command/               # PublishOutbox, BackfillOutboxCorrelation, BackfillStoreDirectory
+│   ├── config/                    # Store-owned Symfony/Doctrine/Messenger config
+│   ├── migrations/                # Store-owned migration baseline (6 tables)
+│   ├── docker/Caddyfile           # FrankenPHP HTTP server config
+│   ├── Dockerfile                 # Independent FrankenPHP container image
+│   └── tests/                     # Store application regression tests
+│
+├── packages/legacy-messenger-compat/  # Historical native-PHP Messenger wrapper FQCNs
+│
+├── packages/platform-kernel/      # Shared framework core (App\Core namespace)
 │   ├── Controller/RestController.php    # Base API controller (success/warning/pagination)
 │   ├── Controller/System/               # System introspection (EntityController, RouterController)
 │   ├── View/                     # PHP traits: List, Detail, Create, Update, Delete, Workflow, Single, Transform
@@ -37,62 +201,11 @@
 │   ├── EventListener/                   # ExceptionInterceptor, ControllerListener, OpenApiEnricherListener, LocaleListener, AccessLogListener
 │   └── Utils/                           # UUID, Math, RSA, Location, Inflect, etc.
 │
-├── src/Common/                   # CMS module: Category, Tag, Content, Comment, Page, Media, Setting, Picture
+├── src/Main/                   # CMS module: Category, Tag, Content, Comment, Page, Media, Setting, Picture
 │   ├── Entity/                   # 8 entities
 │   ├── Repository/
 │   ├── Service/
 │   └── Controller/App/ + Manage/ + Public/
-│
-├── src/Identity/                 # Authentication & Identity
-│   ├── Entity/User.php, RefreshToken.php, Profile.php     # User has __toString(): username fallback to email; User::$profile (OneToOne→Profile)
-│   ├── Security/JwtAuthenticator.php, TokenManager.php
-│   ├── Service/OtpService.php, UserService.php, SMS providers
-│   ├── Command/CreateUserCommand.php
-│   └── Controller/AuthController.php, App/UserController.php, App/ProfileController.php, Manage/UserController.php, Manage/ProfileController.php
-│
-├── src/Trade/                    # E-commerce module
-│   ├── Entity/                   # Product, Specification, Order, OrderItem, TradeOutboxMessage
-│   ├── Service/OrderService.php        # StoreContext-aware creation + price pipeline
-│   ├── Command/PublishOutboxCommand.php # app:trade:outbox:publish
-│   ├── MessageHandler/           # Store acceptance/rejection consumers
-│   ├── Service/Pricing/                # PriceCalculatorInterface (Base, Quantity, Total)
-│   ├── EventListener/OrderWorkflowListener.php
-│   ├── Exception/                      # OrderInvalidTransitionException, SpecificationNotFoundException
-│   └── Controller/App/ + Manage/       # CRUD + workflow + pay/refund/fulfill + items + cancel + spec browse/v2
-│
-├── src/Store/                    # Multi-store operational boundary
-│   ├── Entity/                   # Store, membership, StoreOrder, Outbox, Inbox
-│   ├── Service/                  # Context, membership, StoreOrder, Outbox services
-│   ├── MessageHandler/           # Inbox-idempotent Trade order consumer; Inventory outcome consumers
-│   ├── Command/PublishOutboxCommand.php # app:store:outbox:publish
-│   └── Controller/App/ + Manage/ + Staff/
-│
-├── src/Payment/                  # Payment module
-│   ├── Entity/Invoice.php              # Payment invoice (pending→paying→paid→refunded)
-│   ├── DTO/                            # PaymentResult, PaymentNotifyResult, PaymentRefundResult, PaymentAdjustmentContext, PaymentAdjustmentResult
-│   ├── Event/                          # InvoicePaidEvent, InvoiceRefundedEvent, etc.
-│   ├── Service/PaymentGatewayInterface.php  # Gateway contract (pay(explicit amount), notify, refund(explicit amount))
-│   ├── Service/Adjustment/PaymentAdjustmentProviderInterface.php  # Adjustments before gateway payment (implemented by Wallet)
-│   ├── Service/Adjustment/PaymentAdjustmentRegistry.php  # #[AutowireIterator('payment.adjustment_provider')] registry
-│   ├── Service/Gateway/MockGateway.php       # Deterministic test gateway (only gateway remaining in Payment)
-│   ├── Service/PaymentGatewayRegistry.php    # #[AutowireIterator('payment.gateway')] registry
-│   └── Controller/App/ + Manage/ + Webhook/
-│       # Current Trade result propagation is synchronous Invoice domain events.
-│       # Planned phase 1: Payment Outbox -> Trade Inbox; Payment Inbox is deferred.
-│
-├── src/Wallet/                   # Wallet module
-│   ├── Entity/                   # Wallet, Transaction, Voucher, VoucherComment, PaymentDeduction
-│   ├── Repository/               # Wallet, Transaction, Voucher, VoucherComment, PaymentDeduction
-│   ├── Service/Transfer/TransferService.php     # Atomic transfers (+ hold/release via `held`)
-│   ├── Service/Deposit/                 # DepositService + provider registry (voucher-backed credit)
-│   ├── Service/Withdraw/                # WithdrawService + provider registry (voucher-backed debit)
-│   ├── Service/WalletService.php       # verifyBalance() + reconcile()
-│   ├── Service/VoucherService.php, VoucherCommentService.php   # list/detail + append-only annotations
-│   ├── Service/Payment/WalletGateway.php              # Implements PaymentGatewayInterface
-│   ├── Service/Payment/WalletBalanceAdjustmentProvider.php  # Wallet deduction as Payment adjustment provider
-│   ├── Service/Payment/PaymentDeductionService.php    # Wallet-owned deduction lifecycle
-│   ├── DTO/PaymentDeductionRequest.php
-│   └── Controller/App/ + Manage/       # App list/detail/balance + self deposit/withdraw; Manage CRUD/audit/reconcile/deposit/withdraw/reverse
 │
 ├── src/Wechat/                   # WeChat module
 │   ├── Entity/WechatUser.php           # OneToOne→User
@@ -100,7 +213,6 @@
 │   ├── Service/WechatService.php       # EasyWeChat factory
 │   ├── Service/WechatAuthService.php   # Login orchestration
 │   ├── Service/WechatUserService.php   # CRUD service
-│   ├── Service/Payment/WechatPayGateway.php  # implements PaymentGatewayInterface
 │   └── Controller/
 │
 ├── src/Storage/                  # Storage module (pluggable file upload drivers)
@@ -110,23 +222,96 @@
 │   ├── Service/QiniuStorage.php                # Qiniu Kodo cloud storage (optional SDK)
 │   └── Resources/config/services_storage.yaml
 │
-├── src/Promotion/                # Promotion module (DSL-driven promotion engine)
-│   ├── Entity/                   # PromotionTemplate, Promotion
-│   ├── Repository/
-│   ├── Service/                  # PromotionService, PromotionTemplateService, PromotionCalculator
-│   │   └── Dsl/                  # DSL lexer/parser/evaluator
-│   ├── Strategy/                 # 7 strategies: FullReduction, Discount, Gift, NthItemDiscount, Tiered, FreeShipping, MemberDiscount
-│   ├── Controller/App/           # Read-only endpoints
-│   ├── Controller/Manage/        # Admin CRUD endpoints
-│   └── Exception/
+├── apps/payment/                 # Independently bootable Payment application (fully extracted; owns all gateways: WechatPayGateway, WalletGateway, WalletBalanceAdjustmentProvider)
+│   ├── src/                      # App\Payment namespace — single owner of Payment source
+│   │   ├── Kernel.php             # App\Payment\Kernel
+│   │   ├── Entity/                # Invoice, PayerDirectory, PaymentOutboxMessage
+│   │   ├── Repository/            # InvoiceRepository, PayerDirectoryRepository, PaymentOutboxMessageRepository
+│   │   ├── Service/               # InvoiceService, PaymentOutboxService, PayerDirectoryService, PaymentGatewayInterface, Gateway/WechatPayGateway, Gateway/WalletGateway, Gateway/MockGateway, Adjustment/*
+│   │   ├── DTO/                   # CreateInvoiceRequest, PaymentResult, PaymentNotifyResult, etc.
+│   │   ├── Event/                 # InvoicePaidEvent, InvoiceRefundedEvent, etc.
+│   │   ├── Command/               # PublishOutboxCommand
+│   │   └── Controller/App/ + Manage/ + Webhook/
+│   ├── config/                    # Payment-owned Symfony/Doctrine/Messenger config
+│   ├── migrations/                # Payment-owned migration baseline (3 tables)
+│   ├── docker/Caddyfile           # FrankenPHP HTTP server config
+│   ├── Dockerfile                 # Independent FrankenPHP container image
+│   └── tests/                     # Payment application regression tests
 │
-├── src/Inventory/                # Inventory module (material, stock, recipe, reservation)
-│   ├── Entity/                   # Material, Stock, SpecificationRecipe, RecipeLine, Reservation, ReservationLine, LedgerEntry, Inbox, Outbox
-│   ├── Repository/
-│   ├── Service/                  # InventoryService (reserve/release/adjust), MaterialService
-│   ├── MessageHandler/           # Reservation request/release consumers with inbox idempotency
-│   ├── Command/                  # PublishOutboxCommand, ReleaseExpiredReservationsCommand
-│   └── Controller/Manage/        # Material, Stock, Recipe, Reservation, Ledger admin APIs
+├── apps/wallet/                   # Independently bootable Wallet application (fully extracted)
+│   ├── src/                      # App\Wallet namespace — single owner of Wallet source
+│   │   ├── Kernel.php             # App\Wallet\Kernel
+│   │   ├── Entity/                # Wallet, WalletTransaction, WalletPaymentDeduction
+│   │   ├── Repository/            # WalletRepository, WalletTransactionRepository, WalletPaymentDeductionRepository
+│   │   ├── Service/               # WalletService, TransferService, TransactionService, WalletPaymentService, Payment/WalletPaymentDeductionService
+│   │   ├── DTO/                   # WalletPaymentDeductionRequest, WalletPaymentReference
+│   │   ├── Exception/             # InsufficientFundsException, SameWalletTransferException, WalletFrozenException
+│   │   └── Controller/App/ + Manage/
+│   ├── config/                    # Wallet-owned Symfony/Doctrine config
+│   ├── migrations/                # Wallet-owned migration baseline (3 tables)
+│   ├── docker/Caddyfile           # FrankenPHP HTTP server config
+│   ├── Dockerfile                 # Independent FrankenPHP container image
+│   └── tests/                     # Wallet application regression tests
+│
+├── apps/trade/                    # Independently bootable Trade application (fully extracted; owns Trade + Promotion)
+│   ├── src/                      # App\Trade namespace — single owner of Trade + Promotion source
+│   │   ├── Trade/
+│   │   │   ├── Kernel.php         # App\Trade\Kernel
+│   │   │   ├── Entity/            # Product, Specification, Order, OrderItem, TradeOutboxMessage, TradeStoreDirectory
+│   │   │   ├── Repository/
+│   │   │   ├── Service/           # OrderService, Pricing/*
+│   │   │   ├── MessageHandler/    # Store acceptance/rejection consumers
+│   │   │   ├── EventListener/
+│   │   │   ├── Command/           # PublishOutboxCommand, BackfillOutboxCorrelation
+│   │   │   ├── Exception/
+│   │   │   └── Controller/App/ + Manage/
+│   │   └── Promotion/
+│   │       ├── Entity/            # PromotionTemplate, Promotion
+│   │       ├── Repository/
+│   │       ├── Service/           # PromotionService, PromotionTemplateService, PromotionCalculator, Dsl/*
+│   │       ├── Strategy/          # 7 strategies
+│   │       ├── Exception/
+│   │       └── Controller/App/ + Manage/
+│   ├── config/                    # Trade-owned Symfony/Doctrine/Messenger config
+│   ├── migrations/                # Trade-owned migration baseline
+│   ├── docker/Caddyfile           # FrankenPHP HTTP server config
+│   ├── Dockerfile                 # Independent FrankenPHP container image
+│   └── tests/                     # Trade application regression tests
+│
+├── apps/identity/                 # Independently bootable Identity application (fully extracted; owns Main + Wechat)
+│   ├── src/                      # App\Identity namespace — single owner of Identity + Wechat source
+│   │   ├── Main/
+│   │   │   ├── Entity/            # User, RefreshToken, Profile
+│   │   │   ├── Security/          # JwtAuthenticator, TokenManager
+│   │   │   ├── Service/           # OtpService, UserService, SMS providers
+│   │   │   ├── Command/           # CreateUserCommand
+│   │   │   └── Controller/        # AuthController, App/, Manage/
+│   │   └── Wechat/
+│   │       ├── Entity/            # WechatUser
+│   │       ├── Repository/
+│   │       ├── Service/           # WechatService, WechatAuthService, WechatUserService
+│   │       └── Controller/
+│   ├── config/                    # Identity-owned Symfony/Doctrine config
+│   ├── migrations/                # Identity-owned migration baseline
+│   ├── docker/Caddyfile           # FrankenPHP HTTP server config
+│   ├── Dockerfile                 # Independent FrankenPHP container image
+│   └── tests/                     # Identity application regression tests
+│
+├── apps/common/                   # Independently bootable Common application (fully extracted; owns Main + Storage)
+│   ├── src/                      # App\Common namespace — single owner of Common + Storage source
+│   │   ├── Main/
+│   │   │   ├── Entity/            # Category, Tag, Content, Comment, Page, Media, Setting, Picture
+│   │   │   ├── Repository/
+│   │   │   ├── Service/
+│   │   │   └── Controller/App/ + Manage/ + Public/
+│   │   └── Storage/
+│   │       ├── Service/           # MediaStorageInterface, MediaStorageRegistry, LocalStorage, QiniuStorage
+│   │       └── Resources/         # services_storage.yaml
+│   ├── config/                    # Common-owned Symfony/Doctrine config
+│   ├── migrations/                # Common-owned migration baseline
+│   ├── docker/Caddyfile           # FrankenPHP HTTP server config
+│   ├── Dockerfile                 # Independent FrankenPHP container image
+│   └── tests/                     # Common application regression tests
 │
 ├── config/
 │   ├── services.yaml             # Service wiring + imports src/*/Resources/config + exclusions
@@ -138,36 +323,48 @@
 │       ├── workflow.yaml         # Order state machine, including Store acceptance
 │       ├── messenger.yaml        # Trade/Store integration messages to async transport
 │       └── ...
-├── migrations/                   # 24 migrations (latest: wallet_voucher_comment, 2026-08-15)
+├── migrations/                   # 20 migrations (latest: Inventory tables + store_trade_order_cancellation)
 ├── translations/                 # i18n translation files (messages.en/zh/zh_Hant/ja.yaml)
 ├── docs/
 │   ├── ai/context.md             # This file
-│   ├── design/                   # Design contracts (incl. security-hardening.md)
-│   │   └── bundles/              # Per-module design docs (core, common, trade, wallet, identity, wechat, payment, storage, promotion, store, inventory, exchange)
-│   ├── testing/                  # Test-quality contract: TEST_STRATEGY, TEST_MATRIX, BUSINESS_INVARIANTS, FAILURE_MODES, PRODUCTION_VALIDATION, SYSTEM_WALKTHROUGH, AI_DEVELOPMENT_PROCESS (+ reusable framework-template/)
-│   ├── issues/                   # Audit & coverage reports (coverage-2026-08-09/, test-audit-2026-08-09/)
+│   ├── design/                   # Design contracts
+│   │   └── bundles/              # Per-module design docs (core, common, trade, wallet, identity, wechat, payment, storage, promotion)
 │   └── openapi/                       # endpoints.yaml + order/payment frontend flow docs
 ├── scripts/tests/                # API smoke, Store orchestration smoke, trade workflow scripts
-├── tests/                        # 312 PHPUnit test files, organized by layer:
-│   ├── UnitTest/                 #   197 files — pure unit tests (no kernel/DB), App\Tests\UnitTest\...
-│   ├── Integration/              #   72 files — kernel/DB/HTTP tests + helpers (DatabaseBootstrapTrait, IntegrationWebTestCase), App\Tests\Integration\...
-│   └── LowValue/                 #   43 files — deprecated/low-value tests, excluded from default run, App\Tests\LowValue\...
-│                                 主套件 = UnitTest + Integration（2311 tests）；低价值可 --group low-value 显式运行
+├── scripts/coverage/              # Coverage collection and merge scripts, phpcov tooling
+├── tests/                        # 1785 PHPUnit tests, 6098 assertions, 91.36% aggregate coverage
 ├── README.md                     # English README
 ├── README.zh-cn.md               # Chinese (Simplified) README
 ├── README.zh-hant.md             # Chinese (Traditional) README
 ├── README.ja.md                  # Japanese README
 ├── mkdocs.yml                    # MkDocs Material config
-├── compose.yaml                  # Production deployment: app (PHP-FPM), nginx, MySQL, Redis, Mailpit
-├── compose.override.yaml         # Dev overrides (source mount, debug, exposed ports)
-├── Dockerfile                    # PHP 8.4-FPM Alpine with openssl + JWT key entrypoint
-├── .dockerignore                 # Build context exclusions (tests, docs, dev files)
+├── compose.yaml                  # Local dev + production: app, Store/Inventory/Payment/Wallet/Identity/Common/Trade apps, worker, scheduler, MySQL x9, Redis, Mailpit (FrankenPHP)
+├── compose.override.yaml         # Dev overrides (source mount, debug, exposed ports for all apps)
+├── Dockerfile                    # FrankenPHP 8.4 Alpine with Caddyfile
+├── .dockerignore                 # Build context exclusions (tests, docs, dev files, vendor dirs)
 ├── docker/
-│   ├── app/entrypoint.sh         # Dev key generation + prod key validation
-│   └── nginx/default.conf        # nginx config (reverse proxy to PHP-FPM)
+│   ├── app/entrypoint.sh         # Dev key generation, prod key validation, .env placeholder
+│   └── frankenphp/Caddyfile      # FrankenPHP HTTP server config
+├── apps/store/
+│   ├── Dockerfile                # Independent Store FrankenPHP image
+│   └── docker/Caddyfile          # Store FrankenPHP HTTP server config
+├── apps/payment/
+│   ├── Dockerfile                # Independent Payment FrankenPHP image
+│   └── docker/Caddyfile          # Payment FrankenPHP HTTP server config
+├── apps/wallet/
+│   ├── Dockerfile                # Independent Wallet FrankenPHP image
+│   └── docker/Caddyfile          # Wallet FrankenPHP HTTP server config
+├── apps/trade/
+│   ├── Dockerfile                # Independent Trade FrankenPHP image
+│   └── docker/Caddyfile          # Trade FrankenPHP HTTP server config
+├── apps/identity/
+│   ├── Dockerfile                # Independent Identity FrankenPHP image
+│   └── docker/Caddyfile          # Identity FrankenPHP HTTP server config
+├── apps/common/
+│   ├── Dockerfile                # Independent Common FrankenPHP image
+│   └── docker/Caddyfile          # Common FrankenPHP HTTP server config
 └── .github/workflows/
-    ├── ci.yml                    # CI: PHP 8.4, PHPStan Level 8, 90% coverage, Rector type-rule dry-run; tests job runs on PostgreSQL 16
-    ├── migrations.yml            # CI: MySQL 8.4 migration chain validation
+    ├── ci.yml                    # CI: PHP 8.4, per-app unit suites, root integration, aggregate >=90% coverage gate via phpcov, PHPStan, Deptrac, Rector
     └── docs.yml                  # GitHub Pages deploy
 ```
 
@@ -224,7 +421,7 @@ Profile is auto-created on User registration via a Doctrine lifecycle listener. 
 |--------|------|------|-------------|
 | GET/POST/PUT/DELETE | `/api/v1/manage/profiles/*` | ROLE_ADMIN | Admin profile CRUD (including level) |
 
-**UserService** (`App\Identity\Service\UserService`): encapsulates register, verifyPassword, changePassword, adminChangePassword, updateProfile. Auto-hashes passwords in `update()`.
+**UserService** (`App\Identity\Main\Service\UserService`): encapsulates register, verifyPassword, changePassword, adminChangePassword, updateProfile. Auto-hashes passwords in `update()`.
 
 **Token management**: RS256 JWT (7200s TTL), HMAC-SHA256 refresh tokens with rotation + reuse detection.
 
@@ -253,12 +450,11 @@ Profile is auto-created on User registration via a Doctrine lifecycle listener. 
 
 `BaseServiceInterface` and `BaseService` use `@template TEntity of object` to propagate entity types through the service layer. Concrete services declare `@extends BaseService<Entity>` and interfaces declare `@extends BaseServiceInterface<Entity>`. This enables PHPStan to infer return types from `get()`, `new()`, and `update()` at call sites.
 
-```mermaid
-flowchart TD
-    base["BaseService<Order> (abstract, @template TEntity, @implements BaseServiceInterface<TEntity>)"]
-    base --> infra["BaseServiceInfrastructureTrait # EM, Logger, Serializer, Validator, Transactions"]
-    base --> readList["BaseServiceReadListTrait<TEntity> # get(mixed): TEntity|null, list(): mixed"]
-    base --> mutation["BaseServiceMutationTrait<TEntity> # new(): object, update(mixed): object|false, remove(): bool"]
+```
+BaseService<Order> (abstract, @template TEntity, @implements BaseServiceInterface<TEntity>)
+├── BaseServiceInfrastructureTrait    # EM, Logger, Serializer, Validator, Transactions
+├── BaseServiceReadListTrait<TEntity>          # get(mixed): TEntity|null, list(): mixed
+└── BaseServiceMutationTrait<TEntity>          # new(): object, update(mixed): object|false, remove(): bool
 ```
 
 Key PHPDoc contracts:
@@ -273,14 +469,11 @@ Key PHPDoc contracts:
 
 ### 7.1 State Machine (workflow.yaml)
 
-```mermaid
-flowchart TD
-    draft["draft"] --> pending["pending"] --> confirmed["confirmed"] --> paid["paid"] --> fulfilled["fulfilled"] --> completed["completed"] --> refunded["refunded"]
-    draft --> awaiting["awaiting_store_acceptance"]
-    awaiting --> accepted["store_accepted"]
-    accepted --> confirmed
-    awaiting --> rejected["store_rejected"]
-    rejected --> cancelled["cancelled"]
+```
+draft → pending → confirmed → paid → fulfilled → completed → refunded
+  │
+  └→ awaiting_store_acceptance → store_accepted → confirmed
+                               └→ store_rejected → cancelled
 ```
 
 ### 7.2 OrderService Methods
@@ -288,7 +481,7 @@ flowchart TD
 | Method | Description |
 |--------|-------------|
 | `calculatePrices(items, currency, storeCode?, meta?)` | Pipeline: BasePriceCalculator → QuantityCalculator → **TotalAggregator (subtotal, priority 55)** → **PromotionCalculator (priority 60)**. `meta` is an opaque bidirectional channel for calculators. |
-| `createOrder(..., ?StoreContext)` | Creates Order + OrderItems. A resolved StoreContext writes `_store` metadata and `trade.order.created.v1` in the same transaction. |
+| `createOrder(..., ?StoreContext)` | Creates Order + OrderItems. A resolved StoreContext (from local `trade_store_directory` projection populated by `store.directory.upserted.v1`) writes `_store` metadata and `trade.order.created.v1` in the same transaction. |
 | `pay(Order, systemWalletId, paymentMethod)` | User wallet → system wallet via `TransferService`. Sets `paidAt`. |
 | `refund(Order, systemWalletId, reason)` | System wallet → user wallet via `TransferService`. Sets `refundedAt`. |
 | `fulfill(Order, data)` | Set tracking/shipping + `fulfilledAt`. |
@@ -345,13 +538,12 @@ flowchart TD
 
 ### 8.1 Invoice System
 
-```mermaid
-flowchart TD
-    invoice["Invoice (pending→paying→paid→refunded)"]
-    invoice --> payment["payment: 'wallet'|'wechat'|'mock'"]
-    invoice --> scene["scene: 'order'|'deposit'|'wallet_topup'"]
-    invoice --> amount["amount/currency (cents)"]
-    invoice --> payer["payer (User, nullable)"]
+```
+Invoice (pending→paying→paid→refunded)
+  ├── payment: 'wallet'|'wechat'|'mock'
+  ├── scene: 'order'|'deposit'|'wallet_topup'
+  ├── amount/currency (cents)
+  └── payer (User, nullable)
 ```
 
 ### 8.2 PaymentGatewayInterface — Gateway Registry Pattern
@@ -386,11 +578,13 @@ Payment defines `PaymentAdjustmentProviderInterface` — a pre-payment hook that
 
 ### 8.2.2 First-Phase Gateways
 
+All gateway implementations now live in `apps/payment/src/Service/Gateway/`.
+
 | Gateway | Module | Purpose |
 |---------|--------|---------|
-| `mock` | Payment (`Service/Gateway/MockGateway.php`) | Deterministic test/development gateway |
-| `wallet` | Wallet (`Service/Payment/WalletGateway.php`) | Internal wallet balance payment |
-| `wechat` | Wechat (`Service/Payment/WechatPayGateway.php`) | WeChat Pay V3 adapter |
+| `mock` | Payment (`apps/payment/src/Service/Gateway/MockGateway.php`) | Deterministic test/development gateway |
+| `wallet` | Payment (`apps/payment/src/Service/Gateway/WalletGateway.php`) | Internal wallet balance payment |
+| `wechat` | Payment (`apps/payment/src/Service/Gateway/WechatPayGateway.php`) | WeChat Pay V3 adapter |
 
 ### 8.3 Payment Endpoints
 
@@ -430,49 +624,37 @@ and Store publishers; the existing `worker` will consume its Messenger messages.
 | GET | `/app/wallets/balance` | Current user's wallet balance audit: `totalBalance`, `totalDeposited`, `discrepancy`, `matches`, `walletCount` |
 | GET | `/app/transactions` | Current user's wallet transactions only |
 | GET | `/app/transactions/{id}` | Current user's transaction detail only |
-| POST | `/app/vouchers/deposit` | Self-service deposit into own wallet (`voucherType` required, provider-permissioned) |
-| POST | `/app/vouchers/withdraw` | Self-service withdrawal out of own wallet (`voucherType` required) |
-| POST | `/app/vouchers/{uuid}/reverse` | Reverse own voucher (deposit or withdrawal by direction) |
 
-Manage keeps global audit endpoints: `GET /manage/wallets/balance`, `POST /manage/wallets/reconcile`, `POST /manage/vouchers/deposit|withdraw` (voucher-backed funding/payout, `voucherType` defaults to `manual`) and `POST /manage/vouchers/{uuid}/reverse`.
+Manage keeps global audit endpoints: `GET /manage/wallets/balance` and `POST /manage/wallets/reconcile`.
 
 ## 9. Wechat Module
 
 ### 9.1 WechatUser Entity (OneToOne → User)
 
-```mermaid
-flowchart LR
-    wechatUser["WechatUser (wechat_user)<br/>openid (unique), unionid, sessionKey<br/>nickname, avatar, sex, province, city, country<br/>appType ('miniapp' | 'official')<br/>rawData (json)"]
-    user["User (users)"]
-    wechatUser -- "OneToOne" --> user
+```
+WechatUser (wechat_user) ──OnetoOne──> User (users)
+  openid (unique), unionid, sessionKey
+  nickname, avatar, sex, province, city, country
+  appType ('miniapp' | 'official')
+  rawData (json)
 ```
 
 **User.php is NOT modified** — WechatUser extends identity via OneToOne with CASCADE delete.
 
 ### 9.2 Login Flow
 
-```mermaid
-flowchart TD
-    subgraph Mini[Mini Program]
-        direction LR
-        M1["wx.login() → js_code → POST /api/wechat/miniapp/login"]
-        M2["WechatService.code2Session() → {openid, unionid, session_key}"]
-        M3["WechatAuthService.authenticateFromMiniApp()"]
-        M3 -->|"hit"| M4["findByOpenid(openid) → update sessionKey → return User"]
-        M3 -->|"miss"| M5["new User() + new WechatUser() → flush → return User"]
-        M6["TokenManager.createTokens() → {access_token, refresh_token, expires_in}"]
-        M1 --> M2 --> M3
-        M4 --> M6
-        M5 --> M6
-    end
-    subgraph OA[Official Account]
-        direction LR
-        O1["redirect → oauth code → POST /api/wechat/oauth/callback"]
-        O2["WechatService.getOAuthUser(code) → {openid, nickname, avatar, ...}"]
-        O3["WechatAuthService.authenticateFromOfficialAccount()"]
-        O4["TokenManager.createTokens() → JWT"]
-        O1 --> O2 --> O3 --> O4
-    end
+```
+Mini Program: wx.login() → js_code → POST /api/wechat/miniapp/login
+  → WechatService.code2Session() → {openid, unionid, session_key}
+  → WechatAuthService.authenticateFromMiniApp()
+    ├─ findByOpenid(openid) → hit → update sessionKey → return User
+    └─ miss → new User() + new WechatUser() → flush → return User
+  → TokenManager.createTokens() → {access_token, refresh_token, expires_in}
+
+Official Account: redirect → oauth code → POST /api/wechat/oauth/callback
+  → WechatService.getOAuthUser(code) → {openid, nickname, avatar, ...}
+  → WechatAuthService.authenticateFromOfficialAccount()
+  → TokenManager.createTokens() → JWT
 ```
 
 New users get random password (cannot password-login), synthetic email/username from openid.
@@ -480,7 +662,7 @@ New users get random password (cannot password-login), synthetic email/username 
 ### 9.3 WechatPayGateway
 
 Implements `PaymentGatewayInterface` with `getName() → 'wechat'`:
-- **File**: `src/Wechat/Service/Payment/WechatPayGateway.php`
+- **File**: `apps/payment/src/Service/Gateway/WechatPayGateway.php`
 - **pay()**: JSAPI (requires payer openid from WechatUser) or Native (QR code) — receives explicit `$amount`
 - **notify()**: EasyWeChat server + validator, signature verification
 - **refund()**: Creates refund via WeChat Pay V3 API — receives explicit `$paidAmount` for `total`
@@ -522,7 +704,7 @@ All user-facing messages pass through the translator:
 | JWT auth failures | `JwtAuthenticator::onAuthenticationFailure()` | `$this->translator->trans($messageKey)` |
 | Entity field names | `EntityController` `/system/entities/{name}` | `$this->getTranslator()->trans($plainTextFieldName)` |
 
-### 10.3 LocaleListener (`src/Core/EventListener/LocaleListener.php`)
+### 10.3 LocaleListener (`packages/platform-kernel/src/EventListener/LocaleListener.php`)
 
 Registered at `kernel.request` priority 20. Language detection priority:
 
@@ -547,7 +729,10 @@ Sub-requests are ignored.
 
 ## 11. Storage Module
 
-Storage is an infrastructure module under `src/Storage/`. Common/Media depends only on `MediaStorageInterface` and `MediaStorageRegistry`; Storage does not depend on Common entities or controllers.
+Storage is an infrastructure module under `src/Storage/`. Common/Media depends on
+`MediaStorageInterface` and `MediaStorageRegistry`. The Qiniu driver currently reads
+`common_setting` through Common repositories, so Storage is not yet independently
+deployable; this dependency must be removed before extraction.
 
 ### 11.1 Drivers
 
@@ -586,7 +771,7 @@ Multipart fields:
 | `/system/entities/{entityName}` | GET | Field + association metadata per entity (type, nullable, targetEntity) |
 | `/system/router` | GET | List all registered routes |
 
-Placed in `src/Core/Controller/System/` (framework layer). NelmioApiDoc path_patterns include `^/system`. Tag: `System`.
+Placed in `packages/platform-kernel/src/Controller/System/` (framework layer). NelmioApiDoc path_patterns include `^/system`. Tag: `System`.
 
 ## 13. Key Patterns
 
@@ -603,23 +788,19 @@ Placed in `src/Core/Controller/System/` (framework layer). NelmioApiDoc path_pat
 | **Order metadata** | Trade | App order creation accepts optional `metadata` JSON and persists it as-is to `trade_order.metadata`, useful for receiver/address snapshots and frontend extension data |
 | **State machine** | Trade | Symfony Workflow for orders |
 | **Token rotation + reuse detection** | Identity | HMAC-SHA256 refresh tokens |
-| **Idempotency** | Wallet | `referenceId` unique constraint on Transaction |
+| **Idempotency** | Wallet | `referenceId` unique constraint on WalletTransaction |
 | **Pipeline** | Trade | `PriceCalculatorInterface` with priority ordering |
 | **Meta channel** | Trade | `PriceCalculationContext.meta` / `PriceCalculationResult.meta` — bidirectional opaque channel. Calculators read/write module-specific keys (`meta['promotion']`, `meta['coupon']`). Trade never inspects content. |
-| **Optimistic locking** | Wallet | `SELECT … FOR UPDATE` pessimistic locking + manual `version` counter (`SET version = version + 1`); no `#[ORM\Version]` attribute |
+| **Optimistic locking** | Wallet | `#[ORM\Version]` on Wallet |
 | **Post-response enrichment** | Core | `OpenApiEnricherListener` post-processes `/api/doc` and `/api/doc.json` |
 | **commonFilter** | Controllers | Array criteria or QueryBuilder injected into all queries. `[]` = no filter (admin), `['user' => $user]` = user-scoped, `['id' => -1]` = block all, QueryBuilder required for `IS NULL` filters |
 | **Payment via wallet** | Trade | `POST /app/orders/{id}/payment` with `payment: "wallet"` creates Invoice → WalletGateway deducts user wallet |
 | **Payment integration migration** | Payment -> Trade | Next phase replaces synchronous Invoice domain-event consumption with Payment Outbox and Trade Inbox; Payment request Inbox/Saga remains deferred |
 | **Balance audit** | Wallet | `GET /app/wallets/balance` audits only current user's wallets; `GET /manage/wallets/balance` is global; `POST /manage/wallets/reconcile` fixes per-wallet gaps with `TYPE_ADJUSTMENT` |
-| **Idempotent deposit** | Wallet | `POST /api/v1/manage/vouchers/deposit` with `referenceId` — duplicate requests return existing transaction |
-| **Voucher-backed deposit/withdrawal** | Wallet | Single-sided credit/debit entries backed by `wallet_voucher`: deposit = `fromWallet = null` (TYPE_DEPOSIT), withdrawal = `toWallet = null` (TYPE_WITHDRAWAL); reversal returns funds to the source wallet (`credit_reversal` / `debit_reversal`) |
-| **Provider-owned voucher permission** | Wallet | `assertPermitted()` on deposit/withdraw providers decides who may use a voucher type (`manual` requires ROLE_ADMIN; CLI/queue calls are trusted); controllers map `AccessDeniedException` → 403 |
-| **Immutable wallet currency** | Wallet | `Wallet::setCurrency()` throws after persistence — the unit of account cannot change once created |
-| **Concurrent idempotency** | Wallet | Unique-violation on `referenceId` is caught and re-queried, returning the existing deposit/withdraw/transfer instead of a 500 |
+| **Idempotent deposit** | Wallet | `POST /transfers/deposit` with `referenceId` — duplicate requests return existing transaction |
 | **Gateway registry** | Payment | `#[AutowireIterator]` + `_instanceof` auto-tags all `PaymentGatewayInterface` implementations |
 | **Adjustment provider registry** | Payment | `#[AutowireIterator]` + `_instanceof` for `PaymentAdjustmentProviderInterface` — wallet deduction is a Wallet-owned provider |
-| **Deduction owned by Wallet** | Wallet | Wallet balance deduction lives in Wallet (`PaymentDeduction` entity, `PaymentDeductionService`, `WalletBalanceAdjustmentProvider`). Payment owns only the generic adjustment contract |
+| **Deduction owned by Wallet** | Wallet | Wallet balance deduction lives in Wallet (`WalletPaymentDeduction` entity, `WalletPaymentDeductionService`, `WalletBalanceAdjustmentProvider`). Payment owns only the generic adjustment contract |
 | **OneToOne extension** | Wechat | `WechatUser` extends User identity without modifying User entity |
 | **Storage driver registry** | Storage | `MediaStorageInterface` implementations are tagged `media.storage`; callers select driver with multipart `storage` field |
 | **Media ownership** | Common | App media endpoints are user-scoped via `commonFilter()`, including delete. Manage media endpoints inherit App upload code but override `commonFilter()` to `[]`. Public media endpoints expose only ownerless media (`user IS NULL`) over anonymous GET. |
@@ -634,7 +815,7 @@ Placed in `src/Core/Controller/System/` (framework layer). NelmioApiDoc path_pat
 | **Points delegated to Wallet** | Identity | Profile points use Wallet with currency=POINTS |
 | **Inventory reservation** | Inventory | Store requests reservation by specification; Inventory resolves recipes, reserves material stock atomically, produces confirmed/rejected events |
 | **Inventory global bypass** | Store + Inventory | INVENTORY_ENABLED env var allows deployments without inventory management |
-| **Per-stock negative inventory** | Inventory | Each Stock has allowNegativeStock flag; independent per store/material pair |
+| **Per-stock negative inventory** | Inventory | Each InventoryStock has allowNegativeStock flag; independent per store/material pair |
 | **Outbox claim pattern** | Inventory + Store + Trade | Outbox publishers atomically claim rows via UPDATE WHERE, preventing concurrent delivery |
 
 ## 14. API Documentation System
@@ -643,7 +824,7 @@ Placed in `src/Core/Controller/System/` (framework layer). NelmioApiDoc path_pat
 
 Controller `#[OA\*]` attributes → swagger-php (raw spec) → NelmioApiDocBundle (merge config) → `OpenApiEnricherListener` (post-process) → Swagger UI
 
-### 14.2 OpenApiEnricherListener (`src/Core/EventListener/OpenApiEnricherListener.php`)
+### 14.2 OpenApiEnricherListener (`packages/platform-kernel/src/EventListener/OpenApiEnricherListener.php`)
 
 Enriches all endpoints (90+):
 - **`detectTag()`**: Infers module tag from `operationId`: `manage-products-*` → Products, `system-*` → System, `wechat-*` → Wechat, `sys-auth-*` → Auth, etc.
@@ -677,7 +858,7 @@ Enriches all endpoints (90+):
 
 44+ named schemas across 13 tags (Auth, Products, Orders, Categories, Tags, Contents, Comments, Pages, Media, Settings, Promotions, PromotionTemplates, Wallet, System, Wechat). Each with field-level type, description, enum, and example values. `path_patterns` includes both `^/api` and `^/system`.
 
-## 15. Database Tables (24 Migrations)
+## 15. Database Tables (22 monolith + 4 extracted-app baselines)
 
 | Version | Tables |
 |---------|--------|
@@ -696,16 +877,20 @@ Enriches all endpoints (90+):
 | 20260713000000 | `common_picture` (nullable `user_id` FK→`users` ON DELETE SET NULL, required `category_id` FK→`common_category` ON DELETE CASCADE, nullable `title`, required `image`, nullable `metadata` json) |
 | 20260725000000-20260725050000 | Identity User UUID; Store, Store membership/order, Store Outbox/Inbox; Trade Outbox; Specification UUID; Trade order status `VARCHAR(40)` |
 | 20260726000000 | Inventory tables (material, stock, recipe, recipe_line, reservation, reservation_line, ledger_entry, inbox, outbox) + `store_trade_order_cancellation` |
-| 20260815000000 | `wallet.currency` widened to VARCHAR(32) (unit-of-account codes like `CNY.ESCROW`) |
-| 20260815010000 | `wallet.held` column (frozen/available balance separation) |
-| 20260815020000 | `wallet_voucher` (boundary ledger: credit/debit vouchers, unique `reference_id` + `(voucher_type, voucher_id)`, FK to `wallet`) |
-| 20260815030000 | `wallet_voucher_comment` (append-only annotations on vouchers, FK cascade) |
+| 20260729000000 | Outbox correlation/causation trace columns; `trade_store_directory` local projection table for Store directory events |
+| 20260730000000 | Monolith: Store directory projection + correlation metadata (22 total). Store app: independent baseline of 6 Store-owned tables |
+| 20260730010000 | `payment_payer_directory` (payer UUID directory, consumes Identity events); Payment Outbox (`payment_outbox_message`); `payment_invoice` adds nullable `payer_id` FK |
+| 20260730020000 | Backfill: populate `payment_payer_directory` from `users`, link invoices to payer directory |
+| 20260730030000 | Wallet identity cutover: expand `wallet.owner_uuid` to `VARCHAR(36)`, backfill from `users.uuid` via legacy `wallet.user_id` |
+| 20260730040000 | Remove legacy `wallet.user_id` FK and column; Wallet identity is now `ownerUuid` only |
+| 20260730050000 | Payment app: independent baseline of 3 Payment-owned tables (`payment_invoice`, `payment_payer_directory`, `payment_outbox_message`) |
 
 ## 16. Documentation Assets
 
 | File | Purpose |
 |------|---------|
 | `docs/design/system-architecture.md` | Layer rules, module structure, DI contract |
+| `docs/design/microservice-transition.md` | Target multi-application monorepo, service-boundary rules, extraction gates |
 | `docs/design/api-design.md` | Response envelope, URL conventions, HTTP semantics, query params |
 | `docs/design/data-model.md` | Entity conventions, naming, relationships, patterns |
 | `docs/design/module-design.md` | Module skeleton, file contracts, checklist |
@@ -722,40 +907,35 @@ Enriches all endpoints (90+):
 | `docs/design/bundles/storage.md` | Storage module design (pluggable file upload drivers) |
 | `docs/design/bundles/promotion.md` | Promotion module design (DSL engine, 7 strategy types, tagged calculator) |
 | `docs/design/bundles/inventory.md` | Inventory module design (materials, stock, recipes, reservations, inbox/outbox) |
-| `docs/design/bundles/exchange.md` | Exchange bundle design (pool-backed points economy: effective-dated rates, bcmath conversion, pledge/mint/exchange/redemption) |
 | `docs/openapi/order-payment-flow.md` | Frontend order/payment/cancel/refund API integration guide, including WeChat Mini Program pay |
 | `docs/openapi/order-payment-flow.zh.md` | Chinese translation of the frontend order/payment/cancel/refund API guide |
-| `docs/testing/crud-skeleton-production/` | Test-quality contract: README, TEST_STRATEGY, TEST_MATRIX, BUSINESS_INVARIANTS, FAILURE_MODES, ARCHITECTURE_TEST_MAPPING, SYSTEM_WALKTHROUGH, PRODUCTION_VALIDATION, AI_DEVELOPMENT_PROCESS |
-| `docs/testing/framework-template/` | Reusable testing-doc templates for future modules |
-| `docs/issues/coverage-2026-08-09/` | 24-agent coverage campaign: 96 new test files → 99.46% lines; documents 74 bugs (2 CRITICAL, 8 HIGH, 30 MEDIUM, 34 LOW) with file:line + proposed fixes |
-| `docs/issues/test-audit-2026-08-09/` | 14-agent test audit: 412 redundant-test candidates (190 HIGH) for later deletion; baseline run + timing analysis |
 | `docs/ai/context.md` | This file — AI context snapshot |
-| `mkdocs.yml` | MkDocs Material site config (mermaid rendering: `pymdownx.superfences` custom fence + mermaid@11 CDN + `javascripts/mermaid-init.js`) |
+| `mkdocs.yml` | MkDocs Material site config |
 | `scripts/tests/simulate-trade.php` | Generates 100 orders across all 8 statuses into `var/test.db` |
 | `scripts/tests/demo-trade-workflow.php` | E2E workflow demo (all transitions + guards) |
 
 ## 17. Testing
 
-- **Framework**: PHPUnit 12.5 (brianium/paratest available for parallel runs)
-- **Layout**: tests are organized by layer, not by module — `tests/UnitTest/` (pure unit tests, no kernel/DB), `tests/Integration/` (kernel + DB + HTTP tests, plus helpers `DatabaseBootstrapTrait`/`IntegrationWebTestCase`/`IntegrationKernelTestCase`/`StoreTradeFlowTestCase`), `tests/LowValue/` (deprecated/low-value tests excluded from the default run). Namespace `App\Tests\` mirrors the layout: `App\Tests\UnitTest\...`, `App\Tests\Integration\...`, `App\Tests\LowValue\...`. Test-support resources: `tests/bootstrap.php` and JWT test keys under `tests/Identity/Security/` (referenced by `.env.test` and CI).
-- **Low-value exclusion mechanism**: `phpunit.dist.xml` defines the "Project Test Suite" (UnitTest + Integration dirs) and a separate "Low Value" suite; a global `<exclude><group>low-value</group></exclude>` removes every test carrying `#[Group('low-value')]` (class- or method-level) from the default run — covering both whole LowValue files and individual flagged methods inside kept files (from the 2026-08-09 test audit). Run them explicitly with `php bin/phpunit --group low-value` (~480 tests).
-- **DB**: local tests default to SQLite `var/test.db` (paratest uses per-worker SQLite files); CI tests job runs on **PostgreSQL 16**; `migrations.yml` validates the migration chain on **MySQL 8.4**
-- **Coverage**: 90% minimum (enforced in CI), currently **99.46% lines (8511/8557)** from latest local Xdebug run (2026-08-09)
-- **Test count**: **2311 tests / 8374 assertions** in the default suite (UnitTest + Integration), plus ~480 low-value tests excluded by default; 31 skipped tests document real `src/` bugs (see §23 and `docs/issues/coverage-2026-08-09/`); **never delete or un-skip them** without fixing the underlying bug
-- **Suite runtime**: serial ≈ 59 s (kernel-bootstrapping integration tests dominate). Run parallel with paratest for ~2.3× speedup: `PARATEST=1 php vendor/bin/paratest --processes 8 --runner WrapperRunner` (≈26 s; per-worker SQLite isolation is handled by `tests/bootstrap.php`)
-- **PHPUnit Notices**: 159 pre-existing mock/no-expectation noise (does not fail the run); new tests should avoid adding more
-- **Memory**: `phpunit.dist.xml` sets test-process `memory_limit=512M` (OpenAPI integration builds the full spec in-process)
-- **Test-quality contract**: `docs/testing/crud-skeleton-production/` (TEST_STRATEGY, TEST_MATRIX, BUSINESS_INVARIANTS, FAILURE_MODES, PRODUCTION_VALIDATION) governs what evidence a change requires before merge/release
+- **Framework**: PHPUnit 12.5
+- **DB**: SQLite `var/test.db` in test environment
+- **Coverage**: 90% minimum (enforced in CI), currently **91.36% aggregate line coverage via phpcov merge**
+- **Test count**: **1785 tests**, **6098 assertions**
+- **CI**: Per-app unit suites (common, identity, inventory, payment, store, trade, wallet) produce coverage artifacts; root integration tests run against the monolith. Aggregate coverage gate is enforced via `phpcov merge` across all suites.
+- **Architecture gate**: Deptrac enforces that Core has no business-module dependency and blocks new cross-module Entity/Repository dependencies. `deptrac-baseline.yaml` records exact legacy source-to-target debt; run `composer deptrac`.
 - **Static analysis**: PHPStan Level 8 with zero errors in its configured scope (`src/`, excluding optional SDK code, exception classes, and documented false-positive suppressions). Generic contract via `@template TEntity` on `BaseServiceInterface`/`BaseService` + `@extends` on 18 concrete service pairs. Rector automates Doctrine Collection/Repository PHPDoc with `composer rector:types`; CI enforces `composer rector:types:check` as a dry-run.
 - **Local PHP note**: default `php` may point to PHP 7.4; use Homebrew PHP 8.5 at `/opt/homebrew/opt/php@8.5/bin/php` for local Symfony/PHPUnit commands.
 - **HTML coverage report**: `XDEBUG_MODE=coverage ./vendor/bin/phpunit --coverage-html var/coverage`
-- **Key test groups** (after the 2026-08-09 layer re-organization; module folders now live under each layer):
-  - `tests/UnitTest/`: 197 files — pure unit tests (entities, utils, DSL, strategies, mock-based services/controllers, workflow state machine, listeners)
-  - `tests/Integration/`: 72 files — kernel+DB+HTTP (module integration flows, API regressions, outbox/inbox, concurrency, cross-module flows, health/metrics/rate-limit endpoints) plus the 4 shared helpers; Trade integration remains the slowest area (see test-audit)
-  - `tests/LowValue/`: 43 files — flagged by the 2026-08-09 audit as duplicates/coverage-chasing; excluded from default runs (`--group low-value` to execute)
+- **Key test groups** (per-app suites produce coverage artifacts, root integration tests run against the monolith):
+  - `apps/common/tests/`: 74 tests (moved from `tests/Common/`; Entity, Integration, media upload/delete, Picture CRUD)
+  - `apps/identity/tests/`: 209 tests (moved from `tests/Identity/` and `tests/Wechat/`; Auth, OTP, Token, UserService, Wechat, controllers)
+  - `apps/trade/tests/`: 412 tests (moved from `tests/Trade/` and `tests/Promotion/`; Entity, OrderService, Pricing, DSL lexer/parser/evaluator, Strategies, controllers, integration)
+  - `apps/wallet/tests/`: 60 tests (moved from `tests/Wallet/`; Entity, Integration, Transfer Service, WalletService, Payment/Gateway, API regression)
+  - `apps/payment/tests/`: 37 tests (moved from `tests/Payment/`; Gateway, Registry, Adjustment/Provider, Invoice)
+  - `apps/store/tests/`: 20 tests (moved from `tests/Store/`; Store entities/services, Trade→Store→Trade integration, Store-Inventory integration)
+  - `apps/inventory/tests/`: 11 tests (moved from `tests/Inventory/`; Entity, Service, Integration, Message, API, Handler)
+  - `tests/Integration/`: 963 root integration tests (cross-module, Core, BaseService, RestController, Parser, Serializer, LocaleListener, controllers)
   - `scripts/tests/api-smoke.sh`: real HTTP auth/catalog/wallet/order/payment smoke; strict 401/403/404 checks
   - `scripts/tests/store-smoke.sh`: real HTTP Store-scoped order, Trade Outbox, Messenger consumer, Store Outbox, and `store_accepted` assertion
-  - `scripts/tests/inventory-smoke.sh`: Inventory-scoped smoke (only when `INVENTORY_ENABLED=1`)
 
 ## 18. Environment Variables (Key)
 
@@ -784,27 +964,36 @@ Qiniu configuration is intentionally **not** environment-variable based. Configu
 
 ### 19.1 Architecture
 
-7 services in `compose.yaml`: **nginx** (reverse proxy), **app** (PHP-FPM 8.4), **worker** (Messenger async consumer), **scheduler** (Trade/Store Outbox relay; Payment joins when its Outbox is implemented), **database** (MySQL 8), **redis** (Redis 7 Alpine), **mailer** (Mailpit).
+22 services in `compose.yaml`: **app** (FrankenPHP), **worker** (Messenger async consumer, CLI-only), **scheduler** (Trade/Store/Inventory Outbox relay), **store-app**, **inventory-app**, **payment-app**, **wallet-app**, **identity-app**, **common-app**, **trade-app**, **database** (MySQL 8.4 for monolith), **store-database**, **inventory-database**, **payment-database**, **wallet-database**, **identity-database**, **common-database**, **trade-database**, **redis** (Redis 7 Alpine), **mailer** (Mailpit).
+
+Store, Inventory, Payment, Wallet, Identity, Common, and Trade each have a `Dockerfile`, `docker/Caddyfile`, and independent MySQL instance. The monolith runs them through `crud-platform/store-app`, `crud-platform/inventory-app`, `crud-platform/payment-app`, `crud-platform/wallet-app`, `crud-platform/identity-app`, `crud-platform/common-app`, and `crud-platform/trade-app` Composer path packages. Worker and scheduler override `APP_ENV=prod` (DebugBundle not installed in `--no-dev` image) and disable inherited HTTP ports and healthchecks.
 
 ### 19.2 Development (zero-config)
 
 ```bash
 docker compose up -d --build
 docker compose exec app php bin/console doctrine:migrations:migrate --no-interaction
+docker compose exec store-app php bin/console doctrine:migrations:migrate --no-interaction
+docker compose exec inventory-app php bin/console doctrine:migrations:migrate --no-interaction
+docker compose exec payment-app php bin/console doctrine:migrations:migrate --no-interaction
+docker compose exec wallet-app php bin/console doctrine:migrations:migrate --no-interaction
+docker compose exec identity-app php bin/console doctrine:migrations:migrate --no-interaction
+docker compose exec common-app php bin/console doctrine:migrations:migrate --no-interaction
+docker compose exec trade-app php bin/console doctrine:migrations:migrate --no-interaction
 docker compose exec app php bin/console app:identity:user:create admin@example.com admin 'P@ssw0rd' --admin
 ```
 
-- `compose.override.yaml` auto-loads — sets `APP_ENV=dev`, `APP_DEBUG=1`, source mount
-- `docker/app/entrypoint.sh` creates development JWT keys once under mounted `./var/jwt` if missing; production fails fast when keys are missing
-- All optional features (WeChat, SMS) default to empty — disabled gracefully
+- `compose.override.yaml` auto-loads — sets `APP_ENV=dev`, `APP_DEBUG=1`, source mount for app, store-app, inventory-app, payment-app, wallet-app, identity-app, common-app, and trade-app
+- `docker/app/entrypoint.sh` creates development JWT keys once under mounted `./var/jwt` if missing, and creates an empty `.env` placeholder for Symfony Runtime
+- Root database port is configurable via `MYSQL_PORT` to avoid host-side MySQL collisions
 
 ### 19.3 Production
 
-Requires `.env.prod.local` copied from `.env.prod.example` with `APP_SECRET`, `REFRESH_TOKEN_SECRET`, `MYSQL_PASSWORD`, and `MYSQL_ROOT_PASSWORD`. JWT keys are generated on the host at `./var/jwt/` and mounted into the container. Start production with `docker compose -f compose.yaml -f compose.prod.yaml --env-file .env.prod.local up -d --build`.
+Requires `.env.prod.local` copied from `.env.prod.example` with `APP_SECRET`, `REFRESH_TOKEN_SECRET`, `MYSQL_PASSWORD`, and `MYSQL_ROOT_PASSWORD`. JWT keys are generated on the host at `./var/jwt/` and mounted into the container. Store app requires its own `STORE_APP_SECRET`, `STORE_MYSQL_USER`, `STORE_MYSQL_PASSWORD`, and `STORE_MYSQL_ROOT_PASSWORD`. Start production with `docker compose -f compose.yaml -f compose.prod.yaml --env-file .env.prod.local up -d --build`.
 
 ### 19.4 Environment Variables in Docker
 
-`compose.yaml` provides defaults for `DATABASE_URL`, `MAILER_DSN`, `OTP_REDIS_DSN`, and JWT key paths. Required vars use `${VAR:?required}` which fails fast if missing. Optional vars use `${VAR:-}` which defaults to empty.
+`compose.yaml` provides defaults for `DATABASE_URL`, `MAILER_DSN`, `OTP_REDIS_DSN`, and JWT key paths. Store app variables use `STORE_*` prefixed counterparts. Required vars use `${VAR:?required}` which fails fast if missing. Optional vars use `${VAR:-}` which defaults to empty.
 
 ## 20. Console Commands
 
@@ -815,6 +1004,12 @@ Requires `.env.prod.local` copied from `.env.prod.example` with `APP_SECRET`, `R
 | `app:trade:outbox:publish` | Trade | Relay unpublished Trade integration events to Messenger |
 | `app:store:outbox:publish` | Store | Relay Store acceptance/rejection events to Messenger |
 | `app:inventory:outbox:publish` | Inventory | Relay published Inventory integration events to Messenger |
+| `app:trade:outbox:backfill-correlation` | Trade | Dry-run or `--apply` bounded correlation backfill for unpublished Trade Outbox rows |
+| `app:store:outbox:backfill-correlation` | Store | Dry-run or `--apply` bounded correlation backfill for unpublished Store Outbox rows |
+| `app:store:outbox:backfill-directory` | Store | Dry-run or `--apply` backfill of Store directory events into Outbox for Trade projection |
+| `app:inventory:outbox:backfill-correlation` | Inventory | Dry-run or `--apply` bounded correlation backfill for unpublished Inventory Outbox rows |
+| `app:payment:outbox:publish` | Payment | Relay unpublished Payment integration events to Messenger |
+| `app:payment:outbox:backfill-correlation` | Payment | Dry-run or `--apply` bounded correlation backfill for unpublished Payment Outbox rows |
 | `app:inventory:reservations:release-expired` | Inventory | Release expired confirmed reservations |
 
 ## 21. Service Container Wiring
@@ -827,19 +1022,18 @@ Requires `.env.prod.local` copied from `.env.prod.example` with `APP_SECRET`, `R
 - `RestController` subclasses get `RequestStack`, `SerializerInterface`, `TranslatorInterface` via `#[Required]` setter injection
 - `PaymentGatewayInterface` implementations auto-tagged `payment.gateway`, collected via `#[AutowireIterator]`
 - `PaymentAdjustmentProviderInterface` implementations auto-tagged `payment.adjustment_provider`, collected via `#[AutowireIterator]`
-- `DepositProviderInterface` / `WithdrawProviderInterface` implementations auto-tagged `wallet.deposit_provider` / `wallet.withdraw_provider`, collected via `#[AutowireIterator]` in the respective registries (voucher-type whitelist; `assertPermitted()` enforces per-provider permission)
 - `MediaStorageInterface` implementations tagged `media.storage`, collected via `#[AutowireIterator]`; `LocalStorage`/`QiniuStorage` are explicitly wired in `src/Storage/Resources/config/services_storage.yaml` because they need scalar/config/repository constructor arguments
 - `PriceCalculatorInterface` implementations auto-tagged `trade.price_calculator`, sorted by `getPriority()` — pipeline: BasePriceCalculator(-100) → QuantityCalculator(50) → **TotalAggregator(55)** (establishes subtotal) → **PromotionCalculator(60)** (applies order-level adjustments on the real subtotal)
 - `PromotionCalculator` (`App\Promotion\Service\PromotionCalculator`) implements `PriceCalculatorInterface`, tagged `trade.price_calculator` at priority 60, applies promotions after the subtotal is aggregated
 - Promotion strategies auto-tagged `promotion.strategy` via `_instanceof` rule, collected by `#[AutowireIterator]` in the strategy registry
 - `WechatService` explicitly defined in `services_wechat.yaml` with `%env()` parameter bindings
 - `WechatPayGateway` explicitly defined in `services_wechat.yaml` (excluded from global autowiring scan)
-- `WalletGateway` autowired in Wallet via `PaymentGatewayInterface` tag (no explicit exclusion needed)
+- `WalletGateway` autowired in `src/Bridge/PaymentWallet/` via `PaymentGatewayInterface` tag (no explicit exclusion needed)
 
 ## 22. Inventory Module — Stock & Reservation System
 
 ### 22.1 Overview
-The Inventory bundle (`src/Inventory/`) owns materials, per-store stock, Specification recipes, reservations, and the stock ledger. It implements the deferred reservation boundary defined in Store.
+The Inventory application (`apps/inventory/src/`) owns materials, per-store stock, Specification recipes, reservations, and the stock ledger. The monolith hosts it through `crud-platform/inventory-app` during transition. It implements the deferred reservation boundary defined in Store.
 
 **Preview safety notice:** Inventory is implemented but is not production-ready.
 `INVENTORY_ENABLED` must remain `0` outside isolated development and testing until
@@ -852,12 +1046,12 @@ covered by concurrency tests. The disabled schema/module may be deployed safely.
 | Entity | Purpose |
 |--------|---------|
 | `Material` | Raw material or finished good. code is unique, immutably frozen upon stock mutation |
-| `Stock` | Per-store per-material balance with onHandQuantity, reservedQuantity, allowNegativeStock flag |
+| `InventoryStock` | Per-store per-material balance with onHandQuantity, reservedQuantity, allowNegativeStock flag |
 | `SpecificationRecipe` | One active recipe per Trade Specification UUID; stores material BOM lines |
 | `RecipeLine` | Quantity of a material required per unit of the parent Specification |
-| `Reservation` | Idempotent reservation aggregate with status: requested, confirmed, rejected, released, consumed |
+| `InventoryReservation` | Idempotent reservation aggregate with status: requested, confirmed, rejected, released, consumed |
 | `ReservationLine` | Immutable snapshot of material demand and reserved quantity per reservation |
-| `LedgerEntry` | Append-only audit trail for every stock mutation |
+| `InventoryLedgerEntry` | Append-only audit trail for every stock mutation |
 | `InventoryConsumedEvent` | Inbox idempotency record |
 | `InventoryOutboxMessage` | Durable integration event relay |
 
@@ -893,74 +1087,7 @@ Recipes expand a Specification into material demand. Material demand is aggregat
 
 ### 22.7 Store Integration Changes
 - `TradeOrderCreatedHandler`: when INVENTORY_ENABLED, creates reservationId and writes awaiting_inventory state + reservation request outbox
-- New handlers: `ReservationConfirmedHandler`, `ReservationRejectedHandler`, `ReservationReleasedHandler`
+- New handlers: `InventoryReservationConfirmedHandler`, `InventoryReservationRejectedHandler`, `InventoryReservationReleasedHandler`
 - `TradeOrderCancelledHandler`: requests inventory release for cancelled orders with reservation
 - `StoreTradeOrderCancellation` tombstone entity: handles out-of-order cancellation events
 - Trade events use OrderItem.uuid as stable lineId (not specification UUID)
-
-## 23. Production Readiness & Known Defects
-
-> Source of truth: `docs/issues/coverage-2026-08-09/README.md` (74 bugs with file:line + proposed fixes) and `docs/issues/test-audit-2026-08-09/README.md` (412 redundant-test candidates). Do **not** re-discover these; fix or reference them.
-
-### 23.1 Status summary (2026-08-09)
-
-- **Engineering maturity is high** (module boundaries, PHPStan L8, 99.46% line coverage, dual-DB CI). **Production-readiness is medium**: deployment orchestration exists, but observability, rate limiting, and external-provider certification are missing, and a batch of known `src/` bugs are unfixed.
-- **Blocked for production until fixed** (CRITICAL):
-  1. `src/Core/Utils/RsaClient.php:51,99` signs with **MD5** (forgeable, fails FIPS) — should be `OPENSSL_ALGO_SHA256`.
-  2. `src/Core/Utils/Location.php` depends on `php-curl-class`, which is **not installed** — every call fatals `Class "Curl\Curl" not found`.
-- **Blocked for production** (HIGH, top 8):
-  3. `src/Wechat/Service/Payment/WechatPayGateway.php:102-126` — notify never passes the request to EasyWeChat → **every real WeChat Pay callback fails**. Fix: `setRequestFromSymfonyRequest($request)` before `serve()`.
-  4. `src/Core/Utils/Math.php:85,91` — one-arg `rand()`/`mt_rand()` **crash on PHP 8.5**.
-  5. `src/Core/Service/BaseService.php:77` + `ReadListTrait:270` — `$user` is null for all HTTP requests → `@dql/@sort/@hints` 403 even for admins.
-  6. Payment retry deadlock: `OrderService::createPayment()` reuses failed/cancelled invoices → order permanently stuck in `confirmed` (only reuse when status ∈ {pending, paying}).
-  7. `src/Trade/Controller/Manage/OrderController.php:329` `/do/{transition}` forwards raw body to `update()` → admin can tamper order fields, bypassing the whitelist.
-  8. `src/Trade/MessageHandler/StoreOrderRejectedHandler.php:37` — Store rejection does not cancel the Trade order.
-  9. Identity controllers: unguarded `json_decode(JSON_THROW_ON_ERROR)` → HTTP 500 on malformed bodies; numeric usernames cannot log in; `CreateUserCommand` persists empty email/username accounts.
-  10. `src/Core/Controller/RestController.php:198` — `@expands` sets a dynamic `__metadata` property → PHP 8.5 deprecation (breaks `failOnDeprecation`).
-- **Not production-ready by design**: **Inventory** (§22.1) — `INVENTORY_ENABLED` must stay `0` outside isolated dev/test until consumption, expiry, serialized confirmation, and release-before-reserve handling are concurrency-tested.
-
-### 23.2 Operational gaps (productization)
-
-Closed in 2026-08-10 (see §24):
-
-- ✅ **Health checks**: `/health/live` + `/health/ready` (public, outside JWT firewall); nginx container healthcheck in `compose.yaml` uses `/health/ready`.
-- ✅ **Rate limiting**: `symfony/rate-limiter` — per-IP limits on login/register/OTP request/verify/WeChat login/payment initiation; 429 envelope + `Retry-After`; disabled (high limits) in test env.
-- ✅ **Metrics**: `/metrics` Prometheus text format — per-worker request counters/duration histogram/in-flight gauge plus live DB gauges (outbox backlog per topic, failed messenger queue).
-
-Remaining productization gaps:
-
-- **No alerting/APM ingestion**: metrics are exposed but nothing scrapes them (add Prometheus/Grafana or Sentry); no alert channels for outbox backlog or error rates.
-- **No rate-limit global cache**: limiters use the default filesystem cache — per-process only; enable a shared Redis cache adapter for multi-worker deployments.
-- **External providers unverified**: WeChat Pay, SMS (Aliyun), and Qiniu have deterministic test adapters but no real sandbox certification evidence; `WechatPayGateway::notify()` is broken (see 23.1).
-- **Smoke scripts not in CI**: `scripts/tests/*.sh` require a disposable Docker environment and run only at release time.
-- **Test-suite debt**: 186 PHPUnit Notices; 412 redundant-test candidates (190 HIGH) from the coverage campaign — safe deletions are documented in `docs/issues/test-audit-2026-08-09/` (verify coverage zero-delta before each deletion).
-
-### 23.3 Rules for AI agents
-
-- Skipped tests in the suite are **intentional** bug documentation — do not remove or "un-skip" them; fix the underlying `src/` bug first, then un-skip.
-- Before implementing a known defect, read its report entry; the report contains the exact fix.
-- New changes must follow the evidence rules in `docs/testing/crud-skeleton-production/TEST_STRATEGY.md` (tests at the right layer, invariants protected, coverage gate 90%).
-- When adding tests, do not recreate the redundant `*CoverageTest`/`*AdditionalTest` patterns flagged by the audit.
-
-## 24. Platform Operations Endpoints
-
-Public infrastructure endpoints (no JWT; live outside the `^/api` firewall):
-
-| Endpoint | Purpose | Response |
-|---|---|---|
-| `GET /health/live` | Process liveness probe | 200 `{"status":"ok"}` |
-| `GET /health/ready` | Readiness probe: DB required, Redis optional (enabled only when `OTP_REDIS_DSN` set) | 200 `{"status":"ok","checks":{...}}` or 503 `degraded` |
-| `GET /metrics` | Prometheus text exposition format (v0.0.4) | 200 `text/plain` |
-
-Implementation notes:
-
-- `src/Core/Controller/HealthController.php` — `Connection` + a dependency-free RESP `PING` over TCP for Redis (no Predis needed in prod; `predis/predis` is dev-only).
-- `src/Core/Controller/MetricsController.php` + `src/Core/Metrics/MetricsRegistry.php` + `src/Core/EventListener/MetricsListener.php`:
-  - In-memory per-worker: `http_requests_total{method,route,status}`, `http_request_duration_seconds` histogram (default buckets), `http_requests_inflight`.
-  - Live DB gauges on scrape: `app_outbox_backlog{topic=trade|store|inventory}` (`published_at IS NULL` counts) and `app_messenger_failed` (`messenger_messages.queue_name='failed'`); these are accurate across workers.
-  - The listener skips `/health`, `/metrics`, `/api/doc`, profiler paths, and sub-requests (404s are dispatched as sub-requests here).
-- `src/Core/EventListener/RateLimitListener.php` (`kernel.controller`, priority 10) — path → limiter map, keyed by `getClientIp()`; on limit: replaces the controller with a 429 `{data:null, code:429, message}` + `Retry-After`. Limiters defined in `config/packages/rate_limiter.yaml`; factories wired via `!service_locator` in `config/services.yaml`.
-- Test wiring: `HealthController` is defined explicitly (scalar `$otpRedisDsn`) with `routing.controller` + `controller.service_arguments` tags (both in main and `when@test` blocks, since explicit definitions drop autoconfig tags); `when@test` disables the Redis probe and sets all limiter limits to 100000.
-- `compose.yaml` nginx healthcheck runs `wget -q -O /dev/null http://localhost/health/ready` (full-path readiness: nginx → FPM → Symfony → DB/Redis).
-- Both endpoints are added to NelmioApiDoc `path_patterns` (tag `System`).
-- Tests: `tests/Integration/Core/Controller/HealthControllerTest.php`, `tests/Integration/Core/Controller/MetricsControllerTest.php`, `tests/Integration/Core/EventListener/RateLimitListenerTest.php` (real `RateLimiterFactory` + `InMemoryStorage`, so global test limits are untouched).

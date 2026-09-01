@@ -23,7 +23,7 @@ Every controller is built by **assembling traits**, not by extending a monolithi
 
 ### 2.1 Mandatory: `ApiView`
 
-**File**: `src/Core/View/ApiView.php`
+**File**: `packages/platform-kernel/src/View/ApiView.php`
 **Must be used by**: Every controller
 
 Declares the contract for service binding and data scoping:
@@ -47,7 +47,7 @@ trait ApiView
 
 ### 2.2 List: `ListApiViewMixin`
 
-**File**: `src/Core/View/ListApiViewMixin.php`
+**File**: `packages/platform-kernel/src/View/ListApiViewMixin.php`
 
 Registers `GET /` and provides paginated list endpoint:
 
@@ -68,7 +68,7 @@ Registers `GET /` and provides paginated list endpoint:
 
 ### 2.3 Detail: `DetailApiViewMixin`
 
-**File**: `src/Core/View/DetailApiViewMixin.php`
+**File**: `packages/platform-kernel/src/View/DetailApiViewMixin.php`
 
 Registers `GET /{id}` (numeric ID required):
 
@@ -86,7 +86,7 @@ Registers `GET /{id}` (numeric ID required):
 
 ### 2.4 Create: `CreateApiViewMixin`
 
-**File**: `src/Core/View/CreateApiViewMixin.php`
+**File**: `packages/platform-kernel/src/View/CreateApiViewMixin.php`
 
 Registers `POST /` with support for both single object and array inputs:
 
@@ -118,7 +118,7 @@ Registers `POST /` with support for both single object and array inputs:
 
 ### 2.5 Update: `UpdateApiViewMixin`
 
-**File**: `src/Core/View/UpdateApiViewMixin.php`
+**File**: `packages/platform-kernel/src/View/UpdateApiViewMixin.php`
 
 Registers two routes:
 
@@ -160,7 +160,7 @@ Registers two routes:
 
 ### 2.6 Delete: `DeleteApiViewMixin`
 
-**File**: `src/Core/View/DeleteApiViewMixin.php`
+**File**: `packages/platform-kernel/src/View/DeleteApiViewMixin.php`
 
 Registers `DELETE /{id}`:
 
@@ -176,7 +176,7 @@ Registers `DELETE /{id}`:
 
 ### 2.7 Singleton: `SingleCreateAndUpdateApiViewMixin`
 
-**File**: `src/Core/View/SingleCreateAndUpdateApiViewMixin.php`
+**File**: `packages/platform-kernel/src/View/SingleCreateAndUpdateApiViewMixin.php`
 
 For resources that have exactly **one row** per scope (e.g., user settings):
 
@@ -188,7 +188,7 @@ For resources that have exactly **one row** per scope (e.g., user settings):
 
 ### 2.8 Singleton Detail: `SingleDetailApiViewMixin`
 
-**File**: `src/Core/View/SingleDetailApiViewMixin.php`
+**File**: `packages/platform-kernel/src/View/SingleDetailApiViewMixin.php`
 
 | Route | Method | Action |
 |-------|--------|--------|
@@ -198,7 +198,7 @@ Uses `commonFilter()` to identify which row.
 
 ### 2.9 Workflow: `WorkflowApiViewMixin`
 
-**File**: `src/Core/View/WorkflowApiViewMixin.php`
+**File**: `packages/platform-kernel/src/View/WorkflowApiViewMixin.php`
 
 For entities governed by Symfony Workflow state machines:
 

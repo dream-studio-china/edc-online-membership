@@ -1,0 +1,1 @@
+{"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"https://crud-platform.local/contracts/integration/events/payment.invoice.refunded.v1.schema.json","allOf":[{"$ref":"https://crud-platform.local/contracts/integration/schema/envelope.schema.json"},{"properties":{"type":{"const":"payment.invoice.refunded"},"version":{"const":1}}}]}

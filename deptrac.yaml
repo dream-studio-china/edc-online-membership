@@ -1,0 +1,165 @@
+imports:
+  - deptrac-baseline.yaml
+
+deptrac:
+  paths:
+    - apps/store/src/
+    - apps/inventory/src/
+    - apps/payment/src/
+    - apps/wallet/src/
+    - apps/trade/src/
+    - src/
+    - packages/integration-contracts/src/
+    - packages/legacy-messenger-compat/src/
+    - packages/platform-kernel/src/
+  layers:
+    - name: Application
+      collectors:
+        - type: classLike
+          value: ^App\\Kernel$
+    - name: Composition
+      collectors:
+        - type: classLike
+          value: ^App\\Bridge\\
+    - name: Vendor
+      collectors:
+        - type: classLike
+          value: ^(?!(?:App|CrudPlatform\\IntegrationContracts)\\).*
+    - name: IntegrationContracts
+      collectors:
+        - type: classLike
+          value: ^CrudPlatform\\IntegrationContracts\\
+    - name: Core
+      collectors:
+        - type: classLike
+          value: ^App\\Core\\
+    - name: CommonCode
+      collectors:
+        - type: classLike
+          value: ^App\\Common\\Main\\(?!(?:Entity|Repository)\\)
+    - name: CommonPersistence
+      collectors:
+        - type: classLike
+          value: ^App\\Common\\Main\\(?:Entity|Repository)\\
+    - name: IdentityCode
+      collectors:
+        - type: classLike
+          value: ^App\\Identity\\Main\\(?!(?:Entity|Repository)\\)
+    - name: IdentityPersistence
+      collectors:
+        - type: classLike
+          value: ^App\\Identity\\Main\\(?:Entity|Repository)\\
+    - name: InventoryCode
+      collectors:
+        - type: classLike
+          value: ^App\\Inventory\\(?!(?:Entity|Repository)\\)
+    - name: InventoryPersistence
+      collectors:
+        - type: classLike
+          value: ^App\\Inventory\\(?:Entity|Repository)\\
+    - name: PaymentCode
+      collectors:
+        - type: classLike
+          value: ^App\\Payment\\(?!(?:Entity|Repository)\\)
+    - name: PaymentPersistence
+      collectors:
+        - type: classLike
+          value: ^App\\Payment\\(?:Entity|Repository)\\
+    - name: PromotionCode
+      collectors:
+        - type: classLike
+          value: ^App\\Promotion\\(?!(?:Entity|Repository)\\)
+    - name: PromotionPersistence
+      collectors:
+        - type: classLike
+          value: ^App\\Promotion\\(?:Entity|Repository)\\
+    - name: StorageCode
+      collectors:
+        - type: classLike
+          value: ^App\\Storage\\(?!(?:Entity|Repository)\\)
+    - name: StoragePersistence
+      collectors:
+        - type: classLike
+          value: ^App\\Storage\\(?:Entity|Repository)\\
+    - name: StoreCode
+      collectors:
+        - type: classLike
+          value: ^App\\Store\\(?!(?:Entity|Repository)\\)
+    - name: StorePersistence
+      collectors:
+        - type: classLike
+          value: ^App\\Store\\(?:Entity|Repository)\\
+    - name: TradeCode
+      collectors:
+        - type: classLike
+          value: ^App\\Trade\\(?!(?:Entity|Repository)\\)
+    - name: TradePersistence
+      collectors:
+        - type: classLike
+          value: ^App\\Trade\\(?:Entity|Repository)\\
+    - name: WalletCode
+      collectors:
+        - type: classLike
+          value: ^App\\Wallet\\(?!(?:Entity|Repository)\\)
+    - name: WalletPersistence
+      collectors:
+        - type: classLike
+          value: ^App\\Wallet\\(?:Entity|Repository)\\
+    - name: WechatCode
+      collectors:
+        - type: classLike
+          value: ^(?:App\\Identity\\Wechat|App\\Wechat)\\(?!(?:Entity|Repository)\\)
+    - name: WechatPersistence
+      collectors:
+        - type: classLike
+          value: ^(?:App\\Identity\\Wechat|App\\Wechat)\\(?:Entity|Repository)\\
+  ruleset:
+    Application:
+      - Composition
+      - Core
+      - Vendor
+      - IntegrationContracts
+      - CommonCode
+      - CommonPersistence
+      - IdentityCode
+      - IdentityPersistence
+      - InventoryCode
+      - InventoryPersistence
+      - PaymentCode
+      - PaymentPersistence
+      - PromotionCode
+      - PromotionPersistence
+      - StorageCode
+      - StoragePersistence
+      - StoreCode
+      - StorePersistence
+      - TradeCode
+      - TradePersistence
+      - WalletCode
+      - WalletPersistence
+      - WechatCode
+      - WechatPersistence
+    Composition: [Core, Vendor, IntegrationContracts, CommonCode, CommonPersistence, IdentityCode, IdentityPersistence, InventoryCode, InventoryPersistence, PaymentCode, PaymentPersistence, PromotionCode, PromotionPersistence, StorageCode, StoragePersistence, StoreCode, StorePersistence, TradeCode, TradePersistence, WalletCode, WalletPersistence, WechatCode, WechatPersistence]
+    Core: [Vendor]
+    Vendor: []
+    IntegrationContracts: [Vendor]
+    CommonCode: [Core, Vendor, CommonPersistence, IdentityCode, InventoryCode, PaymentCode, PromotionCode, StorageCode, StoreCode, TradeCode, WalletCode, WechatCode]
+    CommonPersistence: [Core, Vendor, CommonCode, IdentityCode, InventoryCode, PaymentCode, PromotionCode, StorageCode, StoreCode, TradeCode, WalletCode, WechatCode]
+    IdentityCode: [Core, Vendor, CommonCode, IdentityPersistence, InventoryCode, PaymentCode, PromotionCode, StorageCode, StoreCode, TradeCode, WalletCode, WechatCode]
+    IdentityPersistence: [Core, Vendor, CommonCode, IdentityCode, InventoryCode, PaymentCode, PromotionCode, StorageCode, StoreCode, TradeCode, WalletCode, WechatCode]
+    InventoryCode: [Core, Vendor, IntegrationContracts, CommonCode, IdentityCode, InventoryPersistence, PaymentCode, PromotionCode, StorageCode, StoreCode, TradeCode, WalletCode, WechatCode]
+    InventoryPersistence: [Core, Vendor, CommonCode, IdentityCode, InventoryCode, PaymentCode, PromotionCode, StorageCode, StoreCode, TradeCode, WalletCode, WechatCode]
+    PaymentCode: [Core, Vendor, IntegrationContracts, CommonCode, IdentityCode, InventoryCode, PaymentPersistence, PromotionCode, StorageCode, StoreCode, TradeCode, WalletCode, WechatCode]
+    PaymentPersistence: [Core, Vendor, CommonCode, IdentityCode, InventoryCode, PaymentCode, PromotionCode, StorageCode, StoreCode, TradeCode, WalletCode, WechatCode]
+    PromotionCode: [Core, Vendor, CommonCode, IdentityCode, InventoryCode, PaymentCode, PromotionPersistence, StorageCode, StoreCode, TradeCode, WalletCode, WechatCode]
+    PromotionPersistence: [Core, Vendor, CommonCode, IdentityCode, InventoryCode, PaymentCode, PromotionCode, StorageCode, StoreCode, TradeCode, WalletCode, WechatCode]
+    StorageCode: [Core, Vendor, CommonCode, IdentityCode, InventoryCode, PaymentCode, PromotionCode, StoragePersistence, StoreCode, TradeCode, WalletCode, WechatCode]
+    StoragePersistence: [Core, Vendor, CommonCode, IdentityCode, InventoryCode, PaymentCode, PromotionCode, StorageCode, StoreCode, TradeCode, WalletCode, WechatCode]
+    StoreCode: [Core, Vendor, IntegrationContracts, CommonCode, IdentityCode, InventoryCode, PaymentCode, PromotionCode, StorageCode, StorePersistence, TradeCode, WalletCode, WechatCode]
+    StorePersistence: [Core, Vendor, CommonCode, IdentityCode, InventoryCode, PaymentCode, PromotionCode, StorageCode, StoreCode, TradeCode, WalletCode, WechatCode]
+    TradeCode: [Core, Vendor, IntegrationContracts, CommonCode, IdentityCode, InventoryCode, PaymentCode, PromotionCode, StorageCode, StoreCode, TradePersistence, WalletCode, WechatCode]
+    TradePersistence: [Core, Vendor, CommonCode, IdentityCode, InventoryCode, PaymentCode, PromotionCode, StorageCode, StoreCode, TradeCode, WalletCode, WechatCode]
+    WalletCode: [Core, Vendor, IntegrationContracts, CommonCode, IdentityCode, InventoryCode, PaymentCode, PromotionCode, StorageCode, StoreCode, TradeCode, WalletPersistence, WechatCode]
+    WalletPersistence: [Core, Vendor, CommonCode, IdentityCode, InventoryCode, PaymentCode, PromotionCode, StorageCode, StoreCode, TradeCode, WalletCode, WechatCode]
+    WechatCode: [Core, Vendor, CommonCode, IdentityCode, InventoryCode, PaymentCode, PromotionCode, StorageCode, StoreCode, TradeCode, WalletCode, WechatPersistence]
+    WechatPersistence: [Core, Vendor, CommonCode, IdentityCode, InventoryCode, PaymentCode, PromotionCode, StorageCode, StoreCode, TradeCode, WalletCode, WechatCode]

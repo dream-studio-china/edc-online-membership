@@ -1,0 +1,32 @@
+framework:
+    workflows:
+        order:
+            type: state_machine
+            marking_store: { type: method, property: status }
+            supports: [App\Trade\Entity\Order]
+            initial_marking: draft
+            places: [draft, pending, awaiting_store_acceptance, store_accepted, store_rejected, confirmed, paid, fulfilled, completed, cancelled, refunded]
+            transitions:
+                submit: { from: draft, to: pending }
+                store_submit: { from: draft, to: awaiting_store_acceptance }
+                store_accept: { from: awaiting_store_acceptance, to: store_accepted }
+                store_reject: { from: awaiting_store_acceptance, to: store_rejected }
+                confirm: { from: [pending, store_accepted], to: confirmed }
+                pay: { from: confirmed, to: paid }
+                fulfill: { from: paid, to: fulfilled }
+                complete: { from: fulfilled, to: completed }
+                cancel: { from: [draft, pending, awaiting_store_acceptance, store_accepted, store_rejected, confirmed], to: cancelled }
+                refund: { from: completed, to: refunded }
+        invoice:
+            type: state_machine
+            marking_store: { type: method, property: status }
+            supports: [App\Payment\Entity\Invoice]
+            initial_marking: pending
+            places: [pending, paying, paid, failed, cancelled, partial_refunded, refunded]
+            transitions:
+                start_pay: { from: pending, to: paying }
+                mark_paid: { from: [pending, paying], to: paid }
+                fail: { from: [pending, paying], to: failed }
+                cancel: { from: [pending, paying, failed], to: cancelled }
+                partial_refund: { from: paid, to: partial_refunded }
+                refund: { from: [paid, partial_refunded], to: refunded }

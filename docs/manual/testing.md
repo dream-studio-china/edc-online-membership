@@ -1,263 +1,367 @@
 # Testing
 
-> How the test suites are organised and run. The suite currently stands at
-> **2224 tests · 7951 assertions** in the default run, plus **477 low-value tests**
-> that are excluded by default.
+## 1. Test Structure
 
----
+The platform uses **PHPUnit 12.5** with two tiers of tests:
 
-## 1. Suite Layout
+| Tier | Location | Database | Description |
+|------|----------|----------|-------------|
+| **Root Integration** | `tests/` | SQLite `var/test.db` | Cross-module integration tests for the monolith (963 tests) |
+| **Per-App Unit** | `apps/{name}/tests/` | SQLite `var/test.db` | Service-specific unit + integration tests |
 
-Tests live under `tests/` and are namespaced `App\Tests\...`:
+All test suites use **SQLite** in-memory databases. No MySQL or Docker is required
+for local testing. The test environment is configured via `phpunit.xml` and
+`APP_ENV=test`.
+
+## 2. Per-App Test Suites
+
+| App | Location | Test Count | Coverage Artifact |
+|-----|----------|-----------|-------------------|
+| **Common** | `apps/common/tests/` | 74 | `build/coverage/common.xml` |
+| **Identity** | `apps/identity/tests/` | 209 | `build/coverage/identity.xml` |
+| **Trade** | `apps/trade/tests/` | 412 | `build/coverage/trade.xml` |
+| **Wallet** | `apps/wallet/tests/` | 60 | `build/coverage/wallet.xml` |
+| **Payment** | `apps/payment/tests/` | 37 | `build/coverage/payment.xml` |
+| **Store** | `apps/store/tests/` | 20 | `build/coverage/store.xml` |
+| **Inventory** | `apps/inventory/tests/` | 11 | `build/coverage/inventory.xml` |
+
+### What Each Suite Tests
+
+#### Common (`apps/common/tests/`)
+- Entity tests: Category, Comment, Content, Media, Page, Picture, Setting, Tag
+- Media upload/delete controller integration
+- Picture CRUD integration
+- Storage service tests (LocalStorage, QiniuStorage)
+- InitQiniuSettingsCommand
+
+#### Identity (`apps/identity/tests/`)
+- Auth controller (login, register, refresh, logout)
+- OTP controller (request, verify)
+- TokenManager (JWT creation, refresh rotation, reuse detection)
+- UserService (register, password hashing, profile update)
+- Wechat module (login flow, WechatUser, auth service)
+- Controller integration tests
+
+#### Trade (`apps/trade/tests/`)
+- Entity tests: Product, Specification, Order, OrderItem
+- OrderService (create, pay, refund, fulfill, calculate prices)
+- Pricing calculators (Base, Quantity, TotalAggregator, Promotion)
+- Promotion DSL: Lexer, Parser, Evaluator, 7 strategies
+- PromotionCalculator integration
+- Controller integration (products, orders, specifications)
+- Message handler tests (Store acceptance/rejection consumers)
+
+#### Wallet (`apps/wallet/tests/`)
+- Entity tests: Wallet, WalletTransaction
+- WalletService (create, balance, freeze)
+- TransferService (transfer, deposit with idempotency)
+- Payment integration (WalletPaymentDeduction, WalletGateway)
+- API regression tests
+- Exception tests (InsufficientFundsException, etc.)
+
+#### Payment (`apps/payment/tests/`)
+- Gateway tests (MockGateway, WalletGateway, WechatPayGateway)
+- PaymentGatewayRegistry (autowire discovery)
+- Adjustment provider tests (WalletBalanceAdjustmentProvider)
+- Invoice entity and service tests
+
+#### Store (`apps/store/tests/`)
+- Store entity/service tests
+- Trade→Store→Trade integration flow
+- Store-Inventory integration (reservation flows)
+- Message handler tests
+
+#### Inventory (`apps/inventory/tests/`)
+- Entity tests (Material, Stock, Recipe, Reservation)
+- Service tests (reservation processing, recipe resolution)
+- Integration tests (reservation request flow)
+- Message handler tests
+- API tests (materials, recipes, stocks)
+
+## 3. Root Integration Tests (`tests/`)
+
+963 cross-module tests covering:
+
+- **Core framework**: BaseService, ExpressionDqlParser, FlatNormalizer, RestController
+- **Controller tests**: System introspection, entity metadata, router
+- **LocaleListener**: Language detection and translation
+- **Cross-service integration**: Full workflow tests spanning multiple modules
+
+### Test Organization
 
 ```
 tests/
-|-- bootstrap.php                    # env bootstrapping, DB isolation, paratest wiring
-|-- UnitTest/                        # pure unit tests, no kernel, no DB
-|-- Integration/                     # kernel + DB + HTTP tests, shared helpers
-|-- LowValue/                        # audit-flagged tests, excluded by default
-|-- Smoke/                           # long fuzzy smoke suites (Settlement/Nightclub)
-`-- Identity/Security/               # JWT test keypair used by .env.test
+├── Core/
+│   ├── Controller/System/
+│   │   ├── EntityControllerTest.php
+│   │   └── RouterControllerTest.php
+│   ├── Parser/
+│   │   └── ExpressionDqlParserTest.php
+│   ├── Serializer/
+│   │   └── FlatNormalizerTest.php
+│   ├── Service/
+│   │   └── BaseServiceTest.php
+│   └── EventListener/
+│       └── LocaleListenerTest.php
+├── Integration/
+│   ├── Common/
+│   ├── Identity/
+│   ├── Trade/
+│   ├── Store/
+│   ├── Payment/
+│   ├── Wallet/
+│   └── Inventory/
+└── bootstrap.php
 ```
 
-| Directory | Namespace root | Tests | Approx. files |
-|-----------|----------------|-------|---------------|
-| `tests/UnitTest` | `App\Tests\UnitTest` | Entities, utils, DSL engine, promotion strategies, mock-based services/controllers, workflow state machine | 189 |
-| `tests/Integration` | `App\Tests\Integration` | Cross-module flows, API regressions, outbox/inbox idempotency, concurrency, health/metrics/rate-limit endpoints | 71 |
-| `tests/LowValue` | `App\Tests\LowValue` | Audit-flagged duplicates and coverage-chasing tests | 43 |
+## 4. Running Tests Locally
 
-`tests/Integration` also contains the shared helpers:
+### PHP Version
 
-- `DatabaseBootstrapTrait.php`
-- `IntegrationKernelTestCase.php`
-- `IntegrationWebTestCase.php`
+The recommended local PHP is **Homebrew PHP 8.5** at:
+```
+/opt/homebrew/opt/php@8.5/bin/php
+```
 
-Plus API regression suites (`*ApiRegressionTest.php`), integration suites
-(`*IntegrationTest.php`), and the OpenAPI integration test that builds the complete
-specification in-process.
+Default system `php` may point to PHP 7.4 (macOS), which is insufficient.
 
----
+### Root Tests
 
-## 2. phpunit.dist.xml
+```bash
+# All root tests
+/opt/homebrew/opt/php@8.5/bin/php vendor/bin/phpunit
 
-`phpunit.dist.xml` is the single PHPUnit configuration:
+# Specific test file
+/opt/homebrew/opt/php@8.5/bin/php vendor/bin/phpunit tests/Core/Controller/System/EntityControllerTest.php
 
-| Setting | Value |
-|---------|-------|
-| Bootstrap | `tests/bootstrap.php` |
-| Env (forced) | `APP_ENV=test`, `KERNEL_CLASS=App\Kernel` |
-| Failures | `failOnDeprecation`, `failOnNotice`, `failOnWarning` all `true` |
-| Memory | `memory_limit=512M` (OpenAPI integration builds the full spec in-process) |
-| Suites | `Project Test Suite` (UnitTest + Integration), `Low Value` (LowValue) |
-| Groups | `low-value` globally **excluded** from every run |
-| Coverage source | `src/`, with `ignoreSuppressionOfDeprecations`, deprecation triggers mapped to Doctrine/Symfony deprecation APIs |
+# With coverage
+XDEBUG_MODE=coverage /opt/homebrew/opt/php@8.5/bin/php vendor/bin/phpunit --coverage-html var/coverage
+```
 
-The `Low Value` suite exists so the excluded files stay discoverable for
-`--group low-value`; the suite itself runs empty because the global exclusion applies
-to every run.
+### Per-App Tests
 
----
+```bash
+# Example: Trade tests
+cd apps/trade
+/opt/homebrew/opt/php@8.5/bin/php vendor/bin/phpunit
 
-## 3. Shared Integration Helpers
+# With coverage
+XDEBUG_MODE=coverage /opt/homebrew/opt/php@8.5/bin/php vendor/bin/phpunit --coverage-clover ../../build/coverage/trade.xml
+```
 
-### 3.1 `DatabaseBootstrapTrait`
+### Docker Tests
 
-Used by kernel/web integration tests that need a working database:
+```bash
+# Root tests in Docker
+docker compose exec app php vendor/bin/phpunit
+
+# Per-app tests in Docker
+docker compose exec trade-app php vendor/bin/phpunit
+```
+
+### Smoke Scripts
+
+```bash
+# API smoke test (requires running app)
+bash scripts/tests/api-smoke.sh
+
+# Store orchestration smoke (requires running Store + Trade)
+bash scripts/tests/store-smoke.sh
+
+# Trade workflow demo (generates 100 orders into SQLite)
+/opt/homebrew/opt/php@8.5/bin/php scripts/tests/demo-trade-workflow.php
+```
+
+## 5. Coverage
+
+### Current State
+
+- **Aggregate coverage**: **91.36%** (via `phpcov merge`)
+- **Total tests**: 1785
+- **Total assertions**: 6098
+
+### Coverage Commands
+
+```bash
+# Root coverage
+XDEBUG_MODE=coverage /opt/homebrew/opt/php@8.5/bin/php vendor/bin/phpunit --coverage-clover build/coverage/root.xml
+
+# Per-app coverage (example: Trade)
+cd apps/trade
+XDEBUG_MODE=coverage /opt/homebrew/opt/php@8.5/bin/php vendor/bin/phpunit --coverage-clover ../../build/coverage/trade.xml
+
+# Merge and check gate
+phpcov merge build/coverage --clover build/coverage/merged.xml
+# Gate is ≥ 90%
+```
+
+### HTML Coverage Report
+
+```bash
+XDEBUG_MODE=coverage /opt/homebrew/opt/php@8.5/bin/php vendor/bin/phpunit --coverage-html var/coverage
+# Open var/coverage/index.html in browser
+```
+
+## 6. Writing Tests
+
+### Unit Tests (Service Layer)
+
+Located in per-app `tests/` directories. Test business logic in isolation:
 
 ```php
-use App\Tests\Integration\DatabaseBootstrapTrait;
+<?php
 
-class MyKernelTest extends IntegrationKernelTestCase
+declare(strict_types=1);
+
+namespace App\Wallet\Tests\Service;
+
+use App\Wallet\Entity\Wallet;
+use App\Wallet\Exception\InsufficientFundsException;
+use App\Wallet\Service\WalletService;
+use PHPUnit\Framework\TestCase;
+
+final class WalletServiceTest extends TestCase
 {
-    use DatabaseBootstrapTrait;
+    private WalletService $walletService;
+    private EntityManagerInterface $entityManager; // mocked
 
-    public function testSomething(): void
+    protected function setUp(): void
     {
-        $this->bootTestDatabase();
-        // ...kernel is booted, schema is ready...
+        $this->entityManager = $this->createMock(EntityManagerInterface::class);
+        $this->walletService = new WalletService($this->entityManager);
+    }
+
+    public function testTransferFailsWhenInsufficientFunds(): void
+    {
+        $source = new Wallet(/* ... */, balance: 1000);  // cents
+        $target = new Wallet(/* ... */, balance: 0);
+
+        $this->expectException(InsufficientFundsException::class);
+        $this->walletService->transfer($source, $target, 2000); // 2000 > 1000
     }
 }
 ```
 
-What `bootTestDatabase()` does — once per process (guarded by a static flag):
+### Integration Tests (Controller/API Level)
 
-1. Boots the kernel.
-2. `doctrine:schema:drop --force --full-database` (test env, quiet).
-3. `doctrine:schema:create` (test env, quiet).
-
-The schema is built from the **Doctrine schema tool**, not from migrations — that is
-the contract for tests (see §6). It also pins `getKernelClass()` to `App\Kernel`.
-
-### 3.2 `IntegrationKernelTestCase`
-
-Abstract base extending `KernelTestCase`. Resolves the kernel class directly to
-`App\Kernel` (no autoloader assumptions) and exposes `createKernel()` using
-`APP_ENV`/`APP_DEBUG` from the environment with `test`/`true` defaults. Use it for
-kernel-booted tests that need container services or the database.
-
-### 3.3 `IntegrationWebTestCase`
-
-Abstract base extending `WebTestCase` for full HTTP request/response tests. Its key
-addition:
+Located in per-app `tests/` directories. Test the HTTP layer:
 
 ```php
-$client = static::createAuthenticatedClient();
+<?php
+
+declare(strict_types=1);
+
+namespace App\Trade\Tests\Integration;
+
+use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+
+final class OrderControllerTest extends WebTestCase
+{
+    public function testCreateOrderReturns201(): void
+    {
+        $client = static::createClient();
+        $client->request('POST', '/api/v1/app/orders', [
+            'json' => [
+                'items' => [
+                    ['specificationId' => 'uuid-here', 'quantity' => 2],
+                ],
+            ],
+        ]);
+
+        $this->assertResponseStatusCodeSame(201);
+        $data = json_decode($client->getResponse()->getContent(), true);
+        $this->assertArrayHasKey('data', $data);
+        $this->assertArrayHasKey('id', $data['data']);
+    }
+}
 ```
 
-- Boots the kernel, creates the persistent test user `testauth@example.com`
-  (username `testauth`, password `TestPass123!`, `ROLE_ADMIN`) if missing, and
-  - generates a **real JWT** through `App\Identity\Security\TokenManager`, then
-  - injects `HTTP_AUTHORIZATION: Bearer <token>` as a server parameter.
+### Root Integration Tests
 
-This satisfies firewall rules that require `IS_AUTHENTICATED_FULLY` without re-dealing
-with the login flow in every test.
+Located in `tests/Integration/`. These test cross-service workflows and core
+framework components:
 
----
+```php
+<?php
 
-## 4. Test Categories
+declare(strict_types=1);
 
-| Category | Base / pattern | Purpose |
-|----------|----------------|---------|
-| Unit | `PHPUnit\Framework\TestCase` | Isolated logic — no kernel, no DB |
-| Kernel | `IntegrationKernelTestCase` (+ `DatabaseBootstrapTrait`) | Booted kernel, container services, DB access |
-| Web | `IntegrationWebTestCase` | Full HTTP request/response cycle, with or without JWT auth |
-| Regression | `*ApiRegressionTest` | API contract stability across modules |
-| Smoke | `tests/Smoke/` (e.g. `NightclubSettlementFuzzySmokeTest`) | Long-running fuzz/property smoke suites |
+namespace App\Tests\Integration\Trade;
 
-Naming pattern: `{Class}Test.php`, `{Module}ApiRegressionTest.php`,
-`{Module}IntegrationTest.php`.
+use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
----
+final class OrderWorkflowTest extends WebTestCase
+{
+    public function testFullOrderLifecycle(): void
+    {
+        $client = static::createClient();
+        // 1. Login
+        // 2. Create order
+        // 3. Pay order
+        // 4. Fulfill order
+        // 5. Verify wallet balance changes
+    }
+}
+```
 
-## 5. Running Tests
+### Fixtures
 
-### 5.1 Full default suite (serial)
+Use in-line entity creation or data providers:
 
+```php
+public static function orderAmountProvider(): array
+{
+    return [
+        'small order' => [1000, 1],    // $10.00, 1 item
+        'large order' => [100000, 5],  // $1000.00, 5 items
+    ];
+}
+
+#[DataProvider('orderAmountProvider')]
+public function testPaymentCalculation(int $amount, int $itemCount): void
+{
+    // ...
+}
+```
+
+### Mocking
+
+- `createMock()` for service dependencies in unit tests
+- `EntityManagerInterface` is the most commonly mocked dependency
+- Avoid mocking entities; create real instances for value-object semantics
+- For controller tests, use `WebTestCase::createClient()` which boots the full
+  Symfony kernel with SQLite
+
+## 7. Test Naming Conventions
+
+- **Test class**: `{TargetClass}Test.php` — e.g., `OrderServiceTest.php`
+- **Test method**: `test{Scenario}()` or `test{Method}{Condition}()`
+  - `testTransferFailsWhenInsufficientFunds()`
+  - `testCreateOrderReturns201()`
+  - `testInvoiceLifecycle()`
+- **Data providers**: `{context}Provider()` returning an array of named cases
+- **Test directories**: Mirror the source structure under `tests/`
+
+## 8. CI Test Jobs
+
+Each per-app test suite runs as a separate GitHub Actions job in parallel:
+
+```yaml
+jobs:
+  test-common:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: php-actions/composer@v6
+      - run: cd apps/common && composer test -- --coverage-clover ../../build/coverage/common.xml
+
+  test-identity:
+    # ... similar for each app
+```
+
+All per-app coverage artifacts are merged via `phpcov`:
 ```bash
-./vendor/bin/phpunit
+phpcov merge build/coverage --clover build/coverage/merged.xml
 ```
 
-Runs `tests/UnitTest` + `tests/Integration` (the `low-value` group is excluded
-automatically). Uses SQLite `var/test.db` by default.
-
-### 5.2 Parallel (recommended for speed)
-
-```bash
-PARATEST=1 ./vendor/bin/paratest --processes 8 --runner WrapperRunner
-```
-
-Aprox. 2–3× faster. `tests/bootstrap.php` gives every worker its **own** SQLite file
-(`var/test_paratest_{pid}.db`), eagerly creates the schema, and routes the test access
-log to a per-process file (`var/log/access-{pid}.log`) so concurrent workers never
-race. CI uses the same mechanism but with 4 workers and one PostgreSQL database per
-token (`app_test_1..4`) via `PARATEST_DATABASE_URL_TEMPLATE`.
-
-### 5.3 Single file
-
-```bash
-./vendor/bin/phpunit tests/UnitTest/Core/Service/BaseServiceInfrastructureTraitTest.php
-```
-
-### 5.4 Low-value group (excluded by default)
-
-```bash
-./vendor/bin/phpunit --group low-value
-```
-
-These are kept for reference and historical audit coverage; they are not part of the
-CI gate.
-
-### 5.5 Coverage
-
-Coverage is measured over `src/` only (`pcov.directory=src`). Use **PCOV** in CI; for
-local runs the same flag applies:
-
-```bash
-PCOV_ENABLED=1 ./vendor/bin/phpunit --coverage-text
-```
-
-or with Xdebug (slower, no PCOV extension required):
-
-```bash
-XDEBUG_MODE=coverage ./vendor/bin/phpunit --coverage-text
-```
-
-HTML report:
-
-```bash
-XDEBUG_MODE=coverage ./vendor/bin/phpunit --coverage-html var/coverage
-# open var/coverage/index.html
-```
-
-### 5.6 The 90% coverage gate
-
-CI enforces a **minimum 90% line coverage** on the `src/` source set. The `tests` job
-runs paraTest with `--coverage-text`, extracts the `Lines:` figure, and fails the build
-if it is below `90.0` (compared with `bc`). Treat 90% as a floor, not a target — new
-code should travel with tests that cover its behaviours, especially error paths.
-
----
-
-## 6. Test Database Contract
-
-| Rule | Detail |
-|------|--------|
-| Environment | `APP_ENV=test`, `KERNEL_CLASS=App\Kernel` (forced in `phpunit.dist.xml`) |
-| Default DB | SQLite (`var/test.db`), no external service required |
-| CI DB | PostgreSQL 16, one database per ParaTest token |
-| Schema | Created from the **Doctrine schema tool** (`doctrine:schema:create`) — never from migrations in local tests |
-| Cleanliness | `DatabaseBootstrapTrait` drops and recreates the schema once per process; tests seed fixtures per test/class |
-| Isolation | Each ParaTest worker runs against its own database; serial runs share `var/test.db` but are flushed per test |
-
-Required test configuration comes from `.env.test`:
-
-```env
-APP_SECRET='$ecretf0rt3st'
-DATABASE_URL='sqlite:///%kernel.project_dir%/var/test.db'
-INVENTORY_ENABLED=0
-JWT_PRIVATE_KEY_PATH=.../tests/Identity/Security/test_private.pem
-JWT_PUBLIC_KEY_PATH=.../tests/Identity/Security/test_public.pem
-JWT_PASSPHRASE=''
-ACCESS_TOKEN_TTL=7200
-REFRESH_TOKEN_TTL=31536000
-REFRESH_TOKEN_SECRET=test_refresh_secret_key_32bytes
-OTP_TTL=300
-OTP_REDIS_DSN=redis://localhost:6379/0
-ALIYUN_*  # SMS values with ALIYUN_SMS_DRY_RUN=true
-# WeChat:*  # left empty — WeChat is disabled for tests
-```
-
----
-
-## 7. Static Analysis and the Coverage Gate in CI
-
-The `tests` job in `.github/workflows/ci.yml` is the authoritative gate:
-
-```
-Set up PHP 8.4 (ext pdo_pgsql, coverage: pcov)
-  → composer install
-  → start postgres:16, create app_test_1..4
-  → PCOV_ENABLED=1 PARATEST=1 php vendor/bin/paratest \
-      --processes=4 --coverage-text=/tmp/coverage.txt --display-deprecations
-  → extract "Lines: <pct>%" → fail if < 90.0
-```
-
-PHPStan and Rector gates are separate jobs (`phpstan`, `rector`). See
-[development-workflow.md](development-workflow.md) for the full pipeline.
-
----
-
-## 8. Troubleshooting
-
-| Symptom | Cause / fix |
-|---------|-------------|
-| `Missing DATABASE_URL` / tables not found | Run with the bootstrap loaded (phpunit does this automatically); don't set a real `DATABASE_URL` while using the sqlite default |
-| Parallel run races on schema | `tests/bootstrap.php` only isolates databases when `PARATEST=1`; do not mix a project-level `DATABASE_URL` with a parallel run unless a `PARATEST_DATABASE_URL_TEMPLATE` is supplied |
-| Coverage below threshold after adding code | Add tests for the new source lines; check `var/coverage/index.html` |
-| JWT errors in tests | Ensure `JWT_PRIVATE_KEY_PATH`/`JWT_PUBLIC_KEY_PATH` point at `tests/Identity/Security/` keypair and `JWT_PASSPHRASE=''` |
-| Memory exhaustion on OpenAPI tests | `memory_limit=512M` is preset in `phpunit.dist.xml`; raise only when actually extending the spec |
-
-Refer to the test-quality contract in
-[`docs/testing/crud-skeleton-production/README.md`](../testing/crud-skeleton-production/README.md)
-and the audit that flagged the low-value tests in
-[`docs/issues/test-audit-2026-08-09/`](../issues/test-audit-2026-08-09/README.md).
+The merge gate is enforced at **≥ 90% aggregate line coverage**.

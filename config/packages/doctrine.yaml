@@ -24,6 +24,60 @@ doctrine:
                 dir: '%kernel.project_dir%/src'
                 prefix: 'App'
                 alias: App
+            Store:
+                type: attribute
+                is_bundle: false
+                dir: '%kernel.project_dir%/vendor/crud-platform/store-app/src/Entity'
+                prefix: 'App\Store\Entity'
+                alias: Store
+            Inventory:
+                type: attribute
+                is_bundle: false
+                dir: '%kernel.project_dir%/vendor/crud-platform/inventory-app/src/Entity'
+                prefix: 'App\Inventory\Entity'
+                alias: Inventory
+            Payment:
+                type: attribute
+                is_bundle: false
+                dir: '%kernel.project_dir%/vendor/crud-platform/payment-app/src/Entity'
+                prefix: 'App\Payment\Entity'
+                alias: Payment
+            Trade:
+                type: attribute
+                is_bundle: false
+                dir: '%kernel.project_dir%/vendor/crud-platform/trade-app/src/Trade/Entity'
+                prefix: 'App\Trade\Entity'
+                alias: Trade
+            Promotion:
+                type: attribute
+                is_bundle: false
+                dir: '%kernel.project_dir%/vendor/crud-platform/trade-app/src/Promotion/Entity'
+                prefix: 'App\Promotion\Entity'
+                alias: Promotion
+            Wallet:
+                type: attribute
+                is_bundle: false
+                dir: '%kernel.project_dir%/vendor/crud-platform/wallet-app/src/Entity'
+                prefix: 'App\Wallet\Entity'
+                alias: Wallet
+            Identity:
+                type: attribute
+                is_bundle: false
+                dir: '%kernel.project_dir%/vendor/crud-platform/identity-app/src/Main/Entity'
+                prefix: 'App\Identity\Main\Entity'
+                alias: Identity
+            Common:
+                type: attribute
+                is_bundle: false
+                dir: '%kernel.project_dir%/vendor/crud-platform/common-app/src/Main/Entity'
+                prefix: 'App\Common\Entity'
+                alias: Common
+            Wechat:
+                type: attribute
+                is_bundle: false
+                dir: '%kernel.project_dir%/vendor/crud-platform/identity-app/src/Wechat/Entity'
+                prefix: 'App\Identity\Wechat\Entity'
+                alias: Wechat
         dql:
             string_functions:
                 regexp: DoctrineExtensions\Query\Mysql\Regexp
@@ -37,10 +91,7 @@ doctrine:
 when@test:
     doctrine:
         dbal:
-            # Test DB is chosen by the DATABASE_URL env var (defaulted in
-            # tests/bootstrap.php). Parallel runners (paratest) set a unique
-            # per-process sqlite file so workers never race on one schema.
-            url: '%env(resolve:DATABASE_URL)%'
+            url: 'sqlite:///%kernel.project_dir%/var/test.db'
 
 when@prod:
     doctrine:

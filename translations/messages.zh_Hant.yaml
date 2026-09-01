@@ -17,21 +17,21 @@
 "Specification": "規格"
 "Invoice": "發票"
 "Wallet": "錢包"
-"Transaction": "錢包交易"
-"PaymentDeduction": "支付抵扣"
+"WalletTransaction": "錢包交易"
+"WalletPaymentDeduction": "錢包支付抵扣"
 "WechatUser": "微信用戶"
 "Material": "物料"
-"Stock": "庫存"
+"InventoryStock": "庫存"
 "SpecificationRecipe": "規格配方"
 "RecipeLine": "配方行"
-"Reservation": "預留"
+"InventoryReservation": "庫存預留"
 "ReservationLine": "預留行"
-"LedgerEntry": "台賬"
+"InventoryLedgerEntry": "庫存台賬"
 "InventoryConsumedEvent": "庫存已消費事件"
 "InventoryOutboxMessage": "庫存發件箱消息"
 "StoreTradeOrderCancellation": "門店交易訂單取消"
 "StoreOrder": "門店訂單"
-"Membership": "成員"
+"StoreMembership": "門店成員"
 "Profile": "個人資料"
 "Promotion": "促銷活動"
 "PromotionTemplate": "促銷模板"
@@ -39,10 +39,6 @@
 "StoreConsumedEvent": "門店已消費事件"
 "StoreOutboxMessage": "門店發件箱消息"
 "TradeOutboxMessage": "交易發件箱消息"
-"Voucher": "憑證"
-"VoucherComment": "憑證備註"
-"Reconciliation": "對帳"
-"Refund": "退款"
 
 # Entity field names
 "Id": "ID"
@@ -140,7 +136,6 @@
 "From wallet": "來源錢包"
 "To wallet": "目標錢包"
 "Reference id": "引用ID"
-"Payer id": "付款人 ID"
 "System wallet id": "系統錢包ID"
 "Wallet transaction id": "錢包交易ID"
 "Reversal transaction id": "沖正交易ID"
@@ -191,6 +186,7 @@
 "Released at": "釋放時間"
 "Request hash": "請求雜湊"
 "Requested quantity": "請求數量"
+"Reservation": "預留"
 "Reservation id": "預留ID"
 "Reserved after": "調整後預留數量"
 "Reserved delta": "預留數量變化"
@@ -263,7 +259,6 @@
 "OTP sent too recently, please wait.": "驗證碼發送過於頻繁，請稍後再試。"
 "Failed to send SMS.": "簡訊發送失敗。"
 "Password cannot be empty.": "密碼不能為空。"
-"Too many requests. Please try again later.": "請求過於頻繁，請稍後再試。"
 
 # JWT
 "Missing JWT token.": "缺少JWT令牌。"
@@ -336,7 +331,6 @@
 "Deduction currency must match invoice currency.": "抵扣幣別必須與發票幣別一致。"
 "Invoice payer is required for wallet payment deduction.": "錢包支付抵扣需要發票付款方。"
 "%d wallet(s) reconciled": "已對帳%d個錢包。"
-"walletId, amount, currency, and referenceId are required": "walletId、amount、currency、referenceId 為必填欄位。"
 
 # Trade / Order
 "Items are required.": "訂單項為必填項。"
@@ -367,7 +361,6 @@
 "Invalid mock payment secret.": "無效的模擬支付金鑰。"
 "Payment notify amount or currency does not match invoice.": "支付通知的金額或幣別與發票不匹配。"
 "amount and reason are required.": "金額和原因為必填項。"
-"Invoice has an active wallet deposit voucher; reverse the deposit before refunding.": "發票存在已生效的錢包入帳憑證，請先撤回入帳再退款。"
 
 # Payment gateway / adjustment
 "Payment gateway \"%s\" is not registered.": "支付閘道\"%s\"未註冊。"

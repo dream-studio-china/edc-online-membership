@@ -1,6 +1,6 @@
 # Trade Bundle Design
 
-> The Trade bundle (`src/Trade/`) is the e-commerce module. It implements products, specifications,
+> The Trade application (`apps/trade/src/Trade/`) is the e-commerce module. It implements products, specifications,
 > orders, order items with a pluggable price calculation pipeline and Symfony Workflow-based
 > order state machine.
 

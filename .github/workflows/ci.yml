@@ -2,46 +2,40 @@ name: CI
 
 on:
   push:
-    branches: [main, master]
-    paths:
-      - 'src/**'
-      - 'tests/**'
-      - 'config/**'
-      - 'migrations/**'
-      - 'bin/**'
-      - 'composer.json'
-      - 'composer.lock'
-      - 'symfony.lock'
-      - 'phpunit.dist.xml'
-      - 'phpstan.neon'
-      - 'phpstan-bootstrap.php'
-      - 'rector*.php'
-      - '.env.test'
-      - '.github/workflows/ci.yml'
+    branches: [main, master, develop]
   pull_request:
-    branches: [main, master, dev]
-    paths:
-      - 'src/**'
-      - 'tests/**'
-      - 'config/**'
-      - 'migrations/**'
-      - 'bin/**'
-      - 'composer.json'
-      - 'composer.lock'
-      - 'symfony.lock'
-      - 'phpunit.dist.xml'
-      - 'phpstan.neon'
-      - 'phpstan-bootstrap.php'
-      - 'rector*.php'
-      - '.env.test'
-      - '.github/workflows/ci.yml'
-
-# A newer push supersedes all checks for the same PR or branch.
-concurrency:
-  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+    branches: [main, master]
 
 jobs:
+  architecture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      DATABASE_URL: "sqlite:///%kernel.project_dir%/var/deptrac.db"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: ctype, iconv, pdo
+          tools: composer:v2
+
+      - name: Cache Composer
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: composer-8.4-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-8.4-
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress --no-interaction
+
+      - name: Check architecture boundaries
+        run: composer deptrac
+
   phpstan:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -71,9 +65,10 @@ jobs:
       - name: Run PHPStan
         run: composer phpstan
 
-  tests:
+  app-unit-tests:
+    name: Unit tests (${{ matrix.app }})
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     env:
       APP_ENV: test
       APP_SECRET: ci_test_secret
@@ -81,15 +76,14 @@ jobs:
       DEFAULT_URI: http://localhost
       MESSENGER_TRANSPORT_DSN: "doctrine://default?auto_setup=0"
       MAILER_DSN: null://null
-      JWT_PRIVATE_KEY_PATH: tests/Identity/Security/test_private.pem
-      JWT_PUBLIC_KEY_PATH: tests/Identity/Security/test_public.pem
+      JWT_PRIVATE_KEY_PATH: ${{ github.workspace }}/apps/identity/tests/Identity/Security/test_private.pem
+      JWT_PUBLIC_KEY_PATH: ${{ github.workspace }}/apps/identity/tests/Identity/Security/test_public.pem
       JWT_PASSPHRASE: ""
       ACCESS_TOKEN_TTL: "7200"
       REFRESH_TOKEN_TTL: "31536000"
       REFRESH_TOKEN_SECRET: test_refresh_secret_key_32bytes
       OTP_TTL: "300"
       OTP_REDIS_DSN: redis://localhost:6379/0
-      PARATEST_DATABASE_URL_TEMPLATE: "postgresql://app:app_secret@127.0.0.1:5432/app_test_{token}?serverVersion=16&charset=utf8"
       ALIYUN_ACCESS_KEY_ID: test_key
       ALIYUN_ACCESS_KEY_SECRET: test_secret
       ALIYUN_SMS_REGION: cn-hangzhou
@@ -100,7 +94,7 @@ jobs:
 
     strategy:
       matrix:
-        php: ['8.4']
+        app: [common, identity, inventory, payment, store, trade, wallet]
 
     services:
       postgres:
@@ -124,51 +118,144 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: ${{ matrix.php }}
-          extensions: ctype, iconv, pdo, pdo_pgsql
-          ini-values: pcov.directory=src
-          coverage: pcov
+          php-version: '8.4'
+          extensions: ctype, iconv, pdo, pdo_pgsql, xdebug
+          coverage: xdebug
+          tools: composer:v2
+
+      - name: Cache Composer
+        uses: actions/cache@v4
+        with:
+          path: apps/${{ matrix.app }}/vendor
+          key: app-${{ matrix.app }}-composer-8.4-${{ hashFiles(format('apps/{0}/composer.lock', matrix.app)) }}
+          restore-keys: app-${{ matrix.app }}-composer-8.4-
+
+      - name: Install dependencies
+        run: composer install --working-dir=apps/${{ matrix.app }} --prefer-dist --no-progress --no-interaction
+
+      - name: Run unit suite with coverage
+        run: XDEBUG_MODE=coverage composer --working-dir=apps/${{ matrix.app }} test -- --coverage-php ../../build/coverage/raw/${{ matrix.app }}.cov --display-deprecations
+
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-${{ matrix.app }}
+          path: build/coverage/raw/${{ matrix.app }}.cov
+          if-no-files-found: error
+
+  root-tests:
+    name: Root integration and remaining unit tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      APP_ENV: test
+      APP_SECRET: ci_test_secret
+      DATABASE_URL: "postgresql://app:app_secret@127.0.0.1:5432/app_test?serverVersion=16&charset=utf8"
+      DEFAULT_URI: http://localhost
+      MESSENGER_TRANSPORT_DSN: "doctrine://default?auto_setup=0"
+      MAILER_DSN: null://null
+      JWT_PRIVATE_KEY_PATH: apps/identity/tests/Identity/Security/test_private.pem
+      JWT_PUBLIC_KEY_PATH: apps/identity/tests/Identity/Security/test_public.pem
+      JWT_PASSPHRASE: ""
+      ACCESS_TOKEN_TTL: "7200"
+      REFRESH_TOKEN_TTL: "31536000"
+      REFRESH_TOKEN_SECRET: test_refresh_secret_key_32bytes
+      OTP_TTL: "300"
+      OTP_REDIS_DSN: redis://localhost:6379/0
+      ALIYUN_ACCESS_KEY_ID: test_key
+      ALIYUN_ACCESS_KEY_SECRET: test_secret
+      ALIYUN_SMS_REGION: cn-hangzhou
+      ALIYUN_SMS_SIGN_NAME: TestApp
+      ALIYUN_SMS_TEMPLATE_LOGIN_OTP: SMS_001
+      ALIYUN_SMS_DRY_RUN: "true"
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: app
+          POSTGRES_PASSWORD: app_secret
+          POSTGRES_DB: app_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 3
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: ctype, iconv, pdo, pdo_pgsql, xdebug
+          coverage: xdebug
           tools: composer:v2
 
       - name: Cache Composer
         uses: actions/cache@v4
         with:
           path: vendor
-          key: composer-${{ matrix.php }}-${{ hashFiles('composer.lock') }}
-          restore-keys: composer-${{ matrix.php }}-
+          key: composer-8.4-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-8.4-
 
       - name: Install dependencies
         run: composer install --prefer-dist --no-progress --no-interaction
 
       - name: Setup test database
         run: |
-          for token in 1 2 3 4; do
-            PGPASSWORD=app_secret psql --host=127.0.0.1 --username=app --dbname=app_test \
-              --command="CREATE DATABASE app_test_${token};" || true
-          done
+          php bin/console doctrine:database:create --env=test --quiet --if-not-exists || true
+          php bin/console doctrine:schema:update --env=test --force --quiet
 
-      - name: Run tests with coverage
-        run: |
-          set -eo pipefail
-          PCOV_ENABLED=1 PARATEST=1 php vendor/bin/paratest \
-            --processes=4 \
-            --coverage-text=/tmp/coverage.txt \
-            --display-deprecations
-          cat /tmp/coverage.txt \
-            | tee /dev/stderr \
-            | grep -i "Lines:" > /tmp/coverage_line.txt
-          cat /tmp/coverage_line.txt
+      - name: Run root suite with coverage
+        run: XDEBUG_MODE=coverage php -d memory_limit=512M vendor/bin/phpunit tests/ --coverage-php build/coverage/raw/root.cov --display-deprecations
 
-      - name: Check coverage threshold (90%)
-        run: |
-          COVERAGE=$(grep "^  Lines:" /tmp/coverage_line.txt | sed -E 's/.*Lines: *([0-9.]+)%.*/\1/')
-          THRESHOLD=90.0
-          echo "Line coverage: ${COVERAGE}%"
-          if [ $(echo "${COVERAGE} < ${THRESHOLD}" | bc) -eq 1 ]; then
-            echo "::error::Line coverage ${COVERAGE}% is below ${THRESHOLD}% threshold"
-            exit 1
-          fi
-          echo "Line coverage ${COVERAGE}% meets 90% threshold"
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-root
+          path: build/coverage/raw/root.cov
+          if-no-files-found: error
+
+  coverage:
+    name: Aggregate coverage gate
+    needs: [app-unit-tests, root-tests]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: ctype, iconv, pdo
+          tools: composer:v2
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress --no-interaction --no-scripts
+
+      - name: Download coverage artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: coverage-*
+          path: build/coverage/raw
+          merge-multiple: true
+
+      - name: Merge coverage and enforce line coverage
+        run: composer coverage:merge
+
+      - name: Upload aggregate coverage reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-aggregate
+          path: |
+            build/coverage/clover.xml
+            build/coverage/text.txt
+          if-no-files-found: error
 
   rector:
     runs-on: ubuntu-latest

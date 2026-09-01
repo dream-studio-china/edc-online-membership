@@ -1,0 +1,8 @@
+{
+    auto_https off
+}
+
+:80 {
+    root * /workspace/apps/trade/public
+    php_server
+}

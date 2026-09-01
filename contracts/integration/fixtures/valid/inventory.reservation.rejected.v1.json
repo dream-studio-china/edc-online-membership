@@ -1,0 +1,1 @@
+{"eventId":"00000000-0000-4000-8000-000000000008","type":"inventory.reservation.rejected","version":1,"aggregateType":"inventory_reservation","aggregateId":"00000000-0000-4000-8000-000000000018","occurredAt":"2026-07-29T12:00:00+00:00","correlationId":"00000000-0000-4000-8000-000000000018","causationId":null,"payload":{}}

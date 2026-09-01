@@ -35,17 +35,10 @@ Amounts are stored as integer cents/fen. For example, `1234` means `12.34 CNY`.
 
 Order workflow:
 
-```mermaid
-stateDiagram-v2
-    draft --> pending: submit
-    pending --> confirmed: confirm
-    confirmed --> paid: pay
-    paid --> fulfilled: fulfill
-    fulfilled --> completed: complete
-    completed --> refunded: refund
-    draft --> cancelled: cancel
-    pending --> cancelled: cancel
-    confirmed --> cancelled: cancel
+```text
+draft --submit--> pending --confirm--> confirmed --pay--> paid --fulfill--> fulfilled --complete--> completed --refund--> refunded
+  |                  |                       |
+  +------cancel------+----------cancel---------+
 ```
 
 Cancellation is allowed only from `draft`, `pending`, or `confirmed`.
@@ -66,14 +59,10 @@ Refund is allowed only from `completed`.
 
 Invoice workflow:
 
-```mermaid
-stateDiagram-v2
-    pending --> paying: start_pay
-    paying --> paid: mark_paid
-    paid --> partial_refunded: partial_refund
-    partial_refunded --> refunded: refund
-    pending --> failed: fail
-    paying --> cancelled: cancel
+```text
+pending --start_pay--> paying --mark_paid--> paid --partial_refund--> partial_refunded --refund--> refunded
+   |          |            |
+   +--fail----+--cancel----+
 ```
 
 Invoice `paid/refunded/cancelled/failed` events update the linked order payment fields automatically when the invoice source is a trade order.

@@ -1,10 +1,20 @@
 parameters:
     level: 8
     paths:
+        - apps/store/src/
+        - apps/inventory/src/
+        - apps/payment/src/
+        - apps/wallet/src/
+        - apps/identity/src/
+        - apps/common/src/
+        - apps/trade/src/
+        - apps/trade/src/
         - src/
+        - packages/legacy-messenger-compat/src/
+        - packages/platform-kernel/src/
     excludePaths:
         - src/*/Exception/*
-        - src/Identity/Sms/AliyunSmsProvider.php
+        - apps/identity/src/Main/Sms/AliyunSmsProvider.php
     bootstrapFiles:
         - vendor/autoload.php
     tmpDir: var/cache/phpstan
@@ -29,21 +39,34 @@ parameters:
         # --- Optional third-party SDKs not in composer.json ---
         -
             message: '#(Qiniu\\|Class Qiniu)#'
-            path: src/Storage/Service/QiniuStorage.php
+            path: apps/common/src/Storage/Service/QiniuStorage.php
 
         # --- Unused trait (Workflow mixin may be used via class_alias or future) ---
         -
             message: '#Trait .+WorkflowApiViewMixin is used zero times#'
-            path: src/Core/View/WorkflowApiViewMixin.php
+            path: packages/platform-kernel/src/View/WorkflowApiViewMixin.php
 
         # --- Curl\Curl — optional third-party HTTP client not in composer.json ---
         -
             message: '#Curl\\Curl#'
-            path: src/Core/Utils/Location.php
+            path: packages/platform-kernel/src/Utils/Location.php
 
         # --- Lifecycle callbacks support BaseService::new() bypassing constructors ---
         -
             message: '#Property .+::\$createdAt in isset\(\) is not nullable nor uninitialized#'
+            path: apps/payment/src/
+        -
+            message: '#Property .+::\$createdAt in isset\(\) is not nullable nor uninitialized#'
+            path: apps/wallet/src/
+        -
+            message: '#Property .+::\$createdAt in isset\(\) is not nullable nor uninitialized#'
+            path: apps/identity/src/
+        -
+            message: '#Property .+::\$createdAt in isset\(\) is not nullable nor uninitialized#'
+            path: apps/common/src/
+        -
+            message: '#Property .+::\$createdAt in isset\(\) is not nullable nor uninitialized#'
+            path: apps/trade/src/
 
 includes:
     - vendor/phpstan/phpstan-symfony/extension.neon

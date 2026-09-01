@@ -6,7 +6,6 @@ namespace App\Tests\Integration;
 
 use App\Common\Entity\Content;
 use Doctrine\ORM\EntityManagerInterface;
-use PHPUnit\Framework\Attributes\Group;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -82,7 +81,6 @@ final class TokenRevocationIntegrationTest extends IntegrationWebTestCase
         self::assertSame(200, $testClient->getResponse()->getStatusCode());
     }
 
-    #[Group('low-value')]
     public function testRefreshTokenIsRevokedAfterLogout(): void
     {
         $client = static::createAuthenticatedClient();

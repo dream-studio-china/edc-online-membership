@@ -1,0 +1,1 @@
+{"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"https://crud-platform.local/contracts/integration/events/trade.order.cancelled.v1.schema.json","allOf":[{"$ref":"https://crud-platform.local/contracts/integration/schema/envelope.schema.json"},{"properties":{"type":{"const":"trade.order.cancelled"},"version":{"const":1}}}]}

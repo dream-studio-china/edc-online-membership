@@ -1,0 +1,26 @@
+identity_controllers:
+    resource:
+        path: ../src/Main/Controller/
+        namespace: App\Identity\Main\Controller
+    type: attribute
+identity_app_controllers:
+    prefix: /api/v1
+    resource: { path: ../src/Main/Controller/App/, namespace: App\Identity\Main\Controller\App }
+    type: attribute
+identity_manage_controllers:
+    prefix: /api/v1
+    resource: { path: ../src/Main/Controller/Manage/, namespace: App\Identity\Main\Controller\Manage }
+    type: attribute
+wechat_controllers:
+    resource:
+        path: ../src/Wechat/Controller/
+        namespace: App\Identity\Wechat\Controller
+    type: attribute
+wechat_app_controllers:
+    prefix: /api/v1
+    resource: { path: ../src/Wechat/Controller/App/, namespace: App\Identity\Wechat\Controller\App }
+    type: attribute
+wechat_manage_controllers:
+    prefix: /api/v1
+    resource: { path: ../src/Wechat/Controller/Manage/, namespace: App\Identity\Wechat\Controller\Manage }
+    type: attribute

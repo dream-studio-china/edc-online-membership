@@ -7,13 +7,28 @@
 
 ## 1. Layer Architecture
 
-```mermaid
-flowchart TD
-    A["Request/Response"] --> B["HTTP Layer<br/>(Controllers / View Mixins)<br/>Only layer touching Request/Response"]
-    B -->|"(Service Interface only)"| C["Service Layer<br/>All business logic, transactions, validation"]
-    C -->|"(Repository only)"| D["Repository Layer<br/>Data access queries (Doctrine repositories)"]
-    D -->|"(Entities only)"| E["Entity Layer (Domain Model)<br/>Pure data objects, no business logic"]
-    E -->|"(Doctrine ORM)"| F["Infrastructure (ORM, Cache, Serializer)<br/>Framework-provided"]
+```
+Request/Response
+      |
++-----v------------------------------------+
+|  HTTP Layer  (Controllers / View Mixins) |  <-- Only layer touching Request/Response
++-----+------------------------------------+
+      |  (Service Interface only)
++-----v------------------------------------+
+|  Service Layer                           |  <-- All business logic, transactions, validation
++-----+------------------------------------+
+      |  (Repository only)
++-----v------------------------------------+
+|  Repository Layer                        |  <-- Data access queries (Doctrine repositories)
++-----+------------------------------------+
+      |  (Entities only)
++-----v------------------------------------+
+|  Entity Layer (Domain Model)             |  <-- Persistence and aggregate-local invariants
++-----+------------------------------------+
+      |  (Doctrine ORM)
++-----v------------------------------------+
+|  Infrastructure (ORM, Cache, Serializer) |  <-- Framework-provided
++------------------------------------------+
 ```
 
 ### 1.1 Layer Dependency Rules
@@ -34,7 +49,12 @@ flowchart TD
 
 ---
 
-## 2. Vertical Slice (Module) Structure
+## 2. Current Modular-Monolith Structure
+
+This section describes the current single Symfony application. A module is a
+source-level boundary, not an independently deployable service. The target
+multi-application architecture and extraction gates are defined in
+[Microservice Transition Contract](microservice-transition.md).
 
 Each business domain is a self-contained module under `src/`:
 
@@ -52,20 +72,25 @@ src/{Module}/
 |-- Resources/config/     # Module-specific DI configuration
 ```
 
-### 2.1 Mandatory Artifacts per Module
+### 2.1 Typical Artifacts per Module
 
 | Artifact | Requirement |
 |----------|-------------|
-| Entity class(es) | PHP 8 attributes (Doctrine ORM), integer auto-increment `id` |
-| Repository class(es) | Extends `ServiceEntityRepository` |
-| Service class(es) | Extends `BaseService`, implements `{Name}ServiceInterface` |
-| Service interface | Extends `BaseServiceInterface` (can be empty) |
-| App controller(s) | Read-only public endpoints |
-| Manage controller(s) | CRUD endpoints guarded by `ROLE_ADMIN` |
+| Entity/repository | Required only when the module owns relational persistence |
+| Service/application handler | Required for module use cases; generic CRUD is optional |
+| Exported interface | Required only for an intentional in-process extension point |
+| HTTP controller | Required only when the module owns HTTP endpoints |
+| Command/message handler | Used when the module owns asynchronous or scheduled work |
+
+Infrastructure adapters and event-driven modules do not need CRUD controllers,
+Doctrine entities, or `BaseService` subclasses merely to conform to a template.
 
 ---
 
 ## 3. Cross-Module Communication Contract
+
+These rules apply while modules run inside the current monolith. They MUST NOT
+be used as a justification for a future service boundary.
 
 ### 3.1 Allowed
 
@@ -73,24 +98,35 @@ src/{Module}/
 |------|----|-----------|
 | Any Business Module | Core | DI (autowire Core services) |
 | Business Module A | Business Module B | DI (autowire B's service **interface**) |
-| Any Module | Identity | DI (TokenStorage for current user) |
+| Any Module | Identity | Current principal abstraction or a deliberately exported service |
 
 ### 3.2 Forbidden
 
 | Pattern | Reason |
 |---------|--------|
-| Direct cross-module Entity access | Use service interface |
+| Direct cross-module Entity access | Use an explicit module API or a scalar reference/snapshot |
 | Direct cross-module Repository access | Use service interface |
 | Circular module dependencies | Violates layer architecture |
 | Core importing business modules | Core is foundational |
 
 ### 3.3 Module Interface Contract
 
-- Each module **exports** service interfaces (e.g., `CategoryServiceInterface`)
-- Other modules **consume** only those interfaces, never concrete implementations
-- Interfaces are auto-discovered via `services.yaml`
+- A module exports an interface only for a deliberate in-process extension point
+  (for example, `CategoryServiceInterface`).
+- Other modules consume an exported application API rather than a concrete
+  implementation.
+- Exported interfaces are auto-discovered via `services.yaml`; new code should
+  keep their operations use-case-specific.
 
-### 3.4 Cross-Boundary Identity Contract
+### 3.4 Future Service Boundary Contract
+
+For independently deployable services, direct DI is forbidden. Use a documented
+HTTP/gRPC command/query API or a versioned integration event. The contract MUST
+use scalar values and snapshots only; it MUST NOT expose Doctrine, Symfony HTTP,
+or shared mutable PHP objects. See the
+[Microservice Transition Contract](microservice-transition.md).
+
+### 3.5 Cross-Boundary Identity Contract
 
 Modules and future services MUST NOT exchange local auto-increment database IDs as
 durable references. Each cross-boundary aggregate exposes a UUID or another explicitly
@@ -111,9 +147,10 @@ own authorization and ownership rules.
 
 ---
 
-## 4. Core Framework (`src/Core/`)
+## 4. Core Framework (`packages/platform-kernel/src/`)
 
 Core provides foundational abstractions. It MUST NOT depend on any business module.
+It is a framework library candidate, not a future network service.
 
 ### 4.1 Core Exports (Public API)
 
@@ -174,6 +211,18 @@ services:
 ```
 
 Sorted by `getPriority(): int` method, executed in priority order.
+
+### 5.5 Architecture Dependency Gate
+
+Run `composer deptrac` to enforce the initial migration boundaries:
+
+- Core MUST NOT depend on a business module.
+- A module MUST NOT add a dependency on another module's `Entity` or `Repository`.
+
+`deptrac-baseline.yaml` contains reviewed, exact historical source-to-target
+violations. It is a debt register, not a namespace-level exception mechanism:
+new baseline entries require an explicit architecture decision, while fixed
+dependencies should remove their entry.
 
 ---
 

@@ -1,0 +1,9 @@
+security:
+    providers:
+        payment_placeholder:
+            memory: null
+
+    firewalls:
+        main:
+            lazy: true
+            provider: payment_placeholder

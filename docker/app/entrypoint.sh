@@ -5,6 +5,12 @@ PRIVATE_KEY_PATH="${JWT_PRIVATE_KEY_PATH:-/var/www/html/var/jwt/jwt_private.pem}
 PUBLIC_KEY_PATH="${JWT_PUBLIC_KEY_PATH:-/var/www/html/var/jwt/jwt_public.pem}"
 APP_ENV="${APP_ENV:-prod}"
 
+# Symfony Runtime always probes .env. Container configuration is supplied via
+# environment variables, so a missing file only needs an empty placeholder.
+if [ ! -f /var/www/html/.env ]; then
+    : > /var/www/html/.env
+fi
+
 if [ ! -f "${PRIVATE_KEY_PATH}" ] || [ ! -f "${PUBLIC_KEY_PATH}" ]; then
     if [ "${APP_ENV}" = "prod" ]; then
         echo "JWT keys are missing. Generate them on the host before starting production." >&2
@@ -33,4 +39,4 @@ if [ ! -f "${PRIVATE_KEY_PATH}" ] || [ ! -f "${PUBLIC_KEY_PATH}" ]; then
     echo "Development JWT keys are ready. They persist under the mounted var/ directory."
 fi
 
-exec docker-php-entrypoint "$@"
+exec "$@"

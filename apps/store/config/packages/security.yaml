@@ -1,0 +1,9 @@
+security:
+    providers:
+        store_placeholder:
+            memory: null
+
+    firewalls:
+        main:
+            lazy: true
+            provider: store_placeholder

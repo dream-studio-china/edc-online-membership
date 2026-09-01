@@ -1,0 +1,13 @@
+framework:
+    messenger:
+        failure_transport: failed
+        transports:
+            async:
+                dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
+                serializer: messenger.transport.native_php_serializer
+            failed:
+                dsn: 'doctrine://default?queue_name=failed'
+                serializer: messenger.transport.native_php_serializer
+        default_bus: messenger.bus.default
+        buses:
+            messenger.bus.default: []

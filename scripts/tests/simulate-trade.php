@@ -7,7 +7,7 @@
  */
 declare(strict_types=1);
 
-use App\Identity\Entity\User;
+use App\Identity\Main\Entity\User;
 use App\Kernel;
 use App\Trade\Entity\Order;
 use App\Trade\Entity\OrderItem;
@@ -28,8 +28,8 @@ $_ENV['MESSENGER_TRANSPORT_DSN'] = 'doctrine://default';
 $_ENV['DEFAULT_URI'] = 'http://localhost';
 $_ENV['MAILER_DSN'] = 'null://null';
 $_ENV['APP_SECRET'] = 'sim_secret_32_bytes_long_key';
-$_ENV['JWT_PRIVATE_KEY_PATH'] = dirname(__DIR__, 2) . '/tests/Identity/Security/test_private.pem';
-$_ENV['JWT_PUBLIC_KEY_PATH'] = dirname(__DIR__, 2) . '/tests/Identity/Security/test_public.pem';
+$_ENV['JWT_PRIVATE_KEY_PATH'] = dirname(__DIR__, 2) . '/apps/identity/tests/Identity/Security/test_private.pem';
+$_ENV['JWT_PUBLIC_KEY_PATH'] = dirname(__DIR__, 2) . '/apps/identity/tests/Identity/Security/test_public.pem';
 $_ENV['JWT_PASSPHRASE'] = '';
 $_ENV['REFRESH_TOKEN_SECRET'] = 'sim_refresh_secret_32_bytes';
 putenv('APP_ENV=test');
@@ -38,8 +38,8 @@ putenv('MESSENGER_TRANSPORT_DSN=doctrine://default');
 putenv('DEFAULT_URI=http://localhost');
 putenv('MAILER_DSN=null://null');
 putenv('APP_SECRET=sim_secret_32_bytes_long_key');
-putenv('JWT_PRIVATE_KEY_PATH=' . dirname(__DIR__, 2) . '/tests/Identity/Security/test_private.pem');
-putenv('JWT_PUBLIC_KEY_PATH=' . dirname(__DIR__, 2) . '/tests/Identity/Security/test_public.pem');
+putenv('JWT_PRIVATE_KEY_PATH=' . dirname(__DIR__, 2) . '/apps/identity/tests/Identity/Security/test_private.pem');
+putenv('JWT_PUBLIC_KEY_PATH=' . dirname(__DIR__, 2) . '/apps/identity/tests/Identity/Security/test_public.pem');
 putenv('JWT_PASSPHRASE=');
 putenv('REFRESH_TOKEN_SECRET=sim_refresh_secret_32_bytes');
 
@@ -76,11 +76,11 @@ info("Users: " . implode(', ', $userNames) . " (admin: alice)");
 // ================================================================
 info("Creating wallets...");
 $wallets = [];
-$systemWallet = new Wallet($users[0], 'SYS'); // system currency SYS (avoids collision)
+$systemWallet = new Wallet($users[0]->getUuid(), 'SYS'); // system currency SYS (avoids collision)
 $em->persist($systemWallet);
 
 foreach ($users as $i => $u) {
-    $w = new Wallet($u, 'CNY');
+    $w = new Wallet($u->getUuid(), 'CNY');
     $em->persist($w);
     $wallets['CNY'][$i] = $w;
 }
@@ -365,7 +365,7 @@ foreach (['draft', 'pending', 'confirmed', 'paid', 'fulfilled', 'completed', 're
 // Wallet summary
 $walletSummary = $db->executeQuery(
     "SELECT u.username, w.currency, w.balance, w.label
-     FROM wallet w LEFT JOIN users u ON w.user_id = u.id
+     FROM wallet w LEFT JOIN users u ON w.owner_uuid = u.uuid
      ORDER BY w.currency, w.balance DESC"
 )->fetchAllAssociative();
 echo "\n  \033[1mWallet Balances:\033[0m\n";

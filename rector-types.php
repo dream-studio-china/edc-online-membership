@@ -8,7 +8,13 @@ use Rector\Doctrine\TypedCollections\Rector\Class_\CompleteReturnDocblockFromToM
 
 return RectorConfig::configure()
     ->withPaths([
+    __DIR__ . '/apps/store/src',
+    __DIR__ . '/apps/inventory/src',
+    __DIR__ . '/apps/payment/src',
+    __DIR__ . '/apps/wallet/src',
         __DIR__ . '/src',
+        __DIR__ . '/packages/legacy-messenger-compat/src',
+        __DIR__ . '/packages/platform-kernel/src',
     ])
     ->withRules([
         AddAnnotationToRepositoryRector::class,

@@ -270,14 +270,16 @@ private int $version = 1;
 For comments/reactions referencing different entity types:
 
 ```php
-#[ORM\Column(length: 100)]
-private string $entityType;  // e.g., 'App\Common\Entity\Content'
+#[ORM\Column(length: 50)]
+private string $targetType;  // e.g., 'content'
 
-#[ORM\Column]
-private int $entityId;
+#[ORM\Column(length: 36)]
+private string $targetUuid;
 ```
 
-**No FK constraint** (resolved in application layer).
+**No FK constraint** (resolved in application layer). Do not persist PHP class
+names or another bounded context's local integer ID. If comments are intended
+only for CMS-owned entities, restrict `targetType` to that bounded context.
 
 ### 7.6 JSON Metadata / Extra Data
 
@@ -353,7 +355,7 @@ Validation is invoked in `BaseService::update()` via Symfony Validator. Entities
 | Anti-Pattern | What to Do Instead |
 |-------------|-------------------|
 | Entity extending `RestController` or `BaseService` | Entities are pure data objects |
-| Business logic in Entity methods | Move to Service layer |
+| Cross-aggregate orchestration in Entity methods | Move to an application service |
 | Injecting services into Entity | Entities MUST NOT use DI |
 | Direct `$em->persist()` in Entity | Use Service layer |
 | Mutable `DateTime` | Use `DateTimeImmutable` |

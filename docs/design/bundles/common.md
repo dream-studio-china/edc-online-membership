@@ -1,6 +1,6 @@
 # Common Bundle Design
 
-> The Common bundle (`src/Common/`) is the CMS (Content Management System) module. It provides
+> The Common bundle (`src/Main/`) is the CMS (Content Management System) module. It provides
 > standard content entities (Category, Tag, Content, Comment, Page, Media, Setting) with
 > public read-only APIs and admin CRUD endpoints.
 
@@ -27,7 +27,7 @@ Common is a generic CMS module with 7 entity types for building content-driven a
 ## 2. File Structure
 
 ```
-src/Common/
+src/Main/
 |-- Controller/
 |   |-- App/
 |   |   |-- CategoryController.php      # GET list/detail (enabled only)

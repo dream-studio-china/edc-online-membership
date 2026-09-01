@@ -1,0 +1,6 @@
+deptrac:
+  skip_violations:
+    App\Trade\EventListener\OrderInvoiceListener:
+      - App\Payment\Entity\Invoice
+    App\Trade\Service\OrderService:
+      - App\Payment\Entity\Invoice

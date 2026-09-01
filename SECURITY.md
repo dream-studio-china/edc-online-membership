@@ -101,7 +101,7 @@ The following components are **in scope**:
 - `public/` — Front controller and `.htaccess`
 - `docker/` — Docker images and entrypoint scripts
 - `compose.yaml` / `compose.prod.yaml` — Docker Compose configuration
-- JWT implementation (`App\Identity\Security\JwtAuthenticator`, `TokenManager`)
+- JWT implementation (`App\Identity\Main\Security\JwtAuthenticator`, `TokenManager`)
 - Payment gateway implementations (`WalletGateway`, `WechatPayGateway`, `MockGateway`)
 
 ---

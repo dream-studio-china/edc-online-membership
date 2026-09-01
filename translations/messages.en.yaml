@@ -22,21 +22,21 @@
 "Specification": "Specification"
 "Invoice": "Invoice"
 "Wallet": "Wallet"
-"Transaction": "Transaction"
-"PaymentDeduction": "Payment Deduction"
+"WalletTransaction": "WalletTransaction"
+"WalletPaymentDeduction": "WalletPaymentDeduction"
 "WechatUser": "WechatUser"
 "Material": "Material"
-"Stock": "Stock"
+"InventoryStock": "Inventory Stock"
 "SpecificationRecipe": "Specification Recipe"
 "RecipeLine": "Recipe Line"
-"Reservation": "Reservation"
+"InventoryReservation": "Inventory Reservation"
 "ReservationLine": "Reservation Line"
-"LedgerEntry": "Ledger Entry"
+"InventoryLedgerEntry": "Inventory Ledger Entry"
 "InventoryConsumedEvent": "Inventory Consumed Event"
 "InventoryOutboxMessage": "Inventory Outbox Message"
 "StoreTradeOrderCancellation": "Store Trade Order Cancellation"
 "StoreOrder": "Store Order"
-"Membership": "Membership"
+"StoreMembership": "Store Membership"
 "Profile": "Profile"
 "Promotion": "Promotion"
 "PromotionTemplate": "Promotion Template"
@@ -44,10 +44,6 @@
 "StoreConsumedEvent": "Store Consumed Event"
 "StoreOutboxMessage": "Store Outbox Message"
 "TradeOutboxMessage": "Trade Outbox Message"
-"Voucher": "Voucher"
-"VoucherComment": "Voucher Comment"
-"Reconciliation": "Reconciliation"
-"Refund": "Refund"
 
 # ====================================================================
 # Entity field names (camelCase → plain text, used by EntityController)
@@ -198,6 +194,7 @@
 "Released at": "Released at"
 "Request hash": "Request hash"
 "Requested quantity": "Requested quantity"
+"Reservation": "Reservation"
 "Reservation id": "Reservation id"
 "Reserved after": "Reserved after"
 "Reserved delta": "Reserved delta"
@@ -274,7 +271,6 @@
 "OTP sent too recently, please wait.": "OTP sent too recently, please wait."
 "Failed to send SMS.": "Failed to send SMS."
 "Password cannot be empty.": "Password cannot be empty."
-"Too many requests. Please try again later.": "Too many requests. Please try again later."
 
 # ====================================================================
 # JWT
@@ -357,7 +353,6 @@
 "Deduction currency must match invoice currency.": "Deduction currency must match invoice currency."
 "Invoice payer is required for wallet payment deduction.": "Invoice payer is required for wallet payment deduction."
 "%d wallet(s) reconciled": "%d wallet(s) reconciled"
-"walletId, amount, currency, and referenceId are required": "walletId, amount, currency, and referenceId are required"
 
 # ====================================================================
 # Trade / Order
@@ -392,7 +387,6 @@
 "Invalid mock payment secret.": "Invalid mock payment secret."
 "Payment notify amount or currency does not match invoice.": "Payment notify amount or currency does not match invoice."
 "amount and reason are required.": "amount and reason are required."
-"Invoice has an active wallet deposit voucher; reverse the deposit before refunding.": "Invoice has an active wallet deposit voucher; reverse the deposit before refunding."
 
 # ====================================================================
 # Payment gateway / adjustment

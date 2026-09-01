@@ -1,0 +1,9 @@
+security:
+    providers:
+        inventory_placeholder:
+            memory: null
+
+    firewalls:
+        main:
+            lazy: true
+            provider: inventory_placeholder

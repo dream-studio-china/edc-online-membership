@@ -8,6 +8,7 @@
 /public/uploads/
 /var/
 /vendor/
+/build/
 ###< symfony/framework-bundle ###
 
 ###> phpunit/phpunit ###
@@ -22,6 +23,7 @@
 
 # Temp files
 .DS_Store
+/.deptrac.cache
 Thumbs.db
 
 *.swp

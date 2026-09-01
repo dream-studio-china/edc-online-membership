@@ -25,7 +25,7 @@ The main risks are not structural failure, but overly broad generic capabilities
 Add an explicit tag in `services_wechat.yaml`:
 
 ```yaml
-App\Wechat\Service\Gateway\WechatPayGateway:
+App\Identity\Wechat\Service\Gateway\WechatPayGateway:
     arguments:
         $notifyUrl: '%env(WECHAT_PAY_NOTIFY_URL)%'
     tags: ['payment.gateway']
@@ -39,7 +39,7 @@ Alternatively, add an `_instanceof` rule inside the WeChat service config for `P
 
 **Evidence:**
 
-- System controllers are routed under `/system`, for example `src/Core/Controller/System/EntityController.php`.
+- System controllers are routed under `/system`, for example `packages/platform-kernel/src/Controller/System/EntityController.php`.
 - The configured API firewall only matches `^/api` in `config/packages/security.yaml`.
 - `access_control` rules only restrict `/api` paths and do not cover `/system`.
 

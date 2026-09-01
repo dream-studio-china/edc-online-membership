@@ -1,6 +1,6 @@
 # Core Bundle Design
 
-> The Core bundle (`src/Core/`) is the **foundational framework** that all business modules depend on.
+> The Core bundle (`packages/platform-kernel/src/`) is the **foundational framework** that all business modules depend on.
 > It provides the controller base class, CRUD service abstraction, dynamic query engine, view mixin system, serializer pipeline, and utility classes.
 
 ---
@@ -27,7 +27,7 @@ The Core bundle is NOT a business module -- it is the framework layer. It export
 ## 2. File Structure
 
 ```
-src/Core/
+packages/platform-kernel/src/
 |-- CoreBundle.php                              # Empty Symfony bundle class
 |-- Controller/
 |   |-- RestController.php                      # Base API controller (356 lines)
@@ -93,7 +93,7 @@ src/Core/
 
 ## 3. RestController -- Base Controller Contract
 
-**File**: `src/Core/Controller/RestController.php`
+**File**: `packages/platform-kernel/src/Controller/RestController.php`
 
 Extends `Symfony\Bundle\FrameworkBundle\Controller\AbstractController`. All API controllers MUST extend this.
 
@@ -139,8 +139,8 @@ expandObjects($entities, $expands): void
 
 ## 4. BaseService -- CRUD Service Contract
 
-**File**: `src/Core/Service/BaseService.php`
-**Interface**: `src/Core/Service/BaseServiceInterface.php`
+**File**: `packages/platform-kernel/src/Service/BaseService.php`
+**Interface**: `packages/platform-kernel/src/Service/BaseServiceInterface.php`
 
 Composed of three traits:
 
@@ -232,7 +232,7 @@ $this->wrapInTransaction(function ($em) {
 
 See the [Controller Design Contract](../controller-design.md) for the full trait catalog and hook contracts.
 
-The 9 traits in `src/Core/View/` provide the controller composition toolkit:
+The 9 traits in `packages/platform-kernel/src/View/` provide the controller composition toolkit:
 
 | Trait | Route(s) | Purpose |
 |-------|----------|---------|
@@ -266,7 +266,7 @@ User query string (@filter or @sort)
 
 ### 6.2 ExpressionDqlParser
 
-**File**: `src/Core/Parser/ExpressionDqlParser.php` (479 lines)
+**File**: `packages/platform-kernel/src/Parser/ExpressionDqlParser.php` (479 lines)
 
 - Compiles string expressions into DQL fragments
 - Supports binary operators (`==`, `!=`, `>`, `<`, `>=`, `<=`, `&&`, `||`, `+`, `-`, `*`, `/`, `matches`)
@@ -278,7 +278,7 @@ User query string (@filter or @sort)
 
 ### 6.3 ExpressionQueryBuilderAssembler
 
-**File**: `src/Core/Parser/ExpressionQueryBuilderAssembler.php` (172 lines)
+**File**: `packages/platform-kernel/src/Parser/ExpressionQueryBuilderAssembler.php` (172 lines)
 
 - Assembles QueryBuilder from parser fragments
 - Handles alias remapping for JOINs
@@ -361,7 +361,7 @@ services:
   App\:
     resource: '../src/'
     exclude:
-      - '../src/Core/Serializer/Normalizer/FlatNormalizer.php'
+       - '../vendor/crud-platform/platform-kernel/src/Serializer/Normalizer/FlatNormalizer.php'
       - '../src/*/EventListener/'
       - '../src/Identity/Controller/'
       - '../src/Identity/Security/'

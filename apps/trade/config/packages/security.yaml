@@ -1,0 +1,8 @@
+security:
+    providers:
+        trade_placeholder:
+            memory: null
+    firewalls:
+        main:
+            lazy: true
+            provider: trade_placeholder

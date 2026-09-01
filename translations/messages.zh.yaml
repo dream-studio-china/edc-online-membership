@@ -17,21 +17,21 @@
 "Specification": "规格"
 "Invoice": "发票"
 "Wallet": "钱包"
-"Transaction": "钱包交易"
-"PaymentDeduction": "支付抵扣"
+"WalletTransaction": "钱包交易"
+"WalletPaymentDeduction": "钱包支付抵扣"
 "WechatUser": "微信用户"
 "Material": "物料"
-"Stock": "库存"
+"InventoryStock": "库存"
 "SpecificationRecipe": "规格配方"
 "RecipeLine": "配方行"
-"Reservation": "预留"
+"InventoryReservation": "库存预留"
 "ReservationLine": "预留行"
-"LedgerEntry": "台账"
+"InventoryLedgerEntry": "库存台账"
 "InventoryConsumedEvent": "库存已消费事件"
 "InventoryOutboxMessage": "库存发件箱消息"
 "StoreTradeOrderCancellation": "门店交易订单取消"
 "StoreOrder": "门店订单"
-"Membership": "成员"
+"StoreMembership": "门店成员"
 "Profile": "个人资料"
 "Promotion": "促销活动"
 "PromotionTemplate": "促销模板"
@@ -39,10 +39,6 @@
 "StoreConsumedEvent": "门店已消费事件"
 "StoreOutboxMessage": "门店发件箱消息"
 "TradeOutboxMessage": "交易发件箱消息"
-"Reconciliation": "对账"
-"Refund": "退款"
-"Voucher": "凭证"
-"VoucherComment": "凭证备注"
 
 # Entity field names
 "Id": "ID"
@@ -133,7 +129,6 @@
 "Amount": "金额"
 "Refunded amount": "已退金额"
 "Payer": "付款方"
-"Payer id": "付款人 ID"
 "Subject": "主题"
 "Extra data": "附加数据"
 "Balance": "余额"
@@ -191,6 +186,7 @@
 "Released at": "释放时间"
 "Request hash": "请求哈希"
 "Requested quantity": "请求数量"
+"Reservation": "预留"
 "Reservation id": "预留ID"
 "Reserved after": "调整后预留数量"
 "Reserved delta": "预留数量变化"
@@ -263,7 +259,6 @@
 "OTP sent too recently, please wait.": "验证码发送过于频繁，请稍后再试。"
 "Failed to send SMS.": "短信发送失败。"
 "Password cannot be empty.": "密码不能为空。"
-"Too many requests. Please try again later.": "请求过于频繁，请稍后再试。"
 
 # JWT
 "Missing JWT token.": "缺少JWT令牌。"
@@ -336,7 +331,6 @@
 "Deduction currency must match invoice currency.": "抵扣币种必须与发票币种一致。"
 "Invoice payer is required for wallet payment deduction.": "钱包支付抵扣需要发票付款方。"
 "%d wallet(s) reconciled": "已对账%d个钱包。"
-"walletId, amount, currency, and referenceId are required": "walletId、amount、currency、referenceId 为必填项。"
 
 # Trade / Order
 "Items are required.": "订单项为必填项。"
@@ -367,7 +361,6 @@
 "Invalid mock payment secret.": "无效的模拟支付密钥。"
 "Payment notify amount or currency does not match invoice.": "支付通知的金额或币种与发票不匹配。"
 "amount and reason are required.": "金额和原因为必填项。"
-"Invoice has an active wallet deposit voucher; reverse the deposit before refunding.": "发票存在已生效的钱包入账凭证，请先撤回入账再退款。"
 
 # Payment gateway / adjustment
 "Payment gateway \"%s\" is not registered.": "支付网关\"%s\"未注册。"

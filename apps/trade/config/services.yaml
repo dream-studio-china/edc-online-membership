@@ -1,0 +1,40 @@
+imports:
+    - { resource: '../src/Promotion/Resources/config/services_promotion.yaml' }
+    - { resource: '../vendor/crud-platform/payment-app/config/services.yaml' }
+
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+    _instanceof:
+        App\Core\Controller\RestController:
+            calls:
+                - [setRequestStack, ['@request_stack']]
+                - [setSerializer, ['@serializer']]
+                - [setTranslator, ['@translator']]
+                - [setServiceContainer, ['@service_container']]
+    App\Trade\:
+        resource: '../src/Trade/'
+        exclude: '../src/Trade/Kernel.php'
+    App\Promotion\:
+        resource: '../src/Promotion/'
+        exclude:
+            - '../src/Promotion/Exception/*'
+            - '../src/Promotion/Resources/'
+    App\Core\:
+        resource: '../vendor/crud-platform/platform-kernel/src/'
+        exclude:
+            - '../vendor/crud-platform/platform-kernel/src/Serializer/Normalizer/FlatNormalizer.php'
+            - '../vendor/crud-platform/platform-kernel/src/EventListener/*'
+    App\Core\EventListener\ExceptionInterceptor:
+        tags: [{ name: kernel.event_listener, event: kernel.exception, method: onKernelException }]
+        arguments: { $translator: '@translator', $logger: '@logger', $env: '%kernel.environment%' }
+    App\Core\EventListener\ControllerListener:
+        tags: [{ name: kernel.event_listener, event: kernel.controller, method: onKernelController }]
+        arguments: { $tokenStorage: '@security.token_storage', $logger: '@logger' }
+    App\Core\Service\ServiceLocatorInterface: '@App\Core\Service\DefaultServiceLocator'
+    App\Core\Security\UserUuidResolverInterface: '@App\Trade\Security\UnavailableUserUuidResolver'
+    Symfony\Component\DependencyInjection\ContainerInterface: '@service_container'
+    Psr\Log\LoggerInterface: '@logger'
+    Symfony\Component\Serializer\SerializerInterface: '@serializer'
+    Symfony\Contracts\Translation\TranslatorInterface: '@translator'

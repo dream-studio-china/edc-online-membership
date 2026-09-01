@@ -7,7 +7,7 @@
  */
 declare(strict_types=1);
 
-use App\Identity\Entity\User;
+use App\Identity\Main\Entity\User;
 use App\Kernel;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\SchemaTool;
@@ -24,8 +24,8 @@ $_ENV['MESSENGER_TRANSPORT_DSN'] = 'doctrine://default';
 $_ENV['DEFAULT_URI'] = 'http://localhost';
 $_ENV['MAILER_DSN'] = 'null://null';
 $_ENV['APP_SECRET'] = 'demo_secret_key_for_testing';
-$_ENV['JWT_PRIVATE_KEY_PATH'] = dirname(__DIR__, 2) . '/tests/Identity/Security/test_private.pem';
-$_ENV['JWT_PUBLIC_KEY_PATH'] = dirname(__DIR__, 2) . '/tests/Identity/Security/test_public.pem';
+$_ENV['JWT_PRIVATE_KEY_PATH'] = dirname(__DIR__, 2) . '/apps/identity/tests/Identity/Security/test_private.pem';
+$_ENV['JWT_PUBLIC_KEY_PATH'] = dirname(__DIR__, 2) . '/apps/identity/tests/Identity/Security/test_public.pem';
 $_ENV['JWT_PASSPHRASE'] = '';
 $_ENV['REFRESH_TOKEN_SECRET'] = 'test_refresh_secret_32';
 $_ENV['ACCESS_TOKEN_TTL'] = '7200';

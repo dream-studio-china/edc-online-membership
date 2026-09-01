@@ -1,174 +1,88 @@
 # Quick Start
 
-This Quick Start walks you through a minimal, runnable development setup.
+This repository runs as one modular-monolith application with independent Store,
+Inventory, Payment, Wallet, Identity, Common, and Trade apps. Docker Compose starts
+the web app (FrankenPHP), seven extracted apps, one shared Messenger worker, and one
+shared scheduler. It is not yet the target multi-service runtime.
 
-## Option A: Docker (recommended)
+## Docker
 
-No PHP, Composer, or database setup required on your host. Prerequisites: **Docker** only.
+Docker is the recommended local path and the only host prerequisite.
 
 ```bash
-# 1) Start all services (app, worker, scheduler, nginx, MySQL, Redis, Mailpit)
 docker compose up -d --build
-
-# 2) Run database migration
 docker compose exec app php bin/console doctrine:migrations:migrate --no-interaction
-
-# 3) Create admin user
+docker compose exec store-app php bin/console doctrine:migrations:migrate --no-interaction
+docker compose exec inventory-app php bin/console doctrine:migrations:migrate --no-interaction
+docker compose exec payment-app php bin/console doctrine:migrations:migrate --no-interaction
+docker compose exec wallet-app php bin/console doctrine:migrations:migrate --no-interaction
+docker compose exec identity-app php bin/console doctrine:migrations:migrate --no-interaction
+docker compose exec common-app php bin/console doctrine:migrations:migrate --no-interaction
+docker compose exec trade-app php bin/console doctrine:migrations:migrate --no-interaction
 docker compose exec app php bin/console app:identity:user:create admin@example.com admin 'P@ssw0rd' --admin
+```
 
-# 4) Login and get token
-curl -s -X POST http://localhost:8080/api/auth/login \
+Verify login:
+
+```bash
+curl -X POST http://localhost:8080/api/auth/login \
   -H 'Content-Type: application/json' \
-  -d '{"identifier":"admin@example.com","password":"P@ssw0rd"}' \
-  | php -r 'print_r(json_decode(stream_get_contents(STDIN),true));'
+  -d '{"identifier":"admin@example.com","password":"P@ssw0rd"}'
 ```
 
-> Docker dev creates JWT keys once under the mounted `./var/jwt` directory and reuses them on later starts. For production, generate keys on the host before starting — see [README](README.md#docker-deployment).
+Open:
 
-> `worker` consumes Messenger's `async` transport and `scheduler` publishes Trade/Store/Inventory Outbox rows and releases expired reservations every five seconds. Both start automatically with Compose. Check them with `docker compose logs -f worker scheduler`.
+- API: `http://localhost:8080`
+- Store API: `http://localhost:8081`
+- Inventory API: `http://localhost:8082`
+- Payment runtime smoke: `http://localhost:8083` (not traffic-ready)
+- Wallet runtime smoke: `http://localhost:8084` (not traffic-ready)
+- Identity runtime smoke: `http://localhost:8085` (not traffic-ready)
+- Common runtime smoke: `http://localhost:8086` (not traffic-ready)
+- Trade runtime smoke: `http://localhost:8087` (not traffic-ready)
+- OpenAPI UI: `http://localhost:8080/api/doc`
+- Mailpit: `http://localhost:8025`
 
-Docker development uses built-in safe defaults. Create a Docker env file only when you need to customize ports, database credentials, or optional integrations:
+Useful commands:
 
 ```bash
-cp .env.example .env.docker.local
-docker compose --env-file .env.docker.local up -d --build
+docker compose logs -f app worker scheduler store-app inventory-app payment-app wallet-app identity-app common-app trade-app
+docker compose exec app php bin/console about
+docker compose exec app php bin/console doctrine:migrations:status
+docker compose exec store-app php bin/console doctrine:migrations:status
+docker compose exec inventory-app php bin/console doctrine:migrations:status
+docker compose exec payment-app php bin/console doctrine:migrations:status
+docker compose exec wallet-app php bin/console doctrine:migrations:status
+docker compose exec identity-app php bin/console doctrine:migrations:status
+docker compose exec common-app php bin/console doctrine:migrations:status
+docker compose exec trade-app php bin/console doctrine:migrations:status
+docker compose down
 ```
 
----
+Docker creates development JWT keys under `var/jwt/` on first start. Optional SMS
+and WeChat integrations remain disabled until configured.
 
-## Option B: Native PHP
+## Native PHP
 
-Prerequisites
-- PHP 8.4+ (Homebrew is recommended on macOS)
-- Composer
-- MySQL / MariaDB or PostgreSQL (as configured in `DATABASE_URL`)
-- Optional: Symfony CLI
-
-On macOS (Homebrew):
-
-```bash
-brew install php composer
-```
-
-1) Install dependencies
+Native execution requires PHP 8.4+, Composer, MySQL, a configured `.env.local`,
+and local JWT keys. It is intended for contributors who need it; Docker is the
+default local workflow.
 
 ```bash
 composer install
+php bin/console doctrine:migrations:migrate --no-interaction
+php bin/console app:identity:user:create admin@example.com admin 'P@ssw0rd' --admin
+php -S 127.0.0.1:8000 -t public
 ```
 
-2) Configure environment variables
-
-Create or update `.env.local` (do not commit) with the values needed for native PHP. Keep optional integrations in `.env.example` unless you use them.
-
-```dotenv
-APP_ENV=dev
-APP_SECRET=change-me
-DATABASE_URL="mysql://user:password@127.0.0.1:3306/crud_skeleton?serverVersion=8.0&charset=utf8mb4"
-
-JWT_PRIVATE_KEY_PATH=var/jwt_dev_private.pem
-JWT_PUBLIC_KEY_PATH=var/jwt_dev_public.pem
-JWT_PASSPHRASE=
-ACCESS_TOKEN_TTL=7200
-REFRESH_TOKEN_TTL=31536000
-REFRESH_TOKEN_SECRET=change-this-secret
-```
-
-See `.env.example` for the full variable reference.
-
-3) Generate development JWT keys
+Set `DATABASE_URL`, `APP_SECRET`, `REFRESH_TOKEN_SECRET`, `JWT_PRIVATE_KEY_PATH`,
+and `JWT_PUBLIC_KEY_PATH` in `.env.local`. Generate keys with:
 
 ```bash
 mkdir -p var
 openssl genpkey -algorithm RSA -out var/jwt_dev_private.pem -pkeyopt rsa_keygen_bits:2048
 openssl rsa -pubout -in var/jwt_dev_private.pem -out var/jwt_dev_public.pem
-chmod 600 var/jwt_dev_private.pem
 ```
 
-If your private key is not encrypted, leave `JWT_PASSPHRASE` empty.
-
-4) Initialize the database (recommended unified migration flow)
-
-Use your PHP 8.4+ binary. On macOS with Homebrew, replace `php` with `/opt/homebrew/bin/php` if needed to avoid CLI version mismatch:
-
-```bash
-php bin/console doctrine:schema:drop --force
-php bin/console doctrine:migrations:migrate --no-interaction
-```
-
-5) Create an administrator account
-
-```bash
-php bin/console app:identity:user:create admin@example.com admin 'P@ssw0rd' --admin
-```
-
-6) Start the local server
-
-```bash
-php -S 127.0.0.1:8000 -t public
-```
-
-or
-
-```bash
-symfony server:start
-```
-
-For Store/Trade asynchronous events in native PHP, run these in separate terminals:
-
-```bash
-php bin/console messenger:consume async --time-limit=3600 --memory-limit=256M
-while true; do
-  php bin/console app:trade:outbox:publish --no-interaction
-  php bin/console app:store:outbox:publish --no-interaction
-  php bin/console app:inventory:outbox:publish --no-interaction
-  php bin/console app:inventory:reservations:release-expired --no-interaction
-  sleep 5
-done
-```
-
-7) Log in and test protected endpoints
-
-Obtain an access token:
-
-```bash
-TOKEN=$(curl -s -X POST http://127.0.0.1:8000/api/auth/login \
-   -H 'Content-Type: application/json' \
-   -d '{"identifier":"admin@example.com","password":"P@ssw0rd"}' \
-   | php -r 'echo json_decode(stream_get_contents(STDIN), true)["access_token"];')
-```
-
-Call a management endpoint (requires `ROLE_ADMIN`):
-
-```bash
-curl -i -H "Authorization: Bearer $TOKEN" http://127.0.0.1:8000/api/v1/manage/contents
-```
-
-8) API documentation
-
-- Swagger UI: `http://127.0.0.1:8000/api/doc`
-- Click `Authorize` and paste `Bearer <access_token>` to try authenticated endpoints in the UI.
-
-9) System introspection endpoints
-
-```bash
-# List all Doctrine entities
-curl http://127.0.0.1:8000/system/entities
-
-# Get entity field metadata
-curl http://127.0.0.1:8000/system/entities/App%5CCommon%5CEntity%5CCategory
-
-# List all registered routes
-curl http://127.0.0.1:8000/system/router
-```
-
-Troubleshooting
-
-- `openssl_sign(): ... cannot be coerced into a private key`:
-   - Verify `JWT_PRIVATE_KEY_PATH` exists and points to a valid PEM file.
-   - If you configured `JWT_PASSPHRASE`, ensure it matches the private key; set it empty if your key is unencrypted.
-
-- OTP Redis / Predis errors:
-   - The app defaults to local cache OTP storage for development to avoid Redis dependency. Run ` /opt/homebrew/bin/php bin/console cache:clear` if you switched back to Redis.
-
-- `doctrine:migrations:migrate` failing due to missing tables:
-   - Ensure you have the latest migrations and run the unified migration flow in step 4.
+For the architecture roadmap, see
+[Microservice Transition Contract](docs/design/microservice-transition.md).

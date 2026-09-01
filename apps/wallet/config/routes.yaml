@@ -1,0 +1,8 @@
+wallet_app_controllers:
+    prefix: /api/v1
+    resource: { path: ../src/Controller/App/, namespace: App\Wallet\Controller\App }
+    type: attribute
+wallet_manage_controllers:
+    prefix: /api/v1
+    resource: { path: ../src/Controller/Manage/, namespace: App\Wallet\Controller\Manage }
+    type: attribute

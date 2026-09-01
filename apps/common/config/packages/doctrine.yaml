@@ -1,0 +1,17 @@
+doctrine:
+    dbal:
+        url: '%env(resolve:DATABASE_URL)%'
+    orm:
+        naming_strategy: doctrine.orm.naming_strategy.underscore_number_aware
+        mappings:
+            Common:
+                type: attribute
+                is_bundle: false
+                dir: '%kernel.project_dir%/src/Main/Entity'
+                prefix: 'App\Common\Entity'
+                alias: Common
+
+when@test:
+    doctrine:
+        dbal:
+            url: 'sqlite:///%kernel.project_dir%/var/common_test.db'

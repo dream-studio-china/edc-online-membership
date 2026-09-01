@@ -1,0 +1,15 @@
+{
+    "name": "crud-platform/integration-contracts",
+    "description": "Transport-neutral integration message carriers for CRUD Platform.",
+    "version": "1.1.3-dev",
+    "type": "library",
+    "license": "Apache-2.0",
+    "require": {
+        "php": ">=8.4"
+    },
+    "autoload": {
+        "psr-4": {
+            "CrudPlatform\\IntegrationContracts\\": "src/"
+        }
+    }
+}

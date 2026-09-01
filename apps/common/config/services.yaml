@@ -1,0 +1,33 @@
+imports:
+    - { resource: '../src/Storage/Resources/config/services_storage.yaml' }
+
+services:
+    _defaults: { autowire: true, autoconfigure: true }
+    _instanceof:
+        App\Core\Controller\RestController:
+            calls:
+                - [ setRequestStack, [ '@request_stack' ] ]
+                - [ setSerializer, [ '@serializer' ] ]
+                - [ setTranslator, [ '@translator' ] ]
+                - [ setServiceContainer, [ '@service_container' ] ]
+        App\Storage\Service\MediaStorageInterface:
+            tags: ['media.storage']
+    App\Common\:
+        resource: '../src/Main/'
+        exclude: '../src/Main/Kernel.php'
+    App\Storage\:
+        resource: '../src/Storage/'
+        exclude:
+            - '../src/Storage/Resources/'
+            - '../src/Storage/Service/LocalStorage.php'
+            - '../src/Storage/Service/QiniuStorage.php'
+    App\Core\:
+        resource: '../vendor/crud-platform/platform-kernel/src/'
+        exclude:
+            - '../vendor/crud-platform/platform-kernel/src/Serializer/Normalizer/FlatNormalizer.php'
+            - '../vendor/crud-platform/platform-kernel/src/EventListener/*'
+    App\Core\Service\ServiceLocatorInterface: '@App\Core\Service\DefaultServiceLocator'
+    App\Core\Security\UserUuidResolverInterface: '@App\Common\Security\NullUserUuidResolver'
+    Symfony\Component\DependencyInjection\ContainerInterface: '@service_container'
+    Symfony\Component\Serializer\SerializerInterface: '@serializer'
+    Symfony\Contracts\Translation\TranslatorInterface: '@translator'

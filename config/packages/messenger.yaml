@@ -6,13 +6,17 @@ framework:
             # https://symfony.com/doc/current/messenger.html#transport-configuration
             async:
                 dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
+                # Keep queued legacy wrapper FQCNs decodable during contract migration.
+                serializer: messenger.transport.native_php_serializer
                 options:
                     use_notify: true
                     check_delayed_interval: 60000
                 retry_strategy:
                     max_retries: 3
                     multiplier: 2
-            failed: 'doctrine://default?queue_name=failed'
+            failed:
+                dsn: 'doctrine://default?queue_name=failed'
+                serializer: messenger.transport.native_php_serializer
             # sync: 'sync://'
 
         default_bus: messenger.bus.default
@@ -28,14 +32,25 @@ framework:
             App\Trade\Message\TradeOrderCancelledMessage: async
             App\Trade\Message\StoreOrderAcceptedMessage: async
             App\Trade\Message\StoreOrderRejectedMessage: async
-            App\Inventory\Message\ReservationRequestedMessage: async
-            App\Inventory\Message\ReservationReleaseRequestedMessage: async
-            App\Inventory\Message\ReservationConfirmedMessage: async
-            App\Inventory\Message\ReservationRejectedMessage: async
-            App\Inventory\Message\ReservationReleasedMessage: async
-
-            App\Settlement\Message\SettlementFundingConfirmedMessage: async
-            App\Settlement\Message\SettlementAllocationPostingMessage: async
+            App\Inventory\Message\InventoryReservationRequestedMessage: async
+            App\Inventory\Message\InventoryReservationReleaseRequestedMessage: async
+            App\Inventory\Message\InventoryReservationConfirmedMessage: async
+            App\Inventory\Message\InventoryReservationRejectedMessage: async
+            App\Inventory\Message\InventoryReservationReleasedMessage: async
+            CrudPlatform\IntegrationContracts\Event\V1\TradeOrderCreated: async
+            CrudPlatform\IntegrationContracts\Event\V1\TradeOrderCancelled: async
+            CrudPlatform\IntegrationContracts\Event\V1\StoreOrderAccepted: async
+            CrudPlatform\IntegrationContracts\Event\V1\StoreOrderRejected: async
+            CrudPlatform\IntegrationContracts\Event\V1\StoreDirectoryUpserted: async
+            CrudPlatform\IntegrationContracts\Command\V1\InventoryReservationRequested: async
+            CrudPlatform\IntegrationContracts\Command\V1\InventoryReservationReleaseRequested: async
+            CrudPlatform\IntegrationContracts\Event\V1\InventoryReservationConfirmed: async
+            CrudPlatform\IntegrationContracts\Event\V1\InventoryReservationRejected: async
+            CrudPlatform\IntegrationContracts\Event\V1\InventoryReservationReleased: async
+            CrudPlatform\IntegrationContracts\Event\V1\PaymentInvoicePaid: async
+            CrudPlatform\IntegrationContracts\Event\V1\PaymentInvoiceFailed: async
+            CrudPlatform\IntegrationContracts\Event\V1\PaymentInvoiceCancelled: async
+            CrudPlatform\IntegrationContracts\Event\V1\PaymentInvoiceRefunded: async
 
             # Route your messages to the transports
             # 'App\Message\YourMessage': async

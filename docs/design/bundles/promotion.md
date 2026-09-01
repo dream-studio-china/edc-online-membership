@@ -1,9 +1,10 @@
 # Promotion Bundle Design
 
-> The Promotion module (`src/Promotion/`) provides a custom DSL-driven promotion engine.
+> The Promotion module (`apps/trade/src/Promotion/`) provides a custom DSL-driven promotion engine.
 > Promotions are defined as human-readable DSL text stored in `PromotionTemplate`,
 > with per-store config values in `Promotion` instances. The engine hooks into Trade's
-> price calculation pipeline as a tagged calculator, fully decoupled from Trade internals.
+> price calculation pipeline as a tagged calculator. It is an in-process Trade plugin,
+> not an independently deployable service boundary.
 
 ---
 
@@ -11,12 +12,12 @@
 
 Promotion is an independent module that plugs into Trade's `PriceCalculatorInterface` chain:
 
-```mermaid
-flowchart TD
-    A["OrderService::calculatePrices()"] --> B["BasePriceCalculator (-100)<br/>Trade built-in"]
-    A --> C["QuantityCalculator (50)<br/>Trade built-in"]
-    A --> D["PromotionCalculator (60)<br/>Promotion module (tagged trade.price_calculator)"]
-    A --> E["TotalAggregator (100)<br/>Trade built-in"]
+```
+OrderService::calculatePrices()
+ ├─ BasePriceCalculator (-100)       ← Trade built-in
+ ├─ QuantityCalculator (50)          ← Trade built-in
+  ├─ TotalAggregator (55)              ← Trade built-in; establishes subtotal
+  └─ PromotionCalculator (60)          ← Promotion module (tagged trade.price_calculator)
 ```
 
 Key characteristics:
@@ -62,27 +63,47 @@ Key characteristics:
 
 ## 2. Multi-Store Architecture
 
-```mermaid
-flowchart TD
-    subgraph Template["PromotionTemplate (store-agnostic)"]
-        Dsl["type: full_reduction<br/>phase: inner<br/><br/>when:<br/>cart.subtotal >= config.threshold<br/>do:<br/>discount order config.amount<br/><br/>priority: config.amount<br/>fields: threshold,amount"]
-        TemplateOwner["Owned by: developer / tech-ops"]
-    end
-    subgraph Instances["Promotion instances (one per store)"]
-        StoreA["Store A<br/>threshold:200<br/>amount:20<br/>enabled:true<br/>start:7/1<br/>end:7/31"]
-        StoreB["Store B<br/>threshold:300<br/>amount:50<br/>enabled:true<br/>start:7/15<br/>end:8/15"]
-        StoreC["Store C<br/>threshold:150<br/>amount:10<br/>enabled:false<br/>start:null<br/>end:null"]
-        InstancesOwner["Owned by: operations / merchant"]
-    end
-    Template -->|"1:N"| Instances
-    Note["PromotionCalculator receives a storeCode from the request/context,<br/>evaluates only matching Promotion instances for the current store."]
+```
+┌──────────────────────────────────────────────────────────────┐
+│  PromotionTemplate (store-agnostic)                          │
+│  ┌────────────────────────────────────────────────────────┐  │
+│  │ type: full_reduction                                   │  │
+│  │ phase: inner                                           │  │
+│  │                                                        │  │
+│  │ when:                                                  │  │
+│  │   cart.subtotal >= config.threshold                    │  │
+│  │ do:                                                    │  │
+│  │   discount order config.amount                         │  │
+│  │                                                        │  │
+│  │ priority: config.amount                                │  │
+│  │ fields: threshold,amount                               │  │
+│  └────────────────────────────────────────────────────────┘  │
+│  Owned by: developer / tech-ops                             │
+└──────────┬───────────────────────────────────────────────────┘
+           │ 1:N
+┌──────────▼───────────────────────────────────────────────────┐
+│  Promotion instances (one per store)                          │
+│                                                               │
+│  Store A:          Store B:           Store C:                │
+│  ┌───────────────┐ ┌───────────────┐ ┌───────────────┐       │
+│  │ threshold:200 │ │ threshold:300 │ │ threshold:150 │       │
+│  │ amount:20     │ │ amount:50     │ │ amount:10     │       │
+│  │ enabled:true  │ │ enabled:true  │ │ enabled:false │       │
+│  │ start:7/1     │ │ start:7/15    │ │ start:null    │       │
+│  │ end:7/31      │ │ end:8/15      │ │ end:null      │       │
+│  └───────────────┘ └───────────────┘ └───────────────┘       │
+│  Owned by: operations / merchant                             │
+└──────────────────────────────────────────────────────────────┘
+
+PromotionCalculator receives a storeCode from the request/context,
+evaluates only matching Promotion instances for the current store.
 ```
 
 ---
 
 ## 3. File Structure
 
-```text
+```
 src/Promotion/
 ├── Controller/
 │   ├── App/
@@ -475,56 +496,59 @@ fields:
 
 ### 7.1 Architecture
 
-```mermaid
-flowchart TD
-    A["POST /manage/promotion-templates<br/>{ dsl: 'type: full_reduction ...' }"]
-    B["Lexer::tokenize(dsl)<br/>Text → [TOKEN_EOL, KEYWORD_TYPE, COLON, STRING('full_reduction'), ...]"]
-    C["Parser::parse(tokens)<br/>Tokens → AstNode tree<br/>Syntax error? → DslSyntaxException('Unexpected token at line 3, col 10')"]
-    D["SemanticValidator::validate(ast)<br/>All config.* refs correspond to declared fields?<br/>All spec refs exist?"]
-    E["Serialize AST → JSON → store in promotion_template.astCache"]
-    F["Return 200 or error"]
-    A --> B --> C --> D --> E --> F
+```
+POST /manage/promotion-templates { dsl: "type: full_reduction\nwhen:\n  ..." }
+  │
+  ├─ Lexer::tokenize(dsl)
+  │     Text → [TOKEN_EOL, KEYWORD_TYPE, COLON, STRING("full_reduction"), ...]
+  │
+  ├─ Parser::parse(tokens)
+  │     Tokens → AstNode tree
+  │     Syntax error? → DslSyntaxException("Unexpected token at line 3, col 10")
+  │
+  ├─ SemanticValidator::validate(ast)
+  │     All config.* refs correspond to declared fields?
+  │     All spec refs exist?
+  │
+  ├─ Serialize AST → JSON → store in promotion_template.astCache
+  │
+  └─ Return 200 or error
 ```
 
 ### 7.2 AST Node Types
 
-```mermaid
-flowchart TD
-    AstProgram["AstProgram<br/>type: string · phase: int"]
-    AstProgram --> Cnds["conditions: AstCondition[]"]
-    AstProgram --> Acts["actions: AstAction[]"]
-    AstProgram --> Prio["priority: AstExpression / null"]
-    AstProgram --> Flds["fields: AstFieldDeclaration[]"]
-    Cnds --> C1["AstCondition { op, left, right }"]
-    Cnds --> C2["AstAnd { children: AstCondition[] }"]
-    Cnds --> C3["AstOr { children: AstCondition[] }"]
-    Cnds --> C4["AstNot { child: AstCondition }"]
-    Acts --> A1["AstDiscount { target, value, isPercent, maxCap }"]
-    Acts --> A2["AstGift { specRef, count, price }"]
-    Acts --> A3["AstNthDiscount { position, rate }"]
-    Acts --> A4["AstTiered { tiers: [{from, less}] }"]
-    Acts --> A5["AstFreeShipping {}"]
-    Acts --> A6["AstMemberDiscount { rate }"]
+```
+AstProgram
+  ├── type: string
+  ├── phase: int
+  ├── conditions: AstCondition[]
+  │     ├── AstCondition      { op, left, right }
+  │     ├── AstAnd            { children: AstCondition[] }
+  │     ├── AstOr             { children: AstCondition[] }
+  │     └── AstNot            { child: AstCondition }
+  ├── actions: AstAction[]
+  │     ├── AstDiscount       { target, value, isPercent, maxCap }
+  │     ├── AstGift           { specRef, count, price }
+  │     ├── AstNthDiscount    { position, rate }
+  │     ├── AstTiered         { tiers: [{from, less}] }
+  │     ├── AstFreeShipping   {}
+  │     └── AstMemberDiscount { rate }
+  ├── priority: AstExpression | null
+  └── fields: AstFieldDeclaration[]
 ```
 
 ### 7.3 Runtime Evaluator
 
-```mermaid
-flowchart TD
-    subgraph Cond[Evaluator::evaluateCondition(...): bool]
-        direction LR
-        C1["Resolve left operand<br/>(cart.subtotal → $ctx->getSubtotal())"]
-        C2["Resolve right operand<br/>(config.threshold → $config['threshold'])"]
-        C3["Apply operator<br/>(>=, <=, ==, !=, in, includes)"]
-        C4["Return bool"]
-        C1 --> C2 --> C3 --> C4
-    end
-    subgraph Act[Evaluator::executeAction(...): void]
-        direction LR
-        A1["Match action type → delegate to PromotionStrategyInterface"]
-        A2["Strategy::apply(action, context, config) → mutate context"]
-        A1 --> A2
-    end
+```
+Evaluator::evaluateCondition(AstCondition $cond, PriceCalculationContext $ctx, array $config): bool
+  ├─ Resolve left operand (cart.subtotal → $ctx->getSubtotal())
+  ├─ Resolve right operand (config.threshold → $config['threshold'])
+  ├─ Apply operator (>=, <=, ==, !=, in, includes)
+  └─ Return bool
+
+Evaluator::executeAction(AstAction $action, PriceCalculationContext $ctx, array $config): void
+  ├─ Match action type → delegate to PromotionStrategyInterface
+  └─ Strategy::apply(action, context, config) → mutate context
 ```
 
 ### 7.4 Strategy Registration
@@ -604,32 +628,28 @@ interface PromotionServiceInterface extends BaseServiceInterface
 
 ### 8.2 Condition Pipeline (getAvailable)
 
-```mermaid
-flowchart TD
-    Start["getAvailable(context)"]
-    Query["Query: enabled + time-window + storeCode match + (phase filter)"]
-    Loop["For each Promotion:"]
-    C1["template.enabled == true?"]
-    C2["time: startTime &lt;= now &lt;= endTime?"]
-    C3["specification: context items match promotion's target specs?<br/>(empty = all)"]
-    C4["DSL conditions: deserialize AST → Evaluator → bool"]
-    C5["conflictResolution: handle exclusive/lock_item modes"]
-    Sort["Sort by priority from DSL (or 0 if none)"]
-
-    Start --> Query --> Loop --> C1 --> C2 --> C3 --> C4 --> C5 --> Sort
+```
+getAvailable(context)
+  ├─ Query: enabled + time-window + storeCode match + (phase filter)
+  ├─ For each Promotion:
+  │   ├─ template.enabled == true?
+  │   ├─ time:      startTime <= now <= endTime?
+  │   ├─ specification: context items match promotion's target specs? (empty = all)
+  │   ├─ DSL conditions: deserialize AST → Evaluator → bool
+  │   └─ conflictResolution: handle exclusive/lock_item modes
+  └─ Sort by priority from DSL (or 0 if none)
 ```
 
 ### 8.3 Promotion Application (apply)
 
-```mermaid
-flowchart TD
-    Start["apply(promotion, context)"]
-    A["Get AST from template.astCache (deserialized)"]
-    B["Get config from promotion.config"]
-    C["Resolve strategy by template.type"]
-    D["Execute each action in order:<br/>Strategy::apply(actionAst, context, config)"]
-    E["Mark promotion as applied in context.meta['promotion']"]
-    Start --> A --> B --> C --> D --> E
+```
+apply(promotion, context)
+  ├─ Get AST from template.astCache (deserialized)
+  ├─ Get config from promotion.config
+  ├─ Resolve strategy by template.type
+  ├─ Execute each action in order:
+  │   └─ Strategy::apply(actionAst, context, config)
+  └─ Mark promotion as applied in context.meta['promotion']
 ```
 
 ### 8.4 Chaining (Loop)
@@ -857,20 +877,22 @@ Read-only; uses only `ApiView`, `DetailApiViewMixin`, `ListApiViewMixin`.
 
 ## 13. DSL Update Flow
 
-```mermaid
-flowchart TD
-    A["PUT /manage/promotion-templates/{id}<br/>body: { dsl: 'type: full_reduction ...' }"]
-    B["1. Lexer tokenizes DSL text"]
-    C["2. Parser builds AST"]
-    C -->|"Fail"| CErr["422 { errors: [{line:3, col:10, msg: 'Unexpected token ='}] }"]
-    C -->|"Pass"| D["3. Semantic validator checks AST"]
-    D -->|"Fail"| DErr["422 { errors: [{field: 'config.missing_key', msg: '...'}] }"]
-    D -->|"Pass"| E["4. Serialize AST → JSON"]
-    E --> F["5. Set template.dsl = raw text"]
-    F --> G["6. Set template.astCache = serialized AST"]
-    G --> H["7. Persist"]
-    H --> I["8. Return 200 { data: { template, ast } }"]
-    A --> B --> C
+```
+PUT /manage/promotion-templates/{id}
+  body: { dsl: "type: full_reduction\nwhen:\n  cart.subtotal >= config.threshold\n..." }
+
+  1. Lexer tokenizes DSL text
+  2. Parser builds AST
+     ├─ Fail? → 422 { errors: [ {line:3, col:10, msg:"Unexpected token '='"} ] }
+     └─ Pass? → continue
+  3. Semantic validator checks AST
+     ├─ Fail? → 422 { errors: [ {field:"config.missing_key", msg:"..."} ] }
+     └─ Pass? → continue
+  4. Serialize AST → JSON
+  5. Set template.dsl = raw text
+  6. Set template.astCache = serialized AST
+  7. Persist
+  8. Return 200 { data: { template, ast } }
 ```
 
 ---

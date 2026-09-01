@@ -1,275 +1,387 @@
 # Development Contracts
 
-> The rules that keep the modular monolith coherent: layer boundaries, cross-module
-> communication, service boundaries, naming, code style, performance, and security.
-> These are the developer-facing companion to the normative design docs
-> (`docs/design/system-architecture.md`, `docs/design/system-contracts.md`,
-> `docs/design/module-design.md`, `docs/design/naming-convention.md`).
+Development rules, conventions, and quality gates that all contributors MUST follow.
+Derived from `docs/design/system-architecture.md`, `docs/design/system-contracts.md`,
+and the actual codebase patterns.
 
 ---
 
 ## 1. Layer Rules
 
-Requests move through a strict, one-directional chain:
+Layer dependency table from `docs/design/system-architecture.md` section 1.1:
 
-```
-HTTP (Controllers / View mixins)  →  Service  →  Repository  →  Entity  →  Infrastructure
-```
+| Rule | From | To | Allowed |
+|------|------|----|---------|
+| R1 | Controller | Service | **YES** |
+| R2 | Controller | Entity | **YES** (type hints/returns only) |
+| R3 | Controller | Repository | **NO** — go through Service |
+| R4 | Controller | EntityManager | **NO** — go through Service |
+| R5 | Service | Repository | **YES** |
+| R6 | Service | Entity | **YES** |
+| R7 | Service | EntityManager | **YES** |
+| R8 | Service | Other Services | **YES** (via DI) |
+| R9 | Entity | Repository | **NO** |
+| R10 | Entity | Service | **NO** |
+| R11 | Entity | EntityManager | **NO** |
 
-| Rule | From | To | Allowed? | Why |
-|------|------|----|----------|-----|
-| R1 | Controller | Service | YES | Normal flow |
-| R2 | Controller | Entity | YES | Type hints / returns only |
-| R3 | Controller | Repository | **NO** | Go through Service |
-| R4 | Controller | EntityManager | **NO** | Go through Service |
-| R5 | Service | Repository | YES | Data access |
-| R6 | Service | Entity | YES | Domain operations |
-| R7 | Service | EntityManager | YES | Transactions |
-| R8 | Service | Other Services | YES | DI, interface-first |
-| R9 | Entity | Repository | **NO** | Entities are pure |
-| R10 | Entity | Service | **NO** | No business-logic deps |
-| R11 | Entity | EntityManager | **NO** | Persistence is external |
+**Controllers MUST NOT**:
+- Inject `EntityManager`
+- Call `beginTransaction()`, `commit()`, `rollback()`
+- Call Repository directly
+- Use `$_GET`, `$_POST`, `$_REQUEST` superglobals
+- Contain business logic (delegate to services)
 
-### Transaction contract
-
-- Transactions live in the **Service layer only** — controllers never call
-  `beginTransaction()` / `commit()` / `rollback()` (T4).
-- Multiple mutations on related entities are wrapped in `wrapInTransaction()` (T1).
-- Wallet transfers use explicit `beginTransaction`/`commit`/`rollback` with entity
-  locks (`PESSIMISTIC_WRITE`) (T2), and the EntityManager is recovered after a
-  rollback with an `$em->isOpen()` guard (T3).
-- Mixin-driven mutations (`createAction`, `batchUpdateAction`) wrap automatically
-  unless `@partial=true`. `@partial=true` processes each item independently; otherwise
-  all items commit or roll back together.
-
-### Where exceptions are thrown and caught
-
-| Layer | May throw | Must catch |
-|-------|-----------|------------|
-| Entity | **NO** | — |
-| Repository | Doctrine exceptions only | — |
-| Service | Business exceptions (`InsufficientFundsException`, `OrderInvalidTransitionException`, …) | — |
-| Controller | **NO** — convert to `warning()` | domain exceptions → `warning()` with 400/404/500 |
-
-Unhandled exceptions on `/api/*` turn into JSON `{code, message, class}` via the
-`ExceptionInterceptor` (bypassed in dev).
+**Services MUST**:
+- Own all business logic, transactions, validation
+- Use `wrapInTransaction()` for multi-entity mutations
+- Return entities or DTOs (never raw database results to controllers)
 
 ---
 
 ## 2. Cross-Module Communication
 
-Modules share one kernel, one EntityManager, one cache, and one Messenger bus — but
-must behave as if they were independent services.
+### 2.1 Allowed
 
-| Concern | Contract |
-|---------|----------|
-| Doctrine associations | **No cross-module associations.** An entity never references another module's entity as a relation/FK |
-| Durable references | Reference aggregates across modules by **UUID** (`App\Core\Utils\UUID`) or an explicitly documented business key — never a local auto-increment id |
-| Contracts in, scalar data out | Cross-module service calls exchange **scalars / snapshots / DTOs only** — never entities, repositories, or an EntityManager |
-| Writes | **Outbox**: the publishing module persists a `*OutboxMessage` entity in the *same transaction* as the change; a `app:{module}:outbox:publish` command flushes it to Messenger |
-| Reads | **Inbox / message handlers**: consuming modules read another module's state through their own `MessageHandler/` handlers, which enforce integrity and idempotency |
-| Direct repository reads across modules | **Forbidden** |
-| Dependency direction | Business modules may autowire `Core` and (interface-first) each other; `Core` must never import a business module; circular module dependencies are forbidden |
+| From | To | Mechanism |
+|------|----|-----------|
+| Any Business Module | Core | DI (autowire Core services) |
+| Business Module A | Business Module B | DI (autowire B's service **interface**) |
+| Any Module | Identity | Current principal abstraction or exported service |
 
-### Messenger routing (async transport)
+### 2.2 Forbidden
 
-Registered messages include: Trade order created/cancelled / store accepted/rejected,
-Inventory reservation request/confirm/reject/release, Settlement funding-confirmed and
-allocation-posting. Handlers live in the consuming module's `MessageHandler/`
-directory (e.g. `src/Store/MessageHandler/TradeOrderCreatedHandler.php`,
-`src/Inventory/MessageHandler`). Failure transport is `failed` with a 3-retry,
-doubling backoff.
+| Pattern | Reason |
+|---------|--------|
+| Direct cross-module Entity access | Use explicit module API or scalar reference/snapshot |
+| Direct cross-module Repository access | Use service interface |
+| Circular module dependencies | Violates layer architecture |
+| Core importing business modules | Core is foundational |
 
-### Registries for cross-cutting extension instead of direct wiring
+### 2.3 Cross-Boundary Identity
 
-Hot-swappable collaborators are collected with tagged iterators and resolved through a
-registry — not hard-wired: `PaymentGatewayRegistry` (`payment.gateway`),
-`PaymentAdjustmentRegistry`, `DepositProviderRegistry`, `WithdrawProviderRegistry`,
-`MediaStorageRegistry`, `SettlementContextResolverRegistry`, and the
-`trade.price_calculator` pricing chain (priority-ordered, Promotion at 60).
+| Context | Identifier |
+|---------|------------|
+| Local Doctrine relation inside one module | Integer `id` is allowed |
+| Public API route/response | UUID |
+| Service interface crossing module boundary | UUID or documented immutable business key |
+| Integration event aggregate/source/correlation id | UUID |
+| Future service database relation | UUID/business key only; no cross-service FK |
 
 ---
 
-## 3. Service Boundaries
+## 3. Service Boundary Rules
 
-### Service shape
+From `docs/design/microservice-transition.md`, the 7 rules before extraction:
 
-- Every service implements a module interface: `{Entity}ServiceInterface extends
-  App\Core\Service\BaseServiceInterface`.
-- Implementations extend `App\Core\Service\BaseService`, which composes
-  `BaseServiceInfrastructureTrait` (container/EM/repository/logger/serializer,
-  transaction wrapper, validators), `BaseServiceReadListTrait` (`get`/`list`,
-  QueryBuilder listing, DQL compilation), and `BaseServiceMutationTrait`
-  (`new`/`update`/`remove`, relation/date mapping, Serializer + Validator integration).
-- Services **must not** return raw HTTP responses (controller's job) and must not touch
-  `Request` directly — use `getCurrentRequest()`.
+1. A service owns its database and has no cross-service Doctrine association, foreign key,
+   repository access, or transaction.
+2. Durable cross-service references use UUIDs or documented immutable business keys, never
+   another service's local integer primary key.
+3. A service boundary accepts scalar commands/queries and emits scalar snapshots. It never
+   exposes Doctrine entities, repositories, EntityManagers, Symfony requests/responses, or
+   mutable in-process contexts.
+4. A state-changing integration event is written to an Outbox in the producer's local
+   transaction. Consumers use a durable Inbox keyed by `eventId`.
+5. Each consumer owns its queue, retry policy, dead-letter handling, worker, and scheduled
+   jobs. A shared Doctrine Messenger queue is not a service boundary.
+6. Shared packages may provide framework utilities, schemas, and test support. They MUST NOT
+   contain business entities, repositories, or service-specific application logic.
+7. Public routes remain stable through an API gateway or routing layer while ownership moves
+   between services.
 
-### Repository shape
-
-- Repositories extend `ServiceEntityRepository`, take `ManagerRegistry` in the
-  constructor, and return entities/arrays/scalars.
-- Repositories must **not** return raw `QueryBuilder` to consumers — that is the
-  service layer's concern — and may expose a `*RepositoryInterface` when consumed by
-  other modules.
-- Doctrine 3.6+ repositories carry the `@extends ServiceEntityRepository<...>` PHPDoc
-  (enforced by Rector's `AddAnnotationToRepositoryRector`).
-
-### Controller shape
-
-- `App` controllers (public read) extend `RestController` with `ApiView`,
-  `DetailApiViewMixin`, `ListApiViewMixin`; they set `$serviceClass` and may override
-  `commonFilter()` for row-level scoping. No create/update/delete.
-- `Manage` controllers (admin CRUD) add `Create/Update/DeleteApiViewMixin` and are
-  guarded `#[IsGranted('ROLE_ADMIN')]` at class level.
-- Controllers declare only module-specific constructor dependencies — `RequestStack`,
-  `SerializerInterface`, `TranslatorInterface`, container arrive via `#[Required]`
-  setter injection on `RestController`.
+**Pre-Extraction Checklist**:
+- [ ] All cross-module references use UUIDs or immutable business keys
+- [ ] No shared Doctrine associations or cross-module FK
+- [ ] Integration events use Outbox/Inbox pattern
+- [ ] Service has its own `composer.json`, `Kernel.php`, `config/`, `migrations/`, `public/`,
+  `bin/`, `tests/`, Docker definition
+- [ ] Architecture checks (deptrac) pass without new baseline entries
+- [ ] Legacy test suite remains green
 
 ---
 
-## 4. Naming Conventions
+## 4. Namespace Conventions
 
-The namespace carries the module; the class name carries the domain concept.
-`docs/design/naming-convention.md` is authoritative; the four rules are:
+| Layer | Namespace |
+|-------|-----------|
+| Core Framework | `App\Core\*` (in `packages/platform-kernel/src/`) |
+| Module Controllers | `App\{Module}\Controller\Manage\` or `App\{Module}\Controller\App\` |
+| Module Entities | `App\{Module}\Entity\` |
+| Module Repositories | `App\{Module}\Repository\` |
+| Module Services | `App\{Module}\Service\` |
+| Module Exceptions | `App\{Module}\Exception\` |
+| Module Event Listeners | `App\{Module}\EventListener\` |
+| Module Commands | `App\{Module}\Command\` |
+| Bridge Adapters | `App\Bridge\{Module}\` |
+| Integration Contracts | `App\Contracts\Integration\` |
 
-| # | Rule |
-|---|------|
-| N1 | Class name = domain concept (bare preferred); ownership lives in the namespace |
-| N2 | Add a module prefix only on (a) cross-module collision/ambiguity, or (b) intra-module infrastructure (outbox / registry / gateway / provider) |
-| N3 | Service / Controller / Repository / Event / Exception strictly mirror the entity name: `{Entity}Service`, `{Entity}Controller`, `{Entity}Repository` |
-| N4 | Prefix policy is consistent within a module — never a mix of prefixed and bare |
-
-### Protected cross-module conflict groups (never drop the prefix)
-
-| Concept | Reserved class names |
-|---------|----------------------|
-| Order | `Trade\Order`, `Store\StoreOrder` |
-| User | `Identity\User`, `Wechat\WechatUser` |
-| OutboxMessage | `Trade\TradeOutboxMessage`, `Store\StoreOutboxMessage`, `Inventory\InventoryOutboxMessage` |
-| ConsumedEvent | `Store\StoreConsumedEvent`, `Inventory\InventoryConsumedEvent` |
-
-(The 2026-08-15 prefix refactor removed `Wallet*`/`Inventory*`/`Store*` prefixes for
-unique concepts — `WalletTransaction→Transaction`, `InventoryStock→Stock`,
-`StoreMembership→Membership` — with zero migration or API breakage; table names, URLs
-and route names were unchanged.)
-
-Forbidden: inventing a service suffix (`CategoryService` for an entity `Category` is
-fine, but adding an arbitrary `XxxService` name for a non-service class is not),
-inconsistent prefixes inside a module, non-mirrored controller/service names.
+Route naming: `{scope}-{resource}-{action}` (e.g., `manage-categories-list`,
+`app-orders-create`, `system-router-list`).
 
 ---
 
-## 5. Code Style
+## 5. File Naming
 
-| Area | Rule |
-|------|------|
-| PHP | `>= 8.4`, `declare(strict_types=1)` in new code |
-| Properties / returns | Explicit types, never docblock-only; nullable as `?Type` |
-| Namespace | PSR-4 `App\` under `src/` |
-| Use statements | Alphabetically ordered |
-| Files | One class/trait/interface per file, filename = classname |
-| Classes | PascalCase; methods/properties camelCase; constants `UPPER_SNAKE` |
-| Interfaces | `*Interface` suffix; abstracts `Abstract*` / `Base*`; traits `*Trait` or descriptive (`ListApiViewMixin`) |
-| Tests | `*Test` suffix, namespaced `App\Tests\...` |
-| Comments | PHPDoc on interfaces/abstract methods; no comments on self-documenting code; `@deprecated` + migration notes for removals |
+| Rule | Detail |
+|------|--------|
+| One class per file | No exceptions |
+| File name = class name | `CategoryService.php` contains `class CategoryService` |
+| Trait files | Same name as trait |
+| Interface files | Same name as interface |
+| Tests | `{Class}Test.php` |
+| PSR-4 autoloading | Directory mirrors namespace, case-sensitive |
 
 ---
 
-## 6. Performance
+## 6. Class Conventions
 
-| Practice | Where it shows up |
-|----------|-------------------|
-| Paginate every list | `RestController::pagination()` — default limit 100, Doctrine Paginator for QueryBuilder |
-| Project columns instead of fetching everything | `@select`, `@display` (e.g. `reduce` = id + `__toString` only) |
-| Push filtering to the database | Expression DSL compiles to DQL (`ExpressionDqlParser`); the in-memory fallback is only a fallback |
-| Avoid implicit relation loading | Relations load lazily; expand relation trees explicitly via `@expands` |
-| Concurrent writes are guarded | `Wallet` uses optimistic locking (`version` column) and pessimistic writes for transfers; token rotation uses reuse detection |
-| Costly lookup is indexed/short | UUID/IAM references on aggregates; repositories expose targeted queries |
-| Bulk admin writes stay transactional | `@partial=true` for per-item mode, else single-transaction |
-| Long-running work goes async | Messenger async transport + outbox publish commands |
+### 6.1 Required
 
----
+```php
+<?php
+declare(strict_types=1);
 
-## 7. Security
+namespace App\Common\Service;
 
-### Authentication
+use App\Common\Entity\Category;
+use App\Core\Service\BaseService;
 
-- `JwtAuthenticator` extracts and validates the `Authorization: Bearer` JWT and builds
-  the Passport; `TokenManager` issues/revokes tokens and manages refresh-token lifecycle.
-
-| # | Rule |
-|---|------|
-| S1 | Access tokens: RS256 signed, 7200s TTL |
-| S2 | Refresh tokens: opaque, HMAC-SHA256-hashed in DB, 1-year TTL |
-| S3 | Refresh tokens rotate on every use |
-| S4 | Reuse of a revoked/replaced refresh token revokes ALL the user's tokens |
-| S5 | Revoked access-token JTIs are blacklisted until natural expiry |
-| S6 | Private keys are never committed |
-| S7 | HTTPS in production |
-
-### Authorization
-
-- Access control is centralized in `config/packages/security.yaml`: `/api/v1/manage`
-  → `ROLE_ADMIN`; `/api` → `IS_AUTHENTICATED_FULLY`; the public list (auth flows,
-  register, WeChat login, payment notify, docs, `GET /api/v1/public`) is
-  `PUBLIC_ACCESS`.
-- Row-level scoping is per-controller via `commonFilter()`/`listFilter()` overrides
-  (e.g. a user only ever sees their own records; the App-side filter enforces it).
-- Manage controllers also carry class-level `#[IsGranted('ROLE_ADMIN')]`.
-- Role hierarchy: `ROLE_ADMIN: [ROLE_USER]`.
-
-### Validation order
-
-```
-Controller field whitelist ($requiredCreateProperties / $acceptedCreateProperties)
-  → controller hook validation (processCreateContent / processUpdateContent)
-    → @transform expression
-      → Service::update() → Symfony Validator → entity #[Assert\*] constraints
+/** @extends BaseService<\App\Common\Entity\Category> */
+class CategoryService extends BaseService implements CategoryServiceInterface
+{
+    public function __construct(/* ... */) { /* ... */ }
+}
 ```
 
-### Rate limiting
+- `declare(strict_types=1)` at the top of every PHP file
+- `final` where applicable (prevent unintended extension)
+- `readonly` for constructor-injected dependencies where possible
+- `#[ORM\*]` PHP attributes for Doctrine mapping (not annotations)
+- `#[OA\*]` PHP attributes for OpenAPI documentation
 
-| Resource | Limit |
-|----------|-------|
-| OTP request (per phone) | 1 per 60s cooldown |
-| OTP verify (per phone) | 5 attempts max |
+### 6.2 PHPDoc
 
-Backed by Redis (`OTP_REDIS_DSN`) or the local-cache fallback (`LocalCacheOtpStorage`).
+- Required on interfaces and abstract methods (contract documentation)
+- `@extends` / `@implements` for generic types on BaseService subclasses
+- `@param` / `@return` only when types cannot be expressed in native PHP
+- No comments on self-documenting code (well-named methods/variables)
 
-### Logging hygiene
+### 6.3 Visibility
 
-- Request bodies on PUT/POST are logged at INFO with user id, URI, body truncated to
-  1 KB.
-- **Never log** passwords, tokens, OTP codes in plaintext, or PII in production.
-- Channels: `app`, `doctrine` (dev), `security`.
-
-### Money and identity
-
-- Money is integer-cents or fixed-scale quantum (`QuantumAmount`, 18-decimal,
-  `brick/math`) — never floats.
-- Aggregate references across modules are UUIDs — never raw FK or auto-increment ids.
+- Constructor-injected services: `protected readonly`
+- Internal state properties: `private`
+- Hook methods: `protected` (overridable)
+- Public methods: only on interfaces and action methods
 
 ---
 
-## 8. Breaking-Change Policy
+## 7. Code Style
 
-| Change | Allowed? |
-|--------|----------|
-| New mixin trait / hook with default impl | Yes, documented |
-| Change a hook signature / remove a mixin method / change the response envelope | **NO** — major version |
-| Add a query parameter | Yes (backward compatible) |
-| Remove a supported query parameter | **NO** — deprecation + major version |
-| Change `BaseServiceInterface` | **NO** — cross-module impact assessment |
-| Add a module | Yes, following the module checklist (`docs/design/module-design.md`) |
+### 7.1 PSR-12
+
+Standard code style. Enforced by convention.
+
+### 7.2 PHPStan Level 8
+
+Run `composer phpstan`. Configured over `src/` scope. Level 8 is the strictest level
+(excluding Level 9's `mixed` checks for now).
+
+### 7.3 Deptrac Architecture Boundaries
+
+Run `composer deptrac`. Enforces:
+- Core MUST NOT depend on a business module
+- A module MUST NOT add a dependency on another module's `Entity` or `Repository`
+
+The `deptrac-baseline.yaml` contains reviewed historical violations. New entries require an
+explicit architecture decision.
+
+### 7.4 Rector Type Rules
+
+Run `composer rector:types:check` (CI dry-run). Enforces Doctrine `Collection` /
+`Repository` PHPDoc generics. Broader Rector (`composer rector`) is opt-in and must be
+reviewed.
+
+### 7.5 Naming Conventions
+
+| Element | Convention | Example |
+|---------|-----------|---------|
+| Classes | PascalCase | `CategoryService` |
+| Methods | camelCase | `getEnabledCategories()` |
+| Properties | camelCase | `$serviceClass` |
+| Constants | UPPER_SNAKE | `UNKNOWN_ERROR` |
+| Interfaces | `*Interface` suffix | `BaseServiceInterface` |
+| Abstract classes | `Abstract*` or `Base*` prefix | `BaseService` |
+| Traits | `*Trait` suffix or descriptive | `ListApiViewMixin` |
+| Tests | `*Test` suffix | `CategoryTest` |
 
 ---
 
-## 9. See Also
+## 8. Testing Contracts
 
-- [Development Workflow](development-workflow.md) — branches, CI, static analysis gates
-- [Testing](testing.md) — suites, helpers, the 90% coverage gate
-- [API Contracts](api-contracts.md) — envelope, auth, URL, pagination, webhooks
-- [Architecture](architecture.md) — practical overview of the module model and patterns
-- Normative contracts: `docs/design/system-architecture.md`, `system-contracts.md`,
-  `module-design.md`, `naming-convention.md`, `controller-design.md`, per-module
-  `docs/design/bundles/*.md`
+### 8.1 Unit vs Integration
+
+| Category | Extends | Purpose |
+|----------|---------|---------|
+| Unit | `PHPUnit\Framework\TestCase` | Isolated logic (entities, utils, calculators) |
+| Kernel | `IntegrationKernelTestCase` | With booted kernel, service access, DB |
+| Web | `IntegrationWebTestCase` | Full HTTP request/response cycle |
+| Regression | Varies | API contract stability |
+
+### 8.2 Test Naming
+
+| Pattern | Example |
+|---------|---------|
+| `{Class}Test` | `CategoryTest.php`, `OrderServiceTest.php` |
+| `{Module}ApiRegressionTest` | `CommonModulesApiRegressionTest.php` |
+| `{Module}IntegrationTest` | `WalletApiIntegrationTest.php` |
+
+Tests in `tests/{Module}/` mirror the `src/{Module}/` structure.
+
+### 8.3 Coverage Requirements
+
+- **Minimum**: 90% line coverage (enforced in CI via PHPUnit)
+- **Test environment**: `APP_ENV=test`, SQLite database
+- Each test method starts with a clean schema (Doctrine schema tool, not migrations)
+- Transactions are wrapped per test and rolled back
+
+### 8.4 Test Database
+
+The test database schema is created from Doctrine schema tool — not from migrations.
+`DatabaseBootstrapTrait` handles schema setup. Each test starts with a clean schema.
+
+---
+
+## 9. Git Workflow
+
+### 9.1 Feature Branches
+
+Branch naming: `feature/{description}`, `fix/{description}`, `refactor/{description}`.
+
+### 9.2 Conventional Commits
+
+```
+type(scope): description
+
+feat(identity): add phone verification OTP flow
+fix(order): prevent double-submission of payments
+refactor(core): extract QueryBuilderFactory from BaseService
+docs(manual): add API contracts documentation
+```
+
+Types: `feat`, `fix`, `refactor`, `docs`, `test`, `ci`, `chore`.
+
+### 9.3 PR Template
+
+Available in `.github/pull_request_template.md`. Must include:
+- Summary of changes
+- Testing performed
+- Breaking changes (if any)
+- Checklist (tests pass, static analysis passes, documentation updated)
+
+### 9.4 Review Requirements
+
+- CI must pass (PHPStan Level 8, Rector dry-run, PHPUnit with 90%+ coverage)
+- At least one approving review for changes to shared Core classes
+- Migration files require explicit review for rollback compatibility
+
+---
+
+## 10. Breaking Changes
+
+### 10.1 What Constitutes a Breaking Change
+
+| Change | Breaking? |
+|--------|-----------|
+| Change hook method signature | **Yes** — major version bump |
+| Remove mixin method | **Yes** — major version bump |
+| Change response envelope format | **Yes** — major version bump |
+| Remove supported query parameter | **Yes** — deprecation notice + major version bump |
+| Change `BaseServiceInterface` | **Yes** — cross-module impact assessment |
+| Change entity field type | **Yes** — migration required |
+| Add new mixin trait | **No** — documentation only |
+| Add new hook method with default impl | **No** — documentation only |
+| Add query parameter | **No** — backward compatible |
+| Add new module | **No** — follow module contract |
+
+### 10.2 Migration Compatibility
+
+- Schema changes require a backward-compatible migration (old code reads with new schema)
+- Irreversible migrations (e.g., column drops) are prohibited without explicit approval
+- Migrations organize by module — one migration file per module change set
+
+---
+
+## 11. Documentation Requirements
+
+### 11.1 When Adding a Module
+
+| Required Document | Contents |
+|-------------------|----------|
+| Design doc (`docs/design/{module}.md`) | Business flow, API design, data model sketch |
+| Bundle doc (`docs/design/bundles/{module}.md`) | Module scope, dependencies, exported interfaces |
+| OpenAPI spec (code `#[OA\*]`) | Auto-generated at `/api/doc` |
+
+### 11.2 When Adding a Service
+
+- PHPDoc `@extends BaseService<EntityClass>` on the service class
+- Service interface in the same namespace
+- Register in module's service configuration if not autowired
+
+### 11.3 When Adding an Endpoint
+
+- `#[Route]` attribute with proper `name` following `{scope}-{resource}-{action}` convention
+- `#[OA\*]` attributes for NelmioApiDoc
+- `#[IsGranted]` for authorization
+- Update `OpenApiEnricherListener::META` if endpoint needs custom summary/description
+
+---
+
+## 12. Performance Guidelines
+
+### 12.1 N+1 Prevention
+
+- Use `@expands` to eager-load relations in list endpoints
+- Use `detailProcessor()` to call `$entity->getItems()->toArray()` for detail views
+- Avoid `@sort` (in-memory) — prefer `@order` (DQL)
+
+### 12.2 Query Optimization
+
+- Use `@select` to project only needed fields
+- Use `@filter` to push filtering to the database
+- Avoid `@dql` subqueries unless necessary (use `@filter` instead)
+- Use Doctrine's `indexBy` in repositories for eager loading
+
+### 12.3 Caching
+
+- ExpressionService can use a PSR-16 cache to avoid re-parsing filters
+- `cache.app` is available for application-level caching
+- JWT blacklist uses cache (TTL-based)
+
+---
+
+## 13. Security Rules
+
+### 13.1 Safe Select
+
+`@select` is block-listed for identity-sensitive fields (`user`, `profile`, `password`,
+`roles`, `email`, `phone`, `phoneVerified`, `refreshToken`, `sessionKey`, `rawData`) and
+for any query targeting `App\Identity\*` entities.
+
+### 13.2 Privileged Parameters
+
+`@dql`, `@sort`, `@hints` are restricted to `ROLE_ADMIN`. `@showDQL` requires `dev`
+environment.
+
+### 13.3 commonFilter
+
+Every controller with list/detail mixins MUST override `commonFilter()` to enforce
+ownership and visibility. For user-scoped endpoints, always return `['id' => -1]` as a
+fallback when the user is not authenticated.
+
+### 13.4 CSRF / XSS
+
+- All API authentication uses JWT Bearer tokens (no session, no cookies)
+- JSON responses use `Content-Type: application/json`
+- No HTML rendering from API endpoints
+- Input sanitization is not performed at the framework level; rely on Doctrine parameter
+  binding for SQL injection prevention

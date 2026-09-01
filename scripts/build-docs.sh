@@ -13,13 +13,12 @@ cd "$(dirname "$0")/.."
 echo "=== 1. Translating docs/ → docs-zh/ ==="
 python scripts/translate-docs.py
 
-echo "     Copying assets/, research/, ai/, openapi/, javascripts/ → docs-zh/"
-rm -rf docs-zh/assets docs-zh/research docs-zh/openapi docs-zh/ai docs-zh/javascripts
+echo "     Copying assets/, research/, ai/, openapi/ → docs-zh/"
+rm -rf docs-zh/assets docs-zh/research docs-zh/openapi docs-zh/ai
 cp -r docs/assets docs-zh/assets 2>/dev/null || true
 cp -r docs/research docs-zh/research 2>/dev/null || true
 cp -r docs/openapi docs-zh/openapi 2>/dev/null || true
 cp -r docs/ai docs-zh/ai 2>/dev/null || true
-cp -r docs/javascripts docs-zh/javascripts 2>/dev/null || true
 
 echo ""
 echo "=== 2. Generating bilingual mkdocs configs ==="

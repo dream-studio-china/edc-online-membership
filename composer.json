@@ -3,12 +3,93 @@
     "license": "Apache-2.0",
     "minimum-stability": "stable",
     "prefer-stable": true,
+    "repositories": [
+        {
+            "type": "path",
+            "url": "packages/integration-contracts",
+            "options": {
+                "symlink": true
+            }
+        },
+        {
+            "type": "path",
+            "url": "packages/platform-kernel",
+            "options": {
+                "symlink": true
+            }
+        },
+        {
+            "type": "path",
+            "url": "packages/legacy-messenger-compat",
+            "options": {
+                "symlink": true
+            }
+        },
+        {
+            "type": "path",
+            "url": "apps/store",
+            "options": {
+                "symlink": true
+            }
+        },
+        {
+            "type": "path",
+            "url": "apps/inventory",
+            "options": {
+                "symlink": true
+            }
+        },
+        {
+            "type": "path",
+            "url": "apps/payment",
+            "options": {
+                "symlink": true
+            }
+        },
+        {
+            "type": "path",
+            "url": "apps/wallet",
+            "options": {
+                "symlink": true
+            }
+        },
+        {
+            "type": "path",
+            "url": "apps/identity",
+            "options": {
+                "symlink": true
+            }
+        },
+        {
+            "type": "path",
+            "url": "apps/common",
+            "options": {
+                "symlink": true
+            }
+        },
+        {
+            "type": "path",
+            "url": "apps/trade",
+            "options": {
+                "symlink": true
+            }
+        }
+    ],
     "require": {
         "php": ">=8.4",
         "ext-ctype": "*",
         "ext-iconv": "*",
         "beberlei/doctrineextensions": "^1.5",
-        "brick/math": "^0.19.1",
+        "crud-platform/integration-contracts": "^1.1.3@dev",
+        "crud-platform/legacy-messenger-compat": "^1.0@dev",
+        "crud-platform/platform-kernel": "^1.0.3@dev",
+        "crud-platform/inventory-app": "^1.0@dev",
+        "crud-platform/identity-app": "^1.0@dev",
+        "crud-platform/common-app": "^1.0@dev",
+        "crud-platform/payment-app": "^1.0@dev",
+        "crud-platform/wallet-app": "^1.0@dev",
+        "crud-platform/store-app": "^1.0.1@dev",
+        "crud-platform/trade-app": "^1.0@dev",
         "doctrine/doctrine-bundle": "^3.2.4",
         "doctrine/doctrine-migrations-bundle": "^4.0",
         "doctrine/orm": "^3.6.7",
@@ -33,7 +114,6 @@
         "symfony/process": "8.1.*",
         "symfony/property-access": "8.1.*",
         "symfony/property-info": "8.1.*",
-        "symfony/rate-limiter": "8.1.*",
         "symfony/runtime": "8.1.*",
         "symfony/security-bundle": "8.1.*",
         "symfony/serializer": "8.1.*",
@@ -99,7 +179,10 @@
         "rector": "@php vendor/bin/rector process --dry-run --no-progress-bar --memory-limit=512M",
         "rector:fix": "@php vendor/bin/rector process --no-progress-bar --memory-limit=512M",
         "rector:types": "@php vendor/bin/rector process --config=rector-types.php --no-progress-bar --memory-limit=512M",
-        "rector:types:check": "@php vendor/bin/rector process --config=rector-types.php --dry-run --no-progress-bar --memory-limit=512M"
+        "rector:types:check": "@php vendor/bin/rector process --config=rector-types.php --dry-run --no-progress-bar --memory-limit=512M",
+        "deptrac": "@php vendor/bin/deptrac --config-file=deptrac.yaml --no-cache --fail-on-uncovered",
+        "coverage": "sh scripts/coverage/run.sh",
+        "coverage:merge": "sh scripts/coverage/merge.sh"
     },
     "conflict": {
         "symfony/symfony": "*"
@@ -111,14 +194,15 @@
         }
     },
     "require-dev": {
-        "brianium/paratest": "^7.20",
+        "deptrac/deptrac": "^4.7",
+        "opis/json-schema": "^2.6",
         "phpstan/phpstan": "^2.2",
         "phpstan/phpstan-doctrine": "^2.0",
         "phpstan/phpstan-symfony": "^2.0",
+        "phpunit/phpcov": "^11.0.4",
         "phpunit/phpunit": "^12.5.30",
         "predis/predis": "^3.5.1",
         "rector/rector": "^2.5",
-        "revolt/event-loop": "^1.0",
         "symfony/browser-kit": "8.1.*",
         "symfony/css-selector": "8.1.*",
         "symfony/debug-bundle": "8.1.*",

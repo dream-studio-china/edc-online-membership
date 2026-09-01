@@ -1,316 +1,360 @@
-# Dynamic Query System — Complete Reference
+# Dynamic Query System Reference
 
-The dynamic query system is driven by `BaseServiceReadListTrait::list()`
-(`src/Core/Service/Concern/BaseServiceReadListTrait.php`) and the expression
-engine in `src/Core/Parser/` plus `src/Core/Service/ExpressionService.php`.
-Any list endpoint built on `ListApiViewMixin` (or any service called with
-`list(..., false)` — i.e. `$disableRequest = false`) accepts these query
-parameters on a `GET` request.
-
-The system has two tiers:
-
-1. **SQL/DQL tier** — `@filter`, `@dql`, `@order`, `@select`, `@groupBy`,
-   `@hints` are compiled into the Doctrine `QueryBuilder`.
-2. **In-memory tier** — `@sort` (and `@filter` when DQL compilation fails for a
-   non-admin) are evaluated in PHP over the already-fetched result set.
+Complete reference for the expression-based dynamic query engine used by the `list()`
+method in `BaseServiceReadListTrait` and `RestController::requestProcess()`.
 
 ---
 
-## 1. Parameter Reference
+## 1. @filter — Expression-based Filtering
 
-| Parameter | Type | Tier | Description | Example |
-|-----------|------|------|-------------|---------|
-| `page` | int | SQL | Page number (1‑based) | `2` |
-| `limit` | int | SQL | Items per page (default `100` via controller; the paginator honors `page`/`limit`) | `20` |
-| `@filter` | expression | DQL + fallback | Expression WHERE clause | `entity.status == "active"` |
-| `@dql` | DQL | SQL | Raw DQL sub-query used as `id IN (...)` | `entity.price > 100` |
-| `@order` | list | SQL | ORDER BY fields | `createdAt\|DESC` |
-| `@select` | list | SQL | SELECT override (projection) | `entity.id, entity.name` |
-| `@groupBy` | expression | SQL | GROUP BY clause | `entity.category` |
-| `@hints` | JSON | SQL | Query hints set on the Doctrine query | `{"hint.name": "value"}` |
-| `@sort` | expression | In-memory | In-memory comparator (admin-only) | `x.getPrice() <=> y.getPrice()` |
-| `@showDQL` | boolean | Info | Dump the generated DQL (dev-only) | `true` |
-| `@expands` | JSON | View | Nested relation expansion (`__metadata`) | `category,tags` |
-| `@display` | string | View | Response projection: `complex`, `reduce`, JSON projection | `reduce` |
-| `@transform` | JSON | View | Expression-based content transform (create/update actions) | `{"category": "Service.get(...)"}` |
-| `@partial` | boolean | View | Disable the surrounding transaction (create/batch-update) | `true` |
-| `@mode` | string | View | Batch update mode: `update` / `mixed` (upsert) | `mixed` |
-| `@basis` | list | View | Match fields for batch update/upsert | `id,sku` |
+### 1.1 Overview
 
-> The view-level parameters (`@expands`, `@display`, `@transform`, `@partial`,
-> `@mode`, `@basis`) are applied by `RestController::success()/requestProcess()`
-> and the create/update mixins — they are not part of `list()` itself but
-> complement it on CRUD endpoints. This reference covers them for completeness.
+`GET /api/v1/manage/products?@filter=entity.price > 1000 && entity.enabled == true`
+
+The filter expression is parsed by `ExpressionService::buildFilter()` →
+`ExpressionDqlParser` → `ExpressionQueryBuilderAssembler`, then injected as a DQL
+subquery:
+
+```sql
+WHERE entity.id IN (
+    SELECT filter_entity.id FROM Product filter_entity WHERE filter_entity.price > 1000
+)
+```
+
+On DQL compilation failure, the system falls back to in-memory filtering (admin-only;
+non-admins get `AccessDeniedHttpException`).
+
+### 1.2 Operators
+
+| Operator | Meaning | Example |
+|----------|---------|---------|
+| `==` | Equality | `entity.status == "active"` |
+| `!=` | Not equal | `entity.status != "deleted"` |
+| `>` | Greater than | `entity.price > 1000` |
+| `<` | Less than | `entity.quantity < 10` |
+| `>=` | Greater or equal | `entity.createdAt >= "2024-01-01"` |
+| `<=` | Less or equal | `entity.sortOrder <= 100` |
+| `&&`, `and` | Logical AND | `entity.enabled == true && entity.price > 10` |
+| `\|\|`, `or` | Logical OR | `entity.status == "active" \|\| entity.status == "draft"` |
+| `!` | Logical NOT | `!(entity.deletedAt == null)` |
+| `matches` | Regex match | `entity.name matches "/^A.*/"` |
+| `+`, `-`, `*`, `/` | Arithmetic | `entity.price * entity.quantity > 10000` |
+| `in` | Value in list | `entity.id in [1, 2, 3]` |
+| `not in` | Value not in list | `entity.id not in [1, 2]` |
+| `~` | Contains (substring) | `entity.name ~ "hello"` |
+| `starts with` | Prefix match | `entity.slug starts with "cat-"` |
+| `ends with` | Suffix match | `entity.filename ends with ".jpg"` |
+| `<=>` (spaceship) | Three-way comparison | For sort expressions |
+| `=`, `===` | Strict equality | `entity.id = 5` |
+
+### 1.3 Chained Attributes (Dot-Path Traversal)
+
+Filter across relations using dot notation:
+
+```
+entity.category.name == "Electronics"
+entity.tags.name in ["new", "sale"]
+entity.parent.slug starts with "cat-"
+```
+
+The parser auto-generates LEFT JOINs for each path segment (e.g., `entity_category` for
+`entity.category`).
+
+### 1.4 Functions
+
+#### Math.*
+
+```php
+Math.abs(entity.value)
+Math.sqrt(entity.area)
+Math.ceil(entity.score)
+Math.floor(entity.score)
+Math.round(entity.price, 2)
+Math.min(entity.x, entity.y)
+Math.max(entity.x, entity.y)
+Math.pow(entity.base, entity.exp)
+Math.log(entity.val)
+Math.log10(entity.val)
+Math.sin(entity.angle)
+Math.cos(entity.angle)
+Math.tan(entity.angle)
+Math.random(1, 100)
+Math.pi()
+Math.deg2rad(entity.degrees)
+Math.rad2deg(entity.radians)
+// and all other static methods on Math class
+```
+
+#### ArrayCommon.*
+
+```php
+ArrayCommon.count(entity.tags) > 3
+ArrayCommon.in_array("new", entity.tags.name)
+// filter, map, reduce operate on PHP arrays (in-memory fallback only)
+```
+
+#### FilterDateTime.*
+
+```php
+FilterDateTime.get("2024-01-01")  // creates DateTime in DQL
+FilterDateTime.get("now", new \DateTimeZone("UTC"))
+```
+
+### 1.5 NULL Handling
+
+```php
+entity.deletedAt == null      // IS NULL
+entity.deletedAt != null      // IS NOT NULL
+entity.deletedAt == true      // evaluates to false for NULL (SQL NULL semantics)
+```
+
+### 1.6 DQL Validation
+
+After parsing, `ExpressionDqlParser::validateFragments($em)` validates:
+- All field references exist on the entity's Doctrine metadata
+- All relationships are valid for the join paths
+- No unknown entities or fields appear in the expression
+
+### 1.7 In-Memory Fallback
+
+When DQL compilation fails (e.g., expressions using `ArrayCommon.filter` or complex
+Symfony ExpressionLanguage features), the system falls back to:
+1. Execute the query without filtering
+2. Filter results in PHP using `LegacyEvaluator::evaluateBool()` with each entity as
+   the `entity` variable
+3. Sort results with `usort()` if `@sort` is also present
+
+**This fallback is restricted to ROLE_ADMIN** because it loads unfiltered data into memory.
 
 ---
 
-## 2. Core Query Parameters
+## 2. @sort — In-Memory Sorting
 
-### `page` / `limit`
+`GET /api/v1/manage/products?@sort=x.price > y.price`
 
-Paginate the result set. `RestController::pagination()` applies them
-server-side (over a `QueryBuilder` via Doctrine `Paginator` for an accurate
-total, or over an array/`ArrayCollection` with `array_slice`). The generated
-`paginator` metadata looks like:
+Forces in-memory mode. Evaluates the expression with `x` and `y` as the two entities being
+compared. Returns `1` or `-1` to `usort()`. **Admin-only** (enforced by
+`assertPrivilegedQueryParameters()`).
+
+---
+
+## 3. @order — DQL Sorting
+
+`GET /api/v1/manage/products?@order=price|ASC,createdAt|DESC,name|ASC`
+
+Syntax: `field|ASC` or `field|DESC`, comma-separated for multi-field ordering.
+
+Multi-field example:
+```
+@order=category.sortOrder|ASC,entity.sortOrder|ASC,entity.name|ASC
+```
+
+Dot-paths are auto-converted to LEFT JOIN aliases:
+```
+@order=category.name|ASC
+→ LEFT JOIN entity.category entity_category
+→ ORDER BY entity_category.name ASC
+```
+
+---
+
+## 4. @dql — Raw DQL Sub-query
+
+`GET /api/v1/manage/products?@dql=SELECT p.id FROM App\Common\Entity\Product p WHERE p.price > 1000`
+
+**Admin-only**. The raw DQL is compiled via `$em->createQuery($subDql)` and injected as:
+```sql
+WHERE entity.id IN (SELECT p.id FROM ...)
+```
+
+Security implications: allows joining across any entity in the database. Always restricted
+to `ROLE_ADMIN`.
+
+---
+
+## 5. @select — DQL SELECT Projection
+
+`GET /api/v1/manage/products?@select=entity.id, entity.name, entity.price, entity.category.name as categoryName`
+
+Returns partial data instead of full entities. Security restrictions:
+
+- **Blocked on `App\Identity\*` entities** — cannot project identity data
+- **Identity fields blocked**: `user`, `profile`, `password`, `roles`, `email`, `phone`,
+  `phoneVerified`, `refreshToken`, `sessionKey`, `rawData`
+
+When `@select` or `@groupBy` is present, returns raw query results (not `QueryBuilder`).
+
+---
+
+## 6. @groupBy — DQL GROUP BY
+
+`GET /api/v1/manage/orders?@groupBy=entity.status&@select=entity.status, COUNT(entity.id) as total`
+
+Works with `@select` for aggregation. Dot-paths auto-joined.
+
+---
+
+## 7. @expands — Nested Eager Loading
+
+`GET /api/v1/manage/products?@expands=["entity.category", "entity.tags", "entity.category.parent"]`
+
+Syntax: JSON array of dot-paths. Each path traverses getters and injects `__metadata`:
 
 ```json
 {
-  "total": 100, "page": 2, "limit": 20, "pages": 5,
-  "has_previous": true, "has_next": true
+    "id": 1,
+    "name": "Laptop",
+    "category": {
+        "id": 5,
+        "__toString": "Electronics",
+        "__metadata": { "id": 5, "name": "Electronics", /* full entity */ },
+        "parent": {
+            "id": 2,
+            "__toString": "All Products",
+            "__metadata": { /* full entity */ }
+        }
+    },
+    "tags": [
+        { "id": 10, "__toString": "new", "__metadata": { /* full entity */ } }
+    ]
 }
 ```
 
-### `@filter`
-
-An expression evaluated against a root alias of `entity`. The same syntax is
-usable as a raw `QueryBuilder` fragment (the DQL tier) and as an in-memory
-predicate (the fallback).
-
-Supported operators:
-
-| Operator | Meaning | DQL mapping |
-|----------|---------|-------------|
-| `==` / `!=` | equal / not equal | `=` / `!=` |
-| `>` `>=` `<` `<=` | comparison | same |
-| `&&` / `||` | logical AND / OR | `AND` / `OR` |
-| `!` | logical NOT (attr check) | `prop IS NULL` on the child |
-| `matches` | regex / LIKE | `REGEXP(...) = TRUE` or `LIKE '%...%'` |
-| `+ - * /` | arithmetic | same |
-
-**Field references** are the root alias plus dotted getters, e.g.
-`entity.status`, `entity.getCategory().getName()` (chained attribute access
-generates the necessary joins). A bare attribute (no operator) compiles to
-`prop IS NOT NULL`.
-
-Examples:
-
-```
-# Equality
-@filter=entity.status == "active"
-
-# Comparison + logic
-@filter=entity.price >= 100 && entity.status != "deleted"
-
-# Chained attribute (joins category)
-@filter=entity.getCategory().getName() == "Electronics"
-
-# Regex match
-@filter=entity.email matches "/@example\.com$/i"
-
-# LIKE match (plain string pattern → %...%)
-@filter=entity.name matches "pro"
-
-# NOT — attr is null
-@filter=!entity.deletedAt
-```
-
-**Access and fallback**: An `@filter` that requires in-memory evaluation (e.g.
-when DQL compilation fails or the filter touches non-persistent data) is
-restricted to admins. For non-admins a DQL compilation error raises
-`AccessDeniedHttpException`; admins fall back to
-`LegacyEvaluator::evaluateBool()` over each entity.
-
-### `@dql`
-
-A raw DQL sub-query whose matching ids are used as `id IN (subquery)`:
-
-```
-@dql=SELECT e.id FROM App\Trade\Entity\Product e WHERE e.price > 100
-```
-
-Restricted to `ROLE_ADMIN`.
-
-### `@order`
-
-ORDER BY fields. Comma-separated `field|DIRECTION` pairs:
-
-```
-@order=createdAt|DESC,id|ASC
-```
-
-Joins are auto-derived if you order by a chained path (the `joiner` function
-registers `leftJoin`s). Non-admin note: `@order` itself isn't gated, but the
-DQL compilation must be safe.
-
-### `@select`
-
-Overrides the SELECT clause (projection). Chained paths expand to joins:
-
-```
-@select=entity.id, entity.name, entity.category.name
-```
-
-Guarded by `assertSafeSelect()`: selecting into `App\Identity\*` entities or
-any of `user|profile|password|roles|email|phone|phoneVerified|refreshToken|sessionKey|rawData`
-raises `AccessDeniedHttpException` ("@select cannot access identity data.").
-When `@select` (or `@groupBy`) is present, `list()` returns query results
-directly rather than a `QueryBuilder`.
-
-### `@groupBy`
-
-Appends a GROUP BY clause:
-
-```
-@groupBy=entity.category
-```
-
-Like `@select`, chained paths auto-join and using it returns results directly.
-
-### `@hints`
-
-JSON object of Doctrine query hints applied to the executed query:
-
-```
-@hints={"Doctrine\\ORM\\Query::HINT_FORCE_PARTIAL_LOAD": true}
-```
-
-Restricted to `ROLE_ADMIN`.
-
-### `@sort`
-
-An **in-memory** comparator expression evaluated with `x` and `y` as the two
-entities being compared (uses `LegacyEvaluator::evaluateBool`; a truthy result
-sorts `x` first). Because it runs in PHP, it is restricted to `ROLE_ADMIN`.
-
-```
-@sort=x.getTotalAmount() > y.getTotalAmount()
-```
-
-When `@sort` is present, the DQL-tier filter result is applied but the ordering
-falls back to `usort` in memory.
-
-### `@showDQL`
-
-When truthy, instead of returning results the endpoint throws
-`ValidatorException('DQL: ' . $qb->getDQL())`, which surfaces as a JSON error
-showing the generated DQL. Useful for debugging. Only available in the `dev`
-environment (any environment raises `AccessDeniedHttpException` otherwise).
+The `__metadata` key contains the full normalized entity, while the parent key shows the
+reduced form. `FlatNormalizer` handles displaying both.
 
 ---
 
-## 3. View-Level Parameters
+## 8. @display — Response Shaping
 
-Applied after the query, in `RestController::success()`/`requestProcess()`, and
-in the create/update mixins.
+`GET /api/v1/manage/products?@display=complex` (default)
 
-### `@expands`
+| Value | Behavior |
+|-------|----------|
+| `complex` | Return collection as-is (serializer handles normalization) |
+| `reduce` | Map each entity to `{id, __toString}` (minimal representation) |
+| `["name", "price"]` | Extract named fields via getters |
+| `{"name": "entity.getName()", "upper": "entity.name ~ 'Laptop'", "sqrt": "Math.sqrt(16)"}` | Evaluate expressions per entity; `entity`, `Math`, `ArrayCommon` in scope |
 
-JSON array (single quotes allowed, `FixJSON` handles them) of dotted relation
-chains to expand by attaching a `__metadata` attribute (the object itself) to
-each related node, so the flat serializer can include it:
-
+Expression map example:
 ```
-# GET /api/v1/manage/contents?@expands=['category','tags']
-```
-
-### `@display`
-
-Controls response projection:
-
-- **`@display=reduce`** — each item becomes `{id, __toString}`.
-- **`@display=<json array>`** — e.g. `['id','name','category.name']` produces
-  a flat object with the requested fields (dotted paths traversed via getters).
-- **`@display=<json object>`** — keys are output fields, values are
-  `ExpressionLanguage` expressions evaluated with `entity`, `Math`, and
-  `ArrayCommon`.
-- omitted (default `complex`) — full serialized entity.
-
-Example:
-
-```
-# GET /api/v1/app/products?@display={"title":"entity.name","score":"Math.round(entity.price/100)"}
-```
-
-### `@transform`
-
-Used by `CreateApiViewMixin`, `UpdateApiViewMixin`, and `Single*` mixins. A
-JSON object mapping fields to `ExpressionLanguage` expressions that rewrite the
-submitted content. `:value` is substituted with the submitted field value, and
-`Service` (a gateway to the related entity's service), `entity`, `Math`,
-`ArrayCommon` are available.
-
-```
-# POST /api/v1/manage/contents
-# body:    {"title": "Hi", "category": "Test"}
-# @transform={"category": "Service.get({'name': ':value'}).getId()"}
-
-# GET /api/v1/manage/contents?@transform={"category":"Service.get({'name':':value'}).getId()"}
-```
-
-For a to-one relation on the entity, the matching `*Service` is auto-resolved by
-convention (`Entity` → `Service` in the class name). Returns the related
-entity's id.
-
-### `@partial`
-
-Boolean. On create and batch-update, when `false` (default) the whole batch is
-wrapped in one transaction; when `true` each item is handled individually and
-transactional wrappers are skipped (partial-mode batch-update also swallows
-per-item exceptions).
-
-### `@mode` and `@basis` (batch update)
-
-`UpdateApiViewMixin::batchUpdateAction` (`POST /batch-update`):
-
-- `@mode=update` — only update existing matches.
-- `@mode=mixed` (default) — upsert: create when no matched entity exists.
-- `@basis` — comma-separated fields used to match an existing entity for each
-  submitted row (e.g. `@basis=id,sku`). When empty, no matching occurs (matters
-  for upsert decisions).
-
-```
-# POST /api/v1/manage/products/batch-update?@basis=sku&@mode=mixed
+@display={"name": "entity.name", "isExpensive": "entity.price > 1000", "priceFormatted": "Math.round(entity.price / 100, 2)"}
 ```
 
 ---
 
-## 4. How `list()` Workflow Flow Works
+## 9. @transform — Field Transformation
 
-(Abstracted from `BaseServiceReadListTrait::list()`.)
+`POST /api/v1/contents?@transform={"category": "Service.get({'name': ':value'}).getId()"}`
 
-1. **Build root** — a `QueryBuilder` over the service's entity class with root
-   alias `entity`; an associative `$object` array becomes `entity.key = :value_key`
-   conditions; a passed `QueryBuilder` is used as-is.
-2. **`@dql`** — appended as `id IN (subDql)`.
-3. **`@filter`** — compiled by `ExpressionService::buildFilter()` →
-   `ExpressionDqlParser` → `ExpressionQueryBuilderAssembler`; the resulting
-   ids are applied via `id IN (filterQb)` with parameters merged. On
-   compilation failure, non-admins get `AccessDeniedHttpException`, admins fall
-   back to in-memory filtering.
-4. **`@select` / `@groupBy`** — applied; the `joiner` derives `leftJoin`s for
-   dotted paths.
-5. **`@order`** — applied (`field|DIRECTION`), joins derived as needed.
-6. **`@hints`** — set on the executed query.
-7. **`@showDQL`** — throws with the generated DQL.
-8. If `@select`/`@groupBy` present → return query results.
-9. Otherwise return the `QueryBuilder` (for the controller to paginate) — or,
-   when the filter/order fell back to in-memory, fetch results and apply
-   `@filter` (`evaluateBool`) and `@sort` (`usort`) over them.
+Used during create/update to resolve referenced entities. Features:
 
----
+- `:value` placeholder replaced with the raw request value for that field
+- `Service.get($criteria)` calls the related entity's service to find the target entity
+- `Service.list($criteria)` returns an array of identity wrappers
+- `Service.get().getId()` returns the resolved entity ID (for foreign key)
+- `entity` variable provides access to the current entity (identity wrapper with `.getId()`)
+- `Math` and `ArrayCommon` available in expression scope
 
-## 5. Security Summary
-
-| Parameter | Requires `ROLE_ADMIN` | Notes |
-|-----------|------------------------|-------|
-| `@dql` | ✅ | Raw SQL surface |
-| `@sort` | ✅ | In-memory evaluation |
-| `@hints` | ✅ | Raw query hints |
-| `@filter` | only for the in-memory fallback | DQL-fast-path is allowed; non-admin failures → `AccessDeniedHttpException` |
-| `@showDQL` | ✅ (env-gated) | `dev` only |
-| `@select` | guarded, not gated | `assertSafeSelect()` blocks identity data |
+Example: creating content with a category name rather than ID:
+```json
+{
+    "title": "My Article",
+    "category": "Tutorials"
+}
+```
+`@transform`: `{"category": "Service.get({'name': ':value'}).getId()}`
+→ Resolves "Tutorials" to the Category entity with ID 5
+→ Sets `content.category = 5` before save
 
 ---
 
-## 6. Operators & People Notes
+## 10. @showDQL — Debug Helper
 
-- Chained attribute access uses the root alias `entity.getX().getY()` form in
-  `@filter`; the DQL tier maps these to joins (`filter_entity_x_y`).
-- `matches` with a `/pattern/flags` value compiles to `REGEXP(...) = TRUE`
-  (supported flags `gimsux`); a plain string compiles to `LIKE '%...%'` with
-  `!` escaping.
-- The `ExternalExpressionValues` available inside filter expressions include
-  `math`/`Math`, `datetime`/`Datetime`, and `ArrayCommon`.
+`GET /api/v1/manage/products?@showDQL=true`
 
-For parsing internals and class-level details, see
-[core-framework.md](core-framework.md) (§4 Parser & Expression Engine).
+**Dev-only** (throws `AccessDeniedHttpException` in non-dev environments). Throws a
+`ValidatorException` containing the fully compiled DQL:
+
+```
+DQL: SELECT entity FROM App\Common\Entity\Product entity WHERE entity.id IN(SELECT ...)
+```
+
+---
+
+## 11. @hints — Doctrine Query Hints
+
+`GET /api/v1/manage/products?@hints={"doctrine.readOnly": true, "doctrine.fetchAll": true}`
+
+JSON-decoded and applied via `$query->setHint($key, $value)`. **Admin-only**.
+
+---
+
+## 12. page & limit — Pagination
+
+`GET /api/v1/manage/products?page=2&limit=50`
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `page` | `1` | Page number (1-indexed) |
+| `limit` | `100` | Items per page |
+
+Paginator metadata in response:
+
+```json
+{
+    "paginator": {
+        "total": 250,
+        "page": 2,
+        "limit": 50,
+        "pages": 5,
+        "has_previous": true,
+        "has_next": true
+    }
+}
+```
+
+Pagination is applied by `RestController::pagination()`. For `QueryBuilder` input, total
+is computed via `DoctrinePaginator`. For arrays, total is `count()`.
+
+---
+
+## 13. Expression Caching
+
+`ExpressionService` uses a PSR-16 `CacheInterface` (optional). When a cache is provided:
+
+- Cache key: `'expr_' . sha1($dataClass . '|' . $filter)`
+- Stored value: `{dql: compiledDQL, parameters: [{n: name, v: value}, ...]}`
+- On cache hit: recreates `Query` from cached DQL, wraps params in `Parameter` objects
+
+Cache invalidation: SHA1 key changes whenever the entity class or filter expression
+changes. No explicit invalidation needed — new filters generate new keys.
+
+---
+
+## 14. Troubleshooting
+
+### Common Filter Errors
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| `AccessDeniedHttpException: @filter expressions that require in-memory evaluation are restricted to administrators` | DQL compilation failed and user is not admin | Simplify expression to use only database-compatible operators |
+| `AccessDeniedHttpException: @dql is restricted to administrators` | Non-admin used `@dql` | Remove `@dql` or use admin credentials |
+| `AccessDeniedHttpException: @select cannot access identity data` | `@select` targeting identity fields or entities | Remove identity fields from projection |
+| `ValidatorException: DQL: ...` | `@showDQL` is set | This is informational; remove `@showDQL` to see results |
+| Filter returns empty results | Expression too complex or field doesn't exist | Use `@showDQL=true` to inspect compiled DQL |
+| `AccessDeniedHttpException: @sort is restricted to administrators` | Non-admin used `@sort` | Use `@order` for database-level sorting instead |
+
+### Performance Tips
+
+1. **Use `@order` over `@sort`**: `@order` generates SQL `ORDER BY`; `@sort` loads all data
+   into memory.
+2. **Use `@expands` for eager loading**: Prevents N+1 queries when rendering related
+   entities.
+3. **Use `@select` for view projections**: Returns only needed fields instead of full
+   entities.
+4. **Combine `@filter` with `@select`/`@groupBy`**: Filters are pushed to the database even
+   with projections.
+5. **Avoid chain-heavy `@sort` expressions**: Each comparison evaluates PHP expressions.
+6. **Expression caching**: Provide a PSR-16 cache to `ExpressionService` to avoid re-parsing
+   identical filters.

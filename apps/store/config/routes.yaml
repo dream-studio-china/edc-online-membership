@@ -1,0 +1,5 @@
+store_controllers:
+    resource:
+        path: ../src/Controller/
+        namespace: App\Store\Controller
+    type: attribute

@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "messages": [
+    {"kind": "event", "type": "trade.order.created", "version": 1, "topic": "trade.order.created.v1", "carrier": "CrudPlatform\\IntegrationContracts\\Event\\V1\\TradeOrderCreated", "schema": "events/trade.order.created.v1.schema.json"},
+    {"kind": "event", "type": "trade.order.cancelled", "version": 1, "topic": "trade.order.cancelled.v1", "carrier": "CrudPlatform\\IntegrationContracts\\Event\\V1\\TradeOrderCancelled", "schema": "events/trade.order.cancelled.v1.schema.json"},
+    {"kind": "event", "type": "store.order.accepted", "version": 1, "topic": "store.order.accepted.v1", "carrier": "CrudPlatform\\IntegrationContracts\\Event\\V1\\StoreOrderAccepted", "schema": "events/store.order.accepted.v1.schema.json"},
+    {"kind": "event", "type": "store.order.rejected", "version": 1, "topic": "store.order.rejected.v1", "carrier": "CrudPlatform\\IntegrationContracts\\Event\\V1\\StoreOrderRejected", "schema": "events/store.order.rejected.v1.schema.json"},
+    {"kind": "event", "type": "store.directory.upserted", "version": 1, "topic": "store.directory.upserted.v1", "carrier": "CrudPlatform\\IntegrationContracts\\Event\\V1\\StoreDirectoryUpserted", "schema": "events/store.directory.upserted.v1.schema.json"},
+    {"kind": "command", "type": "inventory.reservation.requested", "version": 1, "topic": "inventory.reservation.requested.v1", "carrier": "CrudPlatform\\IntegrationContracts\\Command\\V1\\InventoryReservationRequested", "schema": "commands/inventory.reservation.requested.v1.schema.json"},
+    {"kind": "command", "type": "inventory.reservation.release.requested", "version": 1, "topic": "inventory.reservation.release.requested.v1", "carrier": "CrudPlatform\\IntegrationContracts\\Command\\V1\\InventoryReservationReleaseRequested", "schema": "commands/inventory.reservation.release.requested.v1.schema.json"},
+    {"kind": "event", "type": "inventory.reservation.confirmed", "version": 1, "topic": "inventory.reservation.confirmed.v1", "carrier": "CrudPlatform\\IntegrationContracts\\Event\\V1\\InventoryReservationConfirmed", "schema": "events/inventory.reservation.confirmed.v1.schema.json"},
+    {"kind": "event", "type": "inventory.reservation.rejected", "version": 1, "topic": "inventory.reservation.rejected.v1", "carrier": "CrudPlatform\\IntegrationContracts\\Event\\V1\\InventoryReservationRejected", "schema": "events/inventory.reservation.rejected.v1.schema.json"},
+    {"kind": "event", "type": "inventory.reservation.released", "version": 1, "topic": "inventory.reservation.released.v1", "carrier": "CrudPlatform\\IntegrationContracts\\Event\\V1\\InventoryReservationReleased", "schema": "events/inventory.reservation.released.v1.schema.json"},
+    {"kind": "event", "type": "payment.invoice.paid", "version": 1, "topic": "payment.invoice.paid.v1", "carrier": "CrudPlatform\\IntegrationContracts\\Event\\V1\\PaymentInvoicePaid", "schema": "events/payment.invoice.paid.v1.schema.json"},
+    {"kind": "event", "type": "payment.invoice.failed", "version": 1, "topic": "payment.invoice.failed.v1", "carrier": "CrudPlatform\\IntegrationContracts\\Event\\V1\\PaymentInvoiceFailed", "schema": "events/payment.invoice.failed.v1.schema.json"},
+    {"kind": "event", "type": "payment.invoice.cancelled", "version": 1, "topic": "payment.invoice.cancelled.v1", "carrier": "CrudPlatform\\IntegrationContracts\\Event\\V1\\PaymentInvoiceCancelled", "schema": "events/payment.invoice.cancelled.v1.schema.json"},
+    {"kind": "event", "type": "payment.invoice.refunded", "version": 1, "topic": "payment.invoice.refunded.v1", "carrier": "CrudPlatform\\IntegrationContracts\\Event\\V1\\PaymentInvoiceRefunded", "schema": "events/payment.invoice.refunded.v1.schema.json"}
+  ]
+}

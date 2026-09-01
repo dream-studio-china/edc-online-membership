@@ -148,21 +148,21 @@ USR_WID=$(api "create user wallet" POST /api/v1/manage/wallets "$ADMIN_TOKEN" \
 echo "  bank_wallet=$BANK_WID | user_wallet=$USR_WID"
 
 # Fund bank wallet with enough money for all operations
-api "deposit 5000 CNY to bank" POST /api/v1/manage/vouchers/deposit "$ADMIN_TOKEN" \
-  "{\"walletId\":$BANK_WID,\"amount\":500000,\"currency\":\"CNY\",\"referenceId\":\"smoke-bank-fund-1\",\"reason\":\"Bank funding\"}" 201 >/dev/null
+api "deposit 5000 CNY to bank" POST /api/v1/manage/transfers/deposit "$ADMIN_TOKEN" \
+  "{\"toWalletId\":$BANK_WID,\"amount\":500000,\"description\":\"Bank funding\"}" 201 >/dev/null
 
 # Recharge user wallet for wallet-payment tests
-api "transfer 3000 CNY bank→user" POST /api/v1/manage/transactions "$ADMIN_TOKEN" \
+api "transfer 3000 CNY bank→user" POST /api/v1/manage/transfers "$ADMIN_TOKEN" \
   "{\"fromWalletId\":$BANK_WID,\"toWalletId\":$USR_WID,\"amount\":300000,\"description\":\"Recharge\"}" 201 >/dev/null
 
 # Record balance before payments
 USR_BAL_BEFORE=$(api "get user wallet before payments" GET "/api/v1/manage/wallets/${USR_WID}" "$ADMIN_TOKEN" none | jval '["data"]["balance"]')
 echo "  user wallet balance BEFORE payments: $USR_BAL_BEFORE cent ($(python3 -c "print($USR_BAL_BEFORE/100)") CNY)"
 
-api "transfer insufficient (400)"  POST /api/v1/manage/transactions "$ADMIN_TOKEN" "{\"fromWalletId\":$USR_WID,\"toWalletId\":$BANK_WID,\"amount\":999999}" 400 >/dev/null
-api "transfer same wallet (400)"   POST /api/v1/manage/transactions "$ADMIN_TOKEN" "{\"fromWalletId\":$BANK_WID,\"toWalletId\":$BANK_WID,\"amount\":100}" 400 >/dev/null
-api "deposit negative (400)"       POST /api/v1/manage/vouchers/deposit "$ADMIN_TOKEN" '{"walletId":1,"amount":-100,"currency":"CNY","referenceId":"x"}' 400 >/dev/null
-api "deposit nonexistent (404)"    POST /api/v1/manage/vouchers/deposit "$ADMIN_TOKEN" '{"walletId":99999,"amount":100,"currency":"CNY","referenceId":"x"}' 404 >/dev/null
+api "transfer insufficient (402)"   POST /api/v1/manage/transfers "$ADMIN_TOKEN" "{\"fromWalletId\":$USR_WID,\"toWalletId\":$BANK_WID,\"amount\":999999}" 402 >/dev/null
+api "transfer same wallet (400)"    POST /api/v1/manage/transfers "$ADMIN_TOKEN" "{\"fromWalletId\":$BANK_WID,\"toWalletId\":$BANK_WID,\"amount\":100}" 400 >/dev/null
+api "deposit negative (400)"        POST /api/v1/manage/transfers/deposit "$ADMIN_TOKEN" '{"toWalletId":1,"amount":-100}' 400 >/dev/null
+api "deposit nonexistent (404)"     POST /api/v1/manage/transfers/deposit "$ADMIN_TOKEN" '{"toWalletId":99999,"amount":100}' 404 >/dev/null
 
 # ══════════════════════════════════════════════════════════════════════════════
 #  PHASE 5 — Browse + Profile

@@ -2,7 +2,7 @@
 
 namespace App\Tests\Integration;
 
-use App\Identity\Entity\User;
+use App\Identity\Main\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 
 final class AppApiRegressionTest extends IntegrationWebTestCase

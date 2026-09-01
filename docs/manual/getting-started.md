@@ -1,186 +1,249 @@
 # Getting Started
 
-This page gets the application running and shows you how to verify it works.
-Two paths are supported: **Docker Compose** (recommended, everything included) and
-**native PHP** (uses a locally installed PHP toolchain).
+## 1. Prerequisites
 
-## Prerequisites
+- **Docker** and Docker Compose (recommended)
+- **PHP 8.4+** for native development (Homebrew PHP 8.5 at `/opt/homebrew/opt/php@8.5/bin/php` on macOS)
+- **Composer 2.x**
+- **OpenSSL** (for JWT key generation)
+- **MySQL 8.0** client (for direct DB access)
 
-| Tool | Version | Purpose |
-|------|---------|---------|
-| Docker Engine + Compose v2 | latest stable | Runs the full service stack (`compose.yaml`) |
-| PHP | **8.4+** (project constraint `>=8.4`) | Native setup; the CLI requires `pdo_mysql`, `openssl`, `zip`, `intl` extensions |
-| Composer | 2.x | Dependency and autoload management |
-| OpenSSL | any recent | Generates the RSA JWT key pair |
-| MySQL 8 client | 8.x | Optional — native `mysql` CLI for inspecting the container database |
+## 2. Docker Quick Start
 
-> On macOS with Homebrew this project has been tested against **PHP 8.5**
-> (`/opt/homebrew/opt/php`). PHP 8.4 from Homebrew works too — see
-> [Troubleshooting](#troubleshooting) if `php` resolves to an older version.
-
-## Services in `compose.yaml`
-
-`docker compose up -d --build` starts a single networked stack. Only `nginx`,
-`database`, `redis`, and `mailer` publish host ports; the PHP containers never do.
-
-| Service | Image / Build | Purpose | Host port (default) |
-|---------|---------------|---------|---------------------|
-| `app` | built from `Dockerfile` | PHP-FPM serving the Symfony API | — |
-| `worker` | same image | Messenger consumer for the `async` transport | — |
-| `scheduler` | same image | Loop running outbox-publish and reservation/settlement housekeeping | — |
-| `nginx` | `nginx:alpine` | Reverse proxy to PHP-FPM; serves `/` → `public/` | `${APP_PORT:-8080}:80` |
-| `database` | `mysql:8.4` | Primary storage (Doctrine) | `3306:3306` via `compose.override.yaml` |
-| `redis` | `redis:7-alpine` | Cache, OTP storage, rate limiter backing | — |
-| `mailer` | `axllent/mailpit` | Email catcher (Mailpit UI) | `${MAILPIT_UI_PORT:-8025}:8025` |
-
-`worker` and `scheduler` `extends: app`, so they share the same image and environment.
-`nginx` has a full-path readiness probe through to `GET /health/ready`.
-
-## Docker Quick Start
+The repository uses `compose.yaml` with 22 services covering all 8 applications:
 
 ```bash
-# 1. Build images and start every service
+# Clone and start all services
+git clone <repository-url> crud-platform
+cd crud-platform
 docker compose up -d --build
 
-# 2. Apply the latest database schema
+# Run monolith migrations
 docker compose exec app php bin/console doctrine:migrations:migrate --no-interaction
 
-# 3. Create an administrator account (email, screen name, password)
+# Run migrations for each extracted app
+docker compose exec store-app php bin/console doctrine:migrations:migrate --no-interaction
+docker compose exec inventory-app php bin/console doctrine:migrations:migrate --no-interaction
+docker compose exec payment-app php bin/console doctrine:migrations:migrate --no-interaction
+docker compose exec wallet-app php bin/console doctrine:migrations:migrate --no-interaction
+docker compose exec identity-app php bin/console doctrine:migrations:migrate --no-interaction
+docker compose exec common-app php bin/console doctrine:migrations:migrate --no-interaction
+docker compose exec trade-app php bin/console doctrine:migrations:migrate --no-interaction
+
+# Create an admin user
 docker compose exec app php bin/console app:identity:user:create admin@example.com admin 'P@ssw0rd' --admin
 ```
 
-That is enough to log in and exercise the API. The JWT key pair is generated
-automatically on first container start by `docker/app/entrypoint.sh` into
-`var/jwt/`. No environment file is required for a first run — `compose.yaml`
-provides safe development defaults.
+During development, `compose.override.yaml` loads automatically:
+- Sets `APP_ENV=dev`, `APP_DEBUG=1`
+- Mounts source code for live reload
+- Exposes debug ports
 
-Common follow-up commands:
+## 3. Port Table
+
+| Service | HTTP Port | Database | DB Port (mapped) |
+|---------|-----------|----------|------------------|
+| **app** (monolith) | 8080 | database | 33306 |
+| **store-app** | 8081 | store-database | 33307 |
+| **inventory-app** | 8082 | inventory-database | 33308 |
+| **payment-app** | 8083 | payment-database | 33309 |
+| **wallet-app** | 8084 | wallet-database | 33310 |
+| **identity-app** | 8085 | identity-database | 33311 |
+| **common-app** | 8086 | common-database | 33312 |
+| **trade-app** | 8087 | trade-database | 33313 |
+| **worker** | — (CLI) | — | — |
+| **scheduler** | — (CLI) | — | — |
+| **redis** | 6379 | — | — |
+| **mailer** (Mailpit) | 8025 (UI) / 1025 (SMTP) | — | — |
+
+- Root database port (`MYSQL_PORT`) defaults to `33306`; configure via env to avoid
+  host-side MySQL collisions.
+- App HTTP ports are configurable via `APP_PORT`, `STORE_PORT`, etc. env vars.
+
+## 4. Native PHP Setup (Without Docker)
 
 ```bash
-# Tail app logs
-docker compose logs -f app
-
-# Reset the database (dev only)
-docker compose exec app php bin/console doctrine:schema:drop --force
-docker compose exec app php bin/console doctrine:migrations:migrate --no-interaction
-
-# Stop the stack (keep volumes)
-docker compose down
-```
-
-## Native PHP Setup
-
-The optional `compose.override.yaml` binds the source tree and exposes MySQL and
-Mailpit locally, but you can also run everything directly on the host:
-
-```bash
-# 1. Install dependencies (Docker is not required for this step)
+# Install dependencies
 composer install
 
-# 2. Create your local environment file
+# Set up environment
 cp .env .env.local
+# Edit .env.local with your DB connection, JWT paths, etc.
+
+# Generate JWT keys (see section 5)
+
+# Create database and run migrations
+php bin/console doctrine:database:create
+php bin/console doctrine:migrations:migrate --no-interaction
+
+# Create admin user
+php bin/console app:identity:user:create admin@example.com admin 'P@ssw0rd' --admin
+
+# Start development server
+php -S localhost:8000 -t public/
+# Or with FrankenPHP:
+php public/index.php
 ```
 
-Configure `.env.local` before the next steps:
-
-```dotenv
-APP_ENV=dev
-APP_SECRET=your-secret
-DATABASE_URL="mysql://app:!ChangeMe!@127.0.0.1:3306/app?serverVersion=8.0&charset=utf8mb4"
-
-JWT_PRIVATE_KEY_PATH=%kernel.project_dir%/var/jwt/jwt_private.pem
-JWT_PUBLIC_KEY_PATH=%kernel.project_dir%/var/jwt/jwt_public.pem
-JWT_PASSPHRASE=
-REFRESH_TOKEN_SECRET=your-refresh-secret
+For each extracted app (e.g., Store):
+```bash
+cd apps/store
+composer install
+php bin/console doctrine:database:create
+php bin/console doctrine:migrations:migrate --no-interaction
+php -S localhost:8081 -t public/
 ```
 
-### Generate the JWT key pair
+## 5. JWT Key Generation
 
-The JWT authenticator signs access tokens with RS256, so a private/public RSA pair
-is required. Create it under `var/jwt/` (`.gitignore`d):
+The platform uses RS256 JWT for authentication. Generate keys:
 
 ```bash
+# Create key directory
 mkdir -p var/jwt
 
-# Private key (optionally guarded by a passphrase)
-openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 \
-  -out var/jwt/jwt_private.pem
+# Generate private key
+openssl genpkey -algorithm RSA -out var/jwt/jwt_private.pem \
+  -pkeyopt rsa_keygen_bits:4096 \
+  -aes256 -pass pass:your_passphrase
 
-# Public key derived from the private key
-openssl rsa -in var/jwt/jwt_private.pem -pubout -out var/jwt/jwt_public.pem
+# Generate public key
+openssl rsa -pubout -in var/jwt/jwt_private.pem \
+  -out var/jwt/jwt_public.pem \
+  -passin pass:your_passphrase
 
-# Restrict permissions: the private key must not be world-readable
+# Set permissions
 chmod 600 var/jwt/jwt_private.pem
+chmod 644 var/jwt/jwt_public.pem
 ```
 
-If you set a `JWT_PASSPHRASE`, re-run the private-key generation with
-`-aes256` and (optionally) `-pass pass:...`, and set `JWT_PASSPHRASE` to the same
-value in `.env.local`.
-
-### Create the database and run migrations
-
-```bash
-php bin/console doctrine:database:create
-php bin/console doctrine:migrations:migrate
+Set in `.env.local`:
+```ini
+JWT_PRIVATE_KEY_PATH=%kernel.project_dir%/var/jwt/jwt_private.pem
+JWT_PUBLIC_KEY_PATH=%kernel.project_dir%/var/jwt/jwt_public.pem
+JWT_PASSPHRASE=your_passphrase
+REFRESH_TOKEN_SECRET=your-hmac-secret-at-least-32-chars
 ```
 
-### Serve the API
+In Docker, the dev entrypoint (`docker/app/entrypoint.sh`) generates dev keys
+automatically under mounted `./var/jwt` if missing. In production, keys are
+generated on the host and mounted into the container.
+
+## 6. Verifying the Setup
+
+### Health Check
 
 ```bash
-php -S localhost:8000 -t public/
-```
+# API doc (public)
+curl http://localhost:8080/api/doc
 
-In `APP_ENV=dev` the built-in server is enough for local work; the app is also fully
-functional behind nginx (see `docker/nginx/default.conf` for the production shape).
-
-## JWT Environment Variables
-
-| Variable | Default (compose) | Purpose |
-|----------|-------------------|---------|
-| `JWT_PRIVATE_KEY_PATH` | `/var/www/html/var/jwt/jwt_private.pem` | Path to the RSA private key (PEM) used for signing access tokens |
-| `JWT_PUBLIC_KEY_PATH` | `/var/www/html/var/jwt/jwt_public.pem` | Path to the RSA public key (PEM) used for verification |
-| `JWT_PASSPHRASE` | *(empty)* | Optional passphrase protecting the private key |
-| `REFRESH_TOKEN_SECRET` | `dev-refresh-secret-change-me` | HMAC secret for refresh-token hashing and rotation |
-| `ACCESS_TOKEN_TTL` | `7200` (seconds) | Access-token lifetime |
-| `REFRESH_TOKEN_TTL` | `31536000` (seconds) | Refresh-token lifetime |
-
-Related optional variables: `OTP_REDIS_DSN`, `ALIYUN_*` (SMS), `WECHAT_*`
-(WeChat login/pay), `MAILER_DSN`, `MESSENGER_TRANSPORT_DSN`, `INVENTORY_ENABLED`.
-See `.env.example` for the full reference.
-
-## Verifying the Setup
-
-```bash
-# Swagger UI (also available at http://localhost:8000/api/doc natively)
-curl -s http://localhost:8080/api/doc | head -c 200
-
-# Health/readiness returns JSON when the app, DB, and Redis are reachable
-curl -s http://localhost:8080/health/ready
-```
-
-Log in and capture a token:
-
-```bash
-curl -s -X POST http://localhost:8080/api/auth/login \
+# Login
+curl -X POST http://localhost:8080/api/auth/login \
   -H 'Content-Type: application/json' \
-  -d '{"email":"admin@example.com","password":"P@ssw0rd"}'
+  -d '{"username":"admin@example.com","password":"P@ssw0rd"}'
 ```
 
-Use the returned `token` for authenticated calls:
+Expected response:
+```json
+{
+  "data": {
+    "access_token": "eyJ...",
+    "refresh_token": "...",
+    "expires_in": 7200
+  },
+  "code": 200,
+  "message": "Success"
+}
+```
+
+### Smoke Tests
 
 ```bash
-curl -s http://localhost:8080/api/v1/profile \
-  -H "Authorization: Bearer <token>"
+# Run API smoke tests
+bash scripts/tests/api-smoke.sh
+
+# Run Store orchestration smoke
+bash scripts/tests/store-smoke.sh
+
+# Run Trade workflow demo
+php scripts/tests/demo-trade-workflow.php
 ```
 
-## Troubleshooting
+## 7. Common Troubleshooting
 
-| Symptom | Likely cause | Fix |
-|---------|--------------|-----|
-| `Doctrine\DBAL\Exception\DriverException: could not find driver` | The `pdo_mysql` PHP extension is missing | Check `php -m \| grep -i mysql`. On macOS Homebrew: `brew install php` bundles it; ensure `/opt/homebrew/opt/php/bin/php` is first on `PATH` |
-| `JWT ... key not found` / 401 on protected routes | JWT keys not generated, or paths mismatch `.env.local` | Run the openssl commands above and verify `JWT_PRIVATE_KEY_PATH` / `JWT_PUBLIC_KEY_PATH` are absolute and point at existing PEM files |
-| `Permission denied` when the app reads the private key | Private key mode too open | `chmod 600 var/jwt/jwt_private.pem` (it is git-ignored) |
-| `Address already in use: 8080` / `8000` | Another process occupies the port | `docker compose` — set `APP_PORT=8090 docker compose up -d`; native — pick another port, e.g. `php -S localhost:8001 -t public/` |
-| `php` is an old version (e.g. 7.4) on macOS | Homebrew `php` not linked/first | Run `/opt/homebrew/opt/php/bin/php bin/console ...` or `PATH="/opt/homebrew/opt/php/bin:$PATH" php ...` |
-| Migrations fail with `Unknown database 'app'` | Database not created | `docker compose exec app php bin/console doctrine:database:create` (native: run the same without `exec`) |
-| Mail not arriving | Mailpit not running or wrong DSN | Native: start Mailpit (`docker compose up -d mailer`) and use `MAILER_DSN=smtp://127.0.0.1:1025`; check the UI at `http://localhost:8025` |
+### "Could not find driver" (Database)
+
+Ensure the MySQL PDO driver is installed:
+```bash
+# macOS with Homebrew PHP
+php -m | grep pdo_mysql
+
+# Docker: verify database container is healthy
+docker compose ps database
+```
+
+### JWT Key Permission Denied
+
+```bash
+# Check file permissions
+ls -la var/jwt/
+
+# Ensure private key is readable by the PHP process
+chmod 644 var/jwt/jwt_private.pem  # in Docker (no passphrase by default)
+```
+
+### Port Already in Use
+
+```bash
+# Check what's using the port
+lsof -i :8080
+
+# Configure alternative ports via .env:
+echo "APP_PORT=9080" >> .env
+echo "MYSQL_PORT=43306" >> .env
+```
+
+### Container Build Fails
+
+```bash
+# Clear build cache
+docker compose build --no-cache
+
+# Check disk space
+docker system df
+```
+
+### Migration Errors on Extracted Apps
+
+Each app has its own database. Ensure the database exists:
+```bash
+docker compose exec store-app php bin/console doctrine:database:create --if-not-exists
+docker compose exec store-app php bin/console doctrine:migrations:migrate --no-interaction
+```
+
+### PHP Version Issues (Native)
+
+The platform requires PHP 8.4+. On macOS, Homebrew PHP 8.5 is recommended:
+```bash
+# Check current version
+php -v
+
+# Use Homebrew PHP 8.5 explicitly
+/opt/homebrew/opt/php@8.5/bin/php -v
+/opt/homebrew/opt/php@8.5/bin/php bin/console about
+```
+
+### Swagger/Mailpit Not Accessible
+
+- **Swagger UI**: `http://localhost:8080/api/doc`
+- **Mailpit UI**: `http://localhost:8025`
+- Ensure `compose.override.yaml` is loaded (check `docker compose config`)
+
+### Container Ports Not Exposed
+
+Development ports are defined in `compose.override.yaml`. If they're not
+available, ensure the file is automatically loaded (default behavior) or
+explicitly include it:
+```bash
+docker compose -f compose.yaml -f compose.override.yaml up -d
+```

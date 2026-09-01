@@ -1,0 +1,11 @@
+framework:
+    secret: '%env(APP_SECRET)%'
+    router:
+        utf8: true
+    session: false
+    translator:
+        default_path: '%kernel.project_dir%/translations'
+
+when@test:
+    framework:
+        test: true

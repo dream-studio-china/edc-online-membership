@@ -251,7 +251,7 @@ class ProfileController extends RestController
 ProfileService
 --------------
 
-`App\Identity\Service\ProfileService` extends `BaseService` and adds:
+`App\Identity\Main\Service\ProfileService` extends `BaseService` and adds:
 
 | Method | Description |
 |--------|-------------|

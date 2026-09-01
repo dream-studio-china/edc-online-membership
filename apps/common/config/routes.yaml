@@ -1,0 +1,6 @@
+common_controllers:
+    prefix: /api/v1
+    resource:
+        path: ../src/Main/Controller/
+        namespace: App\Common\Controller
+    type: attribute

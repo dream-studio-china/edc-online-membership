@@ -1,0 +1,7 @@
+framework:
+    serializer:
+        enabled: true
+        mapping:
+            paths: ['%kernel.project_dir%/vendor/crud-platform/platform-kernel/src/Resources/config/serializer']
+        default_context:
+            circular_reference_handler: 'App\Core\Serializer\CircularReferenceHandler::handle'

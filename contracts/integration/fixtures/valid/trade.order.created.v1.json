@@ -1,0 +1,1 @@
+{"eventId":"00000000-0000-4000-8000-000000000001","type":"trade.order.created","version":1,"aggregateType":"trade_order","aggregateId":"00000000-0000-4000-8000-000000000011","occurredAt":"2026-07-29T12:00:00+00:00","correlationId":"00000000-0000-4000-8000-000000000011","causationId":null,"payload":{}}

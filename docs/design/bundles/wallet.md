@@ -11,8 +11,8 @@
 
 Wallet is a financial module for managing user balances:
 
-- **Wallets** per user per currency with balance in cents, optimistic locking, freeze capability, and available/held balance separation
-- **Transactions** with UUID, type classification, status tracking, and idempotency via `referenceId`
+- **Wallets** per user per currency with balance in cents, optimistic locking, and freeze capability
+- **WalletTransactions** with UUID, type classification, status tracking, and idempotency via `referenceId`
 - **TransferService** with atomic from-wallet-to-wallet transfers, deadlock prevention, and rollback recovery
 - **Deposit** endpoint for system-injected funding with audit trail
 - **Balance verification** — `GET /api/v1/manage/wallets/balance` checks invariant: `SUM(wallets) == SUM(deposits + adjustments)`
@@ -34,8 +34,8 @@ transfer (TYPE_TRANSFER)   → zero-sum between wallets (debit + credit)
 | Entity | Table | Purpose |
 |--------|-------|---------|
 | `Wallet` | `wallet` | User balance per currency (cents), freeze support, optimistic locking |
-| `Transaction` | `wallet_transaction` | Record of deposit/withdrawal/transfer/fee/refund/**adjustment** |
-| `PaymentDeduction` | `wallet_payment_deduction` | Wallet-owned audit record for invoice wallet balance deductions |
+| `WalletTransaction` | `wallet_transaction` | Record of deposit/withdrawal/transfer/fee/refund/**adjustment** |
+| `WalletPaymentDeduction` | `wallet_payment_deduction` | Wallet-owned audit record for invoice wallet balance deductions |
 
 ---
 
@@ -49,16 +49,16 @@ src/Wallet/
 |   |-- WalletController.php             # CRUD + Balance + Reconcile
 |-- Entity/
 |   |-- Wallet.php
-|   |-- Transaction.php
-|   |-- PaymentDeduction.php       # Payment adjustment audit record
+|   |-- WalletTransaction.php
+|   |-- WalletPaymentDeduction.php       # Payment adjustment audit record
 |-- Exception/
 |   |-- InsufficientFundsException.php
 |   |-- SameWalletTransferException.php
 |   |-- WalletFrozenException.php
 |-- Repository/
 |   |-- WalletRepository.php             # + getTotalBalance()
-|   |-- TransactionRepository.php  # + getTotalDeposited(), getExpectedBalance()
-|   |-- PaymentDeductionRepository.php
+|   |-- WalletTransactionRepository.php  # + getTotalDeposited(), getExpectedBalance()
+|   |-- WalletPaymentDeductionRepository.php
 |-- Service/
     |-- Payment/
     |   |-- WalletBalanceAdjustmentProvider.php # Implements Payment adjustment provider
@@ -68,12 +68,6 @@ src/Wallet/
     |-- TransferService.php              # Core transfer + deposit logic
     |-- TransferServiceInterface.php     # Transfer + deposit contract
     |-- WalletService.php                # + verifyBalance(), reconcile()
-    |-- Withdraw/
-    |   |-- WithdrawService.php          # Voucher-backed withdrawal + reversal
-    |   |-- WithdrawServiceInterface.php # Withdrawal contract
-    |   |-- WithdrawProviderInterface.php
-    |   |-- WithdrawProviderRegistry.php
-    |   |-- ManualWithdrawProvider.php
 ```
 
 ---
@@ -86,24 +80,19 @@ src/Wallet/
 |-------|------|--------|
 | `id` | int | Auto-increment PK |
 | `user` | ManyToOne -> User | Wallet owner |
-| `currency` | string(32) | Unit of account code (see below) |
-| `balance` | int (bigint) | **Total** balance in cents (`balance = available + held`) |
-| `held` | int (bigint) | Frozen amount in cents; available balance = `balance - held` |
+| `currency` | string | Currency code (e.g., CNY, USD) |
+| `balance` | int (bigint) | Balance in cents |
 | `version` | int | `#[ORM\Version]` optimistic locking |
 | `status` | string | `active` or `frozen` |
 | `label` | string | Human-readable wallet name |
 
-**⚠️ No `setBalance()` / no public `held` setter** — Wallet balance and held can ONLY be altered through `TransferService` (transfer, deposit, hold, release, reconcile). This prevents direct mutation that would bypass the audit trail.
+**⚠️ No `setBalance()`** — Wallet balance can ONLY be altered through `TransferService` (transfer, deposit, reconcile). This prevents direct mutation that would bypass the audit trail.
 
-**Available vs held**: `balance` is the total; `held` is funds frozen (escrow, pending withdrawal). `available = balance - held`. `TransferService::transfer()` and `hold()` operate against available balance only. Holds do NOT change the total balance and do NOT write a ledger row — a hold moves funds between the available and held buckets internally, so reconciliation (`SUM(balance) == deposits - withdrawals`) is unaffected. The audit record for a hold belongs to the owning lifecycle entity (e.g. `WalletWithdrawal`), not the ledger.
-
-**Unique constraint**: `(user_id, currency)` -- one wallet per user per unit of account.
-
-**Unit of account codes**: `currency` is the account discriminator, not a strict ISO 4217 code. A plain ISO code (e.g. `CNY`, `USD`) identifies the default balance wallet; extended codes (e.g. `CNY.ESCROW`, `CNY.COMMISSION`, `POINTS`) identify category accounts such as escrow, commission, or points. The default balance wallet MUST use the plain ISO code — invoice payment resolution (`findByUserAndCurrency(payerId, invoice.currency)`) relies on this and must never match a category account. If FX or per-currency reporting is needed later, introduce an explicit base-currency column rather than parsing these codes.
+**Unique constraint**: `(user_id, currency)` -- one wallet per user per currency.
 
 **Methods**: `isActive(): bool`, `isFrozen(): bool`
 
-### 3.2 Transaction
+### 3.2 WalletTransaction
 
 | Field | Type | Detail |
 |-------|------|--------|
@@ -112,7 +101,7 @@ src/Wallet/
 | `fromWallet` | ManyToOne -> Wallet (nullable) | Source wallet |
 | `toWallet` | ManyToOne -> Wallet (nullable) | Destination wallet |
 | `amount` | int (bigint) | Amount in cents |
-| `type` | string | `deposit`, `withdrawal`, `transfer`, `fee`, `refund`, `adjustment`, **`credit_reversal`**, **`debit_reversal`** |
+| `type` | string | `deposit`, `withdrawal`, `transfer`, `fee`, `refund`, **`adjustment`** |
 | `status` | string | `pending`, `completed`, `failed`, `reversed` |
 | `referenceId` | string (unique) | Idempotency key |
 | `description` | string | Human-readable note |
@@ -122,26 +111,7 @@ src/Wallet/
 
 **Methods**: `markCompleted()`, `markFailed()`
 
-**Single-sided semantics (contract)**: `fromWallet`/`toWallet` nulls are meaningful, not bugs.
-
-| Movement shape | Meaning |
-|----------------|---------|
-| `fromWallet = wallet`, `toWallet = wallet` | Internal transfer (zero-sum, both sides present) |
-| `fromWallet = null`, `toWallet = wallet` | **Single-sided credit** — funds enter the wallet system from outside, backed by a `wallet_voucher` (deposit) |
-| `fromWallet = wallet`, `toWallet = null` | **Single-sided debit** — funds leave the wallet system (withdrawal, or `credit_reversal` of a deposit) |
-
-A deposit MUST write `fromWallet = null`; a reversal/withdrawal MUST write `toWallet = null`. A transfer MUST have both sides. Anything else is a contract violation. `credit_reversal` reverses a credit (deposit) with a single-sided debit; `debit_reversal` reverses a debit (withdrawal) with a single-sided credit.
-
-**Two-layer ledger (contract)**: wallet movements and boundary events are recorded separately and must not be conflated.
-
-| Layer | Table | Answers | Read by |
-|-------|-------|---------|---------|
-| Internal (movement journal) | `wallet_transaction` | How each wallet's balance changed | `getExpectedBalance(walletId)` — per-wallet reconciliation |
-| Boundary (provenance) | `wallet_voucher` | Why funds entered/left the system (`fund_source`, `created_by`, reversal state) | Boundary invariant — `verifyBalance()` |
-
-Both a `wallet_transaction` AND a `wallet_voucher` are written for a boundary event. The transaction feeds the unified per-wallet movement journal (internal transfers have no voucher, so the journal cannot be built from vouchers alone); the voucher feeds provenance and the boundary invariant. Removing either breaks the corresponding audit surface.
-
-### 3.3 PaymentDeduction
+### 3.3 WalletPaymentDeduction
 
 Wallet balance deduction for Payment invoices is owned by Wallet because the operation is implemented through wallet balance transfers and reversals.
 
@@ -228,7 +198,7 @@ deposit(toWalletId, amount, referenceId, description)
 4. Execute (within DB transaction)
    -> beginTransaction()
    -> DQL UPDATE: toWallet.balance += amount
-   -> Create Transaction (type=deposit, fromWallet=null)
+   -> Create WalletTransaction (type=deposit, fromWallet=null)
    -> commit()
    |
    -> On failure: rollback(), EM recovery
@@ -280,53 +250,11 @@ transfer(fromWalletId, toWalletId, amount, referenceId, description)
 ```php
 class TransferResult
 {
-    public Transaction $transaction;
+    public WalletTransaction $transaction;
     public int $fromWalletBalanceAfter;  // 0 for deposits
     public int $toWalletBalanceAfter;    // Post-operation
 }
 ```
-
-### 4.5 WithdrawService — Voucher-Backed Withdrawal
-
-`WithdrawService` is the mirror of deposit: the single gate for funds **leaving** the wallet system. A withdrawal writes a **single-sided debit** (`fromWallet = wallet`, `toWallet = null`) backed by a **`DIRECTION_DEBIT` voucher**. Reversal is its mirror — a **single-sided credit** (`fromWallet = null`, `toWallet = wallet`, type `debit_reversal`) returning the funds to the source wallet.
-
-```
-withdraw(voucherType, voucherId, walletId, amount, currency, referenceId, createdBy, reason)
-  |
-  v
-1. Validation
-   -> amount > 0, referenceId required
-   -> Idempotency: findByReferenceId -> return existing voucher
-   -> Duplicate source: findByVoucherSource -> reject
-   -> Provider whitelist: withdrawRegistry.forVoucherType -> reject unsupported type
-  |
-  v
-2. Within DB transaction (wrapInTransaction)
-   -> Lock wallet (SELECT ... FOR UPDATE)
-   -> Wallet exists, not frozen, currency matches
-   -> available balance >= amount (InsufficientFundsException)
-   -> provider.authorize(voucher, options)
-   -> DQL UPDATE: wallet.balance -= amount
-   -> Create Transaction (type=withdrawal, fromWallet=wallet)
-   -> Voucher DIRECTION_DEBIT -> markApplied(tx.uuid)
-```
-
-```
-reverse(voucherUuid, reason)
-  |
-  v
-1. Voucher must be APPLIED + DIRECTION_DEBIT
-2. Within DB transaction
-   -> Lock wallet
-   -> DQL UPDATE: wallet.balance += amount
-   -> Create Transaction (type=debit_reversal, toWallet=wallet)
-   -> voucher->markReversed(tx.uuid, reason)
-3. provider.reverse(voucher, reason) hook
-```
-
-Both operations are atomic (rollback + EM recovery on failure) and idempotent by `referenceId`. The provider tag is `wallet.withdraw_provider`; `ManualWithdrawProvider` is the built-in no-op authorization.
-
-**Permission control is provider-owned.** Each provider implements `assertPermitted(array $options)` and may deny with `AccessDeniedException` (mapped to HTTP 403). The Manual providers require `ROLE_ADMIN`; with no active security context (CLI/queue/system invocation) the call is treated as a trusted internal caller and allowed. External providers implement their own rules.
 
 ---
 
@@ -425,7 +353,7 @@ Provider responsibilities:
 | Responsibility | Detail |
 |----------------|--------|
 | `supports()` | Return true when `walletAmount > 0` or structured `deduction.type = wallet_balance` is present |
-| `apply()` | Transfer payer wallet balance to system wallet and persist `PaymentDeduction` |
+| `apply()` | Transfer payer wallet balance to system wallet and persist `WalletPaymentDeduction` |
 | `applied()` | Return applied deduction as `PaymentAdjustmentResult` for Payment amount validation |
 | `release()` | Reverse applied deduction when invoice payment fails or is cancelled before paid |
 | `refund()` | Reverse applied deduction when paid invoice is refunded |
@@ -444,7 +372,7 @@ new PaymentAdjustmentResult(
 );
 ```
 
-Wallet transaction ids may be stored in `PaymentDeduction`, but Payment must not rely on them.
+Wallet transaction ids may be stored in `WalletPaymentDeduction`, but Payment must not rely on them.
 
 ### 7.4 Deduction Flow
 
@@ -454,7 +382,7 @@ InvoiceService::pay(invoice, payment, options)
   -> WalletBalanceAdjustmentProvider::apply(context)
      -> find payer wallet by payer id and invoice currency
      -> transfer payer wallet -> system wallet
-     -> persist PaymentDeduction as applied
+     -> persist WalletPaymentDeduction as applied
      -> return PaymentAdjustmentResult(amount=walletAmount)
   -> Payment computes gatewayAmount = invoice.amount - adjustmentTotal
   -> Payment calls selected gateway with explicit gatewayAmount
@@ -477,7 +405,7 @@ Release before invoice is paid:
 gateway pay creation fails or invoice is cancelled
   -> Payment calls WalletBalanceAdjustmentProvider::release(result, reason)
   -> Wallet transfers system wallet -> payer wallet
-  -> PaymentDeduction status becomes released
+  -> WalletPaymentDeduction status becomes released
 ```
 
 Refund after invoice is paid:
@@ -487,7 +415,7 @@ InvoiceService::refund(full invoice amount)
   -> Payment refunds external gateway amount first, if any
   -> Payment calls WalletBalanceAdjustmentProvider::refund(result, reason)
   -> Wallet transfers system wallet -> payer wallet
-  -> PaymentDeduction status becomes refunded
+  -> WalletPaymentDeduction status becomes refunded
 ```
 
 First-phase wallet deductions only support full invoice refunds. Partial refund allocation between external gateway amount and wallet deduction is out of scope.
@@ -502,7 +430,7 @@ invoice-adjustment-wallet-balance-release-{invoice.uuid}
 invoice-adjustment-wallet-balance-refund-{invoice.uuid}
 ```
 
-These references are passed to `TransferServiceInterface::transfer()` and stored on `PaymentDeduction`.
+These references are passed to `TransferServiceInterface::transfer()` and stored on `WalletPaymentDeduction`.
 
 ---
 
@@ -520,17 +448,8 @@ These references are passed to `TransferServiceInterface::transfer()` and stored
 | **GET** | **`/api/v1/manage/wallets/balance`** | **Verify accounting invariant** |
 | **POST** | **`/api/v1/manage/wallets/reconcile`** | **Per-wallet reconciliation** |
 | GET | `/api/v1/manage/transactions` | List transactions |
-| POST | `/api/v1/manage/transactions` | Execute wallet-to-wallet transfer |
-| **POST** | **`/api/v1/manage/vouchers/deposit`** | **Voucher-backed deposit. `voucherType` optional (default `manual`; admin-only zone)** |
-| **POST** | **`/api/v1/manage/vouchers/withdraw`** | **Voucher-backed withdrawal. `voucherType` optional (default `manual`; admin-only zone)** |
-
-### 8.2 App (User, ROLE_USER)
-
-| Method | Path | Description |
-|--------|------|-------------|
-| **POST** | **`/api/v1/app/vouchers/deposit`** | **Self-service deposit into own wallet. `voucherType` REQUIRED — permission enforced by the provider's `assertPermitted()` (e.g. `manual` requires `ROLE_ADMIN`, denied for users)** |
-| **POST** | **`/api/v1/app/vouchers/withdraw`** | **Self-service withdrawal out of own wallet. `voucherType` REQUIRED — permission enforced by the provider's `assertPermitted()`** |
-| **POST** | **`/api/v1/app/vouchers/{uuid}/reverse`** | **Reverse own voucher (deposit or withdrawal by direction)** |
+| POST | `/api/v1/manage/transfers` | Execute wallet-to-wallet transfer |
+| **POST** | **`/api/v1/manage/transfers/deposit`** | **System deposit with audit trail** |
 
 ---
 
@@ -569,7 +488,7 @@ Creates `wallet` and `wallet_transaction` tables. Payment adjustment support add
 
 | Suite | Tests |
 |-------|-------|
-| `tests/Wallet/Entity/` | Wallet, Transaction unit tests |
+| `tests/Wallet/Entity/` | Wallet, WalletTransaction unit tests |
 | `tests/Wallet/Service/WalletServiceTest.php` | **11 unit tests**: verifyBalance (match/mismatch/zero), reconcile (empty/balanced/excess/negative/idempotent/multi/skip-non-wallet/skip-no-id) |
 | `tests/Wallet/Service/TransferServiceTest.php` | **20 unit tests**: deposit (happy/wallet-not-found/frozen/idempotent/rollback/em-closed), transfer (happy/same-wallet/source-not-found/target-not-found/frozen/currency/insufficient/idempotent/deadlock/rollback/em-closed) |
 | `tests/Wallet/Service/Payment/WalletBalanceAdjustmentProviderTest.php` | Wallet deduction apply/applied/release/refund validation and idempotency |

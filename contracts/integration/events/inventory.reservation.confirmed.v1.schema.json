@@ -1,0 +1,1 @@
+{"$schema":"https://json-schema.org/draft/2020-12/schema","$id":"https://crud-platform.local/contracts/integration/events/inventory.reservation.confirmed.v1.schema.json","allOf":[{"$ref":"https://crud-platform.local/contracts/integration/schema/envelope.schema.json"},{"properties":{"type":{"const":"inventory.reservation.confirmed"},"version":{"const":1}}}]}

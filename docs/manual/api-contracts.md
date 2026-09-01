@@ -1,298 +1,449 @@
 # API Contracts
 
-> Wire-level contracts of the HTTP API: the JSON envelope, authentication, URL
-> conventions, pagination, error handling, OpenAPI docs, and webhooks. Every endpoint
-> MUST conform to these conventions.
+Complete specification of the REST API surface: request/response formats, authentication,
+URL conventions, pagination, error handling, documentation, and webhook endpoints.
 
 ---
 
-## 1. JSON Envelope
+## 1. Request/Response Envelope
 
-All business endpoints under `/api/v1/*` return a unified envelope produced by
-`App\Core\Controller\RestController` (`success()` / `warning()`).
+### 1.1 Success Envelope
 
-### 1.1 Success (`success()`)
-
-```json
-{
-  "data": {},
-  "code": 0,
-  "message": "SUCCESS",
-  "paginator": {
-    "page": 1,
-    "limit": 20,
-    "pages": 5,
-    "total": 100,
-    "has_previous": false,
-    "has_next": true
-  }
-}
-```
-
-| Field | Type | Present when | Description |
-|-------|------|--------------|-------------|
-| `data` | any | always | Payload: object, array, null, or scalar |
-| `code` | int | always | Application-level code. The current implementation emits `0` for success (see note below) |
-| `message` | string | always | Status text; `"SUCCESS"` by default |
-| `paginator` | object | only when the response is paginated | Pagination metadata |
-
-> **Note on `code`:** the design contract (`docs/design/api-design.md` §1.1) specifies
-> that `code` mirrors the HTTP status (e.g. `200`), and the README shows that example.
-> The current `RestController::success()` implementation writes `"code": 0` and carries
-> the real HTTP status in the response line (200/201/204). Treat the HTTP status as
-> authoritative, and `code` as the application channel used for error codes.
-
-HTTP status mapping on success: `GET 200`, `POST 201`, `PUT 200`, `DELETE 204`
-(empty body), `204` responses are rendered empty.
-
-### 1.2 Error (`warning()`)
+All successful responses use this structure:
 
 ```json
 {
-  "code": 400,
-  "message": "Validation failed: email is required",
-  "raw_data": ""
+    "data": {},
+    "code": 0,
+    "message": "SUCCESS"
 }
 ```
 
-`warning()` sets `code` to the passed error code, translates the message through the
-Translator, and carries an optional `raw_data` payload. Status codes follow the HTTP
-semantics: 400 validation, 401 authentication, 403 authorization, 404 not found,
-500 server error.
-
-### 1.3 Example request & response
-
-```bash
-curl -X POST "http://127.0.0.1:8000/api/v1/manage/contents" \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer {token}" \
-  -d '{"title":"Hello","body":"World"}'
-```
+With pagination (GET requests with `page`/`limit`):
 
 ```json
 {
-  "data": {
-    "id": 42,
-    "title": "Hello",
-    "body": "World",
-    "createdAt": "2026-08-20T09:00:00+00:00"
-  },
-  "code": 0,
-  "message": "SUCCESS"
+    "data": [],
+    "code": 0,
+    "message": "SUCCESS",
+    "paginator": {
+        "total": 42,
+        "page": 1,
+        "limit": 100,
+        "pages": 1,
+        "has_previous": false,
+        "has_next": false
+    }
 }
 ```
 
-### 1.4 Auth / WeChat token endpoints
+| Field | Type | Description |
+|-------|------|-------------|
+| `data` | mixed | Response payload (object, array, or empty string for 204) |
+| `code` | int | Always `0` for success |
+| `message` | string | Success message (default `"SUCCESS"`) |
+| `paginator` | object? | Present only for paginated GET responses |
 
-Endpoints that return credentials do **not** use the envelope. They return a plain
-token payload (see §2).
+HTTP status codes for success:
+- `200` — standard success
+- `201` — created (POST)
+- `204` — deleted (no body, `Content-Type: application/json`)
+
+### 1.2 Error Envelope
+
+```json
+{
+    "code": 404,
+    "message": "Entity is not found",
+    "raw_data": ""
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `code` | int | Application error code (typically HTTP status) |
+| `message` | string | Translated error message |
+| `raw_data` | mixed | Additional error data (debugging) |
+
+ExceptionInterceptor adds a `class` field for unhandled exceptions:
+
+```json
+{
+    "code": 500,
+    "message": "An error occurred",
+    "class": "RuntimeException"
+}
+```
+
+### 1.3 HTTP Status Codes Used
+
+| Code | Meaning | When |
+|------|---------|------|
+| 200 | OK | General success; also used for application-level errors (check `code` field) |
+| 201 | Created | Successful POST creation |
+| 204 | No Content | Successful DELETE |
+| 400 | Bad Request | Validation errors (`ValidatorException`), invalid JSON |
+| 401 | Unauthorized | Missing or invalid JWT |
+| 402 | Payment Required | Insufficient funds |
+| 403 | Forbidden | Access denied (non-admin accessing admin endpoints) |
+| 404 | Not Found | Entity not found |
+| 500 | Internal Server Error | Unhandled exceptions |
 
 ---
 
 ## 2. Authentication
 
-### 2.1 Scheme
+### 2.1 JWT Bearer Token Format
+
+All authenticated requests include:
 
 ```
-Authorization: Bearer {access_token}
+Authorization: Bearer <access_token>
 ```
 
-- **Access token**: RS256 JWT, default TTL 7200s (`ACCESS_TOKEN_TTL`).
-- **Refresh token**: opaque, stored **hashed** (HMAC-SHA256) in the DB,
-  default TTL 1 year (`REFRESH_TOKEN_TTL`), **rotated on every use** with reuse
-  detection (S4: a reused revoked token revokes all of the user's tokens).
+Token specification:
+- **Algorithm**: RS256 (asymmetric, public/private key pair)
+- **TTL**: 7200 seconds (2 hours)
+- **Payload**: user ID, roles, expiration, JTI (unique token ID)
 
-Firewall (`config/packages/security.yaml`) applies to `^/api`; the `manage` prefix
-requires `ROLE_ADMIN`, everything else requires `IS_AUTHENTICATED_FULLY`, and the
-listed public routes are exempt.
+### 2.2 Token Lifecycle
 
-### 2.2 Endpoints
+| Operation | Endpoint | Auth |
+|-----------|----------|------|
+| Login | `POST /api/auth/login` | None (public) |
+| OTP Request | `POST /api/auth/otp/request` | None (public) |
+| OTP Verify | `POST /api/auth/otp/verify` | None (public) |
+| Token Refresh | `POST /api/auth/token/refresh` | None (public; uses refresh token in body) |
+| Token Revoke | `POST /api/auth/logout` | Authenticated |
+| WeChat Login | `POST /api/wechat/miniapp/login` | None (public) |
 
-All endpoints below are `PUBLIC_ACCESS` (no token required):
+**Refresh Token Behavior**:
+- Opaque string, HMAC-SHA256 hashed in the database
+- 1 year TTL
+- Token rotation: replaced on each use
+- Reuse detection: if a revoked/replaced refresh token is submitted, ALL user tokens are
+  revoked
 
-| Endpoint | Method | Body (required) | Response |
-|----------|--------|-----------------|----------|
-| `/api/auth/login` | POST | `{"identifier","password"}` | 200 tokens; 400 missing fields; 401 bad credentials; 403 phone-unverified |
-| `/api/auth/register` | POST | `{"email","username","password","phone"?}` | 201 tokens; 400 weak/missing; 409 duplicates |
-| `/api/auth/otp/request` | POST | `{"phone","purpose":"login\|verify_phone"}` | 204 sent; 400 invalid; 429 rate-limited |
-| `/api/auth/otp/verify` | POST | `{"phone","otp","purpose"}` | 200 tokens (purpose=login) or `{"phone_verified":true}`; 400/401 |
-| `/api/auth/token/refresh` | POST | `{"refresh_token"}` | 200 new token pair; 401 invalid/reused |
-| `/api/auth/logout` | POST | `{"access_token"?, "refresh_token"?}` | 204, revokes provided tokens |
+**JWT Blacklist**:
+- On logout or token rotation, the access token's JTI is added to a cache-based blacklist
+- TTL matches the token's natural expiration (no permanent storage)
+- Blacklisted JTIs rejected at authentication step
 
-Login accepts an **email, username, or phone** as `identifier` (phone detection:
-`^\+?[0-9]{7,20}$`). OTP purposes are `login` and `verify_phone`; OTP TTL is 300s by
-default (`OTP_TTL`), storage via Redis (`OTP_REDIS_DSN`).
+### 2.3 Public vs Authenticated Routes
 
-Success token payload (login / register / otp-verify / token-refresh / WeChat login):
-
-```json
-{
-  "access_token": "eyJhbGc...",
-  "expires_in": 7200,
-  "refresh_token": "eyJhbGc..."
-}
-```
+| Route Pattern | Access |
+|---------------|--------|
+| `/api/doc`, `/api/doc.json` | PUBLIC_ACCESS |
+| `/api/auth/*` | PUBLIC_ACCESS |
+| `/api/wechat/*` | PUBLIC_ACCESS (WeChat callbacks have signature verification) |
+| `/api/v1/app/*` | IS_AUTHENTICATED_FULLY |
+| `/api/v1/manage/*` | ROLE_ADMIN |
+| `/api/v1/public/*` | PUBLIC_ACCESS |
+| `/api/payment/notify/*` | PUBLIC_ACCESS (payment provider callbacks) |
 
 ---
 
 ## 3. URL Conventions
 
-### 3.1 Prefixes
+### 3.1 Prefix
 
-| Scope | Prefix | Access |
-|-------|--------|--------|
-| Authentication | `/api/auth/*` | PUBLIC_ACCESS |
-| Public read API | `/api/v1/app/*` | authenticated (read) |
-| Admin CRUD API | `/api/v1/manage/*` | `ROLE_ADMIN` |
-| Public read-only (opt-in) | `/api/v1/public` | `GET` + PUBLIC_ACCESS |
-| WeChat integration | `/api/wechat/*` | mix of public and authenticated |
-| Payment webhooks | `/api/payment/notify/*` (+ `/api/payment/refund-notify`) | PUBLIC_ACCESS — gateway-verified |
-| API docs | `/api/doc`, `/api/doc.json` | PUBLIC_ACCESS |
+All API routes are prefixed with `/api/v1`. Versioning is in the URL path.
 
-Routes are registered per module in `config/routes.yaml` with the `/api/v1` prefix for
-the `App` and `Manage` controller trees (attribute routing).
+### 3.2 Path Segments
 
-### 3.2 Resource style
+```
+/api/v1/{scope}/{resource}[/{id}][/{sub-resource}]
+```
 
-| Convention | Example |
-|------------|---------|
-| Lowercase, hyphenated, plural | `/api/v1/manage/order-items` |
-| Detail via path id | `/categories/{id}` |
-| No trailing slash; verbs not in the URL | `POST /categories` creates |
-| Sub-resources | `/orders/{id}/items` |
-| Record lookup by integer id **or UUID** | handled by `ApiView::mixIdToCommonFilter` (`uuid` vs `id`) |
+| Scope | Purpose | Example |
+|-------|---------|---------|
+| `manage` | Admin CRUD operations | `/api/v1/manage/categories` |
+| `app` | Authenticated user operations | `/api/v1/app/orders` |
+| `public` | Anonymous read-only access | `/api/v1/public/media` |
 
-### 3.3 Non-CRUD routes
+Special non-versioned prefixes:
+| Prefix | Purpose |
+|--------|---------|
+| `/api/auth` | Authentication endpoints |
+| `/api/wechat` | WeChat integration endpoints |
+| `/api/payment/notify` | Payment provider webhooks |
+| `/api/doc` | NelmioApiDoc documentation |
+| `/system/entities` | Doctrine metadata introspection |
+| `/system/router` | Route listing |
 
-| Operation | Pattern |
-|-----------|---------|
-| Batch upsert | `POST /{resource}/batch-update` |
-| Create single / batch | `POST /` (object or array body) |
-| Singleton upsert | `PUT /` |
-| Workflow todo | `GET /{resource}/todo` |
-| Workflow transitions | `GET /{resource}/{id}/transitions` |
-| Workflow execute | `POST /{resource}/{id}/do/{transition}` |
-| Workflow reset | `PUT /{resource}/{id}/status-reset` |
+### 3.3 RESTful Patterns
 
-### 3.4 WeChat endpoints
+| Method | URL | Action |
+|--------|-----|--------|
+| `GET` | `/api/v1/manage/{resource}` | List (paginated) |
+| `GET` | `/api/v1/manage/{resource}/{id}` | Detail (single entity) |
+| `POST` | `/api/v1/manage/{resource}` | Create (single or batch) |
+| `PUT` | `/api/v1/manage/{resource}/{id}` | Update (single) |
+| `POST` | `/api/v1/manage/{resource}/batch-update` | Batch upsert |
+| `DELETE` | `/api/v1/manage/{resource}/{id}` | Delete |
 
-| Endpoint | Method | Access | Purpose |
-|----------|--------|--------|---------|
-| `/api/wechat/miniapp/login` | POST | public | `js_code` → JWT |
-| `/api/wechat/miniapp/phone` | POST | authenticated | bind WeChat phone |
-| `/api/wechat/oauth/url` | GET | public | Official-Account OAuth URL |
-| `/api/wechat/oauth/callback` | POST | public | OAuth `code` → JWT |
+ID format: accepts both integers (`\d+`) and UUIDs (`[0-9a-fA-F-]{36}`).
 
 ---
 
 ## 4. Pagination
 
-List endpoints are paginated through `RestController::pagination()`:
+### 4.1 Parameters
 
-| Query param | Default | Meaning |
-|-------------|---------|---------|
-| `page` | `1` | 1-based page number |
-| `limit` | `100` | items per page |
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `page` | `1` | Page number (1-indexed) |
+| `limit` | `100` | Items per page |
 
-Paginator object: `{ total, page, limit, pages, has_previous, has_next }`. `pages` is
-`max(1, ceil(total / limit))`. Pagination is applied for `GET` only and supports
-`Doctrine\ORM\QueryBuilder` collections (counted via the Doctrine Paginator) and plain
-arrays/`ArrayCollection`.
+Example: `GET /api/v1/manage/products?page=3&limit=25`
 
-### 4.1 Dynamic query system (list filtering)
+### 4.2 Paginator Response Structure
 
-When both filter params and pagination are used, the service assembles the query; the
-controller paginates the result.
+```json
+{
+    "paginator": {
+        "total": 250,
+        "page": 3,
+        "limit": 25,
+        "pages": 10,
+        "has_previous": true,
+        "has_next": true
+    }
+}
+```
 
-| Param | Example |
-|-------|---------|
-| `@filter` | `entity.status == "active"` |
-| `@dql` | `(entity.price > 100)` |
-| `@order` | `createdAt\|DESC` |
-| `@select` | `entity.id, entity.name` |
-| `@groupBy` | `entity.category` |
-| `@hints` | Doctrine query hints |
-| `@sort` | in-memory sort fallback expression |
-| `@expands` | `category,tags` |
-| `@display` | `complex` / `reduce` / expression mapping |
-| `@showDQL` | debug: return compiled DQL |
+| Field | Type | Description |
+|-------|------|-------------|
+| `total` | int | Total number of items in the collection |
+| `page` | int | Current page number |
+| `limit` | int | Items per page |
+| `pages` | int | Total number of pages |
+| `has_previous` | bool | `true` if page > 1 |
+| `has_next` | bool | `true` if page < pages |
 
-Mutation params: `@partial` (per-item non-transactional mode), `@transform` (expression
-field transform), `@mode` (`mixed` upsert / `strict` update), `@basis` (upsert match
-fields).
-
-Filter expression operators: `==`, `!=`, `>`, `<`, `>=`, `<=`, `&&`, `||`, `!`,
-`matches` (literal substring or `/regex/flags/`), and chained attribute access
-(`entity.getCategory().getName()`).
+Paginator is absent for non-GET requests. `RestController::pagination()` checks
+`$request->getMethod() !== 'GET'`.
 
 ---
 
 ## 5. Error Handling
 
-| Channel | Where |
-|---------|-------|
-| Controller-level | mixins/controllers catch domain exceptions and convert to `warning()` with 400/404/500 |
-| Global | `ExceptionInterceptor` (kernel.exception on `/api/*`) converts unhandled exceptions to JSON `{code, message, class}`; bypassed in `dev` (standard Symfony error page) |
-| Invalid JSON | request bodies must be valid JSON; malformed JSON is rejected |
+### 5.1 ExceptionInterceptor Behavior
 
-Status semantics: 400 validation, 401 authentication, 403 authorization, 404 not
-found, 429 rate-limit (e.g. OTP requests), 500 server error. Messages are short,
-user-facing, and translated.
+Intercepts unhandled exceptions on `/api/*` routes:
+1. Logs exception (class, message, trace)
+2. In dev: lets Symfony's default error page handle it
+3. In production: returns JSON `{code, message, class}` with appropriate HTTP status
 
-Responses are `application/json` on every `/api/*` route except webhook callbacks
-(see §7).
+### 5.2 Specific Exception Handling
 
----
+| Exception | HTTP Status | JSON `code` | Beacon |
+|-----------|-------------|-------------|--------|
+| `ValidatorException` | 400 | 400 | Validation failures |
+| `NotFoundHttpException` | 404 | 404 | Entity not found |
+| `AccessDeniedHttpException` | 403 | 403 | Permission denied |
+| `InsufficientFundsException` | 402 | 402 | Wallet balance too low |
+| Generic `\Exception` | 500 | 500 | Unexpected errors |
 
-## 6. OpenAPI / NelmioApiDoc
+### 5.3 Adding Custom Exceptions
 
-- **Swagger UI**: `/api/doc`
-- **OpenAPI JSON**: `/api/doc.json`
+1. Extend `\RuntimeException` in your module's `Exception/` directory
+2. Throw from the service layer
+3. Catch in the controller and convert to `warning()`:
 
-The bundle is `nelmio/api-doc-bundle` with `zircote/swagger-php` (`zircote/swagger-php`)
-attributes. Every endpoint declares `#[OA\*]` attributes — request bodies, query
-parameters, and response codes. The OpenAPI integration test builds the complete
-specification in-process, and `OpenApiEnricherListener` augments responses.
-
-Required attributes per action: list (`#[OA\Get]` + query parameters), detail
-(`#[OA\Get]` + `@expands`), create (`#[OA\Post]` + `@partial`/`@transform` + request
-body), update (`#[OA\Put]` + body), delete (`#[OA\Delete]`), batch (`#[OA\Post]` +
-`@mode`/`@basis`/`@partial`), workflow (`#[OA\Get]`/`#[OA\Post]`/`#[OA\Put]`).
-
----
-
-## 7. Webhooks
-
-Payment providers notify the platform at the webhook namespace (no `/api/v1` prefix):
-
-| Route | Method | Access |
-|-------|--------|--------|
-| `/api/payment/notify/{payment}` | POST | PUBLIC_ACCESS |
-| `/api/payment/refund-notify` | POST | PUBLIC_ACCESS |
-
-Flow (`src/Payment/Controller/Webhook/PaymentNotifyController.php`):
-
-1. The controller resolves the gateway for `{payment}` from `PaymentGatewayRegistry`.
-2. `$gateway->notify($request)` **verifies the provider signature** (each gateway owns
-   its verification).
-3. `InvoiceService::handleNotifyResult()` updates the invoice and dispatches
-   provider-agnostic invoice events.
-4. `$gateway->getNotifySuccessResponse()` returns the provider-specific success body.
-
-On verification failure the response is `400 text/plain` (`FAIL: <reason>`); any other
-error is a `400 text/plain` `FAIL`. Webhook responses are **not** JSON envelopes — they
-are gateway-specific plain text/accepted bytes required by each provider.
-
-WeChat Pay V3 callbacks flow through the same gateway abstraction
-(`/api/payment/notify/wechat`).
+```php
+catch (InsufficientFundsException $e) {
+    return $this->warning($e->getMessage(), 402, '', 402);
+}
+```
 
 ---
 
-## 8. Reference
+## 6. Data Formats
 
-- Design contract: [`docs/design/api-design.md`](../design/api-design.md)
-- Controller + mixins: `src/Core/Controller/RestController.php`, `src/Core/View/*`
-- Auth: `src/Identity/Controller/AuthController.php`, `src/Identity/Controller/OtpController.php`
-- Webhooks: `src/Payment/Controller/Webhook/PaymentNotifyController.php`
-- Firewall: `config/packages/security.yaml`
-- OpenAPI: `/api/doc` (running server), `docs/openapi/endpoints.yaml`
+### 6.1 JSON Request/Response
+
+All requests and responses use `application/json`. The `RestController::success()` and
+`warning()` methods call `$this->getSerializer()->serialize($response, 'json')`.
+
+### 6.2 Multipart File Uploads
+
+Media upload endpoints use `multipart/form-data`:
+
+```
+POST /api/v1/app/media/upload
+Content-Type: multipart/form-data
+
+file: [binary]
+storage: "local"
+category: 3
+alt: "My photo"
+title: "Vacation 2024"
+```
+
+### 6.3 Array vs Single-Object Input
+
+Create endpoints accept both:
+- **Single object** `{}` → creates one entity, returns entity directly
+- **Array** `[{}, {}, {}]` → batch create, wraps in transaction, returns array
+
+Detected by `FixJSON::getJSONType($content)`.
+
+### 6.4 @partial Batch Mode
+
+`POST /api/v1/manage/products?@partial=true`
+
+When `@partial=true`:
+- Batch creates/updates skip transaction wrapping
+- Failed items are silently skipped
+- Successful items are returned
+
+When `@partial=false` (default):
+- All items in a single transaction
+- Any failure rolls back all items
+
+---
+
+## 7. Translation
+
+### 7.1 Message Key Conventions
+
+Error messages use human-readable English as translation keys. The `warning()` method
+routes messages through `$this->getTranslator()->trans($error_msg)`.
+
+### 7.2 Locale Negotiation
+
+The `LocaleListener` on `kernel.request` detects locale in this priority:
+
+1. `?_locale=zh-CN` query parameter
+2. `Accept-Language` header with quality weights
+
+Supported locales: `en`, `zh`, `zh_Hant`, `ja`. Unsupported locales fall back to `en`.
+
+---
+
+## 8. Rate Limiting / CORS
+
+### 8.1 Current State
+
+No system-wide rate limiting or CORS headers are implemented at the framework level.
+Specific limits:
+
+| Resource | Limit | Implementation |
+|----------|-------|---------------|
+| OTP request | 1 per 60s per phone | Application-level (Redis/cache) |
+| OTP verify | 5 attempts per phone | Application-level (Redis/cache) |
+
+### 8.2 Future Plans
+
+Rate limiting and CORS handling are planned for the API gateway layer during the
+microservice transition.
+
+---
+
+## 9. API Versioning
+
+### 9.1 Prefix Strategy
+
+All versioned endpoints use `/api/v1` prefix. The version is in the URL path, not in
+headers or content negotiation.
+
+### 9.2 Backward Compatibility Rules
+
+| Change | Allowed | Requires |
+|--------|---------|----------|
+| Add new endpoint | Yes | Documentation |
+| Add optional query parameter | Yes | Backward compatible |
+| Add field to response | Yes | Backward compatible |
+| Change field type in response | **No** | Major version bump |
+| Remove field from response | **No** | Deprecation notice + major version bump |
+| Change response envelope format | **No** | Major version bump |
+| Remove endpoint | **No** | Deprecation notice + major version bump |
+| Change authentication requirements | **No** | Major version bump |
+
+---
+
+## 10. NelmioApiDoc
+
+### 10.1 #[OA] Attributes
+
+All endpoints are documented via PHP 8 attributes. View mixins provide default OA
+attributes for standard CRUD operations:
+
+```php
+#[OA\Get(
+    tags: ['List'],
+    parameters: [
+        new OA\Parameter(name: 'page', in: 'query', schema: new OA\Schema(type: 'string')),
+        new OA\Parameter(name: 'limit', in: 'query', schema: new OA\Schema(type: 'string')),
+        // ...
+    ],
+    responses: [
+        new OA\Response(response: 200, description: 'Api list view'),
+    ]
+)]
+```
+
+### 10.2 Schema Configuration
+
+Schema is configured in `config/routes.yaml`:
+
+```yaml
+app.swagger_ui:
+    path: /api/doc
+    controller: nelmio_api_doc.controller.swagger_ui
+```
+
+JSON schema available at `/api/doc.json`.
+
+### 10.3 Tag Auto-Detection
+
+The `OpenApiEnricherListener` post-processes OpenAPI output:
+- Extracts resource name from `operationId` (route name)
+- Maps to display tags: Products, Orders, Categories, Tags, Contents, Comments, Pages,
+  Media, Settings, Payment, Wallet, System, Wechat, Store, Auth
+- Removes generic operation-type tags (`List`, `Detail`, `Create`, `Update`, `Delete`,
+  `Workflow`)
+- Adds summaries/descriptions for key endpoints
+
+### 10.4 Documenting New Endpoints
+
+1. Add `#[OA\*]` attributes on the controller action
+2. Set `tags` to match the module's tag name
+3. Route name must follow `{scope}-{resource}-{action}` convention for auto-detection:
+
+```php
+#[OA\Get(
+    tags: ['MyModule'],
+    parameters: [],
+    responses: [new OA\Response(response: 200, description: '...')]
+)]
+#[Route('/custom-action', name: 'manage-myresource-custom-action', methods: ['GET'])]
+```
+
+---
+
+## 11. Webhook Endpoints
+
+### 11.1 Notification Patterns
+
+Payment gateways and third-party services call back to public webhook endpoints:
+
+```
+POST /api/payment/notify/{payment}
+```
+
+Where `{payment}` selects the registered payment gateway (e.g., `wechat`, `wallet`,
+`mock`).
+
+### 11.2 Public Access
+
+Webhook endpoints are public (no JWT required). Authentication is via provider-specific
+signature verification:
+- The gateway verifies the callback signature/payload
+- `InvoiceService` applies the notification result
+
+### 11.3 Signature Verification
+
+Payment adapters use `RsaClient` or provider-specific signing to verify webhook
+authenticity before processing. Invalid signatures result in immediate rejection.

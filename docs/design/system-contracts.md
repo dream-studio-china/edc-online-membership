@@ -28,6 +28,7 @@ $this->wrapInTransaction(function ($em) use ($data) {
 | T3 | After rollback, `EntityManager` MUST be recovered (`$em->isOpen()` check) |
 | T4 | Controllers MUST NOT call `beginTransaction()`, `commit()`, `rollback()` directly |
 | T5 | The mixin methods (`createAction`, `batchUpdateAction`) handle transaction wrapping automatically unless `@partial=true` |
+| T6 | A local transaction MUST NOT include a remote network call. Cross-service effects use Outbox, Inbox, retries, and compensation/reconciliation. |
 
 ### 1.3 Partial Mode Contract
 
@@ -66,7 +67,7 @@ When `@partial=false` (default):
 
 | Layer | May Throw |
 |-------|-----------|
-| Entity | **NO** |
+| Entity | Aggregate-local invariant exceptions only; no infrastructure or cross-aggregate orchestration |
 | Repository | Doctrine exceptions only |
 | Service | Business exceptions (module-specific) |
 | Controller | **NO** (catch and convert to `warning()`) |
@@ -327,12 +328,26 @@ Supported via `SerializerContextFactory`:
 |-------|-----------|---------|
 | `workflow.{name}.transition` | `OrderWorkflowListener` | Post-transition actions (set timestamps) |
 
-### 9.4 Custom Events (Optional)
+### 9.4 In-Process Custom Events (Optional)
 
-Custom events dispatched via Symfony EventDispatcher for decoupled cross-module communication:
+Symfony EventDispatcher events are local implementation details. They may be used
+inside one running application but MUST NOT be treated as integration events or
+carry a durable cross-service contract.
 
 - Event classes in `src/{Module}/Event/`
 - Listeners/subscribers in `src/{Module}/EventListener/`
+
+### 9.5 Integration Events
+
+Cross-service state propagation uses a versioned scalar event envelope written to
+the producer's Outbox within the same local transaction. Consumers persist an
+Inbox/consumed-event record keyed by `eventId` before applying side effects.
+
+An integration event MUST include `eventId`, `type`, `version`, `aggregateType`,
+`aggregateId`, `occurredAt`, `correlationId`, `causationId`, and a scalar payload.
+It MUST NOT carry a Doctrine entity, repository, EntityManager, Symfony Request,
+Response, or local integer primary key from another service. See the
+[Microservice Transition Contract](microservice-transition.md).
 
 ---
 
@@ -382,7 +397,7 @@ class XxxCommand extends Command
 | 2 | Install dependencies (`composer install`) |
 | 3 | Run PHPStan Level 8 with an isolated SQLite URL |
 | 4 | Run Rector type-rule dry-run with an isolated SQLite URL |
-| 5 | Start PostgreSQL service and prepare the test database |
+| 5 | Run the SQLite test suite and validate the MySQL migration chain separately |
 | 6 | Run PHPUnit with coverage and enforce 90% line coverage minimum |
 
 ### 11.2 Docker

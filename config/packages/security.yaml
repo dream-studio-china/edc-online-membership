@@ -5,7 +5,7 @@ security:
     providers:
         app_user_provider:
             entity:
-                class: App\Identity\Entity\User
+                class: App\Identity\Main\Entity\User
                 property: email
 
     firewalls:
@@ -19,7 +19,7 @@ security:
             lazy: true
             provider: app_user_provider
             custom_authenticators:
-                - App\Identity\Security\JwtAuthenticator
+                - App\Identity\Main\Security\JwtAuthenticator
 
         main:
             lazy: true

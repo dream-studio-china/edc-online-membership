@@ -1,11 +1,18 @@
 # Store Bundle Design
 
-> **Status: phase 1-3 implemented in the modular monolith.** Store, membership,
-> StoreOrder, Trade/Store Outbox-Inbox, Messenger consumers, and Store acceptance are
-> implemented. Inventory reservation remains an intentionally deferred boundary.
-> The Store bundle (`src/Store/`) owns multi-store context, store operations, and the
-> store-side order projection. Trade remains the single commercial order entry point
-> and the source of truth for order amount, payment, refund, and customer order status.
+> **Status: implemented and extracted to `apps/store`.** Store source lives
+> exclusively in `apps/store/src` under the `App\Store` namespace with de-prefixed
+> entities (`Membership` replacing `StoreMembership`, `InboxMessage` replacing
+> `StoreConsumedEvent`, `OutboxMessage` replacing `StoreOutboxMessage`,
+> `TradeOrderCancellation` replacing `StoreTradeOrderCancellation`). The monolith
+> hosts Store through a Composer `crud-platform/store-app` path package during
+> transition. Physical `store_*` table names remain unchanged. Trade resolves
+> `X-Store-Code` through a local `trade_store_directory` projection populated by
+> the `store.directory.upserted.v1` neutral event. Inventory remains disabled by
+> default and is not production-ready until its documented safety checklist is met.
+> The Store bundle owns multi-store context, store operations, and the store-side
+> order projection. Trade remains the single commercial order entry point and the
+> source of truth for order amount, payment, refund, and customer order status.
 
 ---
 
@@ -136,7 +143,7 @@ Cross-boundary references are UUIDs and scalar snapshots, never Doctrine associa
 Examples:
 
 - `StoreOrder.tradeOrderUuid`, not `ManyToOne Trade\Order`.
-- `Membership.userUuid`, not `ManyToOne Identity\User`.
+- `StoreMembership.userUuid`, not `ManyToOne Identity\User`.
 - Future inventory reservation UUID, not an Inventory entity relation.
 
 This prevents cross-module schema coupling and permits separate databases later.
@@ -163,10 +170,13 @@ store_accepted -> confirmed -> paid -> fulfilled -> completed`. Store rejection 
 `awaiting_store_acceptance -> store_rejected -> cancelled`. Non-Store orders retain the
 existing Trade workflow.
 
-The current context transport is `X-Store-Code`, resolved only against an active Store
-by `StoreContextResolver`. A Store-scoped App order returns `202`. The Trade-order
-consumer currently auto-accepts eligible active Stores; Inventory reservation is the
-future decision boundary.
+The current context transport is `X-Store-Code`, resolved against a local
+`trade_store_directory` projection in Trade. The projection is populated by the
+`store.directory.upserted.v1` neutral event emitted by a Store Doctrine `onFlush`
+listener. Trade no longer makes synchronous Store repository or service calls for
+context resolution. A Store-scoped App order returns `202`. The Trade-order consumer
+currently auto-accepts eligible active Stores; Inventory reservation is the future
+decision boundary.
 
 ### 3.1 Store Context At The Trade Entry Point
 
@@ -223,59 +233,56 @@ immutable snapshot.
 ## 4. Module Structure
 
 ```text
-src/Store/
+apps/store/src/
 |-- Controller/
 |   |-- App/
 |   |   |-- StoreController.php              # Discover/read stores
 |   |   `-- StoreOrderController.php         # Customer read-only store order view
-|   `-- Manage/
-|       |-- StoreController.php              # Platform admin store CRUD
-|       |-- MembershipController.php    # Membership administration
-|       `-- StoreOrderController.php         # Store operational actions
+|   |-- Manage/
+|   |   |-- StoreController.php              # Platform admin store CRUD
+|   |   `-- StoreOrderController.php         # Store operational actions
+|   `-- Staff/
+|       `-- StoreOrderController.php         # Staff-scoped order operations
 |-- DTO/
 |   |-- StoreContext.php
-|   |-- IntegrationEvent.php
 |   `-- StoreOrderDecision.php
 |-- Entity/
 |   |-- Store.php
-|   |-- Membership.php
+|   |-- Membership.php                       # Was: StoreMembership
 |   |-- StoreOrder.php
-|   |-- StoreOutboxMessage.php
-|   `-- StoreConsumedEvent.php
-|-- Event/
-|   |-- TradeOrderCreatedV1.php             # Deserialized integration contract
-|   |-- StoreOrderAcceptedV1.php
-|   `-- StoreOrderRejectedV1.php
+|   |-- OutboxMessage.php                    # Was: StoreOutboxMessage
+|   |-- InboxMessage.php                     # Was: StoreConsumedEvent
+|   `-- TradeOrderCancellation.php           # Cancellation tombstone
 |-- EventListener/
-|   |-- TradeOrderCreatedConsumer.php
-|   `-- ReservationListener.php    # Future adapter boundary
+|   `-- StoreDirectoryOutboxListener.php     # Writes store.directory.upserted.v1
 |-- Exception/
 |   |-- StoreContextNotFoundException.php
-|   |-- StoreOrderConflictException.php
 |   `-- StoreOrderNotOperableException.php
 |-- Repository/
 |   |-- StoreRepository.php
 |   |-- MembershipRepository.php
 |   |-- StoreOrderRepository.php
-|   |-- StoreOutboxMessageRepository.php
-|   `-- StoreConsumedEventRepository.php
+|   |-- OutboxMessageRepository.php
+|   |-- InboxMessageRepository.php
+|   `-- TradeOrderCancellationRepository.php
 |-- Service/
 |   |-- StoreService.php
 |   |-- StoreServiceInterface.php
-|   |-- StoreContextResolverInterface.php
-|   |-- StoreContextResolver.php
 |   |-- MembershipService.php
 |   |-- MembershipServiceInterface.php
 |   |-- StoreOrderService.php
 |   |-- StoreOrderServiceInterface.php
-|   |-- StoreOrderDecisionService.php
-|   |-- Outbox/
-|   |   |-- OutboxPublisherInterface.php
-|   |   `-- StoreOutboxPublisher.php
-|   `-- Consumer/
-|       `-- TradeOrderCreatedConsumer.php
-`-- Resources/config/
-    `-- services_store.yaml
+|   `-- OutboxService.php
+|-- MessageHandler/
+|   |-- TradeOrderCreatedHandler.php
+|   |-- TradeOrderCancelledHandler.php
+|   |-- InventoryReservationConfirmedHandler.php
+|   |-- InventoryReservationRejectedHandler.php
+|   `-- InventoryReservationReleasedHandler.php
+`-- Command/
+    |-- PublishOutboxCommand.php
+    |-- BackfillOutboxCorrelationCommand.php
+    `-- BackfillStoreDirectoryCommand.php
 ```
 
 The names above describe the target module. Inventory-specific implementation classes
@@ -310,7 +317,7 @@ Rules:
 - `closed` stores cannot be selected for new orders.
 - Historical orders use snapshots, so Store deletion is forbidden; closure is a status.
 
-### 5.2 Membership
+### 5.2 StoreMembership
 
 **Table:** `store_membership`
 
@@ -760,7 +767,7 @@ StoreOrder's local Store relation, not a request-supplied store identifier.
 ### 10.2 Authorization Rules
 
 1. Platform roles live in Identity and retain their existing meaning.
-2. Store roles live only in `Membership`.
+2. Store roles live only in `StoreMembership`.
 3. A Store controller resolves the authenticated Identity user to a scalar `userUuid` and
    queries Store membership locally.
 4. `ROLE_ADMIN` bypasses membership checks only on explicitly administrative routes.
@@ -971,7 +978,7 @@ serialization. Tests validate:
 
 ### Phase 1: Store Foundation
 
-1. Create Store, Membership, StoreOrder, Outbox, and Inbox entities/repositories.
+1. Create Store, StoreMembership, StoreOrder, Outbox, and Inbox entities/repositories.
 2. Add Store service interfaces and services.
 3. Implement platform Store administration and membership management.
 4. Implement StoreContext resolution for the selected channel.

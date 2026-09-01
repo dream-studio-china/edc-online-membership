@@ -141,13 +141,14 @@ Stores files on Qiniu Kodo (七牛云对象存储) and returns CDN URLs.
 | Upload | Qiniu SDK upload manager with upload token |
 | Public URL | `{domain}/{filename}` e.g. `https://cdn.example.com/a1b2c3d4.jpg` |
 | Delete | Qiniu bucket manager `delete()` |
-| Configuration | `%env(QINIU_ACCESS_KEY)%`, `%env(QINIU_SECRET_KEY)%`, `%env(QINIU_BUCKET)%`, `%env(QINIU_DOMAIN)%` |
-| Dependencies | `overtrue/qiniu-filesystem` or `qiniu/php-sdk` |
+| Configuration | `common_setting`: `qiniu.access_key`, `qiniu.secret_key`, `qiniu.bucket`, `qiniu.domain` |
+| Dependencies | Optional `qiniu/php-sdk`, checked only when the driver is used |
 
-QiniuStorage is optional and toggled by the caller at upload time by passing
-`storage=qiniu`. When Qiniu env vars are empty, the service definition should
-either be removed or its constructor should gracefully degrade (return `false`
-from `supports()` / throw only when `store()` is called with valid credentials).
+QiniuStorage is optional and selected by the caller at upload time with
+`storage=qiniu`. It loads credentials from Common's settings repository at runtime.
+This is a current modular-monolith dependency that must be removed before Storage
+can be independently deployed. The driver throws a clear runtime error when the
+optional Qiniu SDK is unavailable.
 
 ---
 
@@ -214,18 +215,10 @@ parameters:
     media.local.base_url: '/uploads'
 ```
 
-**File**: `.env`
-
-```ini
-### Storage ###
-MEDIA_STORAGE_DEFAULT=local
-
-### Qiniu Kodo (optional — leave empty to disable) ###
-QINIU_ACCESS_KEY=
-QINIU_SECRET_KEY=
-QINIU_BUCKET=
-QINIU_DOMAIN=
-```
+**Runtime settings**: when `storage=qiniu` is required, initialize and maintain
+`qiniu.access_key`, `qiniu.secret_key`, `qiniu.bucket`, and `qiniu.domain` in
+`common_setting`. `MEDIA_STORAGE_DEFAULT` remains the only storage selection
+environment variable.
 
 **File**: `src/Storage/Resources/config/services_storage.yaml`
 
@@ -240,12 +233,7 @@ services:
             $basePath: '%media.local.upload_path%'
             $baseUrl: '%media.local.base_url%'
 
-    App\Storage\Service\QiniuStorage:
-        arguments:
-            $accessKey: '%env(QINIU_ACCESS_KEY)%'
-            $secretKey: '%env(QINIU_SECRET_KEY)%'
-            $bucket: '%env(QINIU_BUCKET)%'
-            $domain: '%env(QINIU_DOMAIN)%'
+    App\Storage\Service\QiniuStorage: ~
 ```
 
 **File**: `config/services.yaml` (addition)
@@ -341,7 +329,8 @@ No changes to `MediaStorageRegistry`, `MediaService`, or any controller.
 | `MediaUploadIntegrationTest` | Full upload → Media entity → delete (local driver) |
 | `MediaStorageSwitchingTest` | Upload with `storage=local` and `storage=qiniu` in same test |
 
-Qiniu integration tests should be skipped when `QINIU_ACCESS_KEY` is empty
+Qiniu integration tests should be skipped when the Qiniu settings are absent or
+the optional SDK is unavailable
 (marked `@group qiniu` or guarded by an env-var check in `setUp()`).
 
 ---

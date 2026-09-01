@@ -1,197 +1,216 @@
 # Architecture
 
-This page is a practical summary of how the codebase is built. The authoritative,
-normative version is [docs/design/system-architecture.md](../design/system-architecture.md);
-that document is the contract — this page is the developer-facing overview.
+## 1. Service Topology
 
-## Modular Monolith (not a monorepo)
+The CRUD Platform is a **multi-application monorepo** containing **8 independently
+bootable Symfony applications** plus a root monolith that hosts them during
+transition. Each service owns its Kernel, database, migrations, queues, worker,
+scheduler, container image, and tests.
 
-The application is **one Symfony application deployed as one unit** that contains
-several self-contained business modules. It is deliberately *not* a multi-service
-monorepo: modules share a single kernel, one Doctrine EntityManager, one cache, and
-one Messenger bus, but they must behave as if they were independent services.
+| # | Service | Namespace | Database | Status |
+|---|---------|-----------|----------|--------|
+| 1 | **Monolith (root)** | `App\*` (bridges) | `app` | Transition host; will be removed after Gateway cutover |
+| 2 | **Common** | `App\Common\Main\*`, `App\Common\Storage\*` | `common` | Fully extracted |
+| 3 | **Identity** | `App\Identity\Main\*`, `App\Identity\Wechat\*` | `identity` | Fully extracted |
+| 4 | **Trade** | `App\Trade\Trade\*`, `App\Trade\Promotion\*` | `trade` | Fully extracted |
+| 5 | **Store** | `App\Store\*` | `store` | Fully extracted — first extracted service |
+| 6 | **Inventory** | `App\Inventory\*` | `inventory` | Extracted; production gated by safety checklist |
+| 7 | **Payment** | `App\Payment\*` | `payment` | Fully extracted |
+| 8 | **Wallet** | `App\Wallet\*` | `wallet` | Fully extracted |
 
-- Modules communicate through **service interfaces** only (see
-  [Cross-Module Dependency Rules](#cross-module-dependency-rules)).
-- Each module owns its entities, repositories, controllers, and services.
-- `Core` is foundational and must never depend on a business module.
+### Shared Infrastructure
 
-```
-┌────────────────────────────────────────────────────────────┐
-│                     Single application                     │
-│   Kernel · config/ · public/ ·  migrations/ ·  tests/      │
-│  ┌────────┐ ┌─────────┐ ┌────────┐ ┌────────┐ ┌─────────┐  │
-│  │  Core  │ │ Common  │ │Identity│ │ Trade  │ │  ...    │  │
-│  ├────────┤ ├─────────┤ ├────────┤ ├────────┤ ├─────────┤  │
-│  │ Store  │ │Inventory│ │Payment │ │ Wallet │ │Promotion│  │
-│  ├────────┤ ├─────────┤ ├────────┤ ├────────┤ ├─────────┤  │
-│  │Settle  │ │Storage  │ │Wechat  │ │  ...   │ │         │  │
-│  └────────┘ └─────────┘ └────────┘ └────────┘ └─────────┘  │
-└────────────────────────────────────────────────────────────┘
-```
+| Component | Location | Owned By |
+|-----------|----------|----------|
+| `platform-kernel` | `packages/platform-kernel/` | Framework (Core) — never a business service |
+| `integration-contracts` | `packages/integration-contracts/` | Shared — transport-neutral v1 carrier classes |
+| `legacy-messenger-compat` | `packages/legacy-messenger-compat/` | Shared — historical native-PHP Messenger wrapper FQCNs |
+| Tests | root `tests/` | Root monolith — cross-module integration tests |
 
-### Modules under `src/`
+## 2. Layer Architecture
 
-| Module | Responsibility |
-|--------|----------------|
-| `Core` | Framework abstractions: `RestController`, `BaseService`, View mixins, Expression query engine, serialization |
-| `Common` | CMS primitives: Category, Tag, Content, Comment, Page, Media, Picture, Setting |
-| `Identity` | Authentication & accounts: User, Profile, RefreshToken, JWT/OTP flows |
-| `Trade` | E-commerce core: Product, Specification, Order, OrderItem, pricing pipeline |
-| `Store` | Multi-store operations: Store, Membership, StoreOrder distribution |
-| `Inventory` | Stock, materials, recipes, reservations, ledger |
-| `Payment` | Invoice lifecycle, gateway abstraction, webhooks, events |
-| `Wallet` | Balances, atomic transfers, deposits/withdrawals, vouchers, deductions |
-| `Promotion` | Promotional rules with a small embedded DSL, strategies, calculation |
-| `Settlement` | Rule-driven funding allocation and settlement finality |
-| `Storage` | Media storage abstraction (local / Qiniu) |
-| `Wechat` | WeChat login (Mini Program / Official Account) and WeChat Pay V3 gateway |
-
-## Layer Architecture
-
-Requests flow through a strict, one-directional chain:
+Every application follows a strict layered architecture:
 
 ```
-HTTP (Controllers / View mixins)  →  Service  →  Repository  →  Entity  →  Infrastructure
+Request/Response
+      ↓
++-----v------------------------------------+
+|  HTTP Layer  (Controllers / View Mixins) |  ← Only layer touching Request/Response
++-----+------------------------------------+
+      ↓  (Service Interface only)
++-----v------------------------------------+
+|  Service Layer                           |  ← All business logic, transactions, validation
++-----+------------------------------------+
+      ↓  (Repository only)
++-----v------------------------------------+
+|  Repository Layer                        |  ← Data access queries (Doctrine repositories)
++-----+------------------------------------+
+      ↓  (Entities only)
++-----v------------------------------------+
+|  Entity Layer (Domain Model)             |  ← Persistence and aggregate-local invariants
++-----+------------------------------------+
+      ↓  (Doctrine ORM)
++-----v------------------------------------+
+|  Infrastructure (ORM, Cache, Serializer) |  ← Framework-provided
++------------------------------------------+
 ```
-
-- **HTTP layer** — controllers only. The only layer that touches Request/Response.
-  Thin: it reads input, calls one service, and renders via the View mixins.
-  Separate `App` (read-only user), `Manage` (admin CRUD), and `Webhook` namespaces.
-- **Service layer** — all business logic, transactions, and validation live here.
-  Services expose interfaces; other modules and controllers depend on the interface,
-  never the concrete class.
-- **Repository layer** — Doctrine data-access queries only.
-- **Entity layer** — pure domain objects (Doctrine entities), no business logic.
-- **Infrastructure** — framework-provided ORM, cache, serializer, messenger.
 
 ### Layer Dependency Rules
 
-| Rule | From | To | Allowed? |
-|------|------|----|----------|
-| R1 | Controller | Service | YES |
-| R2 | Controller | Entity | YES (type hints / returns only) |
+| Rule | From | To | Allowed |
+|------|------|----|---------|
+| R1 | Controller | Service | **YES** |
+| R2 | Controller | Entity | **YES** (type hints/returns only) |
 | R3 | Controller | Repository | **NO** — go through Service |
 | R4 | Controller | EntityManager | **NO** — go through Service |
-| R5 | Service | Repository | YES |
-| R6 | Service | Entity | YES |
-| R7 | Service | EntityManager | YES |
-| R8 | Service | Other Services | YES (via DI, interface-first) |
+| R5 | Service | Repository | **YES** |
+| R6 | Service | Entity | **YES** |
+| R7 | Service | EntityManager | **YES** |
+| R8 | Service | Other Services | **YES** (via DI) |
 | R9 | Entity | Repository | **NO** |
 | R10 | Entity | Service | **NO** |
 | R11 | Entity | EntityManager | **NO** |
 
-## Key Design Patterns
+Controllers receive `Request`/`Response` objects; Services never do. Services own
+transaction boundaries via `BaseServiceInfrastructureTrait::wrapInTransaction()`.
 
-### RestController + View Mixins
+## 3. Monorepo Layout
 
-Every business controller extends `App\Core\Controller\RestController`
-(`src/Core/Controller/RestController.php`), which provides `success()`/`warning()`
-JSON envelopes, pagination, and `@display`/`@expands` response shaping.
+```
+crud-platform/
+├── apps/                      # Independently deployable business services
+│   ├── common/                #   CMS + Storage
+│   ├── identity/              #   Auth + WeChat login
+│   ├── trade/                 #   Commerce + Promotion
+│   ├── store/                 #   Store operations
+│   ├── inventory/             #   Stock & reservation
+│   ├── payment/               #   Invoices & gateways
+│   └── wallet/                #   Balances & transactions
+├── packages/                  # Reusable PHP libraries
+│   ├── platform-kernel/       #   Framework core (App\Core)
+│   ├── integration-contracts/ #   Transport-neutral event carriers
+│   └── legacy-messenger-compat/ #  Historical wrapper FQCNs
+├── src/                       # Root monolith (bridges only during transition)
+│   ├── Kernel.php
+│   └── Bridge/                #   Temporary adapters (e.g., PaymentWallet)
+├── config/                    # Root monolith configuration
+│   ├── services.yaml
+│   ├── routes.yaml
+│   └── packages/
+├── migrations/                # Root monolith migration chain (historical)
+├── translations/              # i18n YAML files (en, zh, zh_Hant, ja)
+├── tests/                     # Root integration tests (963 tests)
+├── docs/                      # All documentation
+│   ├── manual/                #   Developer manuals (this collection)
+│   ├── design/                #   Architecture contracts
+│   ├── ai/                    #   AI context snapshots
+│   └── openapi/               #   Frontend integration guides
+├── scripts/                   # Utility scripts (tests, coverage, smoke)
+├── compose.yaml               # Docker Compose (22 services)
+├── compose.override.yaml      # Dev overrides
+├── compose.prod.yaml          # Production overlay
+└── Dockerfile                 # Root monolith FrankenPHP image
+```
 
-CRUD endpoints are assembled from reusable mixins under `src/Core/View/`:
+### `apps/` vs `packages/` Distinction
 
-- `ListApiViewMixin` / `ScopedListApiViewMixin` — list + paginate
-- `DetailApiViewMixin` / `ScopedDetailApiViewMixin` — single record
-- `CreateApiViewMixin`, `UpdateApiViewMixin`, `DeleteApiViewMixin` — mutation endpoints
-- `SingleCreateAndUpdateApiViewMixin`, `SingleDetailApiViewMixin` — singleton resources
-- `WorkflowApiViewMixin` — workflow transitions driven from the controller
+- **`apps/`**: A deployable business service with its own Kernel, database,
+  migrations, tests, and Docker image. Owns business entities and logic.
+- **`packages/`**: A reusable PHP library. Contains framework utilities, contracts,
+  or compatibility shims. Must NOT contain business entities or service-specific
+  application logic.
 
-### BaseService + Traits
+## 4. Extraction Status
 
-Services extend `App\Core\Service\BaseService` and implement a module interface.
-`BaseService` composes three traits:
+All 8 bounded contexts have been extracted to `apps/`. The root monolith loads
+each via Composer path packages (`crud-platform/{name}-app`) as a transition host.
 
-- `BaseServiceInfrastructureTrait` — container / EntityManager / repository wiring
-- `BaseServiceReadListTrait` — generic list/filter implementation
-- `BaseServiceMutationTrait` — generic create/update/delete behaviour
+| Context | Composer Package | Source Location | Entity De-prefixing |
+|---------|-----------------|-----------------|---------------------|
+| Store | `crud-platform/store-app` | `apps/store/src/` | `StoreMembership` → `Membership`, `StoreConsumedEvent` → `InboxMessage`, `StoreOutboxMessage` → `OutboxMessage`, `StoreTradeOrderCancellation` → `TradeOrderCancellation` |
+| Inventory | `crud-platform/inventory-app` | `apps/inventory/src/` | N/A (created post-extraction) |
+| Payment | `crud-platform/payment-app` | `apps/payment/src/` | N/A (created post-extraction) |
+| Wallet | `crud-platform/wallet-app` | `apps/wallet/src/` | Legacy `user_id` FK removed; uses `ownerUuid` only |
+| Identity | `crud-platform/identity-app` | `apps/identity/src/` | N/A |
+| Common | `crud-platform/common-app` | `apps/common/src/` | N/A |
+| Trade | `crud-platform/trade-app` | `apps/trade/src/` | N/A (owns Trade + Promotion) |
 
-The result is a generic CRUD service per entity that concrete services override
-where domain rules require it. Every module service also declares an interface
-(e.g. `OrderServiceInterface extends BaseServiceInterface`).
+**Cutover status**: All services boot independently. The monolith remains the
+production host. Root `src/` retains only `Bridge/` adapters; business source is
+fully owned by `apps/`.
 
-### Expression Dynamic Query Engine
+## 5. Event-Driven Integration Flow
 
-List endpoints accept expression query parameters that are parsed to DQL:
+The primary integration chain is **Trade → Store → Inventory**:
 
-| Parameter | Meaning |
-|-----------|---------|
-| `@filter` | Declarative filter conditions |
-| `@sort` / `@order` | Ordering clauses |
-| `@dql` | Raw DQL fragments / embedded expressions |
-| `@select` | Projection of selected fields |
+```
+Trade order created (trade.order.created.v1)
+  → Store Outbox/Inbox receives event
+  → Store creates StoreOrder, validates
+  → Store publishes inventory.reservation.requested.v1 (if INVENTORY_ENABLED)
+  → Inventory receives, resolves recipes, reserves stock
+  → Inventory publishes confirmed or rejected outcome
+  → Store receives outcome, accepts or rejects StoreOrder
+  → Store publishes store.order.accepted.v1 or store.order.rejected.v1
+  → Trade receives, applies workflow transition
+```
 
-Implementation lives in `src/Core/Parser/` (`ExpressionDqlParser`,
-`ExpressionQueryBuilderAssembler`) and is executed through
-`App\Core\Service\ExpressionService` with `QueryBuilderFactory`.
+**Payment → Trade** uses the same pattern:
+```
+Payment invoice lifecycle change (payment.invoice.paid.v1, etc.)
+  → Payment writes to PaymentOutbox
+  → Trade Inbox receives, updates order
+```
 
-### Pricing Pipeline
+**Store → Trade (directory sync)**:
+```
+Store directory changes → StoreDirectoryOutboxListener → store.directory.upserted.v1
+  → Trade maintains local trade_store_directory projection
+```
 
-Order pricing is a priority-ordered chain of calculators, all tagged
-`trade.price_calculator` and sorted ascending by `getPriority()`:
+All chains use the **Outbox/Inbox** pattern with idempotency by `eventId`.
+Correlation IDs propagate through the chain for distributed tracing.
 
-| Order | Calculator | Priority |
-|-------|-----------|----------|
-| 1 | `BasePriceCalculator` (`src/Trade/Service/Pricing/`) | -100 |
-| 2 | `QuantityCalculator` | 50 |
-| 3 | `TotalAggregator` | 55 |
-| 4 | `PromotionCalculator` (`src/Promotion/Service/`) | 60 |
+## 6. Key Design Patterns
 
-`OrderService` collects them with `#[AutowireIterator('trade.price_calculator')]`
-and applies them in priority order. Adding a new pricing step = implement
-`PriceCalculatorInterface`, tag it, done.
+| Pattern | Where | Detail |
+|---------|-------|--------|
+| **Outbox/Inbox** | Trade, Store, Inventory, Payment | Events written to Outbox in local transaction; relayed via scheduler; consumed idempotently via Inbox keyed by `eventId` |
+| **UUID identity** | Trade, Wallet, Store | `UUID::v4()` for external aggregate identity; never expose auto-increment PKs across service boundaries |
+| **Pricing pipeline** | Trade | `PriceCalculatorInterface` implementations sorted by priority: BasePriceCalculator(-100) → QuantityCalculator(50) → TotalAggregator(55) → PromotionCalculator(60) |
+| **Gateway registry** | Payment | `PaymentGatewayInterface` implementations auto-tagged `payment.gateway`, collected via `#[AutowireIterator]` |
+| **Snapshot** | Trade | `OrderItem` captures `specSnapshot`/`productSnapshot` at creation time |
+| **Optimistic locking** | Wallet | `#[ORM\Version]` on `Wallet` entity for concurrent access safety |
+| **Soft delete** | Trade | `isDeleted` boolean on `Product`, `Specification` |
+| **commonFilter** | Controllers | Array criteria or QueryBuilder scoping: `[]` = admin, `['user' => $user]` = user-scoped, `['id' => -1]` = block all |
+| **Token rotation** | Identity | HMAC-SHA256 refresh tokens with reuse detection |
+| **Correlation tracing** | Integration events | `correlationId` propagates through the Trade→Store→Inventory chain; `causationId` is the immediate parent `eventId` |
+| **Adjustment provider registry** | Payment | `PaymentAdjustmentProviderInterface` implementations auto-tagged; Wallet provides `WalletBalanceAdjustmentProvider` |
+| **Storage driver registry** | Storage | `MediaStorageInterface` implementations tagged `media.storage`; selectable via multipart `storage` field |
+| **Promotion strategy tag** | Promotion | `promotion.strategy` auto-tag, collected via `#[AutowireIterator]` (7 strategies) |
+| **Balance audit** | Wallet | `GET /app/wallets/balance` (user-scoped) and `GET /manage/wallets/balance` (global) with reconciliation |
+| **Expression query engine** | Core | `@filter`, `@dql`, `@order`, `@select`, `@groupBy`, `@sort`, `@expands`, `@display`, `@transform` parameters |
 
-### Payment Gateway Registry
+## 7. Cross-Service Dependency Rules
 
-`PaymentGatewayInterface` implementations (mock, wallet, wechat, …) are registered
-against the `payment.gateway` tag in
-`src/Payment/Resources/config/services_payment.yaml` and resolved at runtime through
-`PaymentGatewayRegistry` — supports switching providers per invoice and dispatch to
-webhooks (`PaymentNotifyController`) with provider-agnostic invoice events.
+These rules govern how services communicate during transition:
 
-### Outbox / Inbox Pattern
+1. **No cross-service Doctrine associations** — A service owns its database and
+   has no FK, repository access, or transaction spanning another service.
+2. **Durable references use UUIDs** — Never reference another service's local
+   integer primary key.
+3. **Scalar contracts only** — Service boundaries accept scalar commands/queries
+   and emit scalar snapshots. No Doctrine entities, repositories, or Symfony
+   requests pass boundaries.
+4. **Outbox for writes** — Every state-changing integration event is written to
+   an Outbox in the producer's local transaction.
+5. **Inbox for reads** — Consumers use a durable Inbox keyed by `eventId`.
+6. **Owned queues** — Each consumer owns its queue, retry policy, dead-letter
+   handling, worker, and scheduled jobs.
+7. **Shared packages are utilities only** — No business entities in `packages/`.
 
-Cross-module writes never call the target module synchronously:
-
-- **Outbox** — each publishing module persists its own `*OutboxMessage` entity in the
-  same transaction as the change. The `scheduler` service polls
-  `app:{module}:outbox:publish` commands (Trade, Store, Inventory, Settlement) to
-  flush messages to Messenger.
-- **Inbox / handlers** — message handlers (`MessageHandler/`) in the consuming module
-  are the only readers of those events and enforce their own integrity and
-  idempotency (e.g. inventory `ReservationRequestedHandler`, store
-  `TradeOrderCreatedHandler`, settlement `SettlementFundingConfirmedHandler`).
-
-### Other Notable Patterns
-
-| Pattern | Where |
-|---------|-------|
-| UUID identity on aggregates | Cross-module references are UUIDs (`Core\Utils\UUID`); durable keys never cross a boundary as plain integer IDs |
-| Optimistic locking on Wallet | `Wallet` carries an integer `version` column; concurrent balance updates detect conflicts instead of overwriting |
-| Soft delete | `Product` / `Specification` use an `isDeleted` flag (`Trade\Entity`) so pricing and history can still reference removed records |
-| Token rotation | Refresh tokens are stored hashed (HMAC-SHA256) and rotated on every use with reuse detection (`Identity\Security\TokenManager`) |
-| Exact-money settlement | `QuantumAmount` (`Settlement\Service\Money`) is a base-10 integer quantum of fixed scale (default 18, `brick/math`), avoiding float error; `AllocationRoundingService` handles remainder distribution (largest-remainder) |
-| Registry pattern | `PaymentGatewayRegistry`, `PaymentAdjustmentRegistry`, `DepositProviderRegistry`, `WithdrawProviderRegistry`, `MediaStorageRegistry`, `SettlementContextResolverRegistry` |
-
-## Cross-Module Dependency Rules
-
-| Concern | Rule |
-|---------|------|
-| Doctrine associations | **No cross-module Doctrine associations/relations.** An entity never references another module's entity by foreign key |
-| Durable references | Between modules, reference aggregates by **UUID** (or an explicitly documented business key), never a local auto-increment id |
-| Contracts | Cross-module service calls exchange **scalar values / snapshots / DTOs only** — no entities, repositories, or EntityManager across a boundary |
-| Writes | Use the **outbox** pattern: persist the change plus an outbox message in one transaction; the target module consumes its own inbox message |
-| Reads | Use **inbox / message handlers** as the entry point for consuming another module's state; direct repository reads across modules are forbidden |
-| Dependency direction | Business modules may autowire `Core` and (interface-first) each other; `Core` must never import a business module; circular module dependencies are forbidden |
-| Shared state | Event payloads carry scalar snapshots and external identity only; the receiving module still enforces its own authorization |
-
-### Where this shows up in practice
-
-- `Trade` publishes `TradeOrderCreatedMessage`/`TradeOrderCancelledMessage`; `Store`
-  consumes them to fan orders out to stores (`StoreOrder`).
-- `Store` publishes `StoreOrderAcceptedMessage`/`StoreOrderRejectedMessage`; `Trade`
-  consumes them to move order state.
-- `Trade` requests inventory reservations through `ReservationRequestedMessage`;
-  `Inventory` confirms/rejects via `ReservationConfirmed/RejectedMessage`.
-- `Payment` emits `InvoicePaidEvent`, `InvoiceRefundedEvent`, etc.; the `Wallet`
-  gateway and `Settlement` funding flow react through their own handlers.
+Current boundary risks (to be resolved before full independence):
+- Synchronous `InvoiceService` → Trade order updates (being replaced by Outbox/Inbox)
+- Payment/Wechat plugin contracts exposing Doctrine/Symfony types
+- Legacy native-PHP Messenger wrapper FQCNs in historical queue records
+- Root `Bridge/` adapters coupling Payment and Wallet

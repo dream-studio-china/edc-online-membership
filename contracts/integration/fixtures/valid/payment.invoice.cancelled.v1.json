@@ -1,0 +1,1 @@
+{"eventId":"00000000-0000-4000-8000-000000000024","type":"payment.invoice.cancelled","version":1,"aggregateType":"payment_invoice","aggregateId":"00000000-0000-4000-8000-000000000025","occurredAt":"2026-07-30T12:00:00+00:00","correlationId":"00000000-0000-4000-8000-000000000025","causationId":null,"payload":{}}

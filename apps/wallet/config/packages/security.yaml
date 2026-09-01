@@ -1,0 +1,7 @@
+security:
+    providers:
+        wallet_placeholder: { memory: null }
+    firewalls:
+        main:
+            lazy: true
+            provider: wallet_placeholder

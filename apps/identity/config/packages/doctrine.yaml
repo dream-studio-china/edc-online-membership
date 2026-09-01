@@ -1,0 +1,23 @@
+doctrine:
+    dbal:
+        url: '%env(resolve:DATABASE_URL)%'
+    orm:
+        naming_strategy: doctrine.orm.naming_strategy.underscore_number_aware
+        mappings:
+            Identity:
+                type: attribute
+                is_bundle: false
+                dir: '%kernel.project_dir%/src/Main/Entity'
+                prefix: 'App\Identity\Main\Entity'
+                alias: Identity
+            Wechat:
+                type: attribute
+                is_bundle: false
+                dir: '%kernel.project_dir%/src/Wechat/Entity'
+                prefix: 'App\Identity\Wechat\Entity'
+                alias: Wechat
+
+when@test:
+    doctrine:
+        dbal:
+            url: 'sqlite:///%kernel.project_dir%/var/identity_test.db'

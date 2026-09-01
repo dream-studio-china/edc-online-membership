@@ -1,0 +1,37 @@
+framework:
+    workflows:
+        invoice:
+            type: 'state_machine'
+            marking_store:
+                type: 'method'
+                property: 'status'
+            supports:
+                - App\Payment\Entity\Invoice
+            initial_marking: pending
+            places:
+                - pending
+                - paying
+                - paid
+                - failed
+                - cancelled
+                - partial_refunded
+                - refunded
+            transitions:
+                start_pay:
+                    from: pending
+                    to: paying
+                mark_paid:
+                    from: [pending, paying]
+                    to: paid
+                fail:
+                    from: [pending, paying]
+                    to: failed
+                cancel:
+                    from: [pending, paying, failed]
+                    to: cancelled
+                partial_refund:
+                    from: paid
+                    to: partial_refunded
+                refund:
+                    from: [paid, partial_refunded]
+                    to: refunded

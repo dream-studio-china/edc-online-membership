@@ -1,0 +1,46 @@
+imports:
+    - { resource: services_identity.yaml }
+    - { resource: services_wechat.yaml }
+
+services:
+    _defaults: { autowire: true, autoconfigure: true }
+    _instanceof:
+        App\Core\Controller\RestController:
+            calls:
+                - [ setRequestStack, [ '@request_stack' ] ]
+                - [ setSerializer, [ '@serializer' ] ]
+                - [ setTranslator, [ '@translator' ] ]
+                - [ setServiceContainer, [ '@service_container' ] ]
+    App\Identity\Main\:
+        resource: '../src/Main/'
+        exclude:
+            - '../src/Main/Kernel.php'
+            - '../src/Main/Controller/AuthController.php'
+            - '../src/Main/Controller/OtpController.php'
+            - '../src/Main/Security/TokenManager.php'
+            - '../src/Main/Sms/AliyunSmsProvider.php'
+            - '../src/Main/Service/RedisOtpStorage.php'
+    App\Identity\Wechat\:
+        resource: '../src/Wechat/'
+        exclude:
+            - '../src/Wechat/Service/WechatService.php'
+    App\Core\:
+        resource: '../vendor/crud-platform/platform-kernel/src/'
+        exclude:
+            - '../vendor/crud-platform/platform-kernel/src/Serializer/Normalizer/FlatNormalizer.php'
+            - '../vendor/crud-platform/platform-kernel/src/EventListener/*'
+    App\Core\Service\ServiceLocatorInterface: '@App\Core\Service\DefaultServiceLocator'
+    App\Identity\Main\Service\LocalCacheOtpStorage:
+        arguments: { $cache: '@cache.app' }
+    App\Identity\Main\Service\OtpStorageInterface: '@App\Identity\Main\Service\LocalCacheOtpStorage'
+    Symfony\Component\DependencyInjection\ContainerInterface: '@service_container'
+    Symfony\Contracts\Translation\TranslatorInterface: '@translator'
+
+when@test:
+    services:
+        App\Identity\Main\Service\OtpStorageInterface: '@App\Identity\Main\Service\NullOtpStorage'
+        App\Identity\Main\Service\RedisOtpStorage: null
+        App\Identity\Main\Service\OtpService:
+            arguments:
+                $storage: '@App\Identity\Main\Service\NullOtpStorage'
+                $sms: '@App\Identity\Main\Sms\AliyunSmsProvider'

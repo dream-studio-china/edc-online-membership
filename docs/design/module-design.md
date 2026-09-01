@@ -1,13 +1,15 @@
 # Module Design Contract
 
-> Rules for creating new business modules. Every module under `src/` MUST follow this structure and contracts.
-> This is the blueprint for extending the system with new domains.
+> Rules for evolving modules in the current modular monolith. A module is not a
+> deployable service. Service extraction follows the
+> [Microservice Transition Contract](microservice-transition.md).
 
 ---
 
-## 1. Module Skeleton
+## 1. Module Shape
 
-When creating a new business module `{Module}`:
+Use only the artifacts required by the module's responsibility. A persistence-backed
+CRUD module may use this shape:
 
 ```
 src/{Module}/
@@ -34,7 +36,10 @@ src/{Module}/
 - **Namespace**: `App\{Module}\Entity`
 - **Must**: Implement `__toString()`, declare `touch()` lifecycle hook, use PHP 8 attributes
 - **Must**: Follow the [Data Model Design Contract](data-model.md)
-- **Must NOT**: Contain business logic, DI, or service references
+- **Must NOT**: Contain DI or service references
+- **May**: Enforce aggregate-local invariants and state transitions when doing so
+  prevents invalid persisted state. Cross-aggregate orchestration remains in an
+  application service.
 
 ### 2.2 Repository Contract
 
@@ -50,8 +55,11 @@ src/{Module}/
 
 - **Location**: `src/{Module}/Service/{Name}ServiceInterface.php`
 - **Namespace**: `App\{Module}\Service`
-- **Must**: Extend `App\Core\Service\BaseServiceInterface`
-- **May**: Be empty (if base interface covers all needed methods)
+- **Must**: Be introduced only for an intentional in-process extension point or
+  dependency inversion need
+- **May**: Extend `App\Core\Service\BaseServiceInterface` for legacy CRUD modules
+- **Should**: Declare use-case-specific methods rather than expose a generic CRUD
+  API across module boundaries
 - **May**: Add module-specific method signatures
 
 ```php
@@ -65,9 +73,10 @@ interface CategoryServiceInterface extends BaseServiceInterface
 
 - **Location**: `src/{Module}/Service/{Name}Service.php`
 - **Namespace**: `App\{Module}\Service`
-- **Must**: Extend `App\Core\Service\BaseService`
-- **Must**: Implement `{Name}ServiceInterface`
-- **Must**: Accept `ContainerInterface`, entity class FQCN, optional locator/expression service
+- **May**: Extend `App\Core\Service\BaseService` for legacy CRUD modules
+- **May**: Implement a module interface when one is intentionally exported
+- **Should**: Prefer explicit constructor dependencies over `ContainerInterface`
+  in new code
 - **Should**: Contain all business logic, validation, and transaction management
 - **Must NOT**: Access Request directly (use `getCurrentRequest()`)
 - **Must NOT**: Return raw HTTP responses (that's the controller's job)
@@ -123,7 +132,7 @@ Controllers follow two roles. See the [Controller Design Contract](controller-de
 
 ### 3.1 Route Registration
 
-Add the module's controllers to `config/routes.yaml`:
+When the module owns HTTP endpoints, add its controllers to `config/routes.yaml`:
 
 ```yaml
 api_{module}_app:
@@ -166,7 +175,9 @@ Otherwise, autowiring covers everything via the global `App\` resource.
 
 ### 3.3 Migration
 
-Create a single migration per module in `migrations/`:
+In the current monolith, create a migration that changes one module's tables where
+possible. Do not use this rule to split historical mixed migrations. Extracted
+services start with a validated schema baseline and service-local migration history.
 
 ```bash
 php bin/console make:migration
@@ -178,35 +189,48 @@ Naming convention: `Version{YYYYMMDD}{HHMMSS}.php`
 
 ## 4. Module Dependency Rules
 
-### 4.1 Allowed Dependencies
+### 4.1 Current Monolith Dependencies
 
 | Module | May Depend On |
 |--------|--------------|
-| Any Business Module | Core (always), other Business Modules (via service interfaces) |
+| Any Business Module | Core (always), other modules through explicit application APIs |
 | Identity | Core |
 | Core | Nothing (foundational) |
 
-### 4.2 Module Isolation Checklist
+### 4.2 Future Service Restrictions
+
+The following are forbidden across independently deployable services:
+
+- Direct DI calls, including service interfaces.
+- Doctrine entity, repository, EntityManager, and database foreign-key access.
+- Local integer identifiers as durable references.
+- Symfony EventDispatcher events as integration events.
+- Shared mutable DTOs or framework HTTP objects in contracts.
+
+Use scalar APIs, versioned integration events, Outbox/Inbox, and service-owned
+queues instead. See [Microservice Transition Contract](microservice-transition.md).
+
+### 4.3 Module Isolation Checklist
 
 When creating a new module, verify:
 
 - [ ] Module has no circular dependencies with other modules
-- [ ] Module exports at least one `*ServiceInterface`
-- [ ] Module does NOT import concrete services from other modules (use interfaces)
-- [ ] Module's entities are not referenced directly by controllers in other modules
-- [ ] Module's services are self-contained (do not leak DB connections or EMs)
+- [ ] Module has an explicit owner and responsibility
+- [ ] Module imports another module only through a deliberate application API
+- [ ] New code avoids cross-module entity and repository access
+- [ ] An extraction candidate has scalar identifiers and no cross-service persistence assumptions
 
 ---
 
 ## 5. Module Testing Contract
 
-Every module MUST have:
+Each module needs tests appropriate to its responsibility:
 
 | Test Suite | Location | Coverage Target |
 |------------|----------|----------------|
-| Entity unit tests | `tests/{Module}/Entity/` | `__toString()`, getter/setter, lifecycle |
-| Service tests | `tests/{Module}/Service/` | All public service methods |
-| Integration tests | `tests/{Module}/Integration/` | API endpoints, full request/response cycle |
+| Entity unit tests | `tests/{Module}/Entity/` | Owned persistence invariants and lifecycle |
+| Service/handler tests | `tests/{Module}/Service/` | Owned use cases |
+| Integration tests | `tests/{Module}/Integration/` | Owned HTTP, persistence, or messaging boundary |
 
 ### 5.1 Test Base Classes
 
@@ -219,7 +243,8 @@ Every module MUST have:
 ### 5.2 Test Database
 
 - Test environment uses SQLite (`var/test.db`)
-- Schema is created from Doctrine migrations in test bootstrap
+- Schema is created from Doctrine schema tooling in the current test bootstrap;
+  migration-chain validation runs separately in MySQL CI
 - Each test method is wrapped in a transaction and rolled back
 
 ---

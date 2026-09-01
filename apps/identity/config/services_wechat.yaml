@@ -1,0 +1,13 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
+    App\Identity\Wechat\Service\WechatService:
+        arguments:
+            $miniappAppId: '%env(WECHAT_MINIAPP_APP_ID)%'
+            $miniappSecret: '%env(WECHAT_MINIAPP_SECRET)%'
+            $officialAppId: '%env(WECHAT_OFFICIAL_APP_ID)%'
+            $officialSecret: '%env(WECHAT_OFFICIAL_SECRET)%'
+            $officialToken: '%env(WECHAT_OFFICIAL_TOKEN)%'
+            $officialAesKey: '%env(WECHAT_OFFICIAL_AES_KEY)%'
