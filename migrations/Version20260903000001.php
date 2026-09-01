@@ -28,22 +28,24 @@ final class Version20260903000001 extends AbstractMigration
 
         $table = $schema->getTable('trade_order_item');
 
+        // MySQL requires the FK to be removed before its supporting index.
+        // Explicit SQL preserves that order; Doctrine's schema diff may not.
         if ($table->hasForeignKey('fk_trade_order_item_specification')) {
-            $table->removeForeignKey('fk_trade_order_item_specification');
+            $this->addSql('ALTER TABLE trade_order_item DROP FOREIGN KEY fk_trade_order_item_specification');
         } elseif ($table->hasForeignKey('FK_TRADE_ORDER_ITEM_SPECIFICATION')) {
-            $table->removeForeignKey('FK_TRADE_ORDER_ITEM_SPECIFICATION');
+            $this->addSql('ALTER TABLE trade_order_item DROP FOREIGN KEY FK_TRADE_ORDER_ITEM_SPECIFICATION');
         }
         if ($table->hasIndex('idx_trade_order_item_specification')) {
-            $table->dropIndex('idx_trade_order_item_specification');
+            $this->addSql('ALTER TABLE trade_order_item DROP INDEX idx_trade_order_item_specification');
         }
         if ($table->hasIndex('IDX_TRADE_ORDER_ITEM_SPECIFICATION')) {
-            $table->dropIndex('IDX_TRADE_ORDER_ITEM_SPECIFICATION');
+            $this->addSql('ALTER TABLE trade_order_item DROP INDEX IDX_TRADE_ORDER_ITEM_SPECIFICATION');
         }
         if ($table->hasIndex('IDX_7C7944E4908E2FFE')) {
-            $table->dropIndex('IDX_7C7944E4908E2FFE');
+            $this->addSql('ALTER TABLE trade_order_item DROP INDEX IDX_7C7944E4908E2FFE');
         }
         if ($table->hasColumn('specification_id')) {
-            $table->dropColumn('specification_id');
+            $this->addSql('ALTER TABLE trade_order_item DROP COLUMN specification_id');
         }
     }
 
