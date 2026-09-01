@@ -11,8 +11,8 @@ use App\Identity\Entity\User;
 use App\Kernel;
 use App\Trade\Entity\Order;
 use App\Trade\Entity\OrderItem;
-use App\Trade\Entity\Product;
-use App\Trade\Entity\Specification;
+use App\Store\Entity\Product;
+use App\Store\Entity\Specification;
 use App\Wallet\Entity\Wallet;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\SchemaTool;
@@ -195,7 +195,22 @@ for ($i = 1; $i <= 100; $i++) {
         $spec = $allSpecs[$k];
         $qty = random_int(1, 5);
         $oi = new OrderItem();
-        $oi->setSpecification($spec);
+        $oi->setSpecificationUuid($spec->getUuid());
+        $oi->setSpecificationTitle($spec->getName());
+        $oi->setSpecSnapshot([
+            'id' => $spec->getId(),
+            'uuid' => $spec->getUuid(),
+            'name' => $spec->getName(),
+            'productId' => $spec->getProduct()?->getId(),
+        ]);
+        $product = $spec->getProduct();
+        if ($product !== null) {
+            $oi->setProductSnapshot([
+                'id' => $product->getId(),
+                'uuid' => $product->getUuid(),
+                'name' => $product->getName(),
+            ]);
+        }
         $oi->setQuantity($qty);
         $oi->setUnitPrice($spec->getPrice());
         $oi->setPrice($spec->getPrice() * $qty);

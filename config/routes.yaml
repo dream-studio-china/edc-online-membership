@@ -103,3 +103,10 @@ api_settlement:
         path: ../src/Settlement/Controller/
         namespace: App\Settlement\Controller
     type: attribute
+
+api_authorization:
+    prefix: /api/v1
+    resource:
+        path: ../src/Authorization/Controller/
+        namespace: App\Authorization\Controller
+    type: attribute

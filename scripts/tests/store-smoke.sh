@@ -72,9 +72,9 @@ ORDER_ID=$(body | json '["data"]["id"]')
 # Exercise the production relay and Doctrine Messenger consumer path.
 symfony php bin/console app:trade:outbox:publish --no-interaction
 symfony php bin/console messenger:consume async --limit=20 --time-limit=10 --no-interaction
-api 'staff lists pending order' GET "/api/v1/store/stores/$STORE_UUID/orders" "$ADMIN_TOKEN" '' 200
+api 'staff lists pending order' GET "/api/v1/store/$STORE_UUID/orders" "$ADMIN_TOKEN" '' 200
 STORE_ORDER_UUID=$(body | json '["data"][0]["uuid"]')
-api 'staff sees accepted order' GET "/api/v1/store/stores/$STORE_UUID/orders/$STORE_ORDER_UUID" "$ADMIN_TOKEN" '' 200
+api 'staff sees accepted order' GET "/api/v1/store/$STORE_UUID/orders/$STORE_ORDER_UUID" "$ADMIN_TOKEN" '' 200
 STORE_STATUS=$(body | json '["data"]["operationalStatus"]')
 if [[ "$INVENTORY_ENABLED" == '1' ]]; then
   [[ "$STORE_STATUS" == 'awaiting_inventory' ]] || { printf 'FAIL expected awaiting_inventory, got %s\n' "$STORE_STATUS" >&2; exit 1; }
@@ -82,7 +82,7 @@ if [[ "$INVENTORY_ENABLED" == '1' ]]; then
   symfony php bin/console messenger:consume async --limit=20 --time-limit=10 --no-interaction
   symfony php bin/console app:inventory:outbox:publish --no-interaction
   symfony php bin/console messenger:consume async --limit=20 --time-limit=10 --no-interaction
-  api 'staff sees inventory accepted order' GET "/api/v1/store/stores/$STORE_UUID/orders/$STORE_ORDER_UUID" "$ADMIN_TOKEN" '' 200
+  api 'staff sees inventory accepted order' GET "/api/v1/store/$STORE_UUID/orders/$STORE_ORDER_UUID" "$ADMIN_TOKEN" '' 200
   STORE_STATUS=$(body | json '["data"]["operationalStatus"]')
 fi
 if [[ "$STORE_STATUS" != 'accepted' ]]; then

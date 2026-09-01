@@ -3,8 +3,10 @@
 > **Status: preview, implemented but not production-ready.** The Inventory bundle
 > (`src/Inventory/`) owns materials, per-store stock, Specification recipes,
 > reservations, and the stock ledger. It is the deferred reservation boundary defined
-> by the Store bundle. Trade remains the catalog and commercial-order authority; Store
-> remains the authority for store acceptance and operational orders.
+> by the Store bundle. Trade remains the commercial-order authority; Store remains the
+> authority for store acceptance and operational orders. The approved catalog target
+> moves Product/Specification ownership to Store; Inventory continues to use scalar
+> Specification UUIDs and does not need a cross-module entity relation.
 >
 > `INVENTORY_ENABLED` MUST remain `false` outside isolated development and testing.
 > Confirmed reservations currently expire without a fulfillment-driven consume flow,
@@ -48,7 +50,7 @@ The bundle owns:
 - The material master, including both raw materials and finished goods.
 - Per-store on-hand and reserved quantities.
 - The per-stock negative-inventory policy.
-- The current, unique recipe for a Trade Specification.
+- The current, unique recipe for a Specification UUID.
 - Reservation, release, consumption, adjustment, and audit-ledger records.
 - Idempotent consumption and publication of Inventory integration events.
 - Inventory availability checks when inventory is globally enabled.
@@ -64,7 +66,7 @@ The bundle does not own:
 
 The initial Inventory phase MUST NOT:
 
-- Create a second SKU catalog or duplicate Trade Specification fields.
+- Create a second SKU catalog or duplicate catalog Specification fields.
 - Create stock rows as a side effect of a read request.
 - Treat a broker as exactly-once, ordered globally, or transactionally coupled to SQL.
 - Use distributed transactions between Store and Inventory.
@@ -78,7 +80,7 @@ The initial Inventory phase MUST NOT:
 
 | Concern | Owner | Inventory Responsibility |
 |---|---|---|
-| Product and Specification catalog | Trade | Reference Specification UUID only |
+| Product and Specification catalog | Store (target) | Reference Specification UUID only |
 | Commercial order and payment state | Trade + Payment | Consume immutable Store request only |
 | Store identity and acceptance | Store | Reference Store UUID only |
 | Material master | Inventory | Authoritative |
@@ -103,8 +105,8 @@ Inventory references adjacent modules through UUIDs and immutable snapshots only
 | Specification | `specificationUuid` string(36) | `ManyToOne Specification` |
 | Store reservation | `reservationId` string(36) | Cross-module entity relation |
 
-The Store-provided `catalogReference` is the Trade Specification UUID. Inventory never
-loads Trade tables while reserving inventory. This preserves a future extraction path.
+The Store-provided `catalogReference` is the Specification UUID. Inventory never loads
+catalog tables while reserving inventory. This preserves a future extraction path.
 
 ### 2.2 Globally Optional, Locally Enforced
 
@@ -195,7 +197,7 @@ in a global order.
 |---|---|---|
 | `Material` | `inventory_material` | Raw material or finished-good master data |
 | `Stock` | `inventory_stock` | Per-store material balance and local policy |
-| `SpecificationRecipe` | `inventory_specification_recipe` | One current recipe per Trade Specification UUID |
+| `SpecificationRecipe` | `inventory_specification_recipe` | One current recipe per catalog Specification UUID |
 | `RecipeLine` | `inventory_recipe_line` | Material quantity required for one Specification unit |
 | `Reservation` | `inventory_reservation` | Idempotent request-level reservation aggregate |
 | `ReservationLine` | `inventory_reservation_line` | Immutable material demand and reserved quantities |
@@ -255,13 +257,13 @@ There is deliberately no public `setOnHandQuantity()` or `setReservedQuantity()`
 
 ### 3.4 SpecificationRecipe And RecipeLine
 
-`SpecificationRecipe` owns the current bill of materials for one Trade Specification.
+`SpecificationRecipe` owns the current bill of materials for one catalog Specification.
 It stores no Trade entity relation.
 
 | Field | Type | Rules |
 |---|---|---|
 | `uuid` | string(36) | External recipe identity |
-| `specificationUuid` | string(36) | Unique current Trade Specification reference |
+| `specificationUuid` | string(36) | Unique current catalog Specification reference |
 | `status` | string(20) | `active` or `inactive` |
 | `lines` | OneToMany RecipeLine | At least one active line |
 | `createdAt`, `updatedAt` | datetime immutable | Audit timestamps |
@@ -363,7 +365,7 @@ Store publishes `inventory.reservation.requested.v1` only when `INVENTORY_ENABLE
   "items": [
     {
       "lineId": "trade-order-item-uuid",
-      "catalogReference": "trade-specification-uuid",
+      "catalogReference": "specification-uuid",
       "quantity": "2.000000"
     }
   ],

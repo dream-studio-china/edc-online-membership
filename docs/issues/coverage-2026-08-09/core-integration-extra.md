@@ -129,8 +129,8 @@ The System controllers (`EntityController`, `RouterController`) were only unit-t
 
 - **Location:** `src/Core/EventListener/OpenApiEnricherListener.php:259-262` (`str_starts_with($opId, 'system-')`, `'wechat-'`, `'store-'`).
 - **Description:** Nelmio prefixes operationIds with the HTTP method (`get_store-orders-list`, `post_store-orders-accept`), so the anchored `str_starts_with` checks never fire. The unanchored `manage|app|public` regex and the `str_contains(…, 'sys-auth')` check still work, which is why `system-*`/`wechat-*` endpoints with explicit OA `tags` survive. Store endpoints (no explicit OA tags, no META entry) end up with **no tag at all**.
-- **Impact:** `/api/v1/store/stores/{scopeId}/orders…` (list/detail/accept/reject/fulfill) have empty `tags` in the enriched spec → missing module tag in the docs UI.
-- **Reproduction:** `GET /api/doc.json` → `paths['/api/v1/store/stores/{scopeId}/orders/{orderUuid}/accept']['post']['tags'] === []`.
+- **Impact:** `/api/v1/store/{scopeId}/orders…` (list/detail/accept/reject/fulfill) have empty `tags` in the enriched spec → missing module tag in the docs UI.
+- **Reproduction:** `GET /api/doc.json` → `paths['/api/v1/store/{scopeId}/orders/{orderUuid}/accept']['post']['tags'] === []`.
 - **Proposed fix:** strip the method prefix before detection (e.g. `preg_replace('/^(get|post|put|delete|patch)_/', '', $opId)`), or use `str_contains` for the prefix checks.
 - **Tests:** `testStoreOrderEndpointsAreLeftUntaggedCurrently` (regression, pass); `testStoreOrderEndpointsShouldBeTaggedStore` (correct-behavior, **skipped**).
 

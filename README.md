@@ -12,40 +12,41 @@ The application is a layered Symfony API: controllers compose trait-based view m
 
 ```mermaid
 flowchart TB
+    Client["Clients<br/>Admin · App · Webhook"]
+    Api["Symfony HTTP API<br/>Controllers · View mixins · OpenAPI"]
     Core["<b>Core Framework</b><br/>BaseService · View Mixins · Expression→DQL"]
 
     Identity["Identity<br/>Auth · JWT · OTP · User"]
-    Common["Common<br/>CMS (7 entities)"]
+    Authorization["Authorization<br/>RBAC · scopes · field grants"]
+    Common["Common<br/>CMS · content"]
     Storage["Storage<br/>Media drivers"]
-    Wechat["Wechat<br/>Login + Pay"]
-    Wallet["Wallet<br/>Balance · Transfer · Voucher"]
-    Payment["Payment<br/>Invoice · Gateway · Adjustment"]
-    Trade["Trade<br/>Order · Pricing"]
-    Store["Store<br/>Multi-store Outbox"]
-    Inventory["Inventory<br/>Stock · Reservation"]
-    Promotion["Promotion<br/>DSL engine"]
-    Settlement["Settlement<br/>Allocation · Finality"]
-    Exchange["Exchange (design)<br/>Rates · Pool · Mint"]
+    Promotion["Promotion<br/>Pricing rules"]
+    Trade["Trade<br/>Orders · pricing"]
+    Fulfilment["Store & inventory<br/>Multi-store · stock"]
+    Payments["Payment & wallet<br/>Invoices · balances"]
+    Wechat["Wechat<br/>Login · Pay"]
+    Settlement["Settlement<br/>Allocation · finality"]
+    Exchange["Exchange (design)<br/>Rates · pool"]
+    Messaging["Async delivery<br/>Outbox · Messenger · Inbox"]
+    Persistence["Persistence & runtime<br/>Doctrine · MySQL · Redis"]
 
-    Identity --> Core
-    Common --> Core
-    Storage --> Core
-    Storage --> Common
-    Wechat --> Core
-    Wechat --> Identity
-    Wallet --> Core
-    Wallet --> Identity
-    Payment --> Core
-    Payment --> Wallet
-    Trade --> Core
-    Trade --> Payment
-    Trade --> Store
-    Trade --> Inventory
-    Promotion --> Core
+    Client --> Api --> Core
+    Core --> Identity
+    Core --> Common
+    Core --> Promotion
+    Identity --> Authorization
+    Identity --> Wechat
+    Common --> Storage
+    Common -. "metadata field-grant pilot" .-> Authorization
     Promotion --> Trade
-    Settlement --> Core
-    Settlement --> Wallet
-    Exchange -. "design" .-> Core
+    Trade --> Fulfilment
+    Trade --> Payments --> Settlement
+    Fulfilment -. "scoped decisions" .-> Authorization
+    Payments -. "future economy" .-> Exchange
+    Trade -. events .-> Messaging
+    Fulfilment -. events .-> Messaging
+    Settlement -. events .-> Messaging
+    Messaging --> Persistence
 ```
 
 Business operations follow a consistent request-to-transaction boundary. For example,
@@ -164,7 +165,7 @@ clear extension points for domain-specific behavior.
 - **Transactional commerce workflows**: orders, inventory reservations, invoices, payment gateways, wallet adjustments, and settlement allocation.
 - **Financial auditability**: idempotent transfers, voucher-backed deposits and withdrawals, internal balance verification and reconciliation, and versioned settlement rules.
 - **Extensible integrations**: JWT and OTP authentication, WeChat login and payment, local or Qiniu media storage, and a promotion-rule DSL.
-- **Access control and audit**: role-protected management endpoints, safeguards for privileged dynamic queries, and bounded audit logging for mutating requests.
+- **Access control and audit**: `ROLE_ADMIN`-protected management endpoints plus an independent **Authorization** module (scoped RBAC `global|store`, portable `UNIQUE(user,role,scope_type,scope_key)`, strict field grants, append-only audit, `AuthorizationVoter`). Permission catalogue is seeded and read-only; Content `metadata` field-grant pilot (`common:content:metadata`, no `store_uuid`) is enforced via `FieldAuthorizationService`; `Assignment.scopeKey` is internal (`scopeUuid ?? ''`) with `getScopeKey()`/`syncScopeKey()` lifecycle, no public setter.
 - **Reliable asynchronous processing**: Messenger workers and an outbox/inbox pattern for cross-module events.
 - **Production diagnostics**: OpenAPI documentation, readiness and liveness probes, Prometheus metrics, and endpoint rate limiting.
 - **Enforced quality checks**: PHPUnit, PHPStan Level 8, Rector type rules, and a 90% line-coverage threshold in CI.
@@ -189,8 +190,9 @@ See `composer.json` for the full dependency list.
 ## Project Structure
 
 The repository is a modular monolith: `src/` holds the application code (Core framework
-plus business modules such as Common, Identity, Trade, Payment, Wallet, Storage, and more),
+plus business modules such as Common, Identity, Trade (orders via Store catalog), Store (catalog, membership, StoreOrder), Payment, Wallet, Storage, Authorization, and more),
 alongside `config/`, `migrations/`, `tests/`, `docs/`, and the Docker/Compose files.
+See [Authorization Setup](docs/manual/authorization.md) for how to seed and operate Authorization.
 
 For the full, detailed directory tree (down to controllers, services, entities, and
 repositories for every module), see
@@ -247,14 +249,15 @@ MySQL, Redis, Mailpit). The app runs on the configured local port.
 |--------|---------|--------------|
 | **Core** | API foundation | REST controller support, shared service behavior, view mixins, expression queries |
 | **Common** | CMS and settings | Categories, tags, content, media, pages, comments, and key-value settings |
-| **Trade** | Commerce | Products, specifications, order workflow, and price calculation |
-| **Store** | Multi-store operations | Store membership and reliable order-event handoff |
+| **Trade** | Commerce | Orders, order workflow and price calculation over Store catalog via `CatalogResolver` (scalar `specificationUuid` snapshots) |
+| **Store** | Multi-store operations | Store membership, reliable order-event handoff and Product/Specification catalog (global `store = NULL` and store-private) |
 | **Inventory** | Stock control | Per-store stock, reservations, recipes, and stock ledger policies |
 | **Payment** | Invoice orchestration | Invoice lifecycle, gateway abstraction, payment adjustments, webhooks |
 | **Wallet** | Balance operations | Transfers, deposits, withdrawals, vouchers, and reconciliation |
 | **Settlement** | Allocation and finality | Versioned rules, auditable allocations, and wallet posting |
 | **Promotion** | Pricing rules | Promotion DSL, calculation strategies, and campaign routing |
 | **Identity** | Authentication | JWT, OTP, registration, user profiles, and administration |
+| **Authorization** | Authorization | Scoped RBAC (`global`/`store`), Store-scoped grants, strict field grants, audit log, cache-backed `AuthorizationService` |
 | **Storage** | Media uploads | Local and Qiniu Kodo storage drivers |
 | **Wechat** | WeChat integration | Login and WeChat Pay V3 |
 | **Exchange** *(design)* | Points economy | Exchange-rate and liquidity-pool design; not implemented |
@@ -317,6 +320,7 @@ and **[Core Usage — Development Manual](docs/manual/core-usage.md)** for pract
 - **[Database & Migrations](docs/manual/database-and-migrations.md)** — Doctrine conventions and portable migration workflow
 - **[Integration Events](docs/manual/integration-events.md)** — Transactional outbox/inbox, idempotent consumers, retries, and scheduler operation
 - **[Bundle Design Docs](docs/design/bundles/)** — Design notes for implemented and design-stage modules
+- **[Authorization Design](docs/design/bundles/authorization.md)** — Independent Authorization module design, migration path, Content pilot, field grants, and acceptance criteria
 - **[Runbooks](docs/runbooks/)** — Per-module operational procedures
 - **[Testing & Production Validation](docs/testing/crud-skeleton-production/README.md)** — Required validation evidence by change type
 - **[OpenAPI Specification](docs/openapi/endpoints.yaml)** and **[Order & Payment Flow](docs/openapi/order-payment-flow.md)** — API reference and consumer workflow

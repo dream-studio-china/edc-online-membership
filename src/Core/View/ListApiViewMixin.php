@@ -2,6 +2,7 @@
 
 namespace App\Core\View;
 
+use App\Core\Query\DqlExpression;
 use App\Core\Service\BaseService;
 use Doctrine\Common\Collections\ArrayCollection;
 use OpenApi\Attributes as OA;
@@ -11,10 +12,10 @@ use Symfony\Component\Routing\Attribute\Route;
 trait ListApiViewMixin
 {
     /**
-     * @param array<string, mixed>|\Doctrine\ORM\QueryBuilder|null $filter
-     * @return array<string, mixed>|\Doctrine\ORM\QueryBuilder|null
+     * @param array<string, mixed>|\Doctrine\ORM\QueryBuilder|DqlExpression|null $filter
+     * @return array<string, mixed>|\Doctrine\ORM\QueryBuilder|DqlExpression|null
      */
-    protected function listFilter(array|\Doctrine\ORM\QueryBuilder|null $filter = null)
+    protected function listFilter(array|\Doctrine\ORM\QueryBuilder|DqlExpression|null $filter = null)
     {
         /** list filter for list entities */
         return $filter;
@@ -55,12 +56,17 @@ trait ListApiViewMixin
     #[Route('', name: 'list', methods: ['GET'])]
     public function listAction(): Response
     {
-        $service = $this->service;
-        $filter = $this->listFilter($this->commonFilter());
-        $entities = $this->listProcessor(
-            $service->list($filter, null, false)
-        );
-        $entities = $this->listResponses($entities);
-        return $this->success($entities);
+        try {
+            $this->authorizeApiAction('list');
+            $service = $this->service;
+            $filter = $this->listFilter($this->resolvedCommonFilter());
+            $entities = $this->listProcessor(
+                $service->list($filter, null, false)
+            );
+            $entities = $this->listResponses($entities);
+            return $this->success($entities);
+        } catch (\Symfony\Component\Security\Core\Exception\AccessDeniedException $exception) {
+            return $this->warning($exception->getMessage() ?: ApiViewMessages::ACCESS_DENIED, 403, '', 403);
+        }
     }
 }

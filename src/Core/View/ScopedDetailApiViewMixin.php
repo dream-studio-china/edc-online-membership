@@ -15,10 +15,15 @@ trait ScopedDetailApiViewMixin
     #[Route('/{id}', name: 'detail', requirements: ['id' => '\\d+|[0-9a-fA-F-]{36}'], methods: ['GET'])]
     public function detailAction(string $scopeId, string $id): Response
     {
-        $entity = $this->service->get($this->scopedDetailFilter($scopeId, $id), false);
+        try {
+            $this->authorizeApiAction('detail');
+            $entity = $this->service->get($this->scopedDetailFilter($scopeId, $id), false);
 
-        return $entity === null
-            ? $this->warning(ApiViewMessages::ENTITY_NOT_FOUND, 404, '', 404)
-            : $this->success($entity);
+            return $entity === null
+                ? $this->warning(ApiViewMessages::ENTITY_NOT_FOUND, 404, '', 404)
+                : $this->success($entity);
+        } catch (\Symfony\Component\Security\Core\Exception\AccessDeniedException $exception) {
+            return $this->warning($exception->getMessage() ?: ApiViewMessages::ACCESS_DENIED, 403, '', 403);
+        }
     }
 }
