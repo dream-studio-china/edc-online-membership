@@ -184,13 +184,13 @@ Every relationship MUST declare:
 
 ## 7. Special Patterns
 
-### 7.1 UUID for External And Cross-Boundary Identity
+### 7.1 Optional UUID for External And Cross-Boundary Identity
 
 Entities retain an integer auto-increment `id` for local Doctrine relations, joins, and
 storage efficiency. A UUID is a separate, stable identity for an entity that leaves its
 bounded context.
 
-An entity MUST have a UUID when it is any of the following:
+An entity SHOULD have a UUID when it is any of the following:
 
 - Addressable through a public API, URL, webhook, or third-party integration.
 - Included in a cross-module or cross-service event payload.
@@ -204,12 +204,18 @@ still receive a UUID.
 
 ```text
 Local database key / Doctrine relation: integer id
-Public API path and response identity: uuid
+Public API path and response identity: integer id, or UUID when the entity exposes one
 Cross-module/service reference: uuid or immutable business key
 Event aggregateId, sourceId, correlationId: uuid
 ```
 
-New cross-boundary entities use a canonical UUID string alongside the integer `id`:
+Core CRUD routes use the `{id}` path parameter for both forms. Digit-only values are
+local IDs; canonical UUID values are resolved against the unique `uuid` field. The two
+forms are unambiguous and must not be sent as separate request values. A resource that
+has no UUID field accepts only its integer ID.
+
+New cross-boundary entities use a canonical UUID string alongside the mandatory integer
+`id`:
 
 ```php
 #[ORM\Column(type: 'string', length: 36, unique: true)]
@@ -357,6 +363,6 @@ Validation is invoked in `BaseService::update()` via Symfony Validator. Entities
 | Injecting services into Entity | Entities MUST NOT use DI |
 | Direct `$em->persist()` in Entity | Use Service layer |
 | Mutable `DateTime` | Use `DateTimeImmutable` |
-| Exposing internal IDs as external identifiers | Use UUID for external-facing references |
+| Using a local ID as a durable cross-module reference | Use UUID or a documented immutable business key |
 | Storing money as float/decimal in code | Store as int (cents), convert at API boundary |
 | Circular references in JSON without handling | Use `CircularReferenceHandler` or serializer groups |
