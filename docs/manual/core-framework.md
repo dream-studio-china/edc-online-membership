@@ -115,8 +115,8 @@ use ApiView, DetailApiViewMixin, ListApiViewMixin,
 |-------|----------|---------|----------|
 | `ListApiViewMixin` | `/` (name `list`) | GET | Calls `service->list($this->listFilter($this->commonFilter()), null, false)`, then `listProcessor` / `listResponses`. |
 | `DetailApiViewMixin` | `/{id}` (name `detail`) | GET | `mixIdToCommonFilter`, then `detailFilter`, `detailProcessor`, `detailResponse`. 404 when missing. |
-| `CreateApiViewMixin` | `/` (name `create`) | POST | Accepts a single object or array (batch). Enforces `requiredCreateProperties` / `acceptedCreateProperties`, applies `defaultCreateValues`, `processCreateContent`, `processEntity`, `afterCreated`. Batch/transactional unless `@partial`. |
-| `UpdateApiViewMixin` | `/{id}` (PUT, `update`); `/batch-update` (POST) | PUT/POST | Single update by id plus batch/upsert mode via `@mode` and `@basis`. Enforces `requiredUpdateProperties` / `acceptedUpdateProperties`. |
+| `CreateApiViewMixin` | `/` (name `create`) | POST | Accepts a single object or array (batch). Enforces `requiredCreateProperties` / `acceptedCreateProperties`, applies `defaultCreateValues`, `processCreateContent`, `processEntity`, `afterCreated`. Batch/transactional unless `@partial`. Supports `jsonSchemas` (see below) — validated before `processCreateContent`. |
+| `UpdateApiViewMixin` | `/{id}` (PUT, `update`); `/batch-update` (POST) | PUT/POST | Single update by id plus batch/upsert mode via `@mode` and `@basis`. Enforces `requiredUpdateProperties` / `acceptedUpdateProperties`. Supports `jsonSchemas` — validated before `processUpdateContent`/`processCreateContent`. |
 | `DeleteApiViewMixin` | `/{id}` (name `delete`) | DELETE | `deletionFilter`, `service->get`, then `service->remove`; returns `204` on success, 404 when missing. |
 
 #### `CreateApiViewMixin` key points
@@ -207,6 +207,31 @@ Constant/helper set for shared user-facing messages:
 | `TRANSITION_CANNOT_APPLY` | `Current transition cannot be applied.` |
 | `propertyRequired($p)` | `"{P} is required"` |
 | `propertyCannotBeEmpty($p)` | `"{P} cannot be empty."` |
+
+### `src/Core/Validator/JsonSchemaValidator.php`
+
+Generic JSON Schema validator (`justinrainbow/json-schema` `^6.11`). Bundle schemas live under `src/{Bundle}/Resources/JsonSchema/{Name}.json` (e.g. `Store/StoreAddress`).
+
+| Member | Purpose |
+|--------|---------|
+| `validate(mixed $data, string $schemaName)` | Load `src/{Bundle}/Resources/JsonSchema/{Name}.json` via `%kernel.project_dir%`, coerce PHP arrays to objects, run draft-07 validation, throw `JsonSchemaViolationException` on failure (`property: message`). `null` is skipped (field is nullable). |
+| `validateInline(mixed $data, array $inlineSchema)` | Validate against an inline schema array. |
+
+`Store` bundle ships `StoreAddress`, `StoreContact`, `StoreSettings` schemas (see `store.md §5.1.1`); `Core` owns only the validator. Register `App\Core\Validator\JsonSchemaValidator` as `public: true` so `Create/UpdateApiViewMixin` can fetch it from the container (`serviceContainer`/`container`).
+
+#### `jsonSchemas` on controllers
+
+Any controller using `CreateApiViewMixin`/`UpdateApiViewMixin` may declare:
+
+```php
+protected array $jsonSchemas = [
+    'address'  => 'Store/StoreAddress',
+    'contact'  => 'Store/StoreContact',
+    'settings' => 'Store/StoreSettings',
+];
+```
+
+The mixins call `validateJsonSchemas($content)` — for each declared field present and non-null — **before** `processCreateContent`/`processUpdateContent`. Violations become `400` via `ValidatorException`→`warning()`. Unknown keys are rejected when the schema sets `additionalProperties: false` (Store `address`/`contact`), while `StoreSettings` keeps `additionalProperties:true` for forward compatibility.
 
 ---
 
