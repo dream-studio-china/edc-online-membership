@@ -70,11 +70,12 @@ Registers `GET /` and provides paginated list endpoint:
 
 **File**: `src/Core/View/DetailApiViewMixin.php`
 
-Registers `GET /{id}` (numeric ID required):
+Registers `GET /{id}`. The Core identifier lookup accepts a digit-only local ID or a
+canonical UUID when the entity has a mapped `uuid` field:
 
 | Route | Method | Action |
 |-------|--------|--------|
-| `GET /{id}` | detailAction | Single entity by ID |
+| `GET /{id}` | detailAction | Single entity by numeric ID or UUID |
 
 **Hook Methods**:
 
@@ -124,7 +125,7 @@ Registers two routes:
 
 | Route | Method | Action |
 |-------|--------|--------|
-| `PUT /{id}` | updateAction | Single entity update |
+| `PUT /{id}` | updateAction | Single entity update by numeric ID or UUID |
 | `POST /batch-update` | batchUpdateAction | Batch upsert (create or update) |
 
 **Query Parameters**: `@mode=mixed|strict`, `@basis=field1,field2`, `@partial`, `@transform`
@@ -166,7 +167,7 @@ Registers `DELETE /{id}`:
 
 | Route | Method | Action |
 |-------|--------|--------|
-| `DELETE /{id}` | deleteAction | Remove entity |
+| `DELETE /{id}` | deleteAction | Remove entity by numeric ID or UUID |
 
 **Hook Methods**:
 
@@ -205,9 +206,13 @@ For entities governed by Symfony Workflow state machines:
 | Route | Method | Action |
 |-------|--------|--------|
 | `GET /todo` | todoAction | List entities with available transitions |
-| `GET /{id}/transitions` | availableTransitionsAction | Get enabled transitions for an entity |
-| `POST /{id}/do/{transition}` | doTransitionAction | Execute a workflow transition |
-| `PUT /{id}/status-reset` | resetMarkingAction | Reset state machine marking (admin only) |
+| `GET /{id}/transitions` | availableTransitionsAction | Get enabled transitions for an entity by numeric ID |
+| `POST /{id}/do/{transition}` | doTransitionAction | Execute a workflow transition by numeric ID |
+| `PUT /{id}/status-reset` | resetMarkingAction | Reset state machine marking by numeric ID (admin only) |
+
+Unlike the Detail, Update, and Delete mixins, the current workflow mixin looks up
+`['id' => $id]` directly. It does not support UUID input until it delegates to the
+Core identifier lookup and has regression coverage.
 
 **Properties** the controller MUST declare:
 - `protected $workflow;` -- the workflow service ID (e.g., `'state_machine.order'`)
