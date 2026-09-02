@@ -80,6 +80,7 @@ class OrderWorkflowListener implements EventSubscriberInterface
                 }
                 break;
             case 'complete':
+            case 'store_verify':
                 $order->setCompletedAt(new \DateTimeImmutable());
                 break;
             case 'refund':
@@ -94,7 +95,7 @@ class OrderWorkflowListener implements EventSubscriberInterface
             'cancel' => new OrderCancelledEvent($order),
             'pay' => new OrderPaidEvent($order),
             'fulfill' => new OrderFulfilledEvent($order),
-            'complete' => new OrderCompletedEvent($order),
+            'complete', 'store_verify' => new OrderCompletedEvent($order),
             'refund' => new OrderRefundedEvent($order),
             default => null,
         };
