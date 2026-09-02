@@ -340,7 +340,7 @@
   <span class="md-ellipsis">
     
   
-    Development Manual
+    开发手册
   
 
     
@@ -356,7 +356,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    Development Manual
+    开发手册
   
 
           </label>
@@ -376,7 +376,7 @@
   <span class="md-ellipsis">
     
   
-    Manual Index
+    手册索引
   
 
     
@@ -404,7 +404,7 @@
   <span class="md-ellipsis">
     
   
-    Getting Started
+    入门
   
 
     
@@ -460,7 +460,7 @@
   <span class="md-ellipsis">
     
   
-    Project Structure
+    项目结构
   
 
     
@@ -516,7 +516,7 @@
   <span class="md-ellipsis">
     
   
-    Core Usage
+    核心用法
   
 
     
@@ -544,7 +544,7 @@
   <span class="md-ellipsis">
     
   
-    Query System
+    查询系统
   
 
     
@@ -600,7 +600,7 @@
   <span class="md-ellipsis">
     
   
-    Development Workflow
+    开发流程
   
 
     
@@ -2842,7 +2842,7 @@
 <h3 id="bug-3-options">BUG-3 — 退款将原始请求正文作为网关 <code>$options</code> 转发（中/低）<a class="headerlink" href="#bug-3-options" title="Permanent link">&para;</a></h3>
 <ul>
 <li>位置：<code>src/Payment/Controller/Manage/InvoiceController.php:118</code>（<code>... $content</code> 作为选项）→ <code>src/Payment/Service/InvoiceService.php:264</code> (<code>$gateway-&gt;refund(..., $options)</code>)。</li>
-<li>描述：完整的请求正文作为 <code>$options</code> 传递到网关退款调用。客户端可以在正文中包含提供者选项，例如 <code>refundId</code>； <code>MockGateway</code> 直接使用 <code>$options['refundId']</code> 作为幂等键，因此调用者可以覆盖提供者退款引用。</li>
+<li>说明：完整的请求正文作为 <code>$options</code> 传递到网关退款调用。客户端可以在正文中包含提供者选项，例如 <code>refundId</code>； <code>MockGateway</code> 直接使用 <code>$options['refundId']</code> 作为幂等键，因此调用者可以覆盖提供者退款引用。</li>
 <li>影响：不受信任的输入到达网关选项；退款幂等性密钥由攻击者控制（对 <code>MockGateway</code> 的影响较小，对于尊重选项密钥的真实网关来说是潜在的）。</li>
 <li>复制：<code>POST /api/v1/manage/invoices/{id}/refund</code> 和 <code>{"amount": 100, "reason": "x", "refundId": "spoofed-id"}</code> — 存储的 <code>extraData</code> 和返回的 <code>refundId</code> 变成 <code>spoofed-id</code>。</li>
 <li>建议的修复：将转发到<code>InvoiceService::refund()</code>（和<code>pay()</code>）中网关的选项列入白名单，或在转发之前剥离仅正文键（<code>amount</code>、<code>reason</code>）。</li>

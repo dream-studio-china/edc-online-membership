@@ -340,7 +340,7 @@
   <span class="md-ellipsis">
     
   
-    Development Manual
+    开发手册
   
 
     
@@ -356,7 +356,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    Development Manual
+    开发手册
   
 
           </label>
@@ -376,7 +376,7 @@
   <span class="md-ellipsis">
     
   
-    Manual Index
+    手册索引
   
 
     
@@ -404,7 +404,7 @@
   <span class="md-ellipsis">
     
   
-    Getting Started
+    入门
   
 
     
@@ -460,7 +460,7 @@
   <span class="md-ellipsis">
     
   
-    Project Structure
+    项目结构
   
 
     
@@ -516,7 +516,7 @@
   <span class="md-ellipsis">
     
   
-    Core Usage
+    核心用法
   
 
     
@@ -544,7 +544,7 @@
   <span class="md-ellipsis">
     
   
-    Query System
+    查询系统
   
 
     
@@ -600,7 +600,7 @@
   <span class="md-ellipsis">
     
   
-    Development Workflow
+    开发流程
   
 
     
@@ -2794,7 +2794,7 @@
   预订 (79–82)，取消 <code>awaiting_inventory</code> 订单发布
   <code>inventory.reservation.release.requested.v1</code> 具有完整的相关负载 (79–91)。</li>
 <li><code>TradeOrderCancelledHandlerConcurrencyTest.php</code> (1 次测试) — 内的第二个 <code>findOneBy</code>
-  交易返回消费事件 → 提前返回 (54)。</li>
+  交易返回消费事件→提前返回（54）。</li>
 <li><code>InventoryReservationOutcomeCoverageTest.php</code>（19 次测试）— 已确认：无效信封 (35)，
   缺少 <code>confirmedAt</code> (39)，因未知订单/商店不匹配/tradeOrderUuid 而被忽略
   不匹配/reservationId 不匹配/非<code>awaiting_inventory</code> 状态 (63)。拒绝：无效
@@ -2802,7 +2802,7 @@
   忽略未知订单/商店不匹配/终端状态 (63)。已发布：无效
   信封 / 缺少 <code>releasedAt</code> / 缺少 <code>reservationId</code> (32)，非 UUID 预订 ID
   消耗了。</li>
-<li><code>InventoryReservationOutcomeConcurrencyTest.php</code>（3 个测试）— 事务内尽早重新重复数据删除
+<li><code>InventoryReservationOutcomeConcurrencyTest.php</code>（3 次测试）— 事务内尽早重新重复数据删除
   返回已确认 (48)、已拒绝 (48)、已释放 (40)。</li>
 <li><code>TradeOrderCreatedHandlerCoverageTest.php</code>（9个测试）——缺少商店快照/快照
   没有 <code>uuid</code> (47)，冲突取消墓碑 → <code>LogicException</code> (65)，重复
@@ -2855,7 +2855,7 @@
   更深层次的失败（<code>recordRejected()</code> 中缺少 <code>orderUuid</code>、空/无效项、冲突
   snapshot) 抛出 <strong>inside</strong> <code>wrapInTransaction</code>，这会回滚已经持久化的
   <code>StoreConsumedEvent</code>。因此，该事件永远不会被标记为已消耗，并且会重试 (3×)
-  在<code>failed</code>运输机着陆之前成功的机会。对比取消处理程序，
+  在<code>failed</code>交通工具着陆之前成功的机会。对比取消处理程序，
   验证完整的信封（type/version/eventId/payload/orderUuid/storeUuid/cancelledAt/
   时间戳）在任何持久性之前。</li>
 <li><strong>影响：</strong> 单个格式错误但结构有效的 <code>trade.order.created</code> 事件会阻止

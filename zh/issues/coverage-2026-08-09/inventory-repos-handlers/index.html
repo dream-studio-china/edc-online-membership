@@ -340,7 +340,7 @@
   <span class="md-ellipsis">
     
   
-    Development Manual
+    开发手册
   
 
     
@@ -356,7 +356,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    Development Manual
+    开发手册
   
 
           </label>
@@ -376,7 +376,7 @@
   <span class="md-ellipsis">
     
   
-    Manual Index
+    手册索引
   
 
     
@@ -404,7 +404,7 @@
   <span class="md-ellipsis">
     
   
-    Getting Started
+    入门
   
 
     
@@ -460,7 +460,7 @@
   <span class="md-ellipsis">
     
   
-    Project Structure
+    项目结构
   
 
     
@@ -516,7 +516,7 @@
   <span class="md-ellipsis">
     
   
-    Core Usage
+    核心用法
   
 
     
@@ -544,7 +544,7 @@
   <span class="md-ellipsis">
     
   
-    Query System
+    查询系统
   
 
     
@@ -600,7 +600,7 @@
   <span class="md-ellipsis">
     
   
-    Development Workflow
+    开发流程
   
 
     
@@ -2836,7 +2836,7 @@
 <ul>
 <li><strong>文件/行：</strong> <code>src/Inventory/MessageHandler/InventoryReservationRequestedHandler.php:122</code>（项目数量正则表达式<code>/^[0-9]+(?:\.[0-9]{1,6})?$/</code>）与<code>src/Inventory/Service/Quantity.php:20-22</code>（14位整数上限，<code>decimal(20,6)</code>）。</li>
 <li><strong>描述：</strong> 处理程序的数量正则表达式允许任意长的整数部分。 <code>Quantity::normalize()</code> 将整数部分限制为 14 位并抛出 <code>InvalidArgumentException: Quantity exceeds decimal(20, 6).</code>。发送 <code>quantity: '123456789012345'</code> 的生产者传递 <code>validateEnvelope()</code>，然后服务在处理程序的事务中抛出异常，导致消息失败（并且根据 Bug #3，关闭 EM）。</li>
-<li><strong>影响：</strong>低；语法上有效但超出范围的数量会成为永远重试的有害消息，而不是被信封验证器拒绝。</li>
+<li><strong>影响：</strong> 低；语法上有效但超出范围的数量会成为永远重试的有害消息，而不是被信封验证器拒绝。</li>
 <li><strong>复制（集成探针）：</strong>带有 <code>quantity = '123456789012345'</code> 的请求消息通过 <code>validateEnvelope()</code>，然后处理程序失败并返回 <code>InvalidArgumentException: Quantity exceeds decimal(20, 6).</code>。</li>
 <li><strong>建议的修复：</strong> 绑定处理程序正则表达式中的数字，例如<code>/^[0-9]{1,14}(?:\.[0-9]{1,6})?$/</code>，或对 <code>validateEnvelope()</code> 内的每个项目调用 <code>Quantity::normalize()</code>，以便预先拒绝超出范围的数量。</li>
 </ul>
