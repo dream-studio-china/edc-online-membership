@@ -29,10 +29,10 @@ final class StoreController extends RestController
     protected array $requiredCreateProperties = ['code', 'name', 'timezone'];
 
     /** @var list<string> */
-    protected array $acceptedCreateProperties = ['code', 'name', 'timezone', 'contact', 'address', 'settings'];
+    protected array $acceptedCreateProperties = ['code', 'name', 'timezone', 'currency', 'contact', 'address', 'settings'];
 
     /** @var list<string> */
-    protected array $acceptedUpdateProperties = ['name', 'timezone', 'contact', 'address', 'settings'];
+    protected array $acceptedUpdateProperties = ['name', 'timezone', 'currency', 'contact', 'address', 'settings'];
 
     /** @var array<string, string> JSON field → bundle schema */
     protected array $jsonSchemas = [
@@ -133,6 +133,14 @@ final class StoreController extends RestController
                 new \DateTimeZone($content['timezone']);
             } catch (\Exception) {
                 throw new \InvalidArgumentException('timezone must be a valid timezone.');
+            }
+        }
+        if (array_key_exists('currency', $content)) {
+            if (!is_string($content['currency']) || trim($content['currency']) === '') {
+                throw new \InvalidArgumentException('currency must be a non-empty string.');
+            }
+            if (!preg_match('/^[A-Za-z0-9._-]{1,32}$/', $content['currency'])) {
+                throw new \InvalidArgumentException('currency must be 1-32 chars of letters, digits, ., _, -.');
             }
         }
         foreach (['contact', 'address', 'settings'] as $field) {
