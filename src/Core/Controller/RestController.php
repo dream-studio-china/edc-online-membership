@@ -194,8 +194,15 @@ class RestController extends AbstractController
         if (method_exists($entity, $getter = 'get' . ucfirst(trim($attributeChain[0])))) {
             if ($next = $entity->$getter()) {
                 foreach ($next instanceof \Traversable ? $next : [$next] as $node) {
-                    // expand
-                    $node->__metadata = $node;
+                    // expand - use clone to avoid recursion (FlatNormalizer will include __metadata as full object)
+                    if (is_object($node) && !property_exists($node, '__metadata')) {
+                        $node->__metadata = clone $node;
+                    } elseif (is_object($node)) {
+                        // already expanded, avoid overwriting with self-reference
+                        if ($node->__metadata === $node) {
+                            $node->__metadata = clone $node;
+                        }
+                    }
 
                     // recursive
                     $copy = $attributeChain;
@@ -213,10 +220,21 @@ class RestController extends AbstractController
     {
         $request = $this->getRequestStack()->getCurrentRequest();
 
-        // Expend Object
+        // Expend Object - supports JSON array '["specifications"]', single value 'specifications' and comma-separated 'a,b'
         $rawExpand = $request?->query?->get('@expands', '[]') ?? '[]';
         $expands = json_decode(
             str_replace('\'', '"', (string) $rawExpand), true);
+        if (!is_array($expands) && is_string($rawExpand) && trim($rawExpand) !== '' && trim($rawExpand) !== '[]') {
+            $tmp = trim($rawExpand);
+            // strip surrounding brackets if present but not valid JSON
+            $tmp = trim($tmp, '[]');
+            $parts = array_filter(array_map('trim', explode(',', $tmp)), fn($v) => $v !== '');
+            // Remove surrounding quotes from each part
+            $parts = array_map(fn($v) => trim($v, '"\''), $parts);
+            if ($parts !== []) {
+                $expands = $parts;
+            }
+        }
         try {
             if (is_array($expands)) {
                 if ($collection && (

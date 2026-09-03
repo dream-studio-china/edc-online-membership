@@ -104,6 +104,22 @@ class FlatNormalizer implements NormalizerInterface, DenormalizerInterface, Norm
 
             // when object is a relation
             if (is_object($raw) && method_exists($raw, 'getId')) {
+                $isExpanded = property_exists($raw, '__metadata') && $raw->__metadata !== null;
+                if ($isExpanded) {
+                    try {
+                        $full = $this->decorated->normalize($raw, $format, $context);
+                        if (is_array($full)) {
+                            if (method_exists($raw, '__toString')) {
+                                $full['__toString'] = (string) $raw;
+                            }
+                            $full['__metadata'] = $full;
+                            $data[$attribute] = $full;
+                            continue;
+                        }
+                    } catch (\Throwable $e) {
+                        // fallback to reduced
+                    }
+                }
                 $data[$attribute] = $reduceTransform($raw);
                 continue;
             }
@@ -113,6 +129,24 @@ class FlatNormalizer implements NormalizerInterface, DenormalizerInterface, Norm
                 $tmp = [];
                 foreach ($raw as $o) {
                     if (is_object($o) && method_exists($o, 'getId')) {
+                        // If expanded via @expands (__metadata set), return full normalized data
+                        $isExpanded = property_exists($o, '__metadata') && $o->__metadata !== null;
+                        if ($isExpanded) {
+                            try {
+                                $full = $this->decorated->normalize($o, $format, $context);
+                                if (is_array($full)) {
+                                    if (method_exists($o, '__toString')) {
+                                        $full['__toString'] = (string) $o;
+                                    }
+                                    // Keep __metadata marker for frontend compatibility but as expanded data
+                                    $full['__metadata'] = $full;
+                                    $tmp[] = $full;
+                                    continue;
+                                }
+                            } catch (\Throwable $e) {
+                                // fallback to reduced
+                            }
+                        }
                         $tmp[] = $reduceTransform($o);
                     }
                 }
