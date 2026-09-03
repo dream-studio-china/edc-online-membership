@@ -2,6 +2,7 @@
 
 namespace App\Core\Serializer\Normalizer;
 
+use App\Core\Serializer\ExpansionMetadata;
 use Symfony\Component\Serializer\Exception\ExceptionInterface;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
@@ -76,6 +77,10 @@ class FlatNormalizer implements NormalizerInterface, DenormalizerInterface, Norm
         // For each attribute, try to read the raw value via PropertyAccessor to apply the same
         // flattening logic that the old GetSetMethodNormalizer override did.
         foreach (array_keys($data) as $attribute) {
+            // Skip internal __metadata marker to avoid recursion (self-reference would otherwise loop)
+            if ($attribute === '__metadata') {
+                continue;
+            }
             try {
                 // Use the accessor to call the getter (works for getXxx / isXxx / hasXxx)
                 $raw = $this->accessor->getValue($object, $attribute);
@@ -104,7 +109,7 @@ class FlatNormalizer implements NormalizerInterface, DenormalizerInterface, Norm
 
             // when object is a relation
             if (is_object($raw) && method_exists($raw, 'getId')) {
-                $isExpanded = property_exists($raw, '__metadata') && $raw->__metadata !== null;
+                $isExpanded = ExpansionMetadata::isMarked($raw);
                 if ($isExpanded) {
                     try {
                         $full = $this->decorated->normalize($raw, $format, $context);
@@ -129,8 +134,8 @@ class FlatNormalizer implements NormalizerInterface, DenormalizerInterface, Norm
                 $tmp = [];
                 foreach ($raw as $o) {
                     if (is_object($o) && method_exists($o, 'getId')) {
-                        // If expanded via @expands (__metadata set), return full normalized data
-                        $isExpanded = property_exists($o, '__metadata') && $o->__metadata !== null;
+                        // If expanded via @expands (__metadata is object), return full normalized data
+                        $isExpanded = ExpansionMetadata::isMarked($o);
                         if ($isExpanded) {
                             try {
                                 $full = $this->decorated->normalize($o, $format, $context);

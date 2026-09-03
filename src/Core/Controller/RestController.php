@@ -2,6 +2,7 @@
 
 namespace App\Core\Controller;
 
+use App\Core\Serializer\ExpansionMetadata;
 use App\Core\Utils\ArrayCommon;
 use App\Core\Utils\FixJSON;
 use App\Core\Utils\Math;
@@ -194,14 +195,8 @@ class RestController extends AbstractController
         if (method_exists($entity, $getter = 'get' . ucfirst(trim($attributeChain[0])))) {
             if ($next = $entity->$getter()) {
                 foreach ($next instanceof \Traversable ? $next : [$next] as $node) {
-                    // expand - use clone to avoid recursion (FlatNormalizer will include __metadata as full object)
-                    if (is_object($node) && !property_exists($node, '__metadata')) {
-                        $node->__metadata = clone $node;
-                    } elseif (is_object($node)) {
-                        // already expanded, avoid overwriting with self-reference
-                        if ($node->__metadata === $node) {
-                            $node->__metadata = clone $node;
-                        }
+                    if (is_object($node)) {
+                        ExpansionMetadata::mark($node);
                     }
 
                     // recursive
@@ -356,11 +351,13 @@ class RestController extends AbstractController
         if (is_array($paginated['paginator'])) {
             $response['paginator'] = $paginated['paginator'];
         }
-        return new Response(
-            $this->getSerializer()->serialize($response, 'json'),
-            $status,
-            ['Content-Type' => 'application/json']
-        );
+        try {
+            $serialized = $this->getSerializer()->serialize($response, 'json');
+        } finally {
+            ExpansionMetadata::clear();
+        }
+
+        return new Response($serialized, $status, ['Content-Type' => 'application/json']);
     }
 
     /**

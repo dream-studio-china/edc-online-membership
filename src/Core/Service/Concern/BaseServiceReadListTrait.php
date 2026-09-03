@@ -129,8 +129,12 @@ trait BaseServiceReadListTrait
                 $filterDql = $filterQb->getDQL();
                 // Avoid parameter name collision between commonFilter (DqlExpression) and @filter
                 $existingParams = [];
-                foreach ($qb->getParameters() as $p) {
-                    $existingParams[$p->getName()] = true;
+                if (is_object($qb) && method_exists($qb, 'getParameters')) {
+                    foreach ($qb->getParameters() as $p) {
+                        if (is_object($p) && method_exists($p, 'getName')) {
+                            $existingParams[$p->getName()] = true;
+                        }
+                    }
                 }
                 foreach ($result['parameters'] as $parameter) {
                     $oldName = $parameter->getName();
