@@ -71,7 +71,7 @@ sequenceDiagram
 
 ### コマースオーケストレーション
 
-注文の履行は、同期トランザクション境界と非同期イベント配信をまたぎます。決済分配は意図的に別に示しています。外部で確認された資金から開始され、未実装の Payment-to-Settlement イベントからは開始されません。
+注文の履行は、同期トランザクション境界と非同期イベント配信をまたぎます。ストアの受付/検証は `StoreSettings` により制御され（デフォルトは検証なし — 自動受付）、在庫予約は `INVENTORY_ENABLED` により制御されます（デフォルト `0`=無効）。決済分配は意図的に別に示しています。外部で確認された資金から開始され、未実装の Payment-to-Settlement イベントからは開始されません。
 
 ```mermaid
 sequenceDiagram
@@ -86,44 +86,49 @@ sequenceDiagram
     participant W as Wallet
     participant Se as Settlement
 
-    T->>T: ストア注文を作成（トランザクション）<br/>store_submit
-    T->>TO: 同一トランザクション：注文作成イベント
-    TO-->>S: 非同期リレーとハンドラ
+    Note over T,S: X-Store-Code → StoreContext；StoreSettings が受付/検証を制御
+    Note over S,I: INVENTORY_ENABLED=0（デフォルト）は予約をスキップ
+
+    T->>T: createOrder() store_submit（トランザクション）
+    T->>TO: trade.order.created.v1（トランザクション）
+    TO-->>S: リレー
 
     alt ストアが利用不可
-        S->>SO: 同一トランザクション：注文拒否イベント
-    else 在庫機能が無効
-        S->>SO: 同一トランザクション：注文受付イベント
-    else 在庫機能が有効
-        S->>SO: 同一トランザクション：在庫予約リクエスト
-        SO-->>I: 非同期リレーとハンドラ
-        alt 予約が拒否された
-            I->>IO: 同一トランザクション：予約拒否イベント
-        else 予約が確認された
-            I->>IO: 同一トランザクション：予約確認イベント
+        S->>SO: store.order.rejected.v1 STORE_UNAVAILABLE（トランザクション）
+    else INVENTORY_ENABLED=0 または即時受付
+        S->>S: ストア注文を受付（トランザクション）
+        S->>SO: store.order.accepted.v1（トランザクション）
+    else 予約ブランチ
+        S->>SO: inventory.reservation.requested.v1（トランザクション）
+        SO-->>I: リレー
+        I->>I: reserve()（トランザクション）— Stock ごとの allowNegativeStock
+        alt 拒否
+            I->>IO: inventory.reservation.rejected.v1（トランザクション）
+        else 確認
+            I->>IO: inventory.reservation.confirmed.v1（トランザクション）
         end
-        IO-->>S: 非同期リレーとハンドラ
-        S->>SO: 同一トランザクション：注文を受付または拒否
+        IO-->>S: リレー
+        S->>S: 結果に応じて受付 / 拒否（トランザクション）
+        S->>SO: store.order.accepted.v1 または rejected.v1（トランザクション）
     end
-    SO-->>T: 非同期リレーとハンドラ
-    T->>T: store_accept または store_reject
+    SO-->>T: リレー
+    T->>T: store_accept / store_reject
 
-    Note over T,P: 決済には store_accept と明示的な確認が必要
-    T->>P: 請求書を作成して決済（同期）
-    opt walletAmount が指定された場合
-        P->>W: 即時のウォレット控除 / 振替
+    Note over T,P: StoreSettings が要求する場合のみ store_accept が必要、その後明示的に確認
+    T->>P: 請求書を作成して決済（同期）；Wallet の wallet_balance 調整経由
+    opt walletAmount
+        P->>W: 控除振替（トランザクション）
     end
-    alt ウォレットまたは調整で全額を充当
-        P->>P: 請求書を支払済みにする
+    alt 全額調整 / ウォレット
+        P->>P: 支払済みにする
     else 外部ゲートウェイ
-        P->>P: コールバックまで請求書は支払い中
+        P->>P: コールバックまで支払い中
     end
-    P->>T: InvoicePaidEvent が注文を同期更新
+    P->>T: InvoicePaidEvent → paid（同期）
 
-    Note over P,Se: Payment-to-Settlement イベントは未実装
-    Se->>Se: 外部資金確認（非同期）
-    Se->>Se: プラン、分配、監査スナップショットを作成（トランザクション）
-    Se->>Se: Settlement outbox が分配を非同期で発行
+    Note over P,Se: Payment→Settlement イベントなし（設計上）
+    Se->>Se: 外部資金確認 → プラン/分配（トランザクション）
+    Se->>Se: outbox が分配を非同期で発行
     Se->>W: Wallet port 経由でバウチャーを入金
 ```
 
