@@ -3314,11 +3314,11 @@ monorepo：模块共享一个内核、一个 Doctrine EntityManager、一个缓�
 </tr>
 <tr>
 <td><code>Trade</code></td>
-<td>电子商务交易：订单、订单项、定价管道、支付编排；参考资料 商店目录</td>
+<td>电子商务交易：订单（从 <code>Store</code> 到 <code>X-Store-Code</code> 的 <code>currency</code>）、OrderItem、定价管道（每个订单单一货币）、支付编排；参考资料 商店目录</td>
 </tr>
 <tr>
 <td><code>Store</code></td>
-<td>多店铺运营：店铺、会员、店铺订单配送；拥有产品和规格目录（共享 <code>NULL</code> / 商店私有，<a href="../../design/store-catalog/">Store Catalog Model</a>）</td>
+<td>多店铺操作：店铺（<code>currency</code> varchar(32) DEFAULT <code>CNY</code>、积分商城<code>LIANSHENG_POINT</code>、<code>X-Store-Code</code>→<code>StoreContext</code>）、会员（自加入<code>POST /app/stores/{uuid}/membership</code>为<code>clerk</code>）、StoreOrder分发；拥有产品和规格目录（共享 <code>NULL</code> / 商店私有、<a href="../../design/store-catalog/">Store Catalog Model</a>）</td>
 </tr>
 <tr>
 <td><code>Inventory</code></td>
@@ -3500,7 +3500,7 @@ JSON 信封、分页和 <code>@display</code>/<code>@expands</code> 响应整形
 </tr>
 </tbody>
 </table>
-<p>共享语法在<code>src/Core/Parser/</code>中实现（<code>ExpressionDqlParser</code>，
+<p>共享语法在 <code>src/Core/Parser/</code> 中实现（<code>ExpressionDqlParser</code>，
 <code>ExpressionQueryBuilderAssembler</code>) 并通过执行
 <code>App\Core\Service\ExpressionService</code> 与 <code>QueryBuilderFactory</code>。相同的语法
 为服务器拥有的 <code>DqlExpression</code> (<code>src/Core/Query/DqlExpression.php</code>) 提供支持

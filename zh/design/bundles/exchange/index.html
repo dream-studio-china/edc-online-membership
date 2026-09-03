@@ -3882,7 +3882,7 @@
 <ul>
 <li>独特：<code>(base_currency, quote_currency, valid_from)</code></li>
 <li>索引：<code>(base_currency, quote_currency, valid_from)</code></li>
-<li>写入验证（通过 <code>ExchangeRateService::setRate</code>）：rate &gt; 0，base != quote，间隔有效，并且同一对<strong>无重叠间隔</strong>。</li>
+<li>写入验证（通过<code>ExchangeRateService::setRate</code>）：速率&gt; 0，基数！=报价，间隔有效，并且同一对<strong>无重叠间隔</strong>。</li>
 </ul>
 <h3 id="32-pool-poolaccount">3.2 <code>Pool</code> + <code>PoolAccount</code> — 流动性池<a class="headerlink" href="#32-pool-poolaccount" title="Permanent link">&para;</a></h3>
 <table>
@@ -4075,7 +4075,7 @@
 <li>整个调用共享一个<code>at</code>瞬间（当<code>$at</code>为空时捕获一次），因此多重查找解析是一致的。</li>
 </ol>
 <h3 id="43">4.3 只读，与事务无关<a class="headerlink" href="#43" title="Permanent link">&para;</a></h3>
-<p><code>CurrencyConverter</code> 仅执行 <code>findEffective()</code> 读取 - 它从不开始事务，从不刷新，从不写入。在调用者的事务中，它作为普通的 SELECT 参与（无嵌套、无保存点、无副作用）；调用者拥有事务边界。</p>
+<p><code>CurrencyConverter</code> 仅执行 <code>findEffective()</code> 读取 - 它从不开始事务，从不刷新，从不写入。在调用者的事务内部，它作为普通的 SELECT 参与（无嵌套、无保存点、无副作用）；调用者拥有事务边界。</p>
 <hr />
 <h2 id="5">5. 精度与金钱数学<a class="headerlink" href="#5" title="Permanent link">&para;</a></h2>
 <p>任何地方的金额都是<strong>整数小单位</strong>（分，×100）——与 <code>App\Wallet</code> 和 <code>App\Payment</code> 一致。</p>

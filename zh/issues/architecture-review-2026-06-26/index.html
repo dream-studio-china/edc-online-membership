@@ -3379,7 +3379,7 @@
 <p><strong>推荐：</strong></p>
 <p>对具有所需不变量的实体使用专用工厂/创建方法。避免公开这些实体的通用创建端点，除非控制器安全地构造它们。</p>
 <h3 id="8">8.分页没有最大限制<a class="headerlink" href="#8" title="Permanent link">&para;</a></h3>
-<p><strong>影响：</strong> 客户端可能会请求非常大的 <code>limit</code>，从而导致大量的数据库查询或大量的序列化响应。</p>
+<p><strong>影响：</strong> 客户端可能会请求非常大的 <code>limit</code>，从而导致大量数据库查询或大量序列化响应。</p>
 <p><strong>证据：</strong></p>
 <ul>
 <li><code>RestController::pagination()</code> 使用带有默认 <code>100</code> 的 <code>max(1, request limit)</code>，但不限制上限。</li>

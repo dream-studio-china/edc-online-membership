@@ -3358,11 +3358,11 @@
 </table>
 <h2 id="8">8. 上线前的检查清单<a class="headerlink" href="#8" title="Permanent link">&para;</a></h2>
 <ul>
-<li>[ ] 在目标环境上应用迁移并执行 <code>app:authorization:seed</code>。</li>
-<li>[ ] 管理令牌 (<code>ROLE_ADMIN</code>) 可以列出权限/角色。</li>
-<li>[ ] 内容字段授予试点角色如预期（编辑器与 <code>metadata</code> 上的metadata_editor）。</li>
-<li>[ ] 分配授予 → 撤销循环使用户的有效权限无效（通过 <code>/app/authorization/me</code> 或字段授予评估检查）。</li>
-<li>[ ] 显示角色/分配突变的审核日志。</li>
+<li>[ ] Migrations applied and <code>app:authorization:seed</code> executed on the target env.</li>
+<li>[ ] Admin token (<code>ROLE_ADMIN</code>) can list permissions/roles.</li>
+<li>[ ] Content field-grant pilot roles as expected (editor vs metadata_editor on <code>metadata</code>).</li>
+<li>[ ] An assignment grant → revoke cycle invalidates the user's effective permissions (checked via <code>/app/authorization/me</code> or field-grant evaluation).</li>
+<li>[ ] Audit logs appear for role/assignment mutations.</li>
 </ul>
 
 

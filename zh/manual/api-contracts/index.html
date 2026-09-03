@@ -868,6 +868,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#35" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.5 商店和贸易（多商店）
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -3277,6 +3288,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#35" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.5 商店和贸易（多商店）
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -3707,6 +3729,56 @@
 </tr>
 </tbody>
 </table>
+<h3 id="35">3.5 商店和贸易（多商店）<a class="headerlink" href="#35" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>端点</th>
+<th>方法</th>
+<th>访问</th>
+<th>目的</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/api/v1/manage/stores</code></td>
+<td>发布</td>
+<td><code>ROLE_ADMIN</code></td>
+<td>创建商店（<code>code</code>、<code>name</code>、<code>timezone</code>、<code>currency</code> 1..32 默认 <code>CNY</code>、<code>contact</code>/<code>address</code>/<code>settings</code> 通过 JSON 架构验证）</td>
+</tr>
+<tr>
+<td><code>/api/v1/manage/stores/{uuid}</code></td>
+<td>放置</td>
+<td><code>ROLE_ADMIN</code></td>
+<td>更新存储（<code>name</code>、<code>timezone</code>、<code>currency</code>、<code>contact</code>、<code>address</code>、<code>settings</code>）； <code>code</code> 不可变</td>
+</tr>
+<tr>
+<td><code>/api/v1/manage/stores/{uuid}/members</code></td>
+<td>发布</td>
+<td><code>ROLE_ADMIN</code></td>
+<td>授予成员资格（<code>userUuid</code>、<code>role</code> <code>owner/manager/clerk/fulfillment</code>）—更新插入并重新激活</td>
+</tr>
+<tr>
+<td><code>/api/v1/app/stores/{uuid}/membership</code></td>
+<td>发布</td>
+<td><code>ROLE_USER</code></td>
+<td><strong>作为成员自加入</strong>（幂等，固定 <code>role=clerk</code>，忽略主体，<code>200 Already a member</code> / <code>201 Joined</code>）</td>
+</tr>
+<tr>
+<td><code>/api/v1/app/stores/{uuid}/membership</code></td>
+<td>获取</td>
+<td><code>ROLE_USER</code></td>
+<td>获得自己的商店会员资格</td>
+</tr>
+<tr>
+<td><code>/api/v1/app/orders</code></td>
+<td>发布</td>
+<td><code>ROLE_USER</code></td>
+<td>创建订单 — <code>currency</code> 通过 <code>X-Store-Code</code> 标头对 <code>Store</code><strong> 具有</strong>权威性（<code>LIANSHENG_POINT</code> 对于积分商城，<code>CNY</code> 除外）；不匹配<code>400 Currency mismatch</code>；全局（无标头）默认为 <code>CNY</code></td>
+</tr>
+</tbody>
+</table>
+<p><code>StoreContact</code>（<code>Store/StoreContact</code>模式）现在包括<code>subTitle</code>（1..100）和<code>tags</code>（数组1..30×20唯一）以及<code>phone</code>，<code>email</code>，<code>serviceHours</code>等； <code>StoreAddress</code> 包括 <code>province/city/district/street/detail/formattedAddress/latitude/longitude</code> 和 <code>additionalProperties:false</code>。</p>
 <hr />
 <h2 id="4">4. 分页<a class="headerlink" href="#4" title="Permanent link">&para;</a></h2>
 <p>列表端点通过 <code>RestController::pagination()</code> 进行分页：</p>
@@ -3776,7 +3848,7 @@
 </tr>
 <tr>
 <td><code>@expands</code></td>
-<td><code>category,tags</code></td>
+<td><code>specifications</code> / <code>category,tags</code>（支持<code>specifications</code>、<code>a,b</code>或<code>["a","b"]</code>）</td>
 </tr>
 <tr>
 <td><code>@display</code></td>
@@ -3810,7 +3882,7 @@
 <tbody>
 <tr>
 <td>控制器级</td>
-<td>mixins/controllers 捕获域异常并转换为 <code>warning()</code> with 400/404/500</td>
+<td>mixins/controllers 捕获域异常并转换为 <code>warning()</code> 与 400/404/500</td>
 </tr>
 <tr>
 <td>全球</td>
@@ -3882,7 +3954,7 @@ body)、更新 (<code>#[OA\Put]</code> + body)、删除 (<code>#[OA\Delete]</cod
 <hr />
 <h2 id="8">8.参考<a class="headerlink" href="#8" title="Permanent link">&para;</a></h2>
 <ul>
-<li>设计合同：<a href="../../design/api-design/"><t195/></a></li>
+<li>设计合同：<a href="../../design/api-design/"><t249/></a></li>
 <li>控制器+混合：<code>src/Core/Controller/RestController.php</code>，<code>src/Core/View/*</code></li>
 <li>授权：<code>src/Identity/Controller/AuthController.php</code>、<code>src/Identity/Controller/OtpController.php</code></li>
 <li>Webhooks：<code>src/Payment/Controller/Webhook/PaymentNotifyController.php</code></li>

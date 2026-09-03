@@ -1063,7 +1063,7 @@
   <a href="#22" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2.2 列名称
+        2.2 列名
       
     </span>
   </a>
@@ -1409,10 +1409,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#10" class="md-nav__link">
+  <a href="#10-anti-patterns-forbidden" class="md-nav__link">
     <span class="md-ellipsis">
       
-        10. 反模式（禁止）
+        10. Anti-Patterns (Forbidden)
       
     </span>
   </a>
@@ -3320,7 +3320,7 @@
   <a href="#22" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2.2 列名称
+        2.2 列名
       
     </span>
   </a>
@@ -3666,10 +3666,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#10" class="md-nav__link">
+  <a href="#10-anti-patterns-forbidden" class="md-nav__link">
     <span class="md-ellipsis">
       
-        10. 反模式（禁止）
+        10. Anti-Patterns (Forbidden)
       
     </span>
   </a>
@@ -3802,7 +3802,7 @@
 </tr>
 </tbody>
 </table>
-<h3 id="22">2.2 列名称<a class="headerlink" href="#22" title="Permanent link">&para;</a></h3>
+<h3 id="22">2.2 列名<a class="headerlink" href="#22" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
 <tr>
@@ -4146,7 +4146,7 @@
 <li>域聚合，稍后可能会移动到自己的数据库/服务。</li>
 <li>由幂等性、审计、支付、库存或外部关联流引用。</li>
 </ul>
-<p>纯粹的内部实现记录不需要单独的实体 UUID。示例
+<p>纯粹的内部实现记录不需要单独的实体UUID。示例
 包括私有连接表或已由其唯一标识的收件箱记录
 传入<code>eventId</code>。通过 API 公开的独立管理关系应该
 仍然收到 UUID。</p>
@@ -4159,7 +4159,7 @@
 本地身份证；规范的 UUID 值根据唯一的 <code>uuid</code> 字段进行解析。两人
 表单是明确的，不得作为单独的请求值发送。一个资源
 没有 UUID 字段仅接受其整数 ID。</p>
-<p>新的跨境实体使用规范的 UUID 字符串和强制整数
+<p>新的跨境实体使用规范的 UUID 字符串以及强制整数
 <code>id</code>：</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="x">#[ORM\Column(type: 'string', length: 36, unique: true)]</span>
 <a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="x">private string $uuid;</span>
@@ -4256,53 +4256,53 @@
 <a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="x">#[Assert\Email]</span>
 <a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="x">private ?string $email = null;</span>
 </code></pre></div>
-<p>通过 Symfony Validator 在 <code>BaseService::update()</code> 中调用验证。实体必须声明以下约束：
-- 必填字段 (<code>NotBlank</code>)
-- 格式限制（<code>Email</code>、<code>Url</code>、<code>Regex</code>）
-- 长度限制 (<code>Length</code>)
-- 范围约束（<code>Range</code>、<code>Positive</code>、<code>PositiveOrZero</code>）
-- 选择约束（<code>Choice</code> 用于枚举/状态）</p>
+<p>Validation is invoked in <code>BaseService::update()</code> via Symfony Validator. Entities MUST declare constraints for:
+- Required fields (<code>NotBlank</code>)
+- Format constraints (<code>Email</code>, <code>Url</code>, <code>Regex</code>)
+- Length constraints (<code>Length</code>)
+- Range constraints (<code>Range</code>, <code>Positive</code>, <code>PositiveOrZero</code>)
+- Choice constraints (<code>Choice</code> for enums/statuses)</p>
 <hr />
-<h2 id="10">10. 反模式（禁止）<a class="headerlink" href="#10" title="Permanent link">&para;</a></h2>
+<h2 id="10-anti-patterns-forbidden">10. Anti-Patterns (Forbidden)<a class="headerlink" href="#10-anti-patterns-forbidden" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
-<th>反模式</th>
-<th>该怎么办？</th>
+<th>Anti-Pattern</th>
+<th>What to Do Instead</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>扩展 <code>RestController</code> 或 <code>BaseService</code> 的实体</td>
-<td>实体是纯粹的数据对象</td>
+<td>Entity extending <code>RestController</code> or <code>BaseService</code></td>
+<td>Entities are pure data objects</td>
 </tr>
 <tr>
-<td>实体方法中的业务逻辑</td>
-<td>移至服务层</td>
+<td>Business logic in Entity methods</td>
+<td>Move to Service layer</td>
 </tr>
 <tr>
-<td>将服务注入实体</td>
-<td>实体不得使用 DI</td>
+<td>Injecting services into Entity</td>
+<td>Entities MUST NOT use DI</td>
 </tr>
 <tr>
-<td>实体中直接 <code>$em-&gt;persist()</code></td>
-<td>使用Service层</td>
+<td>Direct <code>$em-&gt;persist()</code> in Entity</td>
+<td>Use Service layer</td>
 </tr>
 <tr>
-<td>可变 <code>DateTime</code></td>
-<td>使用 <code>DateTimeImmutable</code></td>
+<td>Mutable <code>DateTime</code></td>
+<td>Use <code>DateTimeImmutable</code></td>
 </tr>
 <tr>
-<td>使用本地 ID 作为持久的跨模块引用</td>
-<td>使用 UUID 或记录的不可变业务密钥</td>
+<td>Using a local ID as a durable cross-module reference</td>
+<td>Use UUID or a documented immutable business key</td>
 </tr>
 <tr>
-<td>在代码中将钱存储为浮点/小数</td>
-<td>存储为 int（分），在 API 边界处转换</td>
+<td>Storing money as float/decimal in code</td>
+<td>Store as int (cents), convert at API boundary</td>
 </tr>
 <tr>
-<td>JSON 中的循环引用无需处理</td>
-<td>使用 <code>CircularReferenceHandler</code> 或序列化器组</td>
+<td>Circular references in JSON without handling</td>
+<td>Use <code>CircularReferenceHandler</code> or serializer groups</td>
 </tr>
 </tbody>
 </table>

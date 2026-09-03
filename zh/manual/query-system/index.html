@@ -3471,10 +3471,10 @@
 </tr>
 <tr>
 <td><code>@expands</code></td>
-<td>JSON</td>
+<td>JSON / 列表</td>
 <td>查看</td>
-<td>嵌套关系扩展 (<code>__metadata</code>)</td>
-<td><code>category,tags</code></td>
+<td>嵌套关系扩展 (<code>__metadata</code>) — 接受 JSON 数组 <code>["a","b"]</code>、单值 <code>a</code> 或逗号分隔的 <code>a,b</code>（全部等效）</td>
+<td><code>specifications</code> / <code>category,tags</code></td>
 </tr>
 <tr>
 <td><code>@display</code></td>
@@ -3563,7 +3563,7 @@
 <tr>
 <td><code>!</code></td>
 <td>逻辑非（属性检查）</td>
-<td><code>prop IS NULL</code> 对孩子</td>
+<td><code>prop IS NULL</code>关于孩子</td>
 </tr>
 <tr>
 <td><code>in</code> / <code>not in</code></td>
@@ -3609,7 +3609,7 @@
 当 DQL 编译失败或过滤器触及非持久数据时）
 仅限管理员。对于非管理员，会引发 DQL 编译错误
 <code>AccessDeniedHttpException</code>；管理员回退到
-每个实体上的<code>LegacyEvaluator::evaluateBool()</code>。</p>
+<code>LegacyEvaluator::evaluateBool()</code> 每个实体。</p>
 <p><strong>服务器拥有的 <code>DqlExpression</code> 与客户端 <code>@filter</code></strong>：<code>DqlExpression</code> 重用
 相同的表达式编译器，但变量绑定在 PHP 代码中（例如
 <code>new DqlExpression('entity.getUser() == user', ['user' =&gt; $this-&gt;getUser()])</code>
@@ -3632,7 +3632,7 @@
 <div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>@order=createdAt|DESC,id|ASC
 </code></pre></div>
 <p>如果您按链接路径排序（<code>joiner</code> 函数
-寄存器 <code>leftJoin</code>）。非管理员注意： <code>@order</code> 本身没有门控，但是
+注册<code>leftJoin</code>）。非管理员注意：<code>@order</code>本身没有门控，但是
 DQL 编译必须是安全的。</p>
 <h3 id="select"><code>@select</code><a class="headerlink" href="#select" title="Permanent link">&para;</a></h3>
 <p>覆盖 SELECT 子句（投影）。链式路径扩展为连接：</p>
@@ -3647,7 +3647,7 @@ DQL 编译必须是安全的。</p>
 <p>附加 GROUP BY 子句：</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>@groupBy=entity.category
 </code></pre></div>
-<p>与 <code>@select</code> 一样，链式路径会自动连接并使用它直接返回结果。</p>
+<p>与 <code>@select</code> 一样，链式路径自动连接并使用它直接返回结果。</p>
 <h3 id="hints"><code>@hints</code><a class="headerlink" href="#hints" title="Permanent link">&para;</a></h3>
 <p>应用于执行查询的 Doctrine 查询提示的 JSON 对象：</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>@hints={"Doctrine\\ORM\\Query::HINT_FORCE_PARTIAL_LOAD": true}
@@ -3659,7 +3659,7 @@ DQL 编译必须是安全的。</p>
 首先对 <code>x</code> 进行排序）。因为它在 PHP 中运行，所以它仅限于 <code>ROLE_ADMIN</code>。</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>@sort=x.getTotalAmount() &gt; y.getTotalAmount()
 </code></pre></div>
-<p>当存在 <code>@sort</code> 时，将应用 DQL 层过滤器结果，但排序
+<p>当 <code>@sort</code> 存在时，将应用 DQL 层过滤器结果，但排序
 在内存中回退到<code>usort</code>。</p>
 <h3 id="showdql"><code>@showDQL</code><a class="headerlink" href="#showdql" title="Permanent link">&para;</a></h3>
 <p>当为真时，端点不会返回结果而是抛出
@@ -3671,10 +3671,22 @@ DQL 编译必须是安全的。</p>
 <p>在查询之后应用，在 <code>RestController::success()</code>/<code>requestProcess()</code> 中，并且
 在创建/更新 mixins 中。</p>
 <h3 id="expands"><code>@expands</code><a class="headerlink" href="#expands" title="Permanent link">&para;</a></h3>
-<p>点关系的 JSON 数组（允许单引号，<code>FixJSON</code> 处理它们）
-通过附加 <code>__metadata</code> 属性（对象本身）来扩展链
-每个相关节点，因此平面序列化器可以包含它：</p>
+<p>JSON 数组（允许单引号，<code>FixJSON</code> 处理它们） <strong>或</strong> 普通
+点关系链的逗号分隔列表/单值（全部等效）
+通过附加 <code>__metadata</code> 属性（相关对象的克隆）来扩展
+每个相关节点，因此 <code>FlatNormalizer</code> 可以包含完整的标准化数据：</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a># GET /api/v1/manage/contents?@expands=['category','tags']
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a># GET /api/v1/app/products?@expands=specifications
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a># GET /api/v1/app/products?@expands=specifications,category
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a># GET /api/v1/app/products?@expands=["specifications"]
+</code></pre></div>
+<p>当 <code>@expands</code> 存在时，<code>RestController::expandObjects()</code> 设置
+<code>__metadata = clone node</code> （避免自引用递归）和
+<code>FlatNormalizer</code> 返回该关系的完整修饰标准化
+（<code>id</code>、<code>uuid</code>、<code>name</code>、<code>price</code>等加上具有相同完整数据的<code>__metadata</code>）
+而不是缩小的 <code>id/__toString</code> 视图。 <code>Product</code> 的示例：</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a># GET /api/v1/app/products?@expands=specifications&amp;X-Store-Code=BUND
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a># → specifications: [{id:3, name:"经典", price:68000, ..., __metadata:{id:3, name:"经典", price:68000, ...}}]
 </code></pre></div>
 <h3 id="display"><code>@display</code><a class="headerlink" href="#display" title="Permanent link">&para;</a></h3>
 <p>控制响应投影：</p>
@@ -3683,24 +3695,24 @@ DQL 编译必须是安全的。</p>
 <li><strong><code>@display=&lt;json array&gt;</code></strong> — 例如<code>['id','name','category.name']</code> 产生
   具有请求字段的平面对象（通过 getter 遍历的虚线路径）。</li>
 <li><strong><code>@display=&lt;json object&gt;</code></strong> — 键是输出字段，值是
-  <code>ExpressionLanguage</code> 表达式用 <code>entity</code>、<code>Math</code> 计算，以及
+  <code>ExpressionLanguage</code> 表达式使用 <code>entity</code>、<code>Math</code> 和
   <code>ArrayCommon</code>。</li>
 <li>省略（默认 <code>complex</code>） — 完整序列化实体。</li>
 </ul>
 <p>示例：</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a># GET /api/v1/app/products?@display={"title":"entity.name","score":"Math.round(entity.price/100)"}
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a># GET /api/v1/app/products?@display={"title":"entity.name","score":"Math.round(entity.price/100)"}
 </code></pre></div>
 <h3 id="transform"><code>@transform</code><a class="headerlink" href="#transform" title="Permanent link">&para;</a></h3>
-<p>由 <code>CreateApiViewMixin</code>、<code>UpdateApiViewMixin</code> 和 <code>Single*</code> mixins 使用。一个
+<p>由 <code>CreateApiViewMixin</code>、<code>UpdateApiViewMixin</code> 和 <code>Single*</code> mixin 使用。一个
 JSON 对象将字段映射到重写的 <code>ExpressionLanguage</code> 表达式
 提交的内容。 <code>:value</code> 替换为提交的字段值，并且
 <code>Service</code>（相关实体服务的网关）、<code>entity</code>、<code>Math</code>、
 <code>ArrayCommon</code>可用。</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a># POST /api/v1/manage/contents
-<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a># body:    {"title": "Hi", "category": "Test"}
-<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a># @transform={"category": "Service.get({'name': ':value'}).getId()"}
-<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>
-<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a># GET /api/v1/manage/contents?@transform={"category":"Service.get({'name':':value'}).getId()"}
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a># POST /api/v1/manage/contents
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a># body:    {"title": "Hi", "category": "Test"}
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a># @transform={"category": "Service.get({'name': ':value'}).getId()"}
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>
+<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a># GET /api/v1/manage/contents?@transform={"category":"Service.get({'name':':value'}).getId()"}
 </code></pre></div>
 <p>对于实体上的一对一关系，匹配的 <code>*Service</code> 通过以下方式自动解析
 约定（类名中的 <code>Entity</code> → <code>Service</code>）。返回相关的
@@ -3715,11 +3727,11 @@ JSON 对象将字段映射到重写的 <code>ExpressionLanguage</code> 表达式
 <ul>
 <li><code>@mode=update</code> — 仅更新现有匹配项。</li>
 <li><code>@mode=mixed</code> (默认) — upsert: 当不存在匹配的实体时创建。</li>
-<li><code>@basis</code> — 逗号分隔的字段，用于匹配每个字段的现有实体
+<li><code>@basis</code> — 逗号分隔字段，用于匹配每个字段的现有实体
   提交的行（例如 <code>@basis=id,sku</code>）。当为空时，不发生匹配（事务
   用于更新插入决策）。</li>
 </ul>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a># POST /api/v1/manage/products/batch-update?@basis=sku&amp;@mode=mixed
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a># POST /api/v1/manage/products/batch-update?@basis=sku&amp;@mode=mixed
 </code></pre></div>
 <hr />
 <h2 id="4-list">4. <code>list()</code> 工作流程如何工作<a class="headerlink" href="#4-list" title="Permanent link">&para;</a></h2>
@@ -3729,11 +3741,15 @@ JSON 对象将字段映射到重写的 <code>ExpressionLanguage</code> 表达式
    别名<code>entity</code>；关联的 <code>$object</code> 数组变为 <code>entity.key = :value_key</code>
    条件；传递的 <code>QueryBuilder</code> 按原样使用。</li>
 <li><strong><code>@dql</code></strong> — 附加为 <code>id IN (subDql)</code>。</li>
-<li><strong><code>@filter</code></strong> — 由<code>ExpressionService::buildFilter()</code>编译 →
+<li><strong><code>@filter</code></strong> — 由 <code>ExpressionService::buildFilter()</code> 编译 →
    <code>ExpressionDqlParser</code> → <code>ExpressionQueryBuilderAssembler</code>;由此产生的
-   ids 通过 <code>id IN (filterQb)</code> 应用并合并参数。开
-   编译失败，非管理员获得<code>AccessDeniedHttpException</code>，管理员失败
-   回到内存过滤。</li>
+   ids 通过 <code>id IN (filterQb)</code> 应用并合并参数（参数
+   当 <code>commonFilter</code> 是 <code>DqlExpression</code> 时，名称会被去重 - 例如
+   现在 <code>Store</code> <code>App/Product</code> 的 <code>(!store||store==store) &amp;&amp; status=='active'</code>
+   与 <code>@filter=entity.getName()=="金汤力"</code> 共存为
+   <code>filter_parameter_1</code> 与 <code>filter_parameter_1_1</code>）。编译失败时，
+   非管理员获取 <code>AccessDeniedHttpException</code>，管理员回退到内存中
+   过滤。</li>
 <li><strong><code>@select</code> / <code>@groupBy</code></strong> — 应用； <code>joiner</code> 派生出 <code>leftJoin</code>
    虚线路径。</li>
 <li><strong><code>@order</code></strong> — 应用 (<code>field|DIRECTION</code>)，根据需要派生连接。</li>
@@ -3802,10 +3818,10 @@ JSON 对象将字段映射到重写的 <code>ExpressionLanguage</code> 表达式
 <h2 id="6">6. 操作员和人员注释<a class="headerlink" href="#6" title="Permanent link">&para;</a></h2>
 <ul>
 <li>链式属性访问使用根别名 <code>entity.getX().getY()</code> 形式
-  <code>@filter</code>; DQL 层将它们映射到联接 (<code>filter_entity_x_y</code>)。</li>
-<li>具有 <code>/pattern/flags</code> 值的 <code>matches</code> 编译为 <code>REGEXP(...) = TRUE</code>
+  <code>@filter</code>； DQL 层将它们映射到联接 (<code>filter_entity_x_y</code>)。</li>
+<li>带有 <code>/pattern/flags</code> 值的 <code>matches</code> 编译为 <code>REGEXP(...) = TRUE</code>
   （支持的标志 <code>gimsux</code>）；普通字符串编译为 <code>LIKE '%...%'</code>
-  <code>!</code> 逃跑。</li>
+  <code>!</code> 转义。</li>
 <li>过滤器表达式内可用的 <code>ExternalExpressionValues</code> 包括
   <code>math</code>/<code>Math</code>、<code>datetime</code>/<code>Datetime</code>和<code>ArrayCommon</code>。</li>
 </ul>

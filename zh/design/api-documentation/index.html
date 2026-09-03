@@ -3319,7 +3319,7 @@
 <a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a><span class="x">#[Route('/resource/custom-action', name: 'manage-resource-custom', methods: ['POST'])]</span>
 <a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a><span class="x">public function customAction(): Response { ... }</span>
 </code></pre></div>
-<p><strong>路由命名至关重要</strong> — <code>name:</code> 前缀决定 <code>operationId</code>，后者决定模块标签：
+<p><strong>路由命名至关重要</strong> — <code>name:</code> 前缀决定了 <code>operationId</code>，而 <code>operationId</code> 又决定了模块标签：
 - <code>manage-products-custom</code> → <code>operationId: post_manage-products-custom</code> → 标签：<strong>产品</strong>
 - <code>app-orders-export</code> → <code>operationId: get_app-orders-export</code> → 标签：<strong>订单</strong></p>
 <h2 id="5">5. 安全文档<a class="headerlink" href="#5" title="Permanent link">&para;</a></h2>

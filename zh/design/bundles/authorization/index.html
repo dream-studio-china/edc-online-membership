@@ -4806,7 +4806,7 @@ JWT 主题，并且不做出资源级授权决策。</p>
 服务器拥有的字段，例如 <code>id</code>、所有权、状态和时间戳
 从未通过授权授予而变得可写。</p>
 <p>第一个版本使用<strong>严格拒绝</strong>：如果请求包含任何接受的架构
-字段超出其有效字段授予范围，API 返回 <code>403</code> 并执行
+超出其有效字段授权的字段，API 返回 <code>403</code> 并执行
 没有突变。禁止静默剥离输入，因为它会创建一个成功的
 响应意外的部分写入。</p>
 <p>具有操作权限但没有 <code>RoleFieldGrant</code> 的角色不会收到客户端可写的权限
@@ -5147,7 +5147,7 @@ JSON 字段。在此阶段，内容<strong>不是</strong>商店范围（仅限 
 <hr />
 <h2 id="9-api">9. 管理 API 和种子数据<a class="headerlink" href="#9-api" title="Permanent link">&para;</a></h2>
 <h3 id="91">9.1 管理端点<a class="headerlink" href="#91" title="Permanent link">&para;</a></h3>
-<p>所有授权管理端点在阶段 1 期间保持 <code>ROLE_ADMIN</code>。它们是
+<p>所有授权管理端点在阶段 1 期间均保持 <code>ROLE_ADMIN</code>。它们是
 打破玻璃管理 API，不得通过它们的角色进行委托
 管理。</p>
 <table>
@@ -5735,7 +5735,7 @@ ABAC 策略引擎、用户提供的查询功能或 QueryBuilder 的替代品。<
 </ol>
 <p>这保留了解析器现有的 getter-chain 编译、Doctrine 元数据
 验证和参数命名空间。诸如身份用户之类的对象绑定为 Doctrine
-关联参数；标量 将 UUID 和状态绑定存储为标量参数。</p>
+关联参数；标量 将 UUID 和状态绑定为标量参数。</p>
 <p>当解析器看到 <code>this.getX()</code> getter 链时，仅当 <code>this</code> 为
 由 <code>ApiView</code> 内部绑定，在服务器端评估一次无参 getter
 编译，并将返回值绑定为相同的生成 Doctrine 参数。
@@ -5793,7 +5793,7 @@ ABAC 策略引擎、用户提供的查询功能或 QueryBuilder 的替代品。<
 <h3 id="159-expressionservice">15.9 为什么ExpressionService现在没有改变<a class="headerlink" href="#159-expressionservice" title="Permanent link">&para;</a></h3>
 <p><code>ExpressionService::buildFilter()</code> 有一个缓存路径，用于存储参数值
 仅由实体类和表达式源组成的键。依赖于用户的表达式
-因此可以为不同的用户重用先前缓存的参数值。</p>
+因此可以为不同的用户重复使用先前缓存的参数值。</p>
 <p><code>DqlExpression</code> 不得在这个狭窄的实现中使用该路径。它构建了
 <code>ExpressionDqlParser</code>直接不带缓存，通过现有的应用
 汇编器。这使得用户/存储参数绑定请求本地且正确，同时

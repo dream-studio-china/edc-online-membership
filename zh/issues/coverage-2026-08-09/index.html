@@ -3137,11 +3137,11 @@
 </tr>
 <tr>
 <td><code>core-view.md</code></td>
-<td>WorkflowApiViewMixin（resetMarking 路线错误）、创建/更新/删除/详细混合、ApiViewMessages</td>
+<td>WorkflowApiViewMixin（resetMarking 路线错误）、创建/更新/删除/详细信息混合、ApiViewMessages</td>
 </tr>
 <tr>
 <td><code>core-service.md</code></td>
-<td>ExpressionService、LegacyEvaluator、DefaultServiceLocator、BaseService 特征（不可变的 DateTime 错误、排序器合约）、RestController</td>
+<td>ExpressionService、LegacyEvaluator、DefaultServiceLocator、BaseService 特征（不可变日期时间错误、排序器合约）、RestController</td>
 </tr>
 <tr>
 <td><code>core-parser-listener.md</code></td>
@@ -3234,7 +3234,7 @@
 <h3 id="_6">高<a class="headerlink" href="#_6" title="Permanent link">&para;</a></h3>
 <ol>
 <li><strong>微信支付v3通知永远不可能成功</strong> — <code>src/Wechat/Service/Payment/WechatPayGateway.php:102-126</code>。传入的请求永远不会传递给 EasyWeChat； <code>serve()</code> 读取一个空的 <code>fromGlobals()</code> 请求 → 每个真正的回调都会失败。修复：<code>$app-&gt;setRequestFromSymfonyRequest($request)</code> 在 <code>serve()</code> 之前。 （微信，Bug 1）</li>
-<li><strong><code>Math::mt_rand()</code>/<code>Math::rand()</code> 总是在 PHP 8.5 上抛出</strong> — <code>src/Core/Utils/Math.php:85,91</code>。 One-arg <code>rand()</code>/<code>mt_rand()</code> 在 PHP 8.5 中是一个错误。修复：<code>rand(0, $x)</code> / <code>mt_rand(0, $x)</code>。 (核心-utils-di，M-1)</li>
+<li><strong><code>Math::mt_rand()</code>/<code>Math::rand()</code> 总是在 PHP 8.5 上抛出</strong> — <code>src/Core/Utils/Math.php:85,91</code>。 One-arg <code>rand()</code>/<code>mt_rand()</code> 在 PHP 8.5 中是一个错误。修复：<code>rand(0, $x)</code> / <code>mt_rand(0, $x)</code>。 （核心-utils-di，M-1）</li>
 <li><strong><code>sign()</code> 在失败时对未定义的变量进行 base64 编码</strong> — <code>src/Core/Utils/RsaClient.php:51-59</code>。 <code>openssl_sign()</code>结果被忽略→警告+虚假签名。修复：检查返回值。 （核心-utils-di，R-2）</li>
 <li><strong>应用 <code>submit</code>/<code>confirm</code> 冒泡失败为 HTTP 500</strong> — <code>src/Trade/Controller/App/OrderController.php:158-166</code>。没有尝试/捕获工作流程/数据库故障。修复：包裹在 try/catch 中并返回 <code>warning()</code> 400 信封。 （贸易控制器，Bug 1）</li>
 <li><strong>对于所有 HTTP 请求，<code>BaseService::$user</code> 为空</strong> — <code>src/Core/Service/BaseService.php:77</code> + <code>BaseServiceReadListTrait.php:270</code>。一旦超出请求范围，单例就会解析主体，因此 <code>@dql/@sort/@hints</code> 和 <code>@filter</code> 内存中回退始终为 403，即使对于管理员也是如此。 （核心集成额外，错误 1）</li>
@@ -3299,7 +3299,7 @@
 <li><code>promotion-dsl</code> 小发现：尾随点路径错误、未使用的 <code>priority: desc</code> 标志、<code>simulate()</code> 与管道不匹配、多个 <code>when:</code> 不一致、无法访问的 EOL 分支。 （促销-DSL，错误 3-7）</li>
 <li><code>BaseServiceMutationTrait</code> 将可变的 <code>new \DateTime</code> 传递给 <code>\DateTimeImmutable</code> setter → <code>TypeError</code>。 （核心服务，错误 1）</li>
 <li><code>BaseServiceReadListTrait</code> 排序器比较器永远不会返回 <code>0</code> — 违反了 <code>usort</code> 合同。 （核心服务，错误 2）</li>
-<li>死代码/无法访问的防御分支记录在：BaseServiceReadListTrait（捕获异常，<code>!is_string</code> joiner Guard），BaseServiceMutationTrait（<code>!is_object</code>检查），ExpressionDqlParser（317,394,488,541），Inventory Quantity line 75，Inflect line 135，<code>availableTransitions</code>/<code>doTransition</code>未找到实体的守卫。 （核心服务、核心解析器监听器、库存控制器服务、核心实用程序-di、核心视图）</li>
+<li>死代码/无法访问的防御分支记录在：BaseServiceReadListTrait（捕获异常，<code>!is_string</code> joiner Guard），BaseServiceMutationTrait（<code>!is_object</code>检查），ExpressionDqlParser（317,394,488,541），Inventory Quantity line 75，Inflect line 135，<code>availableTransitions</code>/<code>doTransition</code>未找到实体的守卫。 （核心服务、核心解析器侦听器、库存控制器服务、核心实用程序-di、核心视图）</li>
 <li><code>ParseAmount</code> 错误解析科学记数法字符串。 （支付控制器，BUG-4）</li>
 <li>Webhook 将暂时未找到发票掩盖为永久 <code>FAIL</code> 400 → 提供商停止重试。 （支付控制器，BUG-5）</li>
 <li><code>markPaid</code> 覆盖结果中的发票 <code>payment</code> 字段。 （支付控制器，BUG-2）</li>

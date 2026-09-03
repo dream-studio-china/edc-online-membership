@@ -1130,7 +1130,7 @@
   <a href="#7-srccoreutils" class="md-nav__link">
     <span class="md-ellipsis">
       
-        7. 实用类 (src/Core/Utils)
+        7. 实用程序类 (src/Core/Utils)
       
     </span>
   </a>
@@ -4089,7 +4089,7 @@
   <a href="#7-srccoreutils" class="md-nav__link">
     <span class="md-ellipsis">
       
-        7. 实用类 (src/Core/Utils)
+        7. 实用程序类 (src/Core/Utils)
       
     </span>
   </a>
@@ -4542,15 +4542,15 @@
 <tbody>
 <tr>
 <td><code>validate(mixed $data, string $schemaName)</code></td>
-<td>通过 <code>%kernel.project_dir%</code> 加载 <code>src/{Bundle}/Resources/JsonSchema/{Name}.json</code>，将 PHP 数组强制转换为对象，运行 Draft-07 验证，失败时抛出 <code>JsonSchemaViolationException</code> (<code>property: message</code>)。 <code>null</code> 被跳过（字段可为空）。</td>
+<td>通过 <code>%kernel.project_dir%</code> 加载 <code>src/{Bundle}/Resources/JsonSchema/{Name}.json</code>，将 PHP 数组强制转换为对象（当架构 <code>type: object</code> 保留 <code>{}</code> 时为空 <code>[]</code> → <code>stdClass</code>），运行草案 07 验证，失败时抛出 <code>JsonSchemaViolationException</code>（<code>property: message</code>）。 <code>null</code> 被跳过（字段可为空）。</td>
 </tr>
 <tr>
 <td><code>validateInline(mixed $data, array $inlineSchema)</code></td>
-<td>针对内联架构数组进行验证。</td>
+<td>针对内联架构数组进行验证（相同的空对象处理）。</td>
 </tr>
 </tbody>
 </table>
-<p><code>Store</code> 捆绑包附带 <code>StoreAddress</code>、<code>StoreContact</code>、<code>StoreSettings</code> 模式（请参阅 <code>store.md §5.1.1</code>）； <code>Core</code> 仅拥有验证器。将 <code>App\Core\Validator\JsonSchemaValidator</code> 注册为 <code>public: true</code>，以便 <code>Create/UpdateApiViewMixin</code> 可以从容器中获取它 (<code>serviceContainer</code>/<code>container</code>)。</p>
+<p><code>Store</code> 捆绑包附带 <code>StoreAddress</code>、<code>StoreContact</code>（<code>phone</code>、<code>email</code>、<code>subTitle</code> 1..100、<code>tags</code> 数组 1..30×20 唯一）、<code>StoreSettings</code> 模式（请参阅 <code>store.md §5.1.1</code>）； <code>Core</code> 仅拥有验证器。空的 <code>settings:{}</code> （解码为 <code>[]</code>）对于 <code>StoreSettings</code> <code>type:object</code> 被强制为 <code>stdClass</code>，因此 <code>POST /manage/stores {settings:{}}</code> 通过。将 <code>App\Core\Validator\JsonSchemaValidator</code> 注册为 <code>public: true</code>，以便 <code>Create/UpdateApiViewMixin</code> 可以从容器中获取它（<code>serviceContainer</code>/<code>container</code>）。</p>
 <h4 id="jsonschemas">控制器上的 <code>jsonSchemas</code><a class="headerlink" href="#jsonschemas" title="Permanent link">&para;</a></h4>
 <p>任何使用 <code>CreateApiViewMixin</code>/<code>UpdateApiViewMixin</code> 的控制器都可以声明：</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="x">protected array $jsonSchemas = [</span>
@@ -4559,7 +4559,7 @@
 <a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="x">    'settings' =&gt; 'Store/StoreSettings',</span>
 <a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="x">];</span>
 </code></pre></div>
-<p>mixin 调用 <code>validateJsonSchemas($content)</code> — 对于每个存在且非空的声明字段 — <strong>在</strong> <code>processCreateContent</code>/<code>processUpdateContent</code> 之前。违规行为通过 <code>ValidatorException</code>→<code>warning()</code> 变为 <code>400</code>。当架构设置 <code>additionalProperties: false</code> （存储 <code>address</code>/<code>contact</code>）时，未知键将被拒绝，而 <code>StoreSettings</code> 保留 <code>additionalProperties:true</code> 以实现前向兼容性。</p>
+<p>mixins 调用 <code>validateJsonSchemas($content)</code> — 对于每个存在且非空的声明字段 — <strong>在</strong> <code>processCreateContent</code>/<code>processUpdateContent</code> 之前。违规行为通过 <code>ValidatorException</code>→<code>warning()</code> 变为 <code>400</code>。当架构设置 <code>additionalProperties: false</code> （存储 <code>address</code>/<code>contact</code>）时，未知键将被拒绝，而 <code>StoreSettings</code> 保留 <code>additionalProperties:true</code> 以实现前向兼容性。</p>
 <hr />
 <h2 id="3">3.服务层<a class="headerlink" href="#3" title="Permanent link">&para;</a></h2>
 <h3 id="srccoreservicebaseserviceinterfacephp"><code>src/Core/Service/BaseServiceInterface.php</code><a class="headerlink" href="#srccoreservicebaseserviceinterfacephp" title="Permanent link">&para;</a></h3>
@@ -4618,7 +4618,7 @@
 通过从容器中提取这些服务来实现它，返回 <code>null</code> /
 <code>NullLogger</code> 缺席时保持优雅。自动连线为
 <code>App\Core\Service\ServiceLocatorInterface</code>。
-<code>DefaultServiceLocator</code> 被注册为该接口别名
+<code>DefaultServiceLocator</code> 已注册为该接口别名
 <code>config/services.yaml</code>。</p>
 <h3 id="srccoreserviceconcern">服务问题 (<code>src/Core/Service/Concern/</code>)<a class="headerlink" href="#srccoreserviceconcern" title="Permanent link">&para;</a></h3>
 <h4 id="baseserviceinfrastructuretrait"><code>BaseServiceInfrastructureTrait</code><a class="headerlink" href="#baseserviceinfrastructuretrait" title="Permanent link">&para;</a></h4>
@@ -4689,7 +4689,7 @@
   使用 <code>object_to_populate</code> 的 Symfony 序列化器。它验证实体并
   持续存在（除非<code>$noFlush</code>，否则刷新）。如果为 null，则抛出 <code>ValidatorException</code>
   对象、缺少相关实体 (<code>NotFoundHttpException</code>) 以及
-  <code>"Duplication entries"</code> 上的 <code>UniqueConstraintViolationException</code>。</li>
+  <code>"Duplication entries"</code> 位于 <code>UniqueConstraintViolationException</code> 上。</li>
 <li><code>remove()</code> 获取、删除和刷新，返回成功。</li>
 </ul>
 <hr />
@@ -4770,7 +4770,7 @@ AST (<code>recursiveCompile</code>) 支持严格、安全的节点集。</p>
 </tr>
 </tbody>
 </table>
-<p>像 <code>entity.getCategory().getName()</code> 这样的属性链会产生连接
+<p>像 <code>entity.getCategory().getName()</code> 这样的属性链产生连接
 （<code>filter_entity_category</code> 等）和最后的 <code>filter_entity_category.name</code>
 参考。顶级裸属性编译为 <code>prop IS NOT NULL</code>。</p>
 <h3 id="srccorequerydqlexpressionphp"><code>src/Core/Query/DqlExpression.php</code><a class="headerlink" href="#srccorequerydqlexpressionphp" title="Permanent link">&para;</a></h3>
@@ -4885,7 +4885,7 @@ $rootAlias = 'entity')</code>（<code>createRootQueryBuilder</code> 的别名）
 <code>true</code>）。</p>
 <h3 id="srccoreserializercircularreferencehandlerphp"><code>src/Core/Serializer/CircularReferenceHandler.php</code><a class="headerlink" href="#srccoreserializercircularreferencehandlerphp" title="Permanent link">&para;</a></h3>
 <p>静态、无依赖的循环引用处理程序：返回对象的 <code>id</code>
-当它有 <code>getId()</code> 时，否则 <code>spl_object_hash</code>。参考自
+当它有<code>getId()</code>时，否则<code>spl_object_hash</code>。参考自
 串行器配置。</p>
 <h3 id="srccoreserializernormalizerflatnormalizerphp"><code>src/Core/Serializer/Normalizer/FlatNormalizer.php</code><a class="headerlink" href="#srccoreserializernormalizerflatnormalizerphp" title="Permanent link">&para;</a></h3>
 <p>装饰默认的对象规范化器（注册为
@@ -4896,10 +4896,15 @@ $rootAlias = 'entity')</code>（<code>createRootQueryBuilder</code> 的别名）
 <li>避免规范化 Doctrine 内部对象（<code>Doctrine\ORM\*</code>、
   <code>Doctrine\Persistence\*</code>) — 字符串化或返回类名。</li>
 <li>如果存在，则在顶层添加 <code>__toString</code>。</li>
-<li>将相关对象减少到<code>{id, __toString, __metadata}</code>。</li>
-<li>扩展相关对象的可遍历集合。</li>
+<li>将相关对象减少为<code>{id, __toString, __metadata}</code>；当
+  <code>__metadata</code> 设置（通过 <code>RestController::expandObjects()</code>
+  <code>@expands=specifications</code>)，相关对象已完全规范化
+  （例如 <code>Product.specifications[]</code> → <code>{id, uuid, name, price, ..., __metadata:{full spec}}</code>）
+  使用 <code>clone</code> 来避免自引用递归。</li>
+<li>扩展相关对象的可遍历集合（支持 JSON 数组
+  <code>["specifications"]</code> 和普通/逗号分隔的 <code>specifications</code> / <code>a,b</code>）。</li>
 <li>JSON 将字符串值字段（不包括数字字符串）解码为对象。</li>
-<li>标准化失败时返回<code>{id, __toString}</code>或<code>{__class}</code>。</li>
+<li>标准化失败时返回 <code>{id, __toString}</code> 或 <code>{__class}</code>。</li>
 </ul>
 <h3 id="srccoreserializernormalizercircularreferencehandlerphp"><code>src/Core/Serializer/Normalizer/CircularReferenceHandler.php</code><a class="headerlink" href="#srccoreserializernormalizercircularreferencehandlerphp" title="Permanent link">&para;</a></h3>
 <p>第二个更严格的循环处理程序：当对象
@@ -4985,7 +4990,7 @@ Symfony 显示调试页面。）</p>
 通过服务定位器注入（<code>auth_login</code>、<code>auth_register</code>、<code>otp_request</code>、
 <code>otp_verify</code>、<code>wechat_login</code>、<code>payment</code>）。</p>
 <hr />
-<h2 id="7-srccoreutils">7. 实用类 (<code>src/Core/Utils</code>)<a class="headerlink" href="#7-srccoreutils" title="Permanent link">&para;</a></h2>
+<h2 id="7-srccoreutils">7. 实用程序类 (<code>src/Core/Utils</code>)<a class="headerlink" href="#7-srccoreutils" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
@@ -5000,7 +5005,7 @@ Symfony 显示调试页面。）</p>
 </tr>
 <tr>
 <td><code>Math</code></td>
-<td>静态数学助手（<code>random</code>、<code>locationDistance</code>）以及完整 PHP 数学函数集（abs、trig、log、带有 <code>PHP_ROUND_HALF_*</code> 模式的舍入等）的包装器，暴露给表达式。</td>
+<td>静态数学助手（<code>random</code>、<code>locationDistance</code>）以及完整 PHP 数学函数集（abs、trig、log、带 <code>PHP_ROUND_HALF_*</code> 模式的舍入等）的包装器，暴露给表达式。</td>
 </tr>
 <tr>
 <td><code>StringCase</code></td>
@@ -5088,7 +5093,7 @@ Symfony 显示调试页面。）</p>
 </tbody>
 </table>
 <p><code>METADATA</code>中注册的指标名称：<code>app_info</code>、<code>http_requests_total</code>、
-<code>http_request_duration_seconds</code>、<code>http_requests_inflight</code>、
+<code>http_request_duration_seconds</code>，<code>http_requests_inflight</code>，
 <code>app_outbox_backlog</code>、<code>app_messenger_failed</code>、<code>metrics_scrape_errors_total</code>。
 计数器/直方图是针对每个工人的； DB 支持的仪表是在抓取时实时计算的。</p>
 

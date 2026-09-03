@@ -3543,10 +3543,10 @@
 <ul>
 <li><strong>位置</strong>：<code>src/{Module}/Repository/{Name}Repository.php</code></li>
 <li><strong>命名空间</strong>：<code>App\{Module}\Repository</code></li>
-<li><strong>必须</strong>：扩展 <code>ServiceEntityRepository</code></li>
+<li><strong>必须</strong>：扩展<code>ServiceEntityRepository</code></li>
 <li><strong>必须</strong>：在构造函数中接受 <code>ManagerRegistry</code></li>
 <li><strong>五月</strong>：添加返回实体/数组/标量的自定义查询方法</li>
-<li><strong>不能</strong>：返回原始 <code>QueryBuilder</code> （这是服务层的问题）</li>
+<li><strong>不能</strong>：返回原始 <code>QueryBuilder</code> （这是服务层关心的问题）</li>
 <li><strong>五月</strong>：如果被其他模块使用，则声明 <code>{Name}RepositoryInterface</code></li>
 </ul>
 <h3 id="23">2.3 服务接口契约<a class="headerlink" href="#23" title="Permanent link">&para;</a></h3>
@@ -3566,7 +3566,7 @@
 <ul>
 <li><strong>位置</strong>：<code>src/{Module}/Service/{Name}Service.php</code></li>
 <li><strong>命名空间</strong>：<code>App\{Module}\Service</code></li>
-<li><strong>必须</strong>：扩展 <code>App\Core\Service\BaseService</code></li>
+<li><strong>必须</strong>：扩展<code>App\Core\Service\BaseService</code></li>
 <li><strong>必须</strong>：实施 <code>{Name}ServiceInterface</code></li>
 <li><strong>必须</strong>：接受<code>ContainerInterface</code>，实体类FQCN，可选定位器/表达式服务</li>
 <li><strong>应该</strong>：包含所有业务逻辑、验证和事务管理</li>
@@ -3600,7 +3600,7 @@
 <li><strong>必须</strong>：扩展 <code>RestController</code></li>
 <li><strong>必须</strong>：使用 <code>ApiView</code> 和适当的 mixins （<code>List</code>、<code>Detail</code> 始终；<code>Create</code>/<code>Update</code>/<code>Delete</code> 当客户端工作流程需要写入时）</li>
 <li><strong>必须</strong>：设置 <code>$serviceClass</code> 属性</li>
-<li><strong>必须</strong>：将通过 <code>commonFilter()</code> / <code>scopedDetailFilter()</code> 的每个查询范围限定为经过身份验证的用户（或商店成员身份）并强制执行授权（选民/字段授权） - 仅当强制执行所有权和权限时才允许应用程序写入</li>
+<li><strong>必须</strong>：将通过 <code>commonFilter()</code> / <code>scopedDetailFilter()</code> 的每个查询范围限定为经过身份验证的用户（或商店成员资格）并强制执行授权（选民/字段授权） - 仅在强制执行所有权和权限时才允许应用程序写入</li>
 <li><strong>应该</strong>：覆盖 <code>commonFilter()</code> 范围数据（例如，当前用户、启用的范围）</li>
 </ul>
 <h4 id="_3">公共控制器（匿名，只读）<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h4>
@@ -3617,7 +3617,7 @@
 <ul>
 <li><strong>位置</strong>：<code>src/{Module}/Controller/Manage/{Name}Controller.php</code></li>
 <li><strong>命名空间</strong>：<code>App\{Module}\Controller\Manage</code></li>
-<li><strong>必须</strong>：扩展 <code>RestController</code></li>
+<li><strong>必须</strong>：扩展<code>RestController</code></li>
 <li><strong>必须</strong>：使用 <code>ApiView</code>、<code>ListApiViewMixin</code>、<code>DetailApiViewMixin</code>、<code>CreateApiViewMixin</code>、<code>UpdateApiViewMixin</code>、<code>DeleteApiViewMixin</code> 特征</li>
 <li><strong>必须</strong>：设置 <code>$serviceClass</code> 属性</li>
 <li><strong>必须</strong>：在课堂上使用 <code>#[IsGranted('ROLE_ADMIN')]</code> 进行防护</li>

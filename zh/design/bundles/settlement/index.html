@@ -5428,7 +5428,7 @@
   结算审计不需要个人识别有效负载。</li>
 </ul>
 <h3 id="53">5.3 集成事件架构<a class="headerlink" href="#53" title="Permanent link">&para;</a></h3>
-<p>所有生产者都会发布版本化的可序列化事件。 Messenger 消息可能会包含此信息
+<p>所有生产者都会发布版本化的可序列化事件。 Messenger 消息可能会包含此内容
 信封，但信封是持久的合同。</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="p">{</span>
 <a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">  </span><span class="nt">"eventId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"c93e6077-b913-4a35-bb7c-ef4e3f795df5"</span><span class="p">,</span>
@@ -5494,7 +5494,7 @@
 <tr>
 <td><code>(source_type, source_id, funding_kind)</code></td>
 <td>独特</td>
-<td>商业重复防御。</td>
+<td>业务重复防御。</td>
 </tr>
 <tr>
 <td><code>settlement_plan.funding_fingerprint</code></td>
@@ -5967,7 +5967,7 @@
 <li>第一阶段的利率值表示为整数基点；任意小数
   费率需要专门的审查原语。</li>
 <li>所有金额比较都使用 <code>BigInteger</code>/<code>BigRational</code>，而不是词汇字符串。</li>
-<li>钱包适配器验证最终发布整数是否符合钱包支持的要求
+<li>钱包适配器验证最终发布的整数是否符合钱包支持的要求
   数据库/PHP 范围。超出范围的分配将成为不可重试的手动审核
   失败；它永远不会被截断。</li>
 </ul>
@@ -6094,7 +6094,7 @@
 <tr>
 <td><code>rule_uuid</code></td>
 <td>字符串(36)</td>
-<td>仅在结算内标量父引用或本地关系。</td>
+<td>仅在结算内标量父引用或局部关系。</td>
 </tr>
 <tr>
 <td><code>version</code></td>
@@ -6307,7 +6307,7 @@
 <ul>
 <li><code>funding_amount_quantum &gt; 0</code>。</li>
 <li>货币和计算规模永远不会改变。</li>
-<li>快照和跟踪在规划后永远不会改变。</li>
+<li>快照和跟踪在计划后永远不会改变。</li>
 <li>两个精度域中的<code>allocated + unallocated = funding</code>。</li>
 <li>在成功的终端计划状态之前，<code>unallocated</code>为零。</li>
 <li>计划在尝试发布后绝不会更改收件人或分配金额；修正
@@ -6565,7 +6565,7 @@
 <p>持久化实现可以派生 <code>posting</code>、<code>partially_posted</code> 和 <code>posted</code>
 来自分配状态，但外部可见状态必须具有这些语义。</p>
 <p><code>planned</code>不锁定退款来源。第一个 <code>posted</code> 分配集
-<code>refund_locked_at</code>;因此 <code>partially_posted</code> 计划已经具有最终锁定。</p>
+<code>refund_locked_at</code>；因此 <code>partially_posted</code> 计划已经具有最终锁定。</p>
 <p>计划没有钱包端保留/释放状态。一旦分配为<code>posted</code>，资金
 属于接收者，计划仅跟踪这些优惠券的撤销证据。</p>
 <h3 id="102">10.2 分配状态<a class="headerlink" href="#102" title="Permanent link">&para;</a></h3>
@@ -7064,7 +7064,7 @@
 <td>钱包凭证外部身份</td>
 </tr>
 <tr>
-<td>反转参考</td>
+<td>逆转参考</td>
 <td>原始凭证冲销身份</td>
 </tr>
 </tbody>
@@ -7134,7 +7134,7 @@
 <tbody>
 <tr>
 <td>P0</td>
-<td>添加<code>brick/math</code>；精确数量/舍入原语；单元测试。</td>
+<td>添加<code>brick/math</code>；精确数量/舍入基元；单元测试。</td>
 <td>不使用浮子；溢出和18级测试。</td>
 </tr>
 <tr>
@@ -7284,7 +7284,7 @@ P2之后。即使 P5 是第一个生产集成，该核心仍然是通用的。</
    配置后备分配。</li>
 <li>尽管重新交付，钱包每次分配只会收到一张优惠券/交易。</li>
 <li><code>T+0</code> 收款人余额立即可用。</li>
-<li>首次分配过帐后，付款退款将被阻止。</li>
+<li>首次分配过账后，付款退款将被阻止。</li>
 <li>操作员冲销冲销确切的过帐凭证。</li>
 <li>明确的最终性解锁可以实现正常的来源退款。</li>
 <li><code>T+N</code> 分配在预定时间之前不会发布，然后只发布一次；
@@ -7337,7 +7337,7 @@ P2之后。即使 P5 是第一个生产集成，该核心仍然是通用的。</
 </tr>
 <tr>
 <td>未来 A/R-A/P 交接</td>
-<td>在不破坏结算历史记录的情况下解决<code>reversal_pending</code>的合同。</td>
+<td>在不破坏结算历史记录的情况下解决<code>reversal_pending</code>的合约。</td>
 </tr>
 </tbody>
 </table>

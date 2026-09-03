@@ -3116,7 +3116,7 @@
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="x">public function resetMarkingAction($entity)</span>
 </code></pre></div></li>
 <li><strong>说明：</strong> 路由声明占位符<code>{id}</code>，但操作参数名为<code>$entity</code>。 Symfony 的 <code>ControllerArgumentResolver</code> 将路由占位符解析为<strong>按名称</strong>的参数，因此 <code>{id}</code> 永远不能注入到 <code>$entity</code> 中。</li>
-<li><strong>影响：</strong> 对 <code>PUT /{id}/status-reset</code> 的每个请求都会失败，并出现无法解析的控制器参数 <code>RuntimeException</code> (500)。端点完全损坏。此外，即使参数是可解析的，代码也会直接在注入的内容上调用 <code>$entity-&gt;setStatus([])</code> — 即原始 <code>id</code> （字符串/整数），而不是实体，并且它<strong>永远不会从服务加载实体</strong>。第二条失败路径。</li>
+<li><strong>影响：</strong> 对 <code>PUT /{id}/status-reset</code> 的每个请求都会失败，并出现无法解析的控制器参数 <code>RuntimeException</code> (500)。端点完全损坏。此外，即使参数是可解析的，代码也会直接在注入的任何内容上调用 <code>$entity-&gt;setStatus([])</code> — 即原始 <code>id</code> （字符串/整数），而不是实体，并且它<strong>永远不会从服务加载实体</strong>。第二条失败路径。</li>
 <li><strong>复制：</strong></li>
 <li>构建一个由<code>WorkflowApiViewMixin</code>和<code>#[Route('/{id}/status-reset')]</code>组成的控制器。
   2.<code>PUT /1/status-reset</code>。

@@ -2941,7 +2941,7 @@
   <a href="#bug-6-default_locale-zh" class="md-nav__link">
     <span class="md-ellipsis">
       
-        BUG-6 — default_locale: zh 不会成为活动区域设置 — 有效默认值为英语 — 低
+        BUG-6 — default_locale: zh 不会成为活动区域设置 — 有效的默认值是英语 — 低
       
     </span>
   </a>
@@ -3215,13 +3215,13 @@
 <h3 id="bug-5-500-html-404-json">BUG-5 — 系统端点为未知实体返回 500 HTML（不是 404 JSON） — <strong>中</strong><a class="headerlink" href="#bug-5-500-html-404-json" title="Permanent link">&para;</a></h3>
 <ul>
 <li><strong>位置：</strong> <code>src/Core/EventListener/ExceptionInterceptor.php:21</code> (<code>EFFECTIVE_PATTERN = '/^\/(api)\/.*$/'</code>); <code>src/Core/Controller/System/EntityController.php:66-67</code>（<code>getClassMetadata</code> 对于未知的 FQCN 抛出异常）。</li>
-<li><strong>描述：</strong>拦截器仅处理 <code>/api/*</code> 路径，因此 <code>/system/entities/{name}</code> 上的 <code>MappingException</code> （未知实体）会绕过 JSON 错误信封并呈现 Symfony 的 HTML 错误页面 (500)。 <code>docs/ai/context.md</code> §12 中的文档暗示这些是 API 式系统端点；消费者获得 HTML。</li>
+<li><strong>描述：</strong>拦截器仅处理 <code>/api/*</code> 路径，因此 <code>/system/entities/{name}</code> 上的 <code>MappingException</code> （未知实体）会绕过 JSON 错误信封并呈现 Symfony 的 HTML 错误页面 (500)。 <code>docs/ai/context.md</code> §12 中的文档暗示这些是 API-ish 系统端点；消费者获得 HTML。</li>
 <li><strong>影响：</strong> 系统端点没有 JSON 错误契约；错误的实体名称是 500（服务器错误）而不是 404。</li>
 <li><strong>复制：</strong> <code>GET /system/entities/App/Does/Not/Exist</code> → <code>500 text/html</code> 与 <code>Doctrine\Persistence\Mapping\MappingException: Class 'App\Does\Not\Exist' does not exist</code>。</li>
 <li><strong>建议的修复：</strong> 将拦截器模式扩展到 <code>/system</code> （或在 <code>EntityController::retrieveAction()</code> 和 <code>warning(…, 404, …, 404)</code> 中捕获 <code>MappingException</code>）。</li>
 <li><strong>测试：</strong> <code>testMissingEntityReturns500HtmlCurrently</code>（回归，通过）； <code>testMissingEntityShouldReturn404Json</code>（正确行为，<strong>跳过</strong>）。</li>
 </ul>
-<h3 id="bug-6-default_locale-zh">BUG-6 — <code>default_locale: zh</code> 不会成为活动区域设置 — 有效默认值为英语 — <strong>低</strong><a class="headerlink" href="#bug-6-default_locale-zh" title="Permanent link">&para;</a></h3>
+<h3 id="bug-6-default_locale-zh">BUG-6 — <code>default_locale: zh</code> 不会成为活动区域设置 — 有效的默认值是英语 — <strong>低</strong><a class="headerlink" href="#bug-6-default_locale-zh" title="Permanent link">&para;</a></h3>
 <ul>
 <li><strong>位置：</strong> <code>config/packages/translation.yaml:2</code> (<code>default_locale: zh</code>);框架 <code>Symfony\Component\HttpKernel\EventListener\LocaleListener</code> 仅将<em>默认</em>区域设置设置为优先级 100，并且在没有显式 <code>_locale</code> 的情况下绝不会激活它；应用程序的自定义 <code>App\Core\EventListener\LocaleListener</code> （优先级 20）仅覆盖匹配的 <code>?_locale</code>/Accept-Language。</li>
 <li><strong>描述：</strong> 没有区域设置提示时，活动请求区域设置保持 <code>en</code> （PHP <code>Request</code> 默认值） - 在 <code>reqDefaultLocale=zh</code> 时验证 <code>reqLocale=en</code>/<code>translatorLocale=en</code>。因此，<code>default_locale: zh</code> 只为翻译器提供缺失键的后备（这可能会产生奇怪的 en-with-zh-fallback 混合）。 LocaleListener 文档块和 <code>docs/ai/context.md</code> 都声明回退 <code>en</code>，它与<em>有效</em>行为匹配，但与配置相矛盾。</li>
@@ -3291,7 +3291,7 @@
 <li>修复 BUG-2（键入 <code>__metadata</code>/无动态属性），使 <code>@expands</code> 不再失败 <code>failOnDeprecation</code>。</li>
 <li>使<code>ListApiViewMixin</code>映射<code>ValidatorException</code>→400（BUG-3）并验证<code>@order</code>。</li>
 <li>将 <code>/system</code> 前缀添加到 ExceptionInterceptor (BUG-5) 并捕获 404 JSON 的 <code>MappingException</code>。</li>
-<li>在标签检测之前标准化操作Id (BUG-7) 并将 <code>default_locale</code> 配置与实际行为对齐 (BUG-6)。</li>
+<li>在标签检测之前规范化操作Id (BUG-7) 并将 <code>default_locale</code> 配置与实际行为对齐 (BUG-6)。</li>
 </ol>
 
 

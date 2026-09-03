@@ -3947,7 +3947,7 @@
 <h3 id="33">3.3 付款扣除<a class="headerlink" href="#33" title="Permanent link">&para;</a></h3>
 <p>支付发票的钱包余额扣减归Wallet所有，因为该操作是通过钱包余额转账和冲销实现的。</p>
 <p><strong>表</strong>：<code>wallet_payment_deduction</code></p>
-<p><strong>用途</strong>：在所选网关处理剩余金额之前，记录应用于付款发票的钱包余额金额。</p>
+<p><strong>用途</strong>：在所选网关处理剩余金额之前记录应用于付款发票的钱包余额金额。</p>
 <table>
 <thead>
 <tr>
@@ -4534,7 +4534,7 @@
 </ul>
 <hr />
 <h2 id="10">10. 资金处理合同<a class="headerlink" href="#10" title="Permanent link">&para;</a></h2>
-<p>与贸易模块相同的合约：</p>
+<p>与贸易模块相同的合同：</p>
 <table>
 <thead>
 <tr>
@@ -4585,7 +4585,7 @@
 </tr>
 <tr>
 <td><code>tests/Wallet/Service/TransferServiceTest.php</code></td>
-<td><strong>20个单元测试</strong>：存款（happy/wallet-not-found/frozen/idempot/rollback/em-close）、转账（happy/same-wallet/source-not-found/target-not-found/frozen/currency/insufficient/idempot/deadlock/rollback/em-close）</td>
+<td><strong>20个单元测试</strong>：存款（happy/wallet-not-found/frozen/idempot/rollback/em-close），转账（happy/same-wallet/source-not-found/target-not-found/frozen/currency/insufficient/idempot/deadlock/rollback/em-close）</td>
 </tr>
 <tr>
 <td><code>tests/Wallet/Service/Payment/WalletBalanceAdjustmentProviderTest.php</code></td>
