@@ -407,7 +407,7 @@ mixIdToCommonFilter(id)
 | R1 | Controller MUST extend `RestController` |
 | R2 | Controller MUST `use ApiView` trait |
 | R3 | Controller MUST set `protected ?string $serviceClass` |
-| R4 | App (public) controllers MUST NOT use Create/Update/Delete mixins |
+| R4 | Public (anonymous) controllers (`Controller/Public/`) MUST NOT use Create/Update/Delete mixins; App controllers (`Controller/App/`) are authenticated client-facing APIs and MAY use those mixins when writes are ownership-scoped and authorization-checked |
 | R5 | Manage (admin) controllers MUST be guarded by `#[IsGranted('ROLE_ADMIN')]` |
 | R6 | Admin CRUD controllers MUST declare `$requiredCreateProperties` and `$acceptedCreateProperties` |
 | R7 | Every public action MUST have `#[OA\*]` OpenAPI attributes |

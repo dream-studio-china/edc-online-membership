@@ -7,7 +7,7 @@
 
 ## 1. Entity Base Contract
 
-Every entity MUST have:
+Every **CRUD aggregate** entity MUST have (defaults for domain aggregates such as `Category`, `Order`, `Wallet`, `Store`, etc.):
 
 | Element | Requirement |
 |---------|-------------|
@@ -17,6 +17,14 @@ Every entity MUST have:
 | Created timestamp | `$createdAt` (DateTimeImmutable) |
 | Updated timestamp | `$updatedAt` (DateTimeImmutable) |
 | `__toString()` method | Returns human-readable identifier |
+
+> **Exception categories** (not CRUD aggregates): Inbox/Outbox event records
+> (`eventId` identity, claim fields, no `updatedAt`/`__toString`), append-only
+> audit / ledger / projection records, join / pivot tables, DTO / value objects,
+> and infrastructure records. Those records may omit `createdAt/updatedAt`,
+> `__toString()`, or a dedicated repository per projection and are documented
+> in the owning bundle doc. The table above is the default, not a universal
+> requirement.
 
 ```php
 #[ORM\Entity(repositoryClass: XxxRepository::class)]
@@ -261,15 +269,17 @@ private ?array $snapshot = null;
 
 **Populated at creation** (in `#[ORM\PrePersist]` or service method), never updated.
 
-### 7.4 Optimistic Locking
+### 7.4 Wallet Concurrency — Pessimistic Lock + Manual Version
 
-```php
-#[ORM\Version]
-#[ORM\Column]
-private int $version = 1;
-```
+Wallet balances use `SELECT ... FOR UPDATE` (pessimistic locking) with a manually
+incremented `version` column (`SET version = version + 1`). There is **no**
+`#[ORM\Version]` mapping. The `version` field is an ordinary `int` column
+used only for audit ordering, not for Doctrine optimistic-lock checks.
 
-**Use when**: Concurrent updates to the same record risk data corruption (e.g., wallet balances).
+See `docs/design/bundles/wallet.md` §4 for the locked transfer / deposit / withdrawal
+flows. For other aggregates that handle money or inventory, use the same service-layer
+pessimistic-lock + explicit bump pattern and do not introduce `#[ORM\Version]` without
+a documented decision.
 
 ### 7.5 Polymorphic Association
 

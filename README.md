@@ -6,6 +6,8 @@ A Symfony 8.1 backend foundation for modular CRUD and transaction-heavy APIs. It
 
 > Documentation site: [GitHub Pages](https://immane.github.io/crud-skeleton) | Development manual: [docs/manual/index.md](docs/manual/index.md) | Architecture: [docs/design/system-architecture.md](docs/design/system-architecture.md)
 
+> **Production status**: Inventory (`INVENTORY_ENABLED`) is preview-only and must stay `0` outside isolated dev/test; health checks, rate limiting, and metrics are implemented (rate-limit cache is per-process filesystem — use Redis for multi-worker). See `docs/ai/context.md` §22–24 and `docs/testing/crud-skeleton-production/PRODUCTION_VALIDATION.md`; known defects in `docs/issues/coverage-2026-08-09/README.md`.
+
 ## Architecture
 
 The application is a layered Symfony API: controllers compose trait-based view mixins over `BaseService` (CRUD + dynamic query), services own business rules, and Doctrine ORM persists to MySQL. It is a modular monolith whose modules collaborate through explicit service and event boundaries within one Symfony application.
