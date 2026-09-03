@@ -86,8 +86,8 @@ sequenceDiagram
     participant W as Wallet
     participant Se as Settlement
 
-    Note over T,S: X-Store-Code → StoreContext；StoreSettings 控制接受/核销
-    Note over S,I: INVENTORY_ENABLED=0（默认）跳过预留
+    Note over T,S: StoreContext via X-Store-Code, StoreSettings 控制接受/核销
+    Note over S,I: INVENTORY_ENABLED 为 0 默认跳过预留
 
     T->>T: createOrder() store_submit（事务）
     T->>TO: trade.order.created.v1（事务）
@@ -126,7 +126,7 @@ sequenceDiagram
     end
     P->>T: InvoicePaidEvent → 已支付（同步）
 
-    Note over P,Se: 尚无 Payment→Settlement 事件（设计如此）
+    Note over P,Se: 尚无 Payment 到 Settlement 事件（设计如此）
     Se->>Se: 外部资金确认 → 计划/分账（事务）
     Se->>Se: outbox 异步发布分账
     Se->>W: 经 Wallet port 凭证入账

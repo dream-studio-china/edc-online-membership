@@ -93,8 +93,8 @@ sequenceDiagram
     participant W as Wallet
     participant Se as Settlement
 
-    Note over T,S: X-Store-Code → StoreContext; StoreSettings controls acceptance/verification
-    Note over S,I: INVENTORY_ENABLED=0 (default) skips reservation
+    Note over T,S: StoreContext via X-Store-Code, StoreSettings controls acceptance
+    Note over S,I: INVENTORY_ENABLED is 0 by default, skips reservation
 
     T->>T: createOrder() store_submit (txn)
     T->>TO: trade.order.created.v1 (txn)
@@ -133,7 +133,7 @@ sequenceDiagram
     end
     P->>T: InvoicePaidEvent → paid (sync)
 
-    Note over P,Se: No Payment→Settlement event (by design)
+    Note over P,Se: No Payment to Settlement event (by design)
     Se->>Se: external funding confirmation → plan/allocations (txn)
     Se->>Se: outbox posts allocations async
     Se->>W: voucher credit via Wallet port

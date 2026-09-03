@@ -86,8 +86,8 @@ sequenceDiagram
     participant W as Wallet
     participant Se as Settlement
 
-    Note over T,S: X-Store-Code → StoreContext；StoreSettings が受付/検証を制御
-    Note over S,I: INVENTORY_ENABLED=0（デフォルト）は予約をスキップ
+    Note over T,S: StoreContext via X-Store-Code, StoreSettings が受付/検証を制御
+    Note over S,I: INVENTORY_ENABLED は 0 がデフォルトで予約をスキップ
 
     T->>T: createOrder() store_submit（トランザクション）
     T->>TO: trade.order.created.v1（トランザクション）
@@ -126,7 +126,7 @@ sequenceDiagram
     end
     P->>T: InvoicePaidEvent → paid（同期）
 
-    Note over P,Se: Payment→Settlement イベントなし（設計上）
+    Note over P,Se: No Payment to Settlement event (by design)
     Se->>Se: 外部資金確認 → プラン/分配（トランザクション）
     Se->>Se: outbox が分配を非同期で発行
     Se->>W: Wallet port 経由でバウチャーを入金
