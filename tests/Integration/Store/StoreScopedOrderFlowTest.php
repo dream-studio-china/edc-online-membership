@@ -63,6 +63,10 @@ final class StoreScopedOrderFlowTest extends IntegrationWebTestCase
             'payload' => $tradeOutbox[0]->getPayload(),
         ]));
 
+        $storeOrder = $container->get(\App\Store\Repository\StoreOrderRepository::class)->findOneByTradeOrderUuid($orderUuid);
+        self::assertSame(\App\Store\Entity\StoreOrder::STATUS_PENDING_VALIDATION, $storeOrder->getOperationalStatus());
+        $container->get(\App\Store\Service\StoreOrderServiceInterface::class)->accept($storeOrder);
+
         $storeOutbox = $container->get(StoreOutboxMessageRepository::class)->findUnpublished();
         self::assertCount(1, $storeOutbox);
         $container->get(\App\Trade\MessageHandler\StoreOrderAcceptedHandler::class)(new StoreOrderAcceptedMessage([

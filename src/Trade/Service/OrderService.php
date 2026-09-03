@@ -135,37 +135,33 @@ final class OrderService extends BaseService implements OrderServiceInterface
                 if ($this->workflow === null || $this->outboxService === null) {
                     throw new \RuntimeException('Store order orchestration is not configured.');
                 }
-                // Optional acceptance: GuardListener blocks store_submit when requireAcceptance=false
+                // Always create StoreOrder when store is present - go through store_submit
                 if (!$this->workflow->can($order, 'store_submit')) {
-                    // If store requires acceptance but transition blocked for other reason, throw
-                    $requireAcceptance = $this->isStoreRequireAcceptance($storeContext->storeUuid);
-                    if ($requireAcceptance) {
-                        throw new \RuntimeException('Order cannot be submitted for store acceptance.');
-                    }
-                    // Acceptance disabled → leave order as draft (metadata retained), no outbox
-                } else {
-                    $this->workflow->apply($order, 'store_submit');
-                    $this->outboxService->record('trade.order.created.v1', 'trade_order', $order->getUuid(), [
-                        'orderUuid' => $order->getUuid(),
-                        'store' => $storeContext->toSnapshot(),
-                        'customerUserUuid' => $order->getUser()?->getUuid(),
-                        'currency' => $order->getCurrency(),
-                        'totalAmount' => $order->getTotalAmount(),
-                        'items' => array_map(static fn (OrderItem $item): array => [
-                            'lineId' => $item->getUuid(),
-                            'catalogReference' => $item->getSpecificationUuid() ?? $item->getSpecSnapshot()['uuid'] ?? '',
-                            'quantity' => $item->getQuantity(),
-                            'unitPrice' => $item->getUnitPrice(),
-                            'lineAmount' => $item->getPrice(),
-                            'snapshot' => [
-                                'specification' => $item->getSpecSnapshot() ?? [],
-                                'product' => $item->getProductSnapshot() ?? [],
-                            ],
-                        ], $order->getItems()->toArray()),
-                        'delivery' => is_array($metadata['delivery'] ?? null) ? $metadata['delivery'] : [],
-                        'placedAt' => $order->getCreatedAt()->format(DATE_ATOM),
-                    ]);
+                    throw new \RuntimeException('Order cannot be submitted for store acceptance.');
                 }
+                $this->workflow->apply($order, 'store_submit');
+                $this->outboxService->record('trade.order.created.v1', 'trade_order', $order->getUuid(), [
+                    'orderUuid' => $order->getUuid(),
+                    'store' => $storeContext->toSnapshot(),
+                    'customerUserUuid' => $order->getUser()?->getUuid(),
+                    'currency' => $order->getCurrency(),
+                    'totalAmount' => $order->getTotalAmount(),
+                    'items' => array_map(static fn (OrderItem $item): array => [
+                        'lineId' => $item->getUuid(),
+                        'catalogReference' => $item->getSpecificationUuid() ?? $item->getSpecSnapshot()['uuid'] ?? '',
+                        'quantity' => $item->getQuantity(),
+                        'unitPrice' => $item->getUnitPrice(),
+                        'lineAmount' => $item->getPrice(),
+                        'snapshot' => [
+                            'specification' => $item->getSpecSnapshot() ?? [],
+                            'product' => $item->getProductSnapshot() ?? [],
+                        ],
+                    ], $order->getItems()->toArray()),
+                    'delivery' => is_array($metadata['delivery'] ?? null) ? $metadata['delivery'] : [],
+                    'placedAt' => $order->getCreatedAt()->format(DATE_ATOM),
+                ]);
+                // Keep isStoreRequireAcceptance used for future manual vs auto branching
+                $this->isStoreRequireAcceptance($storeContext->storeUuid);
             }
 
             return $order;
@@ -339,4 +335,5 @@ final class OrderService extends BaseService implements OrderServiceInterface
 
         return StoreSettings::from($store->getSettings())->requireAcceptance;
     }
+
 }

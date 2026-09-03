@@ -54,8 +54,15 @@ final class StoreTradeFlowTest extends StoreTradeFlowTestCase
 
         $storeOrder = $container->get(StoreOrderRepository::class)->findOneByTradeOrderUuid($orderUuid);
         self::assertInstanceOf(StoreOrder::class, $storeOrder);
-        self::assertSame(StoreOrder::STATUS_ACCEPTED, $storeOrder->getOperationalStatus());
+        // With requireAcceptance=true and INVENTORY_ENABLED=0, StoreOrder stays pending_validation for manual acceptance
+        self::assertSame(StoreOrder::STATUS_PENDING_VALIDATION, $storeOrder->getOperationalStatus());
         self::assertSame($store->getUuid(), $storeOrder->getStore()->getUuid());
+
+        // Manual acceptance for requireAcceptance=true
+        $container->get(\App\Store\Service\StoreOrderServiceInterface::class)->accept($storeOrder);
+        $em->clear();
+        $storeOrder = $container->get(StoreOrderRepository::class)->findOneByTradeOrderUuid($orderUuid);
+        self::assertSame(StoreOrder::STATUS_ACCEPTED, $storeOrder->getOperationalStatus());
 
         $storeOutbox = $container->get(StoreOutboxMessageRepository::class)->findUnpublished();
         self::assertCount(1, $storeOutbox);
@@ -199,7 +206,9 @@ final class StoreTradeFlowTest extends StoreTradeFlowTestCase
 
         $storeOrders = $container->get(StoreOrderRepository::class)->findBy(['tradeOrderUuid' => $placed['uuid']]);
         self::assertCount(1, $storeOrders);
-        self::assertSame(StoreOrder::STATUS_ACCEPTED, $storeOrders[0]->getOperationalStatus());
+        self::assertSame(StoreOrder::STATUS_PENDING_VALIDATION, $storeOrders[0]->getOperationalStatus());
+        // Manual accept for requireAcceptance=true
+        $container->get(\App\Store\Service\StoreOrderServiceInterface::class)->accept($storeOrders[0]);
         $storeOutbox = $container->get(StoreOutboxMessageRepository::class)->findUnpublished();
         self::assertCount(1, $storeOutbox);
         self::assertSame('store.order.accepted.v1', $storeOutbox[0]->getTopic());
@@ -224,6 +233,8 @@ final class StoreTradeFlowTest extends StoreTradeFlowTestCase
 
         $storeOrders = $container->get(StoreOrderRepository::class)->findBy(['tradeOrderUuid' => $placed['uuid']]);
         self::assertCount(1, $storeOrders);
+        self::assertSame(StoreOrder::STATUS_PENDING_VALIDATION, $storeOrders[0]->getOperationalStatus());
+        $container->get(\App\Store\Service\StoreOrderServiceInterface::class)->accept($storeOrders[0]);
         $storeOutbox = $container->get(StoreOutboxMessageRepository::class)->findUnpublished();
         self::assertCount(1, $storeOutbox);
         self::assertSame('store.order.accepted.v1', $storeOutbox[0]->getTopic());

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Store\MessageHandler;
 
+use App\Store\DTO\StoreSettings;
 use App\Store\Entity\StoreConsumedEvent;
 use App\Store\Repository\StoreConsumedEventRepository;
 use App\Store\Repository\StoreRepository;
@@ -80,7 +81,13 @@ final readonly class TradeOrderCreatedHandler
                 return;
             }
 
+            $requireAcceptance = StoreSettings::from($store->getSettings())->requireAcceptance;
+
             if (!$this->inventoryEnabled) {
+                // When acceptance is required, keep pending_validation for manual acceptance
+                if ($requireAcceptance) {
+                    return;
+                }
                 $this->storeOrderService->accept($storeOrder);
                 return;
             }
