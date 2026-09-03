@@ -206,16 +206,39 @@ For entities governed by Symfony Workflow state machines:
 | Route | Method | Action |
 |-------|--------|--------|
 | `GET /todo` | todoAction | List entities with available transitions |
-| `GET /{id}/transitions` | availableTransitionsAction | Get enabled transitions for an entity by numeric ID |
-| `POST /{id}/do/{transition}` | doTransitionAction | Execute a workflow transition by numeric ID |
-| `PUT /{id}/status-reset` | resetMarkingAction | Reset state machine marking by numeric ID (admin only) |
+| `GET /{id}/transitions` | availableTransitionsAction | Get enabled transitions for an entity by numeric ID or UUID |
+| `POST /{id}/do/{transition}` | doTransitionAction | Execute a workflow transition by numeric ID or UUID |
+| `PUT /{id}/status-reset` | resetMarkingAction | Reset state machine marking by numeric ID or UUID (admin only) |
 
-Unlike the Detail, Update, and Delete mixins, the current workflow mixin looks up
-`['id' => $id]` directly. It does not support UUID input until it delegates to the
-Core identifier lookup and has regression coverage.
+All three identifier-aware actions resolve `id` through `ApiView::mixIdToCommonFilter()`
+(digit-only → `id`, canonical UUID → `uuid`), merged with `commonFilter()` and
+`authorizeApiAction('workflow', $entity)`. Missing entities return `404`; authorization
+failures return `403`. The `{id}` route parameter accepts `\d+|[0-9a-fA-F-]{36}`.
 
 **Properties** the controller MUST declare:
 - `protected $workflow;` -- the workflow service ID (e.g., `'state_machine.order'`)
+
+### 2.10 Scoped: `ScopedListApiViewMixin` and `ScopedDetailApiViewMixin`
+
+**Files**: `src/Core/View/ScopedListApiViewMixin.php`, `src/Core/View/ScopedDetailApiViewMixin.php`
+
+For nested resources such as `/store/{scopeId}/orders/{id}`:
+
+| Trait | Route | Behavior |
+|-------|-------|----------|
+| `ScopedListApiViewMixin` | `GET /` (parent `/{scopeId}` on the controller) | Calls abstract `scopedListFilter($scopeId)` and lists with `service->list()` |
+| `ScopedDetailApiViewMixin` | `GET /{id}` with `requirements: ['id' => '\\d+|[0-9a-fA-F-]{36}']` | Calls abstract `scopedDetailFilter($scopeId, $id)`; `scopeId` and `id` each accept numeric ID or UUID |
+
+Both `scopeId` and `id` follow the same rule as the core mixins: digit-only → `id`, canonical UUID → `uuid`. Controllers MUST resolve them explicitly via `ApiView::identifierField()` / `identifierCriteria()` or `mixIdToCommonFilter()` and MUST NOT rely on an `id`-then-`uuid` fallback. For Store-scoped controllers, the parent Store is resolved through `StoreScopedAuthorizationApiMixin::storeForAuthorization()`, which now uses `identifierCriteria($scopeId)` so `/store/1/orders/2` and `/store/{storeUuid}/orders/{uuid}` are both valid. Example:
+
+```php
+protected function scopedDetailFilter(string $scopeId, string $id): array
+{
+    return [$this->identifierField($id) => $id, ...$this->storeScopedFilter($this->storeForAuthorization())];
+}
+```
+
+The class-level route SHOULD declare `requirements: ['scopeId' => '\\d+|[0-9a-fA-F-]{36}']` when the parent resource exposes both forms.
 
 ---
 

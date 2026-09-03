@@ -115,13 +115,14 @@ external references should use UUIDs when available.
 |-----------|------------|---------|
 | Batch upsert | `POST /{resource}/batch-update` | `POST /categories/batch-update` |
 | Workflow todo | `GET /{resource}/todo` | `GET /orders/todo` |
-| Workflow transitions | `GET /{resource}/{id}/transitions` | `GET /orders/5/transitions` |
-| Workflow execute | `POST /{resource}/{id}/do/{transition}` | `POST /orders/5/do/confirm` |
-| Workflow reset | `PUT /{resource}/{id}/status-reset` | `PUT /orders/5/status-reset` |
+| Workflow transitions | `GET /{resource}/{id}/transitions` | `GET /orders/5/transitions` or `GET /orders/{uuid}/transitions` |
+| Workflow execute | `POST /{resource}/{id}/do/{transition}` | `POST /orders/5/do/confirm` or `POST /orders/{uuid}/do/confirm` |
+| Workflow reset | `PUT /{resource}/{id}/status-reset` | `PUT /orders/5/status-reset` or `PUT /orders/{uuid}/status-reset` |
 
-The current `WorkflowApiViewMixin` resolves workflow targets by local numeric `id`
-only. A workflow endpoint must not document UUID input until the mixin uses the Core
-identifier lookup and is covered by regression tests.
+`WorkflowApiViewMixin` resolves workflow targets through the Core identifier lookup
+(`mixIdToCommonFilter()`): digit-only values as local `id`, canonical UUID values
+as `uuid`, merged with `commonFilter()` and authorization. It returns `404` when the
+identifier is not found and `403` on authorization failure.
 
 ---
 
