@@ -44,7 +44,7 @@ class Order
     #[ORM\Column(type: 'bigint', options: ['default' => 0])]
     private int $totalAmount = 0;
 
-    #[ORM\Column(type: 'string', length: 10, options: ['default' => 'CNY'])]
+    #[ORM\Column(type: 'string', length: 32, options: ['default' => 'CNY'])]
     private string $currency = 'CNY';
 
     #[ORM\Column(type: 'string', length: 40, options: ['default' => 'draft'])]

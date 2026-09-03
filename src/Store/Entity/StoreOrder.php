@@ -50,7 +50,7 @@ class StoreOrder
     #[ORM\Column(name: 'customer_user_uuid', type: 'string', length: 36, nullable: true)]
     private ?string $customerUserUuid;
 
-    #[ORM\Column(type: 'string', length: 10)]
+    #[ORM\Column(type: 'string', length: 32)]
     private string $currency;
 
     #[ORM\Column(name: 'total_amount', type: 'bigint')]
