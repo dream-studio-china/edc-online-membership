@@ -86,8 +86,8 @@ sequenceDiagram
     participant W as Wallet
     participant Se as Settlement
 
-    Note over T,S: X-Store-Code → StoreContext；StoreSettings 控制接受/核銷
-    Note over S,I: INVENTORY_ENABLED=0（預設）跳過預留
+    Note over T,S: StoreContext via X-Store-Code, StoreSettings 控制接受/核銷
+    Note over S,I: INVENTORY_ENABLED 為 0 預設跳過預留
 
     T->>T: createOrder() store_submit（交易）
     T->>TO: trade.order.created.v1（交易）
@@ -126,7 +126,7 @@ sequenceDiagram
     end
     P->>T: InvoicePaidEvent → 已支付（同步）
 
-    Note over P,Se: 尚無 Payment→Settlement 事件（設計如此）
+    Note over P,Se: 尚無 Payment 到 Settlement 事件（設計如此）
     Se->>Se: 外部資金確認 → 計畫/分帳（交易）
     Se->>Se: outbox 非同步發布分帳
     Se->>W: 經 Wallet port 憑證入帳
