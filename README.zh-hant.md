@@ -101,7 +101,7 @@ sequenceDiagram
     else 預留分支
         S->>SO: inventory.reservation.requested.v1（交易）
         SO-->>I: 投遞
-        I->>I: reserve()（交易）— 按 Stock 的 allowNegativeStock
+        I->>I: reserve txn per Stock allowNegativeStock
         alt 預留被拒絕
             I->>IO: inventory.reservation.rejected.v1（交易）
         else 預留已確認
@@ -115,8 +115,8 @@ sequenceDiagram
     T->>T: store_accept / store_reject
 
     Note over T,P: 僅在 StoreSettings 要求時才需 store_accept，隨後顯式確認
-    T->>P: 建立並支付發票（同步）；經 Wallet 的 wallet_balance 抵扣
-    opt 提供 walletAmount
+    T->>P: 建立並支付發票同步經 Wallet wallet_balance 抵扣
+    opt wallet amount
         P->>W: 抵扣轉帳（交易）
     end
     alt 全額抵扣 / 錢包
@@ -124,10 +124,10 @@ sequenceDiagram
     else 外部網關
         P->>P: 支付中直至回呼
     end
-    P->>T: InvoicePaidEvent → 已支付（同步）
+    P->>T: InvoicePaidEvent 到 已支付 同步
 
     Note over P,Se: 尚無 Payment 到 Settlement 事件（設計如此）
-    Se->>Se: 外部資金確認 → 計畫/分帳（交易）
+    Se->>Se: 外部資金確認到 計畫分帳 交易
     Se->>Se: outbox 非同步發布分帳
     Se->>W: 經 Wallet port 憑證入帳
 ```

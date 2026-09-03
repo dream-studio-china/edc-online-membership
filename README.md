@@ -108,7 +108,7 @@ sequenceDiagram
     else reservation branch
         S->>SO: inventory.reservation.requested.v1 (txn)
         SO-->>I: relay
-        I->>I: reserve() (txn) — per-Stock allowNegativeStock
+        I->>I: reserve txn per Stock allowNegativeStock
         alt rejected
             I->>IO: inventory.reservation.rejected.v1 (txn)
         else confirmed
@@ -122,8 +122,8 @@ sequenceDiagram
     T->>T: store_accept / store_reject
 
     Note over T,P: Payment requires store_accept where enforced, then explicit confirmation
-    T->>P: create & pay invoice (sync); wallet_balance adjustment via Wallet provider
-    opt walletAmount
+    T->>P: create and pay invoice sync with wallet_balance adjustment
+    opt wallet amount
         P->>W: deduction transfer (txn)
     end
     alt fully adjusted / wallet
@@ -131,10 +131,10 @@ sequenceDiagram
     else external gateway
         P->>P: paying until callback
     end
-    P->>T: InvoicePaidEvent → paid (sync)
+    P->>T: InvoicePaidEvent to paid sync
 
     Note over P,Se: No Payment to Settlement event (by design)
-    Se->>Se: external funding confirmation → plan/allocations (txn)
+    Se->>Se: external funding to plan allocations (txn)
     Se->>Se: outbox posts allocations async
     Se->>W: voucher credit via Wallet port
 ```

@@ -101,7 +101,7 @@ sequenceDiagram
     else 予約ブランチ
         S->>SO: inventory.reservation.requested.v1（トランザクション）
         SO-->>I: リレー
-        I->>I: reserve()（トランザクション）— Stock ごとの allowNegativeStock
+        I->>I: reserve txn per Stock allowNegativeStock
         alt 拒否
             I->>IO: inventory.reservation.rejected.v1（トランザクション）
         else 確認
@@ -115,8 +115,8 @@ sequenceDiagram
     T->>T: store_accept / store_reject
 
     Note over T,P: StoreSettings が要求する場合のみ store_accept が必要、その後明示的に確認
-    T->>P: 請求書を作成して決済（同期）；Wallet の wallet_balance 調整経由
-    opt walletAmount
+    T->>P: 請求書を作成して決済同期 Wallet wallet_balance 調整経由
+    opt wallet amount
         P->>W: 控除振替（トランザクション）
     end
     alt 全額調整 / ウォレット
@@ -124,10 +124,10 @@ sequenceDiagram
     else 外部ゲートウェイ
         P->>P: コールバックまで支払い中
     end
-    P->>T: InvoicePaidEvent → paid（同期）
+    P->>T: InvoicePaidEvent to paid sync
 
     Note over P,Se: No Payment to Settlement event (by design)
-    Se->>Se: 外部資金確認 → プラン/分配（トランザクション）
+    Se->>Se: 外部資金確認 to プラン分配 トランザクション
     Se->>Se: outbox が分配を非同期で発行
     Se->>W: Wallet port 経由でバウチャーを入金
 ```
