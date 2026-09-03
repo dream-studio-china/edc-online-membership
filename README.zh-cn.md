@@ -71,7 +71,7 @@ sequenceDiagram
 
 ### 电商编排
 
-订单履约会跨越同步事务边界与异步事件投递。结算在图中被刻意独立展示：它由外部确认的资金启动，而不是由尚未实现的 Payment-to-Settlement 事件触发。
+订单履约会跨越同步事务边界与异步事件投递。门店接受/核销由 `StoreSettings` 控制（默认无需核销——自动接受），库存预留由 `INVENTORY_ENABLED` 控制（默认 `0`=关闭）。结算在图中被刻意独立展示：它由外部确认的资金启动，而不是由尚未实现的 Payment-to-Settlement 事件触发。
 
 ```mermaid
 sequenceDiagram
@@ -86,45 +86,50 @@ sequenceDiagram
     participant W as Wallet
     participant Se as Settlement
 
-    T->>T: 创建门店订单（事务）<br/>store_submit
-    T->>TO: 同一事务：订单创建事件
-    TO-->>S: 异步投递与处理
+    Note over T,S: X-Store-Code → StoreContext；StoreSettings 控制接受/核销
+    Note over S,I: INVENTORY_ENABLED=0（默认）跳过预留
+
+    T->>T: createOrder() store_submit（事务）
+    T->>TO: trade.order.created.v1（事务）
+    TO-->>S: 投递
 
     alt 门店不可用
-        S->>SO: 同一事务：订单拒绝事件
-    else 库存功能关闭
-        S->>SO: 同一事务：订单接受事件
-    else 库存功能启用
-        S->>SO: 同一事务：库存预留请求
-        SO-->>I: 异步投递与处理
+        S->>SO: store.order.rejected.v1 STORE_UNAVAILABLE（事务）
+    else INVENTORY_ENABLED=0 或直接接受
+        S->>S: 接受门店订单（事务）
+        S->>SO: store.order.accepted.v1（事务）
+    else 预留分支
+        S->>SO: inventory.reservation.requested.v1（事务）
+        SO-->>I: 投递
+        I->>I: reserve()（事务）— 按 Stock 的 allowNegativeStock
         alt 预留被拒绝
-            I->>IO: 同一事务：预留拒绝事件
+            I->>IO: inventory.reservation.rejected.v1（事务）
         else 预留已确认
-            I->>IO: 同一事务：预留确认事件
+            I->>IO: inventory.reservation.confirmed.v1（事务）
         end
-        IO-->>S: 异步投递与处理
-        S->>SO: 同一事务：订单接受或拒绝
+        IO-->>S: 投递
+        S->>S: 根据结果接受 / 拒绝（事务）
+        S->>SO: store.order.accepted.v1 或 rejected.v1（事务）
     end
-    SO-->>T: 异步投递与处理
-    T->>T: store_accept 或 store_reject
+    SO-->>T: 投递
+    T->>T: store_accept / store_reject
 
-    Note over T,P: 支付要求 store_accept，随后显式确认
-    T->>P: 创建并支付发票（同步）
+    Note over T,P: 仅在 StoreSettings 要求时才需 store_accept，随后显式确认
+    T->>P: 创建并支付发票（同步）；经 Wallet 的 wallet_balance 抵扣
     opt 提供 walletAmount
-        P->>W: 立即钱包扣款 / 转账
+        P->>W: 抵扣转账（事务）
     end
-    alt 钱包支付或抵扣覆盖全额
-        P->>P: 将发票标记为已支付
+    alt 全额抵扣 / 钱包
+        P->>P: 标记已支付
     else 外部网关
-        P->>P: 发票保持支付中，直至回调
+        P->>P: 支付中直至回调
     end
-    P->>T: InvoicePaidEvent 同步更新订单
+    P->>T: InvoicePaidEvent → 已支付（同步）
 
-    Note over P,Se: 尚未实现 Payment-to-Settlement 事件
-    Se->>Se: 外部资金确认（异步）
-    Se->>Se: 创建计划、分账与审计快照（事务）
-    Se->>Se: 结算 outbox 异步发布分账
-    Se->>W: 通过 Wallet port 进行凭证入账
+    Note over P,Se: 尚无 Payment→Settlement 事件（设计如此）
+    Se->>Se: 外部资金确认 → 计划/分账（事务）
+    Se->>Se: outbox 异步发布分账
+    Se->>W: 经 Wallet port 凭证入账
 ```
 
 ## 目录

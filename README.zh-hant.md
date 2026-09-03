@@ -71,7 +71,7 @@ sequenceDiagram
 
 ### 電商編排
 
-訂單履約會跨越同步交易邊界與非同步事件投遞。結算在圖中被刻意獨立展示：它由外部確認的資金啟動，而不是由尚未實作的 Payment-to-Settlement 事件觸發。
+訂單履約會跨越同步交易邊界與非同步事件投遞。門店接受/核銷由 `StoreSettings` 控制（預設無需核銷——自動接受），庫存預留由 `INVENTORY_ENABLED` 控制（預設 `0`=關閉）。結算在圖中被刻意獨立展示：它由外部確認的資金啟動，而不是由尚未實作的 Payment-to-Settlement 事件觸發。
 
 ```mermaid
 sequenceDiagram
@@ -86,45 +86,50 @@ sequenceDiagram
     participant W as Wallet
     participant Se as Settlement
 
-    T->>T: 建立門店訂單（交易）<br/>store_submit
-    T->>TO: 同一交易：訂單建立事件
-    TO-->>S: 非同步投遞與處理
+    Note over T,S: X-Store-Code → StoreContext；StoreSettings 控制接受/核銷
+    Note over S,I: INVENTORY_ENABLED=0（預設）跳過預留
+
+    T->>T: createOrder() store_submit（交易）
+    T->>TO: trade.order.created.v1（交易）
+    TO-->>S: 投遞
 
     alt 門店不可用
-        S->>SO: 同一交易：訂單拒絕事件
-    else 庫存功能關閉
-        S->>SO: 同一交易：訂單接受事件
-    else 庫存功能啟用
-        S->>SO: 同一交易：庫存預留請求
-        SO-->>I: 非同步投遞與處理
+        S->>SO: store.order.rejected.v1 STORE_UNAVAILABLE（交易）
+    else INVENTORY_ENABLED=0 或直接接受
+        S->>S: 接受門店訂單（交易）
+        S->>SO: store.order.accepted.v1（交易）
+    else 預留分支
+        S->>SO: inventory.reservation.requested.v1（交易）
+        SO-->>I: 投遞
+        I->>I: reserve()（交易）— 按 Stock 的 allowNegativeStock
         alt 預留被拒絕
-            I->>IO: 同一交易：預留拒絕事件
+            I->>IO: inventory.reservation.rejected.v1（交易）
         else 預留已確認
-            I->>IO: 同一交易：預留確認事件
+            I->>IO: inventory.reservation.confirmed.v1（交易）
         end
-        IO-->>S: 非同步投遞與處理
-        S->>SO: 同一交易：訂單接受或拒絕
+        IO-->>S: 投遞
+        S->>S: 根據結果接受 / 拒絕（交易）
+        S->>SO: store.order.accepted.v1 或 rejected.v1（交易）
     end
-    SO-->>T: 非同步投遞與處理
-    T->>T: store_accept 或 store_reject
+    SO-->>T: 投遞
+    T->>T: store_accept / store_reject
 
-    Note over T,P: 支付要求 store_accept，隨後顯式確認
-    T->>P: 建立並支付發票（同步）
+    Note over T,P: 僅在 StoreSettings 要求時才需 store_accept，隨後顯式確認
+    T->>P: 建立並支付發票（同步）；經 Wallet 的 wallet_balance 抵扣
     opt 提供 walletAmount
-        P->>W: 立即錢包扣款 / 轉帳
+        P->>W: 抵扣轉帳（交易）
     end
-    alt 錢包支付或抵扣覆蓋全額
-        P->>P: 將發票標記為已支付
+    alt 全額抵扣 / 錢包
+        P->>P: 標記已支付
     else 外部網關
-        P->>P: 發票保持支付中，直至回呼
+        P->>P: 支付中直至回呼
     end
-    P->>T: InvoicePaidEvent 同步更新訂單
+    P->>T: InvoicePaidEvent → 已支付（同步）
 
-    Note over P,Se: 尚未實作 Payment-to-Settlement 事件
-    Se->>Se: 外部資金確認（非同步）
-    Se->>Se: 建立計畫、分帳與審計快照（交易）
-    Se->>Se: 結算 outbox 非同步發布分帳
-    Se->>W: 透過 Wallet port 進行憑證入帳
+    Note over P,Se: 尚無 Payment→Settlement 事件（設計如此）
+    Se->>Se: 外部資金確認 → 計畫/分帳（交易）
+    Se->>Se: outbox 非同步發布分帳
+    Se->>W: 經 Wallet port 憑證入帳
 ```
 
 ## 目錄
