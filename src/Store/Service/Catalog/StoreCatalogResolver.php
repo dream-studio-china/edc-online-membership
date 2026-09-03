@@ -17,9 +17,19 @@ final readonly class StoreCatalogResolver implements CatalogResolverInterface
     ) {
     }
 
-    public function resolveForPricing(int $specificationId, ?string $storeCode): ?CatalogItem
+    public function resolveForPricing(int|string $specificationId, ?string $storeCode): ?CatalogItem
     {
-        $specification = $this->specificationRepository->find($specificationId);
+        $specification = null;
+        if (is_int($specificationId) || (is_string($specificationId) && ctype_digit($specificationId))) {
+            $specification = $this->specificationRepository->find((int) $specificationId);
+        }
+        if ($specification === null && is_string($specificationId) && \App\Core\Utils\UUID::is_valid($specificationId)) {
+            $specification = $this->specificationRepository->findOneBy(['uuid' => $specificationId]);
+        }
+        if ($specification === null && is_string($specificationId) && !ctype_digit($specificationId)) {
+            // fallback: try as uuid string directly (already handled above) or as string id
+            $specification = $this->specificationRepository->findOneBy(['uuid' => $specificationId]);
+        }
         if ($specification === null || $specification->getIsDeleted() || !$specification->isActive()) {
             return null;
         }
