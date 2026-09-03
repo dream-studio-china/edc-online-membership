@@ -41,7 +41,8 @@ Each business domain is a self-contained module under `src/`:
 ```
 src/{Module}/
 |-- Controller/
-|   |-- App/              # Public/read-only endpoints
+|   |-- App/              # Client-facing endpoints (authenticated; may include writes when ownership-scoped)
+|   |-- Public/           # Anonymous read-only endpoints (when applicable)
 |   |-- Manage/           # Admin CRUD endpoints
 |-- Entity/               # Domain entities (Doctrine)
 |-- Repository/           # Data access (ServiceEntityRepository)
@@ -60,8 +61,19 @@ src/{Module}/
 | Repository class(es) | Extends `ServiceEntityRepository` |
 | Service class(es) | Extends `BaseService`, implements `{Name}ServiceInterface` |
 | Service interface | Extends `BaseServiceInterface` (can be empty) |
-| App controller(s) | Read-only public endpoints |
+| App controller(s) | Client-facing endpoints (authenticated; writes allowed when ownership/authorization-scoped) |
+| Public controller(s) | Anonymous read-only endpoints (only for safe public data; optional) |
 | Manage controller(s) | CRUD endpoints guarded by `ROLE_ADMIN` |
+
+> **Defaults vs. exceptions**: The table is the default for CRUD aggregates
+> (Category, Content, Order, Wallet, Store, etc.). Explicit exception
+> categories exist for non-CRUD records and are documented in the owning
+> bundle doc (`docs/design/bundles/*`) and `docs/design/data-model.md` §1.1:
+> Inbox/Outbox (append-only + claim, no `updatedAt`/`__toString` per record),
+> immutable audit / projection / ledger records, join / pivot tables, DTO / value
+> objects, and infrastructure records (Messenger, cache). Those records do not
+> require a dedicated repository per projection, `createdAt/updatedAt`, or a
+> full CRUD controller set.
 
 ---
 
