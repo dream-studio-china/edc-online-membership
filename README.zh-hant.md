@@ -6,6 +6,8 @@
 
 > 文件站點: [GitHub Pages](https://immane.github.io/crud-skeleton) | 開發手冊: [docs/manual/index.md](docs/manual/index.md) | 架構: [docs/design/system-architecture.md](docs/design/system-architecture.md)
 
+> **生產狀態**：Inventory（`INVENTORY_ENABLED`）為預覽功能，非隔離開發/測試環境必須保持 `0`；健康檢查、限流與指標已實作（限流快取為進程內文件系統——多 worker 請使用 Redis）。參見 `docs/ai/context.md` §22–24 與 `docs/testing/crud-skeleton-production/PRODUCTION_VALIDATION.md`；已知缺陷見 `docs/issues/coverage-2026-08-09/README.md`。
+
 ## 架構
 
 應用是分層 Symfony API：控制器基於 trait 組合的檢視 mixin 呼叫 `BaseService`（CRUD + 動態查詢），服務承載業務規則，Doctrine ORM 持久化到 MySQL。它是一個模組化單體，各模組在同一個 Symfony 應用內透過顯式的服務與事件邊界協作。
@@ -183,7 +185,7 @@ CRUD Skeleton 面向那些需要超越生成式 CRUD、但暫時不需要分散�
 
 ## 專案結構
 
-倉庫是一個模組化單體：`src/` 存放應用程式碼（Core 框架以及 Common、Identity、Trade、Payment、Wallet、Storage、Authorization 等業務模組），旁邊是 `config/`、`migrations/`、`tests/`、`docs/` 以及 Docker/Compose 檔案。`src/Authorization/` 的種子化與運維見 [Authorization Setup](docs/manual/authorization.md)。
+倉庫是一個模組化單體：`src/` 存放應用程式碼（Core 框架以及 Common、Identity、Authorization、Trade（經 Store 目錄的訂單）、Store（目錄、成員、StoreOrder）、Inventory、Payment、Wallet、Promotion、Storage、Settlement、Exchange 等業務模組），旁邊是 `config/`、`migrations/`、`tests/`、`docs/` 以及 Docker/Compose 檔案。`src/Authorization/` 的種子化與運維見 [Authorization Setup](docs/manual/authorization.md)。
 
 完整的詳細目錄樹（到每個模組的控制器、服務、實體、倉庫層級），請參閱
 **[專案結構 — 開發手冊](docs/manual/project-structure.md)**。
@@ -230,8 +232,8 @@ Docker 開發環境無需建立 env 檔案即可啟動。本機 PHP/Symfony 執�
 |------|------|---------|
 | **Core** | API 基礎 | REST 控制器支援、共享服務行為、檢視 mixin、表達式查詢 |
 | **Common** | CMS 與設定 | 分類、標籤、內容、媒體、頁面、評論與鍵值設定 |
-| **Trade** | 電商 | 產品、規格、訂單工作流與價格計算 |
-| **Store** | 多門店營運 | 門店會員與可靠的訂單事件交接 |
+| **Trade** | 電商 | 訂單、訂單工作流與基於 Store 目錄的定價（經 `CatalogResolver`，`specificationUuid` 快照） |
+| **Store** | 多門店營運 | 門店會員、可靠的訂單事件交接與 Product/Specification 目錄（`store = NULL` 為全域共用） |
 | **Inventory** | 庫存控制 | 門店庫存、預留、配方與庫存台帳策略 |
 | **Payment** | 發票編排 | 發票生命週期、網關抽象、支付抵扣、Webhook |
 | **Wallet** | 餘額操作 | 轉帳、存款、取款、憑證與對帳 |

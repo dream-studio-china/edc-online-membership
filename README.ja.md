@@ -6,6 +6,8 @@
 
 > ドキュメントサイト: [GitHub Pages](https://immane.github.io/crud-skeleton) | 開発マニュアル: [docs/manual/index.md](docs/manual/index.md) | アーキテクチャ: [docs/design/system-architecture.md](docs/design/system-architecture.md)
 
+> **本番ステータス**: Inventory（`INVENTORY_ENABLED`）はプレビュー機能であり、分離された開発/テスト環境以外では `0` のままにしてください。ヘルスチェック、レート制限、メトリクスは実装済みです（レート制限のキャッシュはプロセス内ファイルシステム — マルチワーカーでは Redis を使用）。詳細は `docs/ai/context.md` §22–24 および `docs/testing/crud-skeleton-production/PRODUCTION_VALIDATION.md`、既知の不具合は `docs/issues/coverage-2026-08-09/README.md` を参照してください。
+
 ## アーキテクチャ
 
 アプリケーションは階層型 Symfony API です。コントローラは trait ベースのビューミックスインを `BaseService`（CRUD + 動的クエリ）の上に組み合わせ、サービスがビジネスルールを担い、Doctrine ORM が MySQL に永続化します。これはモジュラーモノリスであり、各モジュールは単一の Symfony アプリケーション内で明示的なサービス・イベント境界を通じて連携します。
@@ -183,7 +185,7 @@ CRUD Skeleton は、生成された CRUD 以上のものを必要とするが、
 
 ## プロジェクト構成
 
-リポジトリはモジュラーモノリスです。`src/` にアプリケーションコード（Core フレームワークと、Common、Identity、Trade、Payment、Wallet、Storage、Authorization などのビジネスモジュール）が置かれ、その隣に `config/`、`migrations/`、`tests/`、`docs/`、Docker/Compose ファイルがあります。`src/Authorization` のシードと運用は [Authorization Setup](docs/manual/authorization.md) を参照してください。
+リポジトリはモジュラーモノリスです。`src/` にアプリケーションコード（Core フレームワークと、Common、Identity、Authorization、Trade（Store カタログ経由の注文）、Store（カタログ、メンバーシップ、StoreOrder）、Inventory、Payment、Wallet、Promotion、Storage、Settlement、Exchange などのビジネスモジュール）が置かれ、その隣に `config/`、`migrations/`、`tests/`、`docs/`、Docker/Compose ファイルがあります。`src/Authorization` のシードと運用は [Authorization Setup](docs/manual/authorization.md) を参照してください。
 
 完全な詳細ディレクトリツリー（各モジュールのコントローラ、サービス、エンティティ、リポジトリまで）は、
 **[プロジェクト構成 — 開発マニュアル](docs/manual/project-structure.md)** を参照してください。
@@ -233,8 +235,8 @@ PHP/Symfony でネイティブに実行するか、Docker Compose（app、nginx�
 |-----------|------|---------|
 | **Core** | API 基盤 | REST コントローラサポート、共有サービス動作、ビューミックスイン、式クエリ |
 | **Common** | CMS と設定 | カテゴリ、タグ、コンテンツ、メディア、ページ、コメント、キーバリュー設定 |
-| **Trade** | コマース | 商品、仕様、注文ワークフロー、価格計算 |
-| **Store** | マルチストア運用 | ストアメンバーシップと信頼性の高い注文イベント引き継ぎ |
+| **Trade** | コマース | 注文、注文ワークフローと Store カタログ経由の価格計算（`CatalogResolver`、`specificationUuid` スナップショット） |
+| **Store** | マルチストア運用 | ストアメンバーシップ、信頼性の高い注文イベント引き継ぎと Product/Specification カタログ（`store = NULL` はグローバル共有） |
 | **Inventory** | 在庫管理 | ストア別在庫、予約、レシピ、在庫台帳ポリシー |
 | **Payment** | 請求書オーケストレーション | 請求書ライフサイクル、ゲートウェイ抽象化、決済調整、Webhook |
 | **Wallet** | 残高操作 | 転送、入金、出金、バウチャー、照合 |

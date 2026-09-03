@@ -6,6 +6,8 @@
 
 > 文档站点: [GitHub Pages](https://immane.github.io/crud-skeleton) | 开发手册: [docs/manual/index.md](docs/manual/index.md) | 架构: [docs/design/system-architecture.md](docs/design/system-architecture.md)
 
+> **生产状态**：Inventory（`INVENTORY_ENABLED`）为预览功能，非隔离开发/测试环境必须保持 `0`；健康检查、限流与指标已实现（限流缓存为进程内文件系统——多 worker 请使用 Redis）。参见 `docs/ai/context.md` §22–24 与 `docs/testing/crud-skeleton-production/PRODUCTION_VALIDATION.md`；已知缺陷见 `docs/issues/coverage-2026-08-09/README.md`。
+
 ## 架构
 
 应用是分层 Symfony API：控制器基于 trait 组合的视图 mixin 调用 `BaseService`（CRUD + 动态查询），服务承载业务规则，Doctrine ORM 持久化到 MySQL。它是一个模块化单体，各模块在同一个 Symfony 应用内通过显式的服务与事件边界协作。
@@ -183,7 +185,7 @@ CRUD Skeleton 面向那些需要超越生成式 CRUD、但暂时不需要分布�
 
 ## 项目结构
 
-仓库是一个模块化单体：`src/` 存放应用代码（Core 框架以及 Common、Identity、Trade、Payment、Wallet、Storage、Authorization 等业务模块），旁边是 `config/`、`migrations/`、`tests/`、`docs/` 以及 Docker/Compose 文件。`src/Authorization/` 的种子化与运维见 [Authorization Setup](docs/manual/authorization.md)。
+仓库是一个模块化单体：`src/` 存放应用代码（Core 框架以及 Common、Identity、Authorization、Trade（经 Store 目录的订单）、Store（目录、成员、StoreOrder）、Inventory、Payment、Wallet、Promotion、Storage、Settlement、Exchange 等业务模块），旁边是 `config/`、`migrations/`、`tests/`、`docs/` 以及 Docker/Compose 文件。`src/Authorization/` 的种子化与运维见 [Authorization Setup](docs/manual/authorization.md)。
 
 完整的详细目录树（到每个模块的控制器、服务、实体、仓库层级），请参阅
 **[项目结构 — 开发手册](docs/manual/project-structure.md)**。
@@ -230,8 +232,8 @@ Docker 开发环境无需创建 env 文件即可启动。本机 PHP/Symfony 运�
 |------|------|---------|
 | **Core** | API 基础 | REST 控制器支持、共享服务行为、视图 mixin、表达式查询 |
 | **Common** | CMS 与设置 | 分类、标签、内容、媒体、页面、评论与键值设置 |
-| **Trade** | 电商 | 产品、规格、订单工作流与价格计算 |
-| **Store** | 多门店运营 | 门店会员与可靠的订单事件交接 |
+| **Trade** | 电商 | 订单、订单工作流与基于 Store 目录的定价（经 `CatalogResolver`，`specificationUuid` 快照） |
+| **Store** | 多门店运营 | 门店会员、可靠的订单事件交接与 Product/Specification 目录（`store = NULL` 为全局共享） |
 | **Inventory** | 库存控制 | 门店库存、预留、配方与库存台账策略 |
 | **Payment** | 发票编排 | 发票生命周期、网关抽象、支付抵扣、Webhook |
 | **Wallet** | 余额操作 | 转账、存款、取款、凭证与对账 |
