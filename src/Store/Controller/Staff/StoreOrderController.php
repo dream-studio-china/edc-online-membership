@@ -189,7 +189,18 @@ final class StoreOrderController extends RestController
 
     private function storeOrder(string $orderUuid): ?StoreOrder
     {
+        // Primary: lookup by tradeOrderUuid (order number) as requested
+        $store = $this->storeForAuthorization();
+        $order = $this->service->get(['tradeOrderUuid' => $orderUuid, 'store' => $store], false);
+        if ($order instanceof StoreOrder) {
+            return $order;
+        }
+        // Fallback: legacy lookup by StoreOrder uuid for backward compatibility
         $order = $this->service->get($this->mixIdToCommonFilter($orderUuid), false);
-        return $order instanceof StoreOrder ? $order : null;
+        if ($order instanceof StoreOrder && $order->getStore()->getUuid() === $store->getUuid()) {
+            return $order;
+        }
+
+        return null;
     }
 }

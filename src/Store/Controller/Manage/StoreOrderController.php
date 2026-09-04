@@ -36,7 +36,12 @@ final class StoreOrderController extends RestController
     #[Route('/{uuid}/direct-verify', name: 'direct_verify', methods: ['POST'], requirements: ['uuid' => '\d+|[0-9a-fA-F-]{36}'])]
     public function directVerifyAction(Request $request, string $uuid): Response
     {
-        $storeOrder = $this->service->get($this->mixIdToCommonFilter($uuid), false);
+        // Primary: lookup by tradeOrderUuid (order number) as requested
+        $storeOrder = $this->service->get(['tradeOrderUuid' => $uuid], false);
+        if (!$storeOrder instanceof \App\Store\Entity\StoreOrder) {
+            // Fallback: legacy lookup by StoreOrder uuid
+            $storeOrder = $this->service->get($this->mixIdToCommonFilter($uuid), false);
+        }
         if (!$storeOrder instanceof \App\Store\Entity\StoreOrder) {
             return $this->warning('Store order not found or access denied.', 404, '', 404);
         }

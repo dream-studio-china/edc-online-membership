@@ -49,10 +49,16 @@ final class StoreOrderControllerTest extends TestCase
         $request = $this->request('{}');
         $this->injectDependencies($request);
         $this->storeService->method('get')->with(['uuid' => $this->store->getUuid()])->willReturn($this->store);
-        $this->orderService->expects(self::once())
-            ->method('get')
-            ->with(['uuid' => $order->getUuid(), 'store' => $this->store])
-            ->willReturn($order);
+        $this->orderService->method('get')->willReturnCallback(function (array $criteria) use ($order): ?StoreOrder {
+            if (isset($criteria['tradeOrderUuid']) && $criteria['tradeOrderUuid'] === $order->getTradeOrderUuid()) {
+                return $order;
+            }
+            if (isset($criteria['uuid']) && $criteria['uuid'] === $order->getUuid()) {
+                return $order;
+            }
+
+            return null;
+        });
         $this->orderService->expects(self::once())->method('accept')->with($order, null)->willReturn($order);
 
         $response = $this->controller->acceptAction($request, $this->store->getUuid(), $order->getUuid());
@@ -66,7 +72,10 @@ final class StoreOrderControllerTest extends TestCase
         $request = $this->request('{}');
         $this->injectDependencies($request);
         $this->storeService->method('get')->with(['uuid' => $this->store->getUuid()])->willReturn($this->store);
-        $this->orderService->method('get')->willReturn(null);
+        $this->orderService->method('get')->willReturnCallback(function (array $criteria) use ($orderUuid): ?StoreOrder {
+            // For tradeOrderUuid lookup, return null; for uuid fallback also null
+            return null;
+        });
 
         $response = $this->controller->acceptAction($request, $this->store->getUuid(), $orderUuid);
 
