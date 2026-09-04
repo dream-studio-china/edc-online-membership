@@ -3697,6 +3697,12 @@ carry <strong>explicit scalar fields</strong> rather than an envelope (see
 <a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a><span class="w">        </span><span class="no">sleep "${OUTBOX_PUBLISH_INTERVAL:-5}"</span>
 <a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a><span class="w">      </span><span class="no">done</span>
 </code></pre></div>
+<p>For local one-shot verification without Docker, use the bundled helper (publish loop in background + consume <code>async</code> in foreground for a bounded duration, default 60s):</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>./scripts/dev/run-async.sh<span class="w"> </span><span class="m">60</span><span class="w">        </span><span class="c1"># publish loop (5s) + consume 60s</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>./scripts/dev/run-async.sh<span class="w"> </span><span class="m">10</span><span class="w"> </span>--interval<span class="w"> </span><span class="m">2</span><span class="w">  </span><span class="c1"># publish every 2s</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>./scripts/dev/run-async.sh<span class="w"> </span>2m<span class="w"> </span>--verbose
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>docker<span class="w"> </span>compose<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>app<span class="w"> </span>./scripts/dev/run-async.sh<span class="w"> </span><span class="m">60</span>
+</code></pre></div>
 <p>The three standard steps (identical for Trade, Store, Inventory, Settlement):</p>
 <ol>
 <li><strong>Select</strong> unpublished rows older than their <code>available_at</code>
@@ -3711,10 +3717,10 @@ carry <strong>explicit scalar fields</strong> rather than an envelope (see
    can be retried by a later tick. Finally the EntityManager is flushed once.</li>
 </ol>
 <p>Trade's publisher also whitelists topics and treats anything else as an unsupported topic:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="x">if (!in_array($message-&gt;getTopic(), ['trade.order.created.v1', 'trade.order.cancelled.v1'], true)) {</span>
-<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="x">    $this-&gt;repository-&gt;defer($id, 'Unsupported Trade outbox topic: ' . $message-&gt;getTopic(), new \DateTimeImmutable('+5 minutes'));</span>
-<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="x">    continue;</span>
-<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="x">}</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="x">if (!in_array($message-&gt;getTopic(), ['trade.order.created.v1', 'trade.order.cancelled.v1'], true)) {</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="x">    $this-&gt;repository-&gt;defer($id, 'Unsupported Trade outbox topic: ' . $message-&gt;getTopic(), new \DateTimeImmutable('+5 minutes'));</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="x">    continue;</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="x">}</span>
 </code></pre></div>
 <p>The Inventory publisher is the outlier: it selects an <strong>array projection</strong>
 (<code>findUnpublishedForPublishing()</code>) and marks published/records attempts through direct
@@ -3764,29 +3770,29 @@ duplicate <code>store.order.accepted.v1</code> / <code>store.order.rejected.v1</
 <h3 id="42-idempotency-by-eventid">4.2 Idempotency by <code>eventId</code><a class="headerlink" href="#42-idempotency-by-eventid" title="Permanent link">&para;</a></h3>
 <p>The canonical consumer shape — read-check, then re-check inside the transaction, and
 write the consumed row atomically with the effect:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="x">public function __invoke(TradeOrderCreatedMessage $message): void</span>
-<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="x">{</span>
-<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="x">    $eventId = $message-&gt;envelope['eventId'] ?? null;</span>
-<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="x">    $payload = $message-&gt;envelope['payload'] ?? null;</span>
-<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="x">    // ...validate...</span>
-<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>
-<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="x">    if ($this-&gt;consumedEventRepository-&gt;findOneBy(['eventId' =&gt; $eventId]) !== null) {</span>
-<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="x">        return; // already processed</span>
-<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="x">    }</span>
-<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>
-<a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a><span class="x">    $this-&gt;entityManager-&gt;wrapInTransaction(function () use ($eventId, ...): void {</span>
-<a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a><span class="x">        if ($this-&gt;consumedEventRepository-&gt;findOneBy(['eventId' =&gt; $eventId]) !== null) {</span>
-<a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a><span class="x">            return; // re-check under the transaction (closes the race window)</span>
-<a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a><span class="x">        }</span>
-<a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a><span class="x">        $this-&gt;entityManager-&gt;persist(new StoreConsumedEvent(</span>
-<a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a><span class="x">            $eventId,</span>
-<a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a><span class="x">            'trade.order.created.v1',</span>
-<a id="__codelineno-5-18" name="__codelineno-5-18" href="#__codelineno-5-18"></a><span class="x">            (string) ($payload['orderUuid'] ?? ''),</span>
-<a id="__codelineno-5-19" name="__codelineno-5-19" href="#__codelineno-5-19"></a><span class="x">            hash('sha256', json_encode($message-&gt;envelope, JSON_THROW_ON_ERROR)),</span>
-<a id="__codelineno-5-20" name="__codelineno-5-20" href="#__codelineno-5-20"></a><span class="x">        ));</span>
-<a id="__codelineno-5-21" name="__codelineno-5-21" href="#__codelineno-5-21"></a><span class="x">        // ...apply the business effect...</span>
-<a id="__codelineno-5-22" name="__codelineno-5-22" href="#__codelineno-5-22"></a><span class="x">    });</span>
-<a id="__codelineno-5-23" name="__codelineno-5-23" href="#__codelineno-5-23"></a><span class="x">}</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="x">public function __invoke(TradeOrderCreatedMessage $message): void</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="x">{</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="x">    $eventId = $message-&gt;envelope['eventId'] ?? null;</span>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="x">    $payload = $message-&gt;envelope['payload'] ?? null;</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="x">    // ...validate...</span>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="x">    if ($this-&gt;consumedEventRepository-&gt;findOneBy(['eventId' =&gt; $eventId]) !== null) {</span>
+<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="x">        return; // already processed</span>
+<a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span class="x">    }</span>
+<a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a>
+<a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a><span class="x">    $this-&gt;entityManager-&gt;wrapInTransaction(function () use ($eventId, ...): void {</span>
+<a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a><span class="x">        if ($this-&gt;consumedEventRepository-&gt;findOneBy(['eventId' =&gt; $eventId]) !== null) {</span>
+<a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a><span class="x">            return; // re-check under the transaction (closes the race window)</span>
+<a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a><span class="x">        }</span>
+<a id="__codelineno-6-15" name="__codelineno-6-15" href="#__codelineno-6-15"></a><span class="x">        $this-&gt;entityManager-&gt;persist(new StoreConsumedEvent(</span>
+<a id="__codelineno-6-16" name="__codelineno-6-16" href="#__codelineno-6-16"></a><span class="x">            $eventId,</span>
+<a id="__codelineno-6-17" name="__codelineno-6-17" href="#__codelineno-6-17"></a><span class="x">            'trade.order.created.v1',</span>
+<a id="__codelineno-6-18" name="__codelineno-6-18" href="#__codelineno-6-18"></a><span class="x">            (string) ($payload['orderUuid'] ?? ''),</span>
+<a id="__codelineno-6-19" name="__codelineno-6-19" href="#__codelineno-6-19"></a><span class="x">            hash('sha256', json_encode($message-&gt;envelope, JSON_THROW_ON_ERROR)),</span>
+<a id="__codelineno-6-20" name="__codelineno-6-20" href="#__codelineno-6-20"></a><span class="x">        ));</span>
+<a id="__codelineno-6-21" name="__codelineno-6-21" href="#__codelineno-6-21"></a><span class="x">        // ...apply the business effect...</span>
+<a id="__codelineno-6-22" name="__codelineno-6-22" href="#__codelineno-6-22"></a><span class="x">    });</span>
+<a id="__codelineno-6-23" name="__codelineno-6-23" href="#__codelineno-6-23"></a><span class="x">}</span>
 </code></pre></div>
 <p>Inventory tightens this further. Its <code>isAlreadyConsumed()</code> compares the stored
 <code>payload_hash</code> with the hash of the arriving envelope using <code>hash_equals</code>; a reused
