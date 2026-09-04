@@ -201,6 +201,15 @@ scheduler:
       done
 ```
 
+For local one-shot verification without Docker, use the bundled helper (publish loop in background + consume `async` in foreground for a bounded duration, default 60s):
+
+```bash
+./scripts/dev/run-async.sh 60        # publish loop (5s) + consume 60s
+./scripts/dev/run-async.sh 10 --interval 2  # publish every 2s
+./scripts/dev/run-async.sh 2m --verbose
+docker compose exec app ./scripts/dev/run-async.sh 60
+```
+
 The three standard steps (identical for Trade, Store, Inventory, Settlement):
 
 1. **Select** unpublished rows older than their `available_at`
