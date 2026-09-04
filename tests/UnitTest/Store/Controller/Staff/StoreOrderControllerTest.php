@@ -8,7 +8,6 @@ use App\Identity\Entity\User;
 use App\Store\Controller\Staff\StoreOrderController;
 use App\Store\Entity\Store;
 use App\Store\Entity\StoreOrder;
-use App\Store\Service\StoreOrderDirectVerifyService;
 use App\Store\Service\StoreOrderServiceInterface;
 use App\Store\Service\StoreServiceInterface;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
@@ -28,7 +27,6 @@ final class StoreOrderControllerTest extends TestCase
     private StoreOrderServiceInterface $orderService;
     private StoreServiceInterface $storeService;
     private AuthorizationCheckerInterface $authorizationChecker;
-    private StoreOrderDirectVerifyService $directVerifyService;
     private StoreOrderController $controller;
 
     protected function setUp(): void
@@ -39,47 +37,7 @@ final class StoreOrderControllerTest extends TestCase
         $this->storeService = $this->createMock(StoreServiceInterface::class);
         $this->authorizationChecker = $this->createMock(AuthorizationCheckerInterface::class);
         $this->authorizationChecker->method('isGranted')->willReturn(true);
-        $this->directVerifyService = $this->createMock(StoreOrderDirectVerifyService::class);
-        $this->controller = new StoreOrderController($this->orderService, $this->storeService, $this->directVerifyService);
-    }
-
-    public function testAcceptUsesScopedPermissionAndStoreFilter(): void
-    {
-        $order = $this->order();
-        $request = $this->request('{}');
-        $this->injectDependencies($request);
-        $this->storeService->method('get')->with(['uuid' => $this->store->getUuid()])->willReturn($this->store);
-        $this->orderService->method('get')->willReturnCallback(function (array $criteria) use ($order): ?StoreOrder {
-            if (isset($criteria['tradeOrderUuid']) && $criteria['tradeOrderUuid'] === $order->getTradeOrderUuid()) {
-                return $order;
-            }
-            if (isset($criteria['uuid']) && $criteria['uuid'] === $order->getUuid()) {
-                return $order;
-            }
-
-            return null;
-        });
-        $this->orderService->expects(self::once())->method('accept')->with($order, null)->willReturn($order);
-
-        $response = $this->controller->acceptAction($request, $this->store->getUuid(), $order->getUuid());
-
-        self::assertSame(200, $response->getStatusCode());
-    }
-
-    public function testAcceptReturns404ForAnOrderOutsideTheStoreScope(): void
-    {
-        $orderUuid = '00000000-0000-4000-8000-000000000001';
-        $request = $this->request('{}');
-        $this->injectDependencies($request);
-        $this->storeService->method('get')->with(['uuid' => $this->store->getUuid()])->willReturn($this->store);
-        $this->orderService->method('get')->willReturnCallback(function (array $criteria) use ($orderUuid): ?StoreOrder {
-            // For tradeOrderUuid lookup, return null; for uuid fallback also null
-            return null;
-        });
-
-        $response = $this->controller->acceptAction($request, $this->store->getUuid(), $orderUuid);
-
-        self::assertSame(404, $response->getStatusCode());
+        $this->controller = new StoreOrderController($this->orderService, $this->storeService);
     }
 
     public function testListUsesCoreLifecycleAuthorizationAndStoreFilter(): void

@@ -11,8 +11,6 @@ use App\Store\Entity\Store;
 use App\Store\Entity\StoreOrder;
 use App\Store\Service\StoreOrderServiceInterface;
 use App\Store\Service\StoreServiceInterface;
-use App\Store\Controller\Concerns\StoreOrderDirectVerifyTrait;
-use App\Store\Service\StoreOrderDirectVerifyService;
 use App\Store\View\StoreScopedAuthorizationApiMixin;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -23,19 +21,14 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[IsGranted('ROLE_USER')]
 final class StoreOrderController extends RestController
 {
-    use StoreScopedAuthorizationApiMixin, ScopedListApiViewMixin, ScopedDetailApiViewMixin, StoreOrderDirectVerifyTrait;
+    use StoreScopedAuthorizationApiMixin, ScopedListApiViewMixin, ScopedDetailApiViewMixin;
 
     public function __construct(
         protected readonly StoreOrderServiceInterface $service,
         private readonly StoreServiceInterface $storeService,
-        private readonly StoreOrderDirectVerifyService $directVerifyService,
     ) {
     }
 
-    protected function getDirectVerifyService(): StoreOrderDirectVerifyService
-    {
-        return $this->directVerifyService;
-    }
 
     /** @return array<string, mixed> */
     protected function storeScopedFilter(Store $store): array
@@ -64,8 +57,6 @@ final class StoreOrderController extends RestController
     protected function storeActionPermissions(): array
     {
         return [
-            'accept' => 'store:order:accept',
-            'reject' => 'store:order:reject',
             'fulfill' => 'store:order:fulfill',
             'verify' => 'store:order:verify',
         ];
@@ -76,48 +67,6 @@ final class StoreOrderController extends RestController
         return 'order';
     }
 
-    #[Route('/{orderUuid}/accept', name: 'accept', methods: ['POST'], requirements: ['orderUuid' => '\d+|[0-9a-fA-F-]{36}'])]
-    public function acceptAction(Request $request, string $scopeId, string $orderUuid): Response
-    {
-        $this->authorizeStoreAction('accept');
-        $order = $this->storeOrder($orderUuid);
-        if ($order === null) {
-            return $this->warning('Store order not found or access denied.', 404, '', 404);
-        }
-        if (!in_array($order->getOperationalStatus(), [StoreOrder::STATUS_PENDING_VALIDATION, StoreOrder::STATUS_AWAITING_INVENTORY], true)) {
-            return $this->warning('Store order cannot be accepted in its current status.', 400, '', 400);
-        }
-
-        $data = $this->body($request);
-        $reservationId = $data['reservationId'] ?? null;
-        if ($reservationId !== null && !is_string($reservationId)) {
-            return $this->warning('reservationId must be a string.', 400, '', 400);
-        }
-        $this->service->accept($order, $reservationId);
-
-        return $this->success($order, 'Store order accepted.');
-    }
-
-    #[Route('/{orderUuid}/reject', name: 'reject', methods: ['POST'], requirements: ['orderUuid' => '\d+|[0-9a-fA-F-]{36}'])]
-    public function rejectAction(Request $request, string $scopeId, string $orderUuid): Response
-    {
-        $this->authorizeStoreAction('reject');
-        $order = $this->storeOrder($orderUuid);
-        if ($order === null) {
-            return $this->warning('Store order not found or access denied.', 404, '', 404);
-        }
-        if (!in_array($order->getOperationalStatus(), [StoreOrder::STATUS_PENDING_VALIDATION, StoreOrder::STATUS_AWAITING_INVENTORY], true)) {
-            return $this->warning('Store order cannot be rejected in its current status.', 400, '', 400);
-        }
-
-        $data = $this->body($request);
-        if (!is_string($data['code'] ?? null) || trim($data['code']) === '' || !is_string($data['reason'] ?? null) || trim($data['reason']) === '') {
-            return $this->warning('code and reason are required.', 400, '', 400);
-        }
-        $this->service->reject($order, $data['code'], $data['reason']);
-
-        return $this->success($order, 'Store order rejected.');
-    }
 
     #[Route('/{orderUuid}/fulfill', name: 'fulfill', methods: ['POST'], requirements: ['orderUuid' => '\d+|[0-9a-fA-F-]{36}'])]
     public function fulfillAction(Request $request, string $scopeId, string $orderUuid): Response
@@ -152,6 +101,9 @@ final class StoreOrderController extends RestController
         if ($order->getOperationalStatus() !== StoreOrder::STATUS_FULFILLED) {
             return $this->warning('Store order cannot be verified in its current status.', 400, '', 400);
         }
+        if (!$order->isVerificationRequired()) {
+            return $this->warning('Store verification is disabled.', 400, '', 400);
+        }
         if ($order->getVerifiedAt() !== null) {
             return $this->warning('Store order already verified.', 400, '', 400);
         }
@@ -166,18 +118,6 @@ final class StoreOrderController extends RestController
         $this->service->verify($order, $verifiedBy);
 
         return $this->success($order, 'Store order verified.');
-    }
-
-    #[Route('/{orderUuid}/direct-verify', name: 'direct_verify', methods: ['POST'], requirements: ['orderUuid' => '\d+|[0-9a-fA-F-]{36}'])]
-    public function directVerifyAction(Request $request, string $scopeId, string $orderUuid): Response
-    {
-        $this->authorizeStoreAction('verify');
-        $order = $this->storeOrder($orderUuid);
-        if ($order === null) {
-            return $this->warning('Store order not found or access denied.', 404, '', 404);
-        }
-
-        return $this->handleDirectVerify($request, $order);
     }
 
     /** @return array<string, mixed> */

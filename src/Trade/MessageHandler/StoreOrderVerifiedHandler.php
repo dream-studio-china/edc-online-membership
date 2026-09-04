@@ -33,15 +33,21 @@ final readonly class StoreOrderVerifiedHandler
         if (!$order instanceof Order || ($order->getMetadata()['_store']['uuid'] ?? null) !== $storeUuid) {
             return;
         }
+        if (($order->getMetadata()['_completionMode'] ?? null) !== 'store_verification') {
+            return;
+        }
 
         $this->orderService->wrapInTransaction(function () use ($order): void {
-            // If verification flow enabled, order should be in fulfilled -> awaiting_store_verification -> completed
-            // Auto-move fulfilled -> awaiting_store_verification if needed before store_verify
-            if ($this->workflow->can($order, 'request_verification')) {
-                $this->workflow->apply($order, 'request_verification');
-            }
-            if ($this->workflow->can($order, 'store_verify')) {
-                $this->workflow->apply($order, 'store_verify');
+            $metadata = $order->getMetadata() ?? [];
+            $metadata['_storeVerificationReceived'] = true;
+            $order->setMetadata($metadata);
+            $order->allowCompletionFromStoreVerification();
+            try {
+                if ($this->workflow->can($order, 'complete')) {
+                    $this->workflow->apply($order, 'complete');
+                }
+            } finally {
+                $order->disallowCompletionFromStoreVerification();
             }
         });
     }
