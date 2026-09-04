@@ -46,43 +46,28 @@ readonly class StoreOrderDirectVerifyService
 
     /**
      * Direct verification from any status after paid but before verified.
-     * Only requires verificationCode (defaults to StoreOrder uuid) and verifiedBy.
+     * Uses order number (StoreOrder uuid) as verification, no code required.
      *
-     * @throws \InvalidArgumentException when code too long
      * @throws \LogicException when already verified or status not allowed
      */
-    public function directVerify(StoreOrder $storeOrder, ?string $verificationCode = null, ?string $verifiedBy = null): StoreOrder
+    public function directVerify(StoreOrder $storeOrder, ?string $verifiedBy = null): StoreOrder
     {
         if ($storeOrder->getVerifiedAt() !== null) {
             throw new \LogicException('Store order already verified.');
         }
 
         $status = $storeOrder->getOperationalStatus();
-        // Allow fulfilled etc; also allow if Trade Order is already paid but StoreOrder still in allowed set.
-        // Reject clearly terminal/initial states.
         if (!in_array($status, self::ALLOWED_STORE_STATUSES, true)) {
-            // Also allow if status is pending_validation/awaiting_inventory but Trade Order is already paid?
-            // For direct verify we are permissive: allow any non-terminal except rejected/cancelled.
             if (in_array($status, [StoreOrder::STATUS_REJECTED, StoreOrder::STATUS_CANCELLED, StoreOrder::STATUS_PENDING_VALIDATION, StoreOrder::STATUS_AWAITING_INVENTORY], true)) {
                 throw new \LogicException('Store order cannot be verified in its current status.');
             }
-            // Fallback strict check
             if (!in_array($status, self::ALLOWED_STORE_STATUSES, true)) {
                 throw new \LogicException('Store order cannot be verified in its current status.');
             }
         }
 
-        // Default verificationCode to uuid is handled inside StoreOrderService::verify
-        $code = trim((string) $verificationCode);
-        if ($code === '') {
-            $code = $storeOrder->getUuid();
-        }
-        if (strlen($code) > 64) {
-            throw new \InvalidArgumentException('verificationCode must not exceed 64 characters.');
-        }
-
-        // Verify StoreOrder (records outbox)
-        $this->storeOrderService->verify($storeOrder, $code, $verifiedBy);
+        // Verify StoreOrder (records outbox) - no verificationCode needed, uses order number
+        $this->storeOrderService->verify($storeOrder, $verifiedBy);
 
         // Also try to advance Trade Order synchronously for immediate feedback.
         // This is best-effort and runs in same transaction if possible.

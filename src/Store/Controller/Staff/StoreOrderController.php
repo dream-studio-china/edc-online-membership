@@ -156,27 +156,14 @@ final class StoreOrderController extends RestController
             return $this->warning('Store order already verified.', 400, '', 400);
         }
 
-        $data = $this->body($request);
-        $verificationCode = $data['verificationCode'] ?? null;
-        if ($verificationCode !== null && !is_string($verificationCode)) {
-            return $this->warning('verificationCode must be a string.', 400, '', 400);
-        }
-        $verificationCode = is_string($verificationCode) ? trim($verificationCode) : null;
-        if ($verificationCode !== null && $verificationCode !== '' && strlen($verificationCode) > 64) {
-            return $this->warning('verificationCode must not exceed 64 characters.', 400, '', 400);
-        }
-        // Default to StoreOrder uuid when not provided
-        if ($verificationCode === null || $verificationCode === '') {
-            $verificationCode = $order->getUuid();
-        }
-
         $user = $this->getUser();
         $verifiedBy = null;
         if ($user !== null && method_exists($user, 'getUuid')) {
             $verifiedBy = $user->getUuid();
         }
 
-        $this->service->verify($order, $verificationCode, $verifiedBy);
+        // No verificationCode required - uses order number (uuid) as verification
+        $this->service->verify($order, $verifiedBy);
 
         return $this->success($order, 'Store order verified.');
     }

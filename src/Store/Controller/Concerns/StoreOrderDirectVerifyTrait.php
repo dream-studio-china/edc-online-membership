@@ -19,7 +19,7 @@ trait StoreOrderDirectVerifyTrait
 
     /**
      * Handles direct verification from any status after paid but before verified.
-     * Only requires verificationCode (defaults to StoreOrder uuid).
+     * Uses order number (StoreOrder uuid) as verification, no code required.
      */
     protected function handleDirectVerify(Request $request, StoreOrder $storeOrder): Response
     {
@@ -27,26 +27,8 @@ trait StoreOrderDirectVerifyTrait
             return $this->warning('Store order already verified.', 400, '', 400);
         }
 
-        // Allow broader statuses: accepted, fulfillment_pending, fulfilling, fulfilled (after paid)
-        // The service will enforce strict check, we give a friendly warning here
         if (!$this->getDirectVerifyService()->isAllowedStoreStatus($storeOrder)) {
             return $this->warning('Store order cannot be verified in its current status.', 400, '', 400);
-        }
-
-        $data = json_decode($request->getContent(), true);
-        $data = is_array($data) ? $data : [];
-
-        $verificationCode = $data['verificationCode'] ?? null;
-        if ($verificationCode !== null && !is_string($verificationCode)) {
-            return $this->warning('verificationCode must be a string.', 400, '', 400);
-        }
-        $verificationCode = is_string($verificationCode) ? trim($verificationCode) : null;
-        if ($verificationCode !== null && $verificationCode !== '' && strlen($verificationCode) > 64) {
-            return $this->warning('verificationCode must not exceed 64 characters.', 400, '', 400);
-        }
-        // Default to uuid if not provided - handled in service as well
-        if ($verificationCode === null || $verificationCode === '') {
-            $verificationCode = $storeOrder->getUuid();
         }
 
         $user = $this->getUser();
@@ -56,7 +38,7 @@ trait StoreOrderDirectVerifyTrait
         }
 
         try {
-            $this->getDirectVerifyService()->directVerify($storeOrder, $verificationCode, $verifiedBy);
+            $this->getDirectVerifyService()->directVerify($storeOrder, $verifiedBy);
         } catch (\InvalidArgumentException $e) {
             return $this->warning($e->getMessage(), 400, '', 400);
         } catch (\LogicException $e) {
