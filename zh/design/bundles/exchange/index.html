@@ -31,7 +31,7 @@
     
     
       
-        <title>交易所（矿池支持经济） - CRUD Skeleton</title>
+        <title>Exchange (Pool-backed Economy) - CRUD Skeleton</title>
       
     
     
@@ -118,7 +118,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              交易所（矿池支持经济）
+              Exchange (Pool-backed Economy)
             
           </span>
         </div>
@@ -344,7 +344,7 @@
   <span class="md-ellipsis">
     
   
-    开发手册
+    Development Manual
   
 
     
@@ -360,7 +360,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    开发手册
+    Development Manual
   
 
           </label>
@@ -408,7 +408,7 @@
   <span class="md-ellipsis">
     
   
-    入门
+    Getting Started
   
 
     
@@ -464,7 +464,7 @@
   <span class="md-ellipsis">
     
   
-    项目结构
+    Project Structure
   
 
     
@@ -520,7 +520,7 @@
   <span class="md-ellipsis">
     
   
-    核心用法
+    Core Usage
   
 
     
@@ -548,7 +548,7 @@
   <span class="md-ellipsis">
     
   
-    查询系统
+    Query System
   
 
     
@@ -576,7 +576,7 @@
   <span class="md-ellipsis">
     
   
-    授权设置
+    Authorization Setup
   
 
     
@@ -660,7 +660,7 @@
   <span class="md-ellipsis">
     
   
-    API合约
+    API Contracts
   
 
     
@@ -688,7 +688,7 @@
   <span class="md-ellipsis">
     
   
-    开发合同
+    Development Contracts
   
 
     
@@ -744,7 +744,7 @@
   <span class="md-ellipsis">
     
   
-    数据库和迁移
+    Database & Migrations
   
 
     
@@ -800,7 +800,7 @@
   <span class="md-ellipsis">
     
   
-    提取服务
+    Extracting a Service
   
 
     
@@ -1113,7 +1113,7 @@
   <span class="md-ellipsis">
     
   
-    扩展点
+    Extension Points
   
 
     
@@ -1169,7 +1169,7 @@
   <span class="md-ellipsis">
     
   
-    命名约定
+    Naming Convention
   
 
     
@@ -1370,7 +1370,7 @@
   <span class="md-ellipsis">
     
   
-    商店目录（目标）
+    Store Catalog (Target)
   
 
     
@@ -1538,7 +1538,7 @@
   <span class="md-ellipsis">
     
   
-    结算（分配+最终确定）
+    Settlement (Allocation + Finality)
   
 
     
@@ -1575,7 +1575,7 @@
   <span class="md-ellipsis">
     
   
-    交易所（矿池支持经济）
+    Exchange (Pool-backed Economy)
   
 
     
@@ -1593,7 +1593,7 @@
   <span class="md-ellipsis">
     
   
-    交易所（矿池支持经济）
+    Exchange (Pool-backed Economy)
   
 
     
@@ -2849,7 +2849,7 @@
   <span class="md-ellipsis">
     
   
-    生产验证概述
+    Production Validation Overview
   
 
     
@@ -2877,7 +2877,7 @@
   <span class="md-ellipsis">
     
   
-    测试策略
+    Test Strategy
   
 
     
@@ -2933,7 +2933,7 @@
   <span class="md-ellipsis">
     
   
-    测试矩阵
+    Test Matrix
   
 
     
@@ -2989,7 +2989,7 @@
   <span class="md-ellipsis">
     
   
-    架构测试映射
+    Architecture Test Mapping
   
 
     
@@ -3073,7 +3073,7 @@
   <span class="md-ellipsis">
     
   
-    人工智能开发流程
+    AI Development Process
   
 
     
@@ -3217,7 +3217,7 @@
   <span class="md-ellipsis">
     
   
-    订单和付款流程（指南）
+    Order & Payment Flow (guide)
   
 
     
@@ -3882,7 +3882,7 @@
 <ul>
 <li>独特：<code>(base_currency, quote_currency, valid_from)</code></li>
 <li>索引：<code>(base_currency, quote_currency, valid_from)</code></li>
-<li>写入验证（通过 <code>ExchangeRateService::setRate</code>）：rate &gt; 0，base != quote，间隔有效，并且同一对<strong>无重叠间隔</strong>。</li>
+<li>写入验证（通过<code>ExchangeRateService::setRate</code>）：速率&gt; 0，基数！=报价，间隔有效，并且同一对<strong>无重叠间隔</strong>。</li>
 </ul>
 <h3 id="32-pool-poolaccount">3.2 <code>Pool</code> + <code>PoolAccount</code> — 流动性池<a class="headerlink" href="#32-pool-poolaccount" title="Permanent link">&para;</a></h3>
 <table>
@@ -4075,7 +4075,7 @@
 <li>整个调用共享一个<code>at</code>瞬间（当<code>$at</code>为空时捕获一次），因此多重查找解析是一致的。</li>
 </ol>
 <h3 id="43">4.3 只读，与事务无关<a class="headerlink" href="#43" title="Permanent link">&para;</a></h3>
-<p><code>CurrencyConverter</code> 仅执行 <code>findEffective()</code> 读取 - 它从不开始事务，从不刷新，从不写入。在调用者的事务中，它作为普通的 SELECT 参与（无嵌套、无保存点、无副作用）；调用者拥有事务边界。</p>
+<p><code>CurrencyConverter</code> 仅执行 <code>findEffective()</code> 读取 - 它从不开始事务，从不刷新，从不写入。在调用者的事务内部，它作为普通的 SELECT 参与（无嵌套、无保存点、无副作用）；调用者拥有事务边界。</p>
 <hr />
 <h2 id="5">5. 精度与金钱数学<a class="headerlink" href="#5" title="Permanent link">&para;</a></h2>
 <p>任何地方的金额都是<strong>整数小单位</strong>（分，×100）——与 <code>App\Wallet</code> 和 <code>App\Payment</code> 一致。</p>
