@@ -66,6 +66,16 @@ readonly class StoreOrderDirectVerifyService
             }
         }
 
+        // Ensure StoreOrder is fulfilled before verification so operationalStatus visibly changes
+        // Direct-verify from accepted/pending_fulfilling should first fulfill
+        if ($storeOrder->getOperationalStatus() !== StoreOrder::STATUS_FULFILLED) {
+            try {
+                $this->storeOrderService->fulfill($storeOrder, null);
+            } catch (\Throwable) {
+                // If fulfill fails due to status, continue to verify anyway
+            }
+        }
+
         // Verify StoreOrder (records outbox) - no verificationCode needed, uses order number
         $this->storeOrderService->verify($storeOrder, $verifiedBy);
 
