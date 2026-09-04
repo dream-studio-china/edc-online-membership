@@ -21,7 +21,6 @@ use App\Wallet\Repository\WalletRepository;
 use App\Wallet\Service\Transfer\TransferServiceInterface;
 use App\Store\DTO\StoreSettings;
 use App\Store\Repository\StoreRepository;
-use App\Store\Service\StoreOrderServiceInterface;
 use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -44,7 +43,6 @@ final class OrderService extends BaseService implements OrderServiceInterface
         #[Target('state_machine.order')]
         private readonly ?WorkflowInterface $workflow = null,
         private ?StoreRepository $storeRepository = null,
-        private ?StoreOrderServiceInterface $storeOrderService = null,
     ) {
         parent::__construct($container, Order::class);
     }
@@ -165,46 +163,30 @@ final class OrderService extends BaseService implements OrderServiceInterface
                         'placedAt' => $order->getCreatedAt()->format(DATE_ATOM),
                     ]);
                 } else {
-                    // No acceptance required: directly go to pending and synchronously create StoreOrder
+                    // No acceptance required: directly go to pending, but still create StoreOrder via worker
                     if ($this->workflow->can($order, 'submit')) {
                         $this->workflow->apply($order, 'submit');
                     }
-                    // Always create StoreOrder even without acceptance - no worker needed
-                    if ($this->storeOrderService !== null && $this->storeRepository !== null) {
-                        $store = $this->storeRepository->findOneBy(['uuid' => $storeContext->storeUuid]);
-                        if ($store !== null) {
-                            $snapshot = [
-                                'orderUuid' => $order->getUuid(),
-                                'store' => $storeContext->toSnapshot(),
-                                'customerUserUuid' => $order->getUser()?->getUuid(),
-                                'currency' => $order->getCurrency(),
-                                'totalAmount' => $order->getTotalAmount(),
-                                'items' => array_map(static fn (OrderItem $item): array => [
-                                    'lineId' => $item->getUuid(),
-                                    'catalogReference' => $item->getSpecificationUuid() ?? $item->getSpecSnapshot()['uuid'] ?? '',
-                                    'quantity' => $item->getQuantity(),
-                                    'unitPrice' => $item->getUnitPrice(),
-                                    'lineAmount' => $item->getPrice(),
-                                    'snapshot' => [
-                                        'specification' => $item->getSpecSnapshot() ?? [],
-                                        'product' => $item->getProductSnapshot() ?? [],
-                                    ],
-                                ], $order->getItems()->toArray()),
-                                'delivery' => is_array($metadata['delivery'] ?? null) ? $metadata['delivery'] : [],
-                                'placedAt' => $order->getCreatedAt()->format(DATE_ATOM),
-                            ];
-                            try {
-                                $storeOrder = $this->storeOrderService->createFromTradeOrderSnapshot($store, $snapshot);
-                                // Auto-accept for no-acceptance stores
-                                if ($storeOrder->getOperationalStatus() === \App\Store\Entity\StoreOrder::STATUS_PENDING_VALIDATION) {
-                                    $this->storeOrderService->accept($storeOrder);
-                                }
-                            } catch (\Throwable $e) {
-                                // Log but don't block order creation
-                                $this->logger->warning('Failed to auto-create StoreOrder for pending order: '.$e->getMessage());
-                            }
-                        }
-                    }
+                    $this->outboxService->record('trade.order.created.v1', 'trade_order', $order->getUuid(), [
+                        'orderUuid' => $order->getUuid(),
+                        'store' => $storeContext->toSnapshot(),
+                        'customerUserUuid' => $order->getUser()?->getUuid(),
+                        'currency' => $order->getCurrency(),
+                        'totalAmount' => $order->getTotalAmount(),
+                        'items' => array_map(static fn (OrderItem $item): array => [
+                            'lineId' => $item->getUuid(),
+                            'catalogReference' => $item->getSpecificationUuid() ?? $item->getSpecSnapshot()['uuid'] ?? '',
+                            'quantity' => $item->getQuantity(),
+                            'unitPrice' => $item->getUnitPrice(),
+                            'lineAmount' => $item->getPrice(),
+                            'snapshot' => [
+                                'specification' => $item->getSpecSnapshot() ?? [],
+                                'product' => $item->getProductSnapshot() ?? [],
+                            ],
+                        ], $order->getItems()->toArray()),
+                        'delivery' => is_array($metadata['delivery'] ?? null) ? $metadata['delivery'] : [],
+                        'placedAt' => $order->getCreatedAt()->format(DATE_ATOM),
+                    ]);
                 }
             }
 
