@@ -222,10 +222,18 @@ final class OrderServicePaymentsTest extends TestCase
         $workflow->expects(self::once())->method('can')->willReturn(true);
         $workflow->expects(self::once())->method('apply');
 
+        $store = new \App\Store\Entity\Store('STORE001', 'Test Store');
+        $store->setSettings(['order' => ['requireAcceptance' => true]]);
+        $ref = new \ReflectionProperty(\App\Store\Entity\Store::class, 'uuid');
+        $ref->setValue($store, self::STORE_UUID);
+        $storeRepository = $this->createMock(\App\Store\Repository\StoreRepository::class);
+        $storeRepository->method('findOneBy')->willReturn($store);
+
         $service = $this->createService([
             'em' => $em,
             'workflow' => $workflow,
             'outboxService' => new TradeOutboxService($em),
+            'storeRepository' => $storeRepository,
         ]);
 
         $order = $service->createOrder(
@@ -276,10 +284,18 @@ final class OrderServicePaymentsTest extends TestCase
         $workflow = $this->createStub(WorkflowInterface::class);
         $workflow->method('can')->willReturn(true);
 
+        $store = new \App\Store\Entity\Store('STORE001', 'Test Store');
+        $store->setSettings(['order' => ['requireAcceptance' => true]]);
+        $ref = new \ReflectionProperty(\App\Store\Entity\Store::class, 'uuid');
+        $ref->setValue($store, self::STORE_UUID);
+        $storeRepository = $this->createMock(\App\Store\Repository\StoreRepository::class);
+        $storeRepository->method('findOneBy')->willReturn($store);
+
         $service = $this->createService([
             'em' => $em,
             'workflow' => $workflow,
             'outboxService' => new TradeOutboxService($em),
+            'storeRepository' => $storeRepository,
         ]);
 
         $order = $service->createOrder([], ['id' => 42], 100, 'CNY', null, [], $this->storeContext());

@@ -135,33 +135,39 @@ final class OrderService extends BaseService implements OrderServiceInterface
                 if ($this->workflow === null || $this->outboxService === null) {
                     throw new \RuntimeException('Store order orchestration is not configured.');
                 }
-                // Always create StoreOrder when store is present - go through store_submit
-                if (!$this->workflow->can($order, 'store_submit')) {
-                    throw new \RuntimeException('Order cannot be submitted for store acceptance.');
+                $requireAcceptance = $this->isStoreRequireAcceptance($storeContext->storeUuid);
+                if ($requireAcceptance) {
+                    // Require acceptance: go through store_submit -> StoreOrder (manual)
+                    if (!$this->workflow->can($order, 'store_submit')) {
+                        throw new \RuntimeException('Order cannot be submitted for store acceptance.');
+                    }
+                    $this->workflow->apply($order, 'store_submit');
+                    $this->outboxService->record('trade.order.created.v1', 'trade_order', $order->getUuid(), [
+                        'orderUuid' => $order->getUuid(),
+                        'store' => $storeContext->toSnapshot(),
+                        'customerUserUuid' => $order->getUser()?->getUuid(),
+                        'currency' => $order->getCurrency(),
+                        'totalAmount' => $order->getTotalAmount(),
+                        'items' => array_map(static fn (OrderItem $item): array => [
+                            'lineId' => $item->getUuid(),
+                            'catalogReference' => $item->getSpecificationUuid() ?? $item->getSpecSnapshot()['uuid'] ?? '',
+                            'quantity' => $item->getQuantity(),
+                            'unitPrice' => $item->getUnitPrice(),
+                            'lineAmount' => $item->getPrice(),
+                            'snapshot' => [
+                                'specification' => $item->getSpecSnapshot() ?? [],
+                                'product' => $item->getProductSnapshot() ?? [],
+                            ],
+                        ], $order->getItems()->toArray()),
+                        'delivery' => is_array($metadata['delivery'] ?? null) ? $metadata['delivery'] : [],
+                        'placedAt' => $order->getCreatedAt()->format(DATE_ATOM),
+                    ]);
+                } else {
+                    // No acceptance required: directly go to pending, no StoreOrder needed
+                    if ($this->workflow->can($order, 'submit')) {
+                        $this->workflow->apply($order, 'submit');
+                    }
                 }
-                $this->workflow->apply($order, 'store_submit');
-                $this->outboxService->record('trade.order.created.v1', 'trade_order', $order->getUuid(), [
-                    'orderUuid' => $order->getUuid(),
-                    'store' => $storeContext->toSnapshot(),
-                    'customerUserUuid' => $order->getUser()?->getUuid(),
-                    'currency' => $order->getCurrency(),
-                    'totalAmount' => $order->getTotalAmount(),
-                    'items' => array_map(static fn (OrderItem $item): array => [
-                        'lineId' => $item->getUuid(),
-                        'catalogReference' => $item->getSpecificationUuid() ?? $item->getSpecSnapshot()['uuid'] ?? '',
-                        'quantity' => $item->getQuantity(),
-                        'unitPrice' => $item->getUnitPrice(),
-                        'lineAmount' => $item->getPrice(),
-                        'snapshot' => [
-                            'specification' => $item->getSpecSnapshot() ?? [],
-                            'product' => $item->getProductSnapshot() ?? [],
-                        ],
-                    ], $order->getItems()->toArray()),
-                    'delivery' => is_array($metadata['delivery'] ?? null) ? $metadata['delivery'] : [],
-                    'placedAt' => $order->getCreatedAt()->format(DATE_ATOM),
-                ]);
-                // Keep isStoreRequireAcceptance used for future manual vs auto branching
-                $this->isStoreRequireAcceptance($storeContext->storeUuid);
             }
 
             return $order;

@@ -21,6 +21,7 @@ final class StoreOrderWorkflowGuardListener implements EventSubscriberInterface
     {
         return [
             'workflow.order.guard.submit' => 'onGuard',
+            'workflow.order.guard.store_submit' => 'onGuard',
             'workflow.order.guard.complete' => 'onGuard',
             'workflow.order.guard.request_verification' => 'onGuard',
             'workflow.order.guard.store_verify' => 'onGuard',
@@ -43,6 +44,7 @@ final class StoreOrderWorkflowGuardListener implements EventSubscriberInterface
 
         match ($transition) {
             'submit' => $this->guardSubmit($event, $settings, $hasStore),
+            'store_submit' => $this->guardStoreSubmit($event, $settings, $hasStore),
             'complete' => $this->guardComplete($event, $settings, $hasStore),
             'request_verification' => $this->guardRequestVerification($event, $settings, $hasStore),
             'store_verify' => $this->guardStoreVerify($event, $settings, $hasStore),
@@ -58,6 +60,19 @@ final class StoreOrderWorkflowGuardListener implements EventSubscriberInterface
         // When requireAcceptance is true and order has store, submit must be blocked (must go store_submit)
         if ($hasStore && $settings->requireAcceptance) {
             $event->setBlocked(true, 'Store acceptance required: use store_submit.');
+        }
+    }
+
+    /**
+     * @param GuardEvent<Order> $event
+     */
+    private function guardStoreSubmit(GuardEvent $event, StoreSettings $settings, bool $hasStore): void
+    {
+        if (!$hasStore) {
+            return;
+        }
+        if (!$settings->requireAcceptance) {
+            $event->setBlocked(true, 'Store acceptance is disabled for this store.');
         }
     }
 
