@@ -279,6 +279,39 @@ class OrderController extends RestController
         }
     }
 
+    #[Route('/{id}/fulfill', name: 'fulfill', methods: ['POST'], requirements: ['id' => '\d+|[0-9a-fA-F-]{36}'])]
+    public function fulfillAction(Request $request, int|string $id): Response
+    {
+        $order = $this->service->get($this->mixIdToCommonFilter($id), false);
+
+        if (!$order) {
+            return $this->warning('Order not found.', 404, '', 404);
+        }
+
+        $user = $this->getCurrentUser();
+        if ($user === null || $order->getUser()?->getId() !== $user->getId()) {
+            return $this->warning('Order not found.', 404, '', 404);
+        }
+
+        if (!$this->orderWorkflow->can($order, 'fulfill')) {
+            return $this->warning('Order cannot be fulfilled in current status.', 400, '', 400);
+        }
+
+        $content = json_decode($request->getContent(), true) ?: [];
+
+        try {
+            $this->service->wrapInTransaction(function () use ($order, $content) {
+                $this->service->fulfill($order, $content);
+                $this->orderWorkflow->apply($order, 'fulfill');
+                $this->service->update($order, []);
+            });
+        } catch (\Throwable $e) {
+            return $this->warning($e->getMessage(), 400, '', 400);
+        }
+
+        return $this->success($order, 'Order fulfilled');
+    }
+
     #[Route('/{id}/refund', name: 'refund', methods: ['POST'], requirements: ['id' => '\d+|[0-9a-fA-F-]{36}'])]
     public function refundAction(Request $request, int|string $id): Response
     {
