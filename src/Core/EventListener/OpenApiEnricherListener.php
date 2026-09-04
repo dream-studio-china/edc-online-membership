@@ -124,9 +124,8 @@ class OpenApiEnricherListener
         '/api/v1/manage/store-orders' => ['summary' => ['get' => 'List store orders']],
         '/api/v1/app/store-orders' => ['summary' => ['get' => 'List my store orders']],
         '/api/v1/store/{scopeId}/orders' => ['summary' => ['get' => 'List scoped store orders'], 'desc' => ['get' => 'Staff scoped list via store uuid. Requires store membership.']],
-        '/api/v1/store/{scopeId}/orders/{orderUuid}/accept' => ['summary' => ['post' => 'Accept store order'], 'desc' => ['post' => 'Staff accept pending order. Requires owner|manager|clerk.']],
-        '/api/v1/store/{scopeId}/orders/{orderUuid}/reject' => ['summary' => ['post' => 'Reject store order'], 'desc' => ['post' => 'Body: code, reason. Requires owner|manager|clerk.']],
-        '/api/v1/store/{scopeId}/orders/{orderUuid}/fulfill' => ['summary' => ['post' => 'Fulfill store order'], 'desc' => ['post' => 'Staff fulfillment step. Requires owner|manager|fulfillment.']],
+        '/api/v1/store/{scopeId}/orders/{orderUuid}/fulfill' => ['summary' => ['post' => 'Fulfill store order'], 'desc' => ['post' => 'Staff fulfillment step. Requires owner|manager|fulfillment. Order must be accepted.']],
+        '/api/v1/store/{scopeId}/orders/{orderUuid}/verify' => ['summary' => ['post' => 'Verify store order'], 'desc' => ['post' => 'Staff verification post-fulfill. Requires fulfillment.requireVerification=true and StoreOrder fulfilled. No body required; order UUID is the token. Emits store.order.verified.v1 → Trade complete.']],
         '/api/v1/manage/inventory/materials' => ['summary' => ['get' => 'List materials', 'post' => 'Create material'], 'desc' => ['post' => 'code unique, immutably frozen after stock mutation.']],
         '/api/v1/manage/inventory/stocks/{storeUuid}/{materialUuid}' => ['summary' => ['get' => 'Get stock (virtual zero if absent)'], 'desc' => ['get' => 'Per-store per-material balance: onHand, reserved, allowNegativeStock.']],
         '/api/v1/manage/inventory/stocks/{storeUuid}/{materialUuid}/adjust' => ['summary' => ['post' => 'Adjust stock'], 'desc' => ['post' => 'Body: quantityDelta (string bcmath), reason, referenceId, allowNegativeStock. Append-only ledger.']],
@@ -404,9 +403,8 @@ class OpenApiEnricherListener
             // ---- Store: manage stores + scoped orders ----
             'post:/api/v1/manage/stores/{uuid}/status/{status}' => $inline([], [], false),
             'post:/api/v1/manage/stores/{uuid}/members' => $inline(['userUuid'=>['type'=>'string','format'=>'uuid','example'=>'550e8400-e29b-41d4-a716-446655440000'],'role'=>['type'=>'string','enum'=>['owner','manager','clerk','fulfillment'],'example'=>'manager']], ['userUuid','role']),
-            'post:/api/v1/store/{scopeId}/orders/{orderUuid}/accept' => $inline(['reservationId'=>['type'=>'string','description'=>'Optional reservation id']], [], false),
-            'post:/api/v1/store/{scopeId}/orders/{orderUuid}/reject' => $inline(['code'=>['type'=>'string','example'=>'out_of_stock'],'reason'=>['type'=>'string','example'=>'Insufficient stock']], ['code','reason']),
             'post:/api/v1/store/{scopeId}/orders/{orderUuid}/fulfill' => $inline(['fulfillmentData'=>['type'=>'object','description'=>'Optional fulfillment payload']], [], false),
+            'post:/api/v1/store/{scopeId}/orders/{orderUuid}/verify' => $inline([], [], false),
             // ---- Inventory ----
             'post:/api/v1/manage/inventory/stocks/{storeUuid}/{materialUuid}/adjust' => $inline(['quantityDelta'=>['type'=>'string','example'=>'10.000','description'=>'BCMath string'],'reason'=>['type'=>'string'],'referenceId'=>['type'=>'string'],'allowNegativeStock'=>['type'=>'boolean']], ['quantityDelta','reason']),
             'put:/api/v1/manage/inventory/stocks/{storeUuid}/{materialUuid}/policy' => $inline(['allowNegativeStock'=>['type'=>'boolean']], ['allowNegativeStock']),
