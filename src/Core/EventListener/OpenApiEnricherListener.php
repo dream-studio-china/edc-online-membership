@@ -116,6 +116,35 @@ class OpenApiEnricherListener
         '/api/v1/manage/invoices/{id}/refund' => ['summary' => ['post' => 'Refund invoice'], 'desc' => ['post' => 'Partial or full refund with reason. Updates refundedAmount.']],
         '/api/v1/manage/invoices/{id}/transitions' => ['summary' => ['get' => 'Invoice available transitions']],
         '/api/v1/app/invoices/{id}/pay/{payment}' => ['summary' => ['post' => 'Pay invoice (self)'], 'desc' => ['post' => 'User pays own invoice via gateway. Same adjustment pipeline as manage.']],
+        '/api/auth/register' => ['summary' => ['post' => 'Register a new user'], 'desc' => ['post' => "Create user account. Example: POST /api/auth/register {\"email\":\"user@example.com\",\"username\":\"newuser\",\"password\":\"P@ssw0rd\"} → 201 {data:{access_token}}"]],
+        '/api/v1/app/authorization/me' => ['summary' => ['get' => 'Get my authorization'], 'desc' => ['get' => "Returns effective permissions, storeScopes, fieldGrants for current user. Example: GET /api/v1/app/authorization/me  Header: Authorization: Bearer <user_jwt> → {data:{permissions:[\"store:order:fulfill\"]}}"]],
+        '/api/v1/app/invoices' => ['summary' => ['get' => 'List my invoices'], 'desc' => ['get' => "Own invoices only. Example: GET /api/v1/app/invoices?page=1  Header: Authorization: Bearer <user_jwt> → {data:[{id,uuid,status,amount}]}"]],
+        '/api/v1/app/invoices/{id}' => ['summary' => ['get' => 'Get invoice detail (own)'], 'desc' => ['get' => "Own invoice only. Example: GET /api/v1/app/invoices/123  Header: Authorization: Bearer <user_jwt> → {data:{uuid,status}}"]],
+        '/api/v1/app/pictures' => ['summary' => ['get' => 'List my pictures', 'post' => 'Create picture'], 'desc' => ['get' => "Own pictures. Example: GET /api/v1/app/pictures", 'post' => "Example: POST /api/v1/app/pictures {\"url\":\"/uploads/a.jpg\"} → 201"]],
+        '/api/v1/app/pictures/{id}' => ['summary' => ['get' => 'Get picture', 'put' => 'Update picture', 'delete' => 'Delete picture'], 'desc' => ['get' => "Own picture detail. Example: GET /api/v1/app/pictures/1", 'put' => "Example: PUT /api/v1/app/pictures/1 {\"title\":\"new\"}", 'delete' => "Example: DELETE /api/v1/app/pictures/1 → 200"]],
+        '/api/v1/app/pictures/batch-update' => ['summary' => ['post' => 'Batch update pictures']],
+        '/api/v1/app/profiles' => ['summary' => ['get' => 'Get my profile', 'put' => 'Update my profile'], 'desc' => ['get' => "Example: GET /api/v1/app/profiles → {data:{nickname}}", 'put' => "Example: PUT /api/v1/app/profiles {\"nickname\":\"new\"}"]],
+        '/api/v1/app/promotions' => ['summary' => ['get' => 'List promotions (public)'], 'desc' => ['get' => "Active promotions. Example: GET /api/v1/app/promotions → {data:[{code}]}"]],
+        '/api/v1/app/promotions/{id}' => ['summary' => ['get' => 'Get promotion detail (public)']],
+        '/api/v1/app/specifications' => ['summary' => ['get' => 'List specifications (public)'], 'desc' => ['get' => "Browse all active specs. Example: GET /api/v1/app/specifications?productId=1"]],
+        '/api/v1/app/specifications/{id}' => ['summary' => ['get' => 'Get specification detail (public)']],
+        '/api/v1/app/store-orders/{id}' => ['summary' => ['get' => 'Get my store order detail (own)'], 'desc' => ['get' => "Own StoreOrder only. Example: GET /api/v1/app/store-orders/{uuid}  Header: Authorization: Bearer <user_jwt> → {data:{uuid,operationalStatus}}"]],
+        '/api/v1/app/stores/{uuid}/membership' => ['summary' => ['get' => 'Get my store membership', 'post' => 'Join store'], 'desc' => ['get' => "Example: GET /api/v1/app/stores/{uuid}/membership → {data:{role}}", 'post' => "Example: POST /api/v1/app/stores/{uuid}/membership {} → 201"]],
+        '/api/v1/app/transactions' => ['summary' => ['get' => 'List my transactions'], 'desc' => ['get' => "Own wallet transactions. Example: GET /api/v1/app/transactions → {data:[{amount}]}"]],
+        '/api/v1/app/transactions/{id}' => ['summary' => ['get' => 'Get transaction detail (own)']],
+        '/api/v1/app/users/me' => ['summary' => ['get' => 'Get current user profile', 'put' => 'Update current user profile'], 'desc' => ['get' => "Example: GET /api/v1/app/users/me → {data:{email}}", 'put' => "Example: PUT /api/v1/app/users/me {\"username\":\"new\"}"]],
+        '/api/v1/app/users/change-password' => ['summary' => ['post' => 'Change own password'], 'desc' => ['post' => "Example: POST /api/v1/app/users/change-password {\"currentPassword\":\"old\",\"newPassword\":\"new\"}"]],
+        '/api/v1/app/vouchers' => ['summary' => ['get' => 'List my vouchers'], 'desc' => ['get' => "Own vouchers. Example: GET /api/v1/app/vouchers"]],
+        '/api/v1/app/vouchers/{id}' => ['summary' => ['get' => 'Get voucher detail (own)']],
+        '/api/v1/app/wallets' => ['summary' => ['get' => 'List my wallets'], 'desc' => ['get' => "Own wallets. Example: GET /api/v1/app/wallets → {data:[{currency,balance}]}"]],
+        '/api/v1/app/wallets/{id}' => ['summary' => ['get' => 'Get wallet detail (own)']],
+        '/api/v1/app/payment-deductions' => ['summary' => ['get' => 'List my payment deductions'], 'desc' => ['get' => "Own deductions. Example: GET /api/v1/app/payment-deductions"]],
+        '/api/v1/app/payment-deductions/{id}' => ['summary' => ['get' => 'Get payment deduction detail']],
+        '/api/v1/app/voucher-comments' => ['summary' => ['get' => 'List voucher comments', 'post' => 'Create voucher comment']],
+        '/api/v1/app/voucher-comments/{id}' => ['summary' => ['get' => 'Get voucher comment', 'put' => 'Update voucher comment', 'delete' => 'Delete voucher comment']],
+        '/api/v1/app/wechat-users' => ['summary' => ['get' => 'List my WeChat users'], 'desc' => ['get' => "Own WeChat bindings. Example: GET /api/v1/app/wechat-users"]],
+        '/api/v1/app/wechat-users/{id}' => ['summary' => ['get' => 'Get WeChat user detail']],
+        '/api/v1/app/wechat-users/batch-update' => ['summary' => ['post' => 'Batch update WeChat users']],
         '/api/v1/manage/stores' => ['summary' => ['get' => 'List stores', 'post' => 'Create store'], 'desc' => ['get' => "Example: GET /api/v1/manage/stores → {data:[{uuid,code,name,status}]}\nHeader: Authorization: Bearer <admin_jwt>", 'post' => "Code must be unique. ROLE_ADMIN.\nExample: POST /api/v1/manage/stores\n{\n  \"code\":\"xuhui\",\n  \"name\":\"Xuhui Store\",\n  \"timezone\":\"Asia/Shanghai\",\n  \"settings\":{\"fulfillment\":{\"requireVerification\":true}}\n}\n→ 201 {data:{uuid}}\nOnly fulfillment.requireVerification is effective (order.requireAcceptance removed)."]],
         '/api/v1/manage/stores/{uuid}' => ['summary' => ['get' => 'Get store detail', 'put' => 'Update store'], 'desc' => ['get' => "Example: GET /api/v1/manage/stores/{uuid} → {data:{uuid,code,settings}}\nHeader: Authorization: Bearer <admin_jwt>", 'put' => "Example: PUT /api/v1/manage/stores/{uuid}\n{\"name\":\"Xuhui V2\",\"settings\":{\"fulfillment\":{\"requireVerification\":false}}} → 200"]],
         '/api/v1/manage/stores/{uuid}/status/{status}' => ['summary' => ['post' => 'Change store status'], 'desc' => ['post' => "Transitions: activate|suspend|close. ROLE_ADMIN.\nExample: POST /api/v1/manage/stores/{uuid}/status/suspend → 200"]],
@@ -140,9 +169,7 @@ class OpenApiEnricherListener
         '/api/v1/manage/settlement-rule-versions/{uuid}/publish' => ['summary' => ['post' => 'Publish settlement rule version'], 'desc' => ['post' => 'Transitions draft → published.']],
         '/api/v1/manage/settlement-plans/{uuid}/allocations/{allocationUuid}/post' => ['summary' => ['post' => 'Post settlement allocation']],
         '/api/v1/manage/settlement-plans/{uuid}/allocations/{allocationUuid}/reverse' => ['summary' => ['post' => 'Reverse settlement allocation'], 'desc' => ['post' => 'Body: reason.']],
-        '/api/v1/app/users/me' => ['summary' => ['get' => 'Get current user profile', 'put' => 'Update current user profile'], 'desc' => ['put' => 'Update email/username/phone, optional password.']],
-        '/api/v1/app/users/change-password' => ['summary' => ['post' => 'Change own password'], 'desc' => ['post' => 'Requires current password.']],
-        '/api/v1/manage/users/{id}/change-password' => ['summary' => ['post' => 'Admin change user password'], 'desc' => ['post' => 'ROLE_ADMIN. No current password required.']],
+        '/api/v1/manage/users/{id}/change-password' => ['summary' => ['post' => 'Admin change user password'], 'desc' => ['post' => 'ROLE_ADMIN. No current password required. POST /api/v1/manage/users/123/change-password {"newPassword":"new123"} → 200']],
 
         // --- Store: staff scoped products ---
         '/api/v1/store/{scopeId}/products' => ['tag' => 'Store', 'summary' => ['get' => 'List scoped store products', 'post' => 'Create scoped store product'], 'desc' => ['get' => 'Staff scoped list via store uuid (scopeId). Paginated. Supports @filter, @order, @select, @sort, @expands, @display. Requires store membership (store:product:read). Auth: Bearer JWT, ROLE_USER.', 'post' => 'Create product bound to store scopeId. Body: name required, description, status in [active,inactive], metadata. Requires store:product:create. Example: {"name":"iPhone 15 Pro"}.']],
@@ -269,6 +296,10 @@ class OpenApiEnricherListener
                     $op['requestBody'] = $body;
                 } elseif (!isset($op['requestBody']) && $method === 'post' && in_array($path, ['/api/v1/app/media/upload', '/api/v1/manage/media/upload'], true)) {
                     $op['requestBody'] = $this->mediaUploadRequestBody();
+                }
+                // Fallback description for any endpoint not in META — keeps AI doc complete
+                if (empty($op['description']) || str_starts_with($op['description'], 'Api ') || $op['description'] === 'Success') {
+                    $op['description'] = $this->fallbackDescription($path, $method);
                 }
                 // Ensure path parameters from URL template are documented
                 $this->ensurePathParameters($op, $path);
@@ -438,8 +469,26 @@ class OpenApiEnricherListener
     }
 
     /**
-     * Ensure every {placeholder} in the path has a corresponding path parameter documentation.
+     * @param string $path
+     * @param string $method
+     */
+    private function fallbackDescription(string $path, string $method): string
+    {
+        $key = $method.':'.$path;
+        return match (true) {
+            str_contains($path, '/store/') && str_contains($path, '/orders') && $method === 'get' && str_contains($path, '{orderUuid}') => "Staff scoped StoreOrder detail. Example: GET {$path}  Header: Authorization: Bearer <staff_jwt>\norderUuid can be TradeOrder UUID or StoreOrder UUID. Requires store:order:read.",
+            str_contains($path, '/store/') && $method === 'get' => "Staff scoped list. Example: GET {$path}?page=1  Header: Authorization: Bearer <staff_jwt>\nRequires store membership.",
+            str_contains($path, '/manage/store-orders') => "Admin StoreOrder list/detail. Supports @filter. Example: GET {$path}  Header: Authorization: Bearer <admin_jwt>",
+            str_contains($path, '/app/store-orders') => "Own StoreOrders. Example: GET {$path}  Header: Authorization: Bearer <user_jwt>",
+            str_contains($path, '/manage/orders') && $method === 'get' => "List orders with pagination and @filter. Example: GET {$path}?page=1",
+            str_contains($path, '/app/orders') && $method === 'get' => "Own orders. Example: GET {$path}  Header: Authorization: Bearer <user_jwt>",
+            default => ucfirst($method)." {$path} — see requestBody example and ensure Authorization: Bearer <jwt> header.",
+        };
+    }
+
+    /**
      * @param array<string, mixed> $operation
+     * @param string $path
      */
     private function ensurePathParameters(array &$operation, string $path): void
     {
