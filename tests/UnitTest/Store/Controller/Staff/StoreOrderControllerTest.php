@@ -8,6 +8,7 @@ use App\Identity\Entity\User;
 use App\Store\Controller\Staff\StoreOrderController;
 use App\Store\Entity\Store;
 use App\Store\Entity\StoreOrder;
+use App\Store\Service\StoreOrderDirectVerifyService;
 use App\Store\Service\StoreOrderServiceInterface;
 use App\Store\Service\StoreServiceInterface;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
@@ -27,6 +28,7 @@ final class StoreOrderControllerTest extends TestCase
     private StoreOrderServiceInterface $orderService;
     private StoreServiceInterface $storeService;
     private AuthorizationCheckerInterface $authorizationChecker;
+    private StoreOrderDirectVerifyService $directVerifyService;
     private StoreOrderController $controller;
 
     protected function setUp(): void
@@ -37,7 +39,8 @@ final class StoreOrderControllerTest extends TestCase
         $this->storeService = $this->createMock(StoreServiceInterface::class);
         $this->authorizationChecker = $this->createMock(AuthorizationCheckerInterface::class);
         $this->authorizationChecker->method('isGranted')->willReturn(true);
-        $this->controller = new StoreOrderController($this->orderService, $this->storeService);
+        $this->directVerifyService = $this->createMock(StoreOrderDirectVerifyService::class);
+        $this->controller = new StoreOrderController($this->orderService, $this->storeService, $this->directVerifyService);
     }
 
     public function testAcceptUsesScopedPermissionAndStoreFilter(): void

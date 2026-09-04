@@ -72,18 +72,25 @@ final class StoreOrderService extends BaseService implements StoreOrderServiceIn
         });
     }
 
-    public function verify(StoreOrder $storeOrder, string $verificationCode, ?string $verifiedBy = null): StoreOrder
+    public function verify(StoreOrder $storeOrder, ?string $verificationCode = null, ?string $verifiedBy = null): StoreOrder
     {
         return $this->transaction(function () use ($storeOrder, $verificationCode, $verifiedBy): StoreOrder {
             if ($this->outboxService === null) {
                 throw new \RuntimeException('Store outbox is not configured.');
             }
-            $storeOrder->verify($verificationCode, $verifiedBy);
+            $code = trim((string) $verificationCode);
+            if ($code === '') {
+                $code = $storeOrder->getUuid();
+            }
+            if (strlen($code) > 64) {
+                throw new \InvalidArgumentException('verificationCode must not exceed 64 characters.');
+            }
+            $storeOrder->verify($code, $verifiedBy);
             $this->outboxService->record('store.order.verified.v1', 'store_order', $storeOrder->getUuid(), [
                 'orderUuid' => $storeOrder->getTradeOrderUuid(),
                 'storeOrderUuid' => $storeOrder->getUuid(),
                 'storeUuid' => $storeOrder->getStore()->getUuid(),
-                'verificationCode' => $verificationCode,
+                'verificationCode' => $code,
                 'verifiedBy' => $verifiedBy,
                 'verifiedAt' => $storeOrder->getVerifiedAt()?->format(DATE_ATOM),
             ]);

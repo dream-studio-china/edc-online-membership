@@ -11,6 +11,8 @@ use App\Store\Entity\Store;
 use App\Store\Entity\StoreOrder;
 use App\Store\Service\StoreOrderServiceInterface;
 use App\Store\Service\StoreServiceInterface;
+use App\Store\Controller\Concerns\StoreOrderDirectVerifyTrait;
+use App\Store\Service\StoreOrderDirectVerifyService;
 use App\Store\View\StoreScopedAuthorizationApiMixin;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -21,12 +23,18 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[IsGranted('ROLE_USER')]
 final class StoreOrderController extends RestController
 {
-    use StoreScopedAuthorizationApiMixin, ScopedListApiViewMixin, ScopedDetailApiViewMixin;
+    use StoreScopedAuthorizationApiMixin, ScopedListApiViewMixin, ScopedDetailApiViewMixin, StoreOrderDirectVerifyTrait;
 
     public function __construct(
         protected readonly StoreOrderServiceInterface $service,
         private readonly StoreServiceInterface $storeService,
+        private readonly StoreOrderDirectVerifyService $directVerifyService,
     ) {
+    }
+
+    protected function getDirectVerifyService(): StoreOrderDirectVerifyService
+    {
+        return $this->directVerifyService;
     }
 
     /** @return array<string, mixed> */
@@ -150,12 +158,16 @@ final class StoreOrderController extends RestController
 
         $data = $this->body($request);
         $verificationCode = $data['verificationCode'] ?? null;
-        if (!is_string($verificationCode) || trim($verificationCode) === '') {
-            return $this->warning('verificationCode is required.', 400, '', 400);
+        if ($verificationCode !== null && !is_string($verificationCode)) {
+            return $this->warning('verificationCode must be a string.', 400, '', 400);
         }
-        $verificationCode = trim($verificationCode);
-        if (strlen($verificationCode) > 64) {
+        $verificationCode = is_string($verificationCode) ? trim($verificationCode) : null;
+        if ($verificationCode !== null && $verificationCode !== '' && strlen($verificationCode) > 64) {
             return $this->warning('verificationCode must not exceed 64 characters.', 400, '', 400);
+        }
+        // Default to StoreOrder uuid when not provided
+        if ($verificationCode === null || $verificationCode === '') {
+            $verificationCode = $order->getUuid();
         }
 
         $user = $this->getUser();
@@ -167,6 +179,18 @@ final class StoreOrderController extends RestController
         $this->service->verify($order, $verificationCode, $verifiedBy);
 
         return $this->success($order, 'Store order verified.');
+    }
+
+    #[Route('/{orderUuid}/direct-verify', name: 'direct_verify', methods: ['POST'], requirements: ['orderUuid' => '\d+|[0-9a-fA-F-]{36}'])]
+    public function directVerifyAction(Request $request, string $scopeId, string $orderUuid): Response
+    {
+        $this->authorizeStoreAction('verify');
+        $order = $this->storeOrder($orderUuid);
+        if ($order === null) {
+            return $this->warning('Store order not found or access denied.', 404, '', 404);
+        }
+
+        return $this->handleDirectVerify($request, $order);
     }
 
     /** @return array<string, mixed> */
