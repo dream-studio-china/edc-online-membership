@@ -29,9 +29,9 @@ final class ProductController extends RestController
     /** @var list<string> */
     protected array $requiredCreateProperties = ['name'];
     /** @var list<string> */
-    protected array $acceptedCreateProperties = ['name', 'description', 'status', 'metadata'];
+    protected array $acceptedCreateProperties = ['name', 'description', 'status', 'type', 'metadata'];
     /** @var list<string> */
-    protected array $acceptedUpdateProperties = ['name', 'description', 'status', 'metadata'];
+    protected array $acceptedUpdateProperties = ['name', 'description', 'status', 'type', 'metadata'];
 
     public function __construct(
         protected readonly ProductServiceInterface $service,
