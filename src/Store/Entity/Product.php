@@ -19,6 +19,10 @@ class Product
 {
     public const STATUS_ACTIVE = 'active';
     public const STATUS_INACTIVE = 'inactive';
+    public const TYPE_NORMAL = 'normal';
+    public const TYPE_COUPON = 'coupon';
+    /** @var list<string> */
+    public const TYPES = [self::TYPE_NORMAL, self::TYPE_COUPON];
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -40,6 +44,9 @@ class Product
 
     #[ORM\Column(type: 'string', length: 20, options: ['default' => 'active'])]
     private string $status = self::STATUS_ACTIVE;
+
+    #[ORM\Column(type: 'string', length: 20, options: ['default' => 'normal'])]
+    private string $type = self::TYPE_NORMAL;
 
     #[ORM\Column(type: 'boolean', options: ['default' => false])]
     private bool $isDeleted = false;
@@ -138,6 +145,26 @@ class Product
     public function isActive(): bool
     {
         return $this->status === self::STATUS_ACTIVE;
+    }
+
+    public function getType(): string
+    {
+        return $this->type;
+    }
+
+    public function setType(string $type): self
+    {
+        if (!in_array($type, self::TYPES, true)) {
+            throw new \InvalidArgumentException(sprintf('Invalid product type: %s', $type));
+        }
+        $this->type = $type;
+        $this->touch();
+        return $this;
+    }
+
+    public function isCoupon(): bool
+    {
+        return $this->type === self::TYPE_COUPON;
     }
 
     public function getIsDeleted(): bool
