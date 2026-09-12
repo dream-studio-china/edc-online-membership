@@ -131,6 +131,7 @@ nelmio_api_doc:
                         name: { type: string, example: 'iPhone 15 Pro' }
                         description: { type: string, nullable: true, example: 'The latest iPhone with A17 Pro chip' }
                         status: { type: string, enum: [active, inactive], example: 'active' }
+                        type: { type: string, enum: [normal, coupon], example: 'normal', description: 'Product type discriminator: normal goods vs coupon' }
                         isDeleted: { type: boolean, example: false }
                         metadata: { type: object, nullable: true }
                         createdAt: { type: string, format: date-time }
@@ -143,6 +144,7 @@ nelmio_api_doc:
                         name: { type: string, example: 'iPhone 15 Pro' }
                         description: { type: string, nullable: true }
                         status: { type: string, enum: [active, inactive], example: 'active' }
+                        type: { type: string, enum: [normal, coupon], example: 'normal' }
                         metadata: { type: object, nullable: true }
 
                 ProductUpdate:
@@ -151,6 +153,7 @@ nelmio_api_doc:
                         name: { type: string }
                         description: { type: string, nullable: true }
                         status: { type: string, enum: [active, inactive] }
+                        type: { type: string, enum: [normal, coupon] }
                         metadata: { type: object, nullable: true }
 
                 # ---- Trade: Specification ----
@@ -657,6 +660,7 @@ nelmio_api_doc:
                         name: { type: string, example: 'Flagship Store' }
                         status: { type: string, enum: [active, suspended, closed], example: 'active' }
                         timezone: { type: string, example: 'UTC' }
+                        currency: { type: string, example: 'CNY' }
                         contact: { type: object, nullable: true }
                         address: { type: object, nullable: true }
                         settings: { type: object, nullable: true }
@@ -669,7 +673,12 @@ nelmio_api_doc:
                         uuid: { type: string }
                         tradeOrderUuid: { type: string }
                         store: { $ref: '#/components/schemas/Store' }
-                        status: { type: string, enum: [pending, accepted, rejected, fulfilled], example: 'pending' }
+                        operationalStatus: { type: string, enum: [pending_validation, awaiting_inventory, accepted, rejected, fulfillment_pending, fulfilling, fulfilled, verified, cancelled], example: 'accepted' }
+                        currency: { type: string, example: 'CNY' }
+                        totalAmount: { type: integer, description: 'Total in cents', example: 19900 }
+                        verificationRequired: { type: boolean, example: false }
+                        verifiedAt: { type: string, format: date-time, nullable: true }
+                        verifiedBy: { type: string, nullable: true }
                         createdAt: { type: string, format: date-time }
 
                 # ---- Inventory ----
@@ -742,17 +751,21 @@ nelmio_api_doc:
                         uuid: { type: string }
                         code: { type: string, example: 'SETTLE-001' }
                         name: { type: string }
-                        status: { type: string, example: 'draft' }
+                        status: { type: string, enum: [draft, published, retired], example: 'draft' }
                         createdAt: { type: string, format: date-time }
 
                 SettlementRuleVersion:
                     type: object
                     properties:
+                        id: { type: integer }
                         uuid: { type: string }
-                        rule: { $ref: '#/components/schemas/SettlementRule' }
+                        ruleUuid: { type: string, format: uuid }
                         version: { type: integer, example: 1 }
-                        status: { type: string, enum: [draft, published], example: 'draft' }
-                        config: { type: object }
+                        definition: { type: object }
+                        priority: { type: integer, example: 10 }
+                        effectiveFrom: { type: string, format: date-time }
+                        effectiveTo: { type: string, format: date-time, nullable: true }
+                        status: { type: string, enum: [draft, published, retired], example: 'draft' }
                         createdAt: { type: string, format: date-time }
 
                 SettlementPlan:
@@ -760,16 +773,123 @@ nelmio_api_doc:
                     properties:
                         id: { type: integer }
                         uuid: { type: string }
-                        status: { type: string }
+                        fundingId: { type: string }
+                        sourceType: { type: string, example: 'trade_order' }
+                        sourceId: { type: string }
+                        currency: { type: string, example: 'CNY' }
+                        status: { type: string, enum: [planning, planned, posting, partially_posted, posted, failed, reversal_pending, reversed, reversal_failed], example: 'planned' }
                         createdAt: { type: string, format: date-time }
 
                 SettlementAllocation:
                     type: object
                     properties:
+                        id: { type: integer }
                         uuid: { type: string }
                         plan: { $ref: '#/components/schemas/SettlementPlan' }
+                        sequence: { type: integer }
+                        recipientType: { type: string }
+                        recipientId: { type: string }
+                        reasonCode: { type: string }
                         amount: { type: integer, example: 50000 }
-                        status: { type: string }
+                        status: { type: string, enum: [planned, posting_requested, posted, cancelled, retryable_failure, reversal_requested, reversed, reversal_pending, failed], example: 'planned' }
+                        createdAt: { type: string, format: date-time }
+
+                SettlementOutboxMessage:
+                    type: object
+                    properties:
+                        id: { type: integer }
+                        eventId: { type: string }
+                        topic: { type: string }
+                        aggregateType: { type: string }
+                        aggregateId: { type: string }
+                        publishedAt: { type: string, format: date-time, nullable: true }
+                        attempts: { type: integer }
+
+                SettlementConsumedEvent:
+                    type: object
+                    properties:
+                        id: { type: integer }
+                        eventId: { type: string }
+                        topic: { type: string }
+                        sourceAggregateType: { type: string }
+                        sourceAggregateId: { type: string }
+                        processedAt: { type: string, format: date-time }
+
+                # ---- Authorization ----
+                Assignment:
+                    type: object
+                    properties:
+                        id: { type: integer }
+                        uuid: { type: string }
+                        userUuid: { type: string, format: uuid }
+                        scopeType: { type: string, enum: [global, store], example: 'store' }
+                        scopeUuid: { type: string, format: uuid, nullable: true }
+                        revokedAt: { type: string, format: date-time, nullable: true }
+                        createdAt: { type: string, format: date-time }
+
+                Role:
+                    type: object
+                    properties:
+                        id: { type: integer }
+                        uuid: { type: string }
+                        code: { type: string, example: 'store_manager' }
+                        name: { type: string, example: 'Store Manager' }
+                        scopeType: { type: string, enum: [global, store], example: 'store' }
+                        isSystem: { type: boolean }
+                        createdAt: { type: string, format: date-time }
+
+                Permission:
+                    type: object
+                    properties:
+                        id: { type: integer }
+                        code: { type: string, example: 'store:order:read' }
+                        module: { type: string }
+                        resource: { type: string }
+                        action: { type: string }
+                        name: { type: string }
+
+                AuditLog:
+                    type: object
+                    properties:
+                        id: { type: string }
+                        actorUuid: { type: string, nullable: true }
+                        action: { type: string }
+                        targetType: { type: string }
+                        targetUuid: { type: string, nullable: true }
+                        createdAt: { type: string, format: date-time }
+
+                # ---- Wechat ----
+                WechatUser:
+                    type: object
+                    properties:
+                        id: { type: integer }
+                        openid: { type: string }
+                        unionid: { type: string, nullable: true }
+                        nickname: { type: string, nullable: true }
+                        avatar: { type: string, nullable: true }
+                        appType: { type: string, example: 'miniapp' }
+                        createdAt: { type: string, format: date-time }
+
+                # ---- Wallet: payment deduction ----
+                PaymentDeduction:
+                    type: object
+                    properties:
+                        id: { type: integer }
+                        uuid: { type: string }
+                        invoiceId: { type: string }
+                        amount: { type: integer, description: 'Amount in cents' }
+                        currency: { type: string, example: 'CNY' }
+                        status: { type: string, enum: [pending, applied, released, refunded, failed], example: 'applied' }
+                        createdAt: { type: string, format: date-time }
+
+                # ---- Store: membership ----
+                StoreMember:
+                    type: object
+                    properties:
+                        id: { type: integer }
+                        userUuid: { type: string, format: uuid }
+                        role: { type: string, enum: [owner, manager, clerk, fulfillment], example: 'manager' }
+                        status: { type: string, enum: [active, suspended, revoked], example: 'active' }
                         createdAt: { type: string, format: date-time }
 
             # ============================================================
