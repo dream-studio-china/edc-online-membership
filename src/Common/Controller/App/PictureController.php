@@ -2,6 +2,7 @@
 
 namespace App\Common\Controller\App;
 
+use App\Common\Entity\Picture;
 use App\Common\Service\PictureServiceInterface;
 use App\Core\Controller\RestController;
 use App\Core\View\ApiView;
@@ -11,6 +12,8 @@ use App\Core\View\DetailApiViewMixin;
 use App\Core\View\ListApiViewMixin;
 use App\Core\View\UpdateApiViewMixin;
 use App\Identity\Entity\User;
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\QueryBuilder;
 use Symfony\Component\Routing\Attribute\Route;
 
 #[Route('/app/pictures', name: 'app-pictures-')]
@@ -27,15 +30,26 @@ class PictureController extends RestController
     protected array $acceptedUpdateProperties = ['title', 'category', 'image', 'metadata'];
 
     public function __construct(
-        protected readonly PictureServiceInterface $service
+        protected readonly PictureServiceInterface $service,
+        private readonly ?EntityManagerInterface $entityManager = null
     ) {}
 
-    /** @return array<string, mixed> */
-    protected function commonFilter(): array
+    /** @return array<string, mixed>|QueryBuilder */
+    protected function commonFilter(): array|QueryBuilder
     {
         $user = $this->getUser();
-
-        return $user instanceof User ? ['user' => $user] : ['id' => -1];
+        if (!$user instanceof User) {
+            return ['id' => -1];
+        }
+        if ($this->entityManager === null) {
+            return ['user' => $user];
+        }
+        // 个人图片按上传人隔离；未绑定上传人的全局配置图（如会员卡背景）对所有会员可见
+        return $this->entityManager->createQueryBuilder()
+            ->select('entity')
+            ->from(Picture::class, 'entity')
+            ->where('entity.user = :u OR entity.user IS NULL')
+            ->setParameter('u', $user);
     }
 
     /**
