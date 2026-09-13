@@ -61,6 +61,12 @@ if command -v symfony >/dev/null 2>&1; then
   fi
 fi
 
+# Hide qiniu vendor PHP Deprecated noise (dependency, cannot fix upstream).
+# Only drops lines containing both qiniu + deprecat, other errors stay visible.
+filter_qiniu_deprecations() {
+  grep -v -i -E 'qiniu.*deprecat|deprecat.*qiniu' || true
+}
+
 VERBOSITY_FLAG=""
 if (( VERBOSE )); then
   VERBOSITY_FLAG="-v"
@@ -81,14 +87,14 @@ publish_loop() {
   local end=$((SECONDS + DURATION))
   while (( SECONDS < end )); do
     # shellcheck disable=SC2086
-    ${PHP_BIN} bin/console app:trade:outbox:publish --no-interaction ${VERBOSITY_FLAG} 2>&1 | sed 's/^/[trade-outbox] /' || true
+    ${PHP_BIN} bin/console app:trade:outbox:publish --no-interaction ${VERBOSITY_FLAG} 2>&1 | filter_qiniu_deprecations | sed 's/^/[trade-outbox] /' || true
     # shellcheck disable=SC2086
-    ${PHP_BIN} bin/console app:store:outbox:publish --no-interaction ${VERBOSITY_FLAG} 2>&1 | sed 's/^/[store-outbox] /' || true
+    ${PHP_BIN} bin/console app:store:outbox:publish --no-interaction ${VERBOSITY_FLAG} 2>&1 | filter_qiniu_deprecations | sed 's/^/[store-outbox] /' || true
     # shellcheck disable=SC2086
-    ${PHP_BIN} bin/console app:inventory:outbox:publish --no-interaction ${VERBOSITY_FLAG} 2>&1 | sed 's/^/[inventory-outbox] /' || true
+    ${PHP_BIN} bin/console app:inventory:outbox:publish --no-interaction ${VERBOSITY_FLAG} 2>&1 | filter_qiniu_deprecations | sed 's/^/[inventory-outbox] /' || true
     # Also run housekeeping like scheduler does (best-effort, no log spam)
     # shellcheck disable=SC2086
-    ${PHP_BIN} bin/console app:inventory:reservations:release-expired --no-interaction 2>&1 | sed 's/^/[inventory-expire] /' || true
+    ${PHP_BIN} bin/console app:inventory:reservations:release-expired --no-interaction 2>&1 | filter_qiniu_deprecations | sed 's/^/[inventory-expire] /' || true
     sleep "$INTERVAL"
     # Early exit if end reached during sleep
     if (( SECONDS >= end )); then break; fi
@@ -109,8 +115,8 @@ trap cleanup EXIT INT TERM
 echo "[run-async] consuming async for ${DURATION}s (publish PID ${PUBLISH_PID})..."
 set +e
 # shellcheck disable=SC2086
-${PHP_BIN} bin/console messenger:consume async --time-limit="${DURATION}" --memory-limit="${MEMORY}" --no-interaction ${VERBOSITY_FLAG}
-CONSUME_EXIT=$?
+${PHP_BIN} bin/console messenger:consume async --time-limit="${DURATION}" --memory-limit="${MEMORY}" --no-interaction ${VERBOSITY_FLAG} 2>&1 | filter_qiniu_deprecations
+CONSUME_EXIT=${PIPESTATUS[0]}
 set -e
 
 # Stop publish loop
@@ -119,6 +125,6 @@ wait "$PUBLISH_PID" 2>/dev/null || true
 trap - EXIT INT TERM
 
 echo "[run-async] done (consume exit=${CONSUME_EXIT}). Quick checks:"
-${PHP_BIN} bin/console messenger:stats 2>&1 | sed 's/^/[stats] /' || true
+${PHP_BIN} bin/console messenger:stats 2>&1 | filter_qiniu_deprecations | sed 's/^/[stats] /' || true
 echo "[hint] SELECT uuid, operational_status FROM store_order ORDER BY id DESC LIMIT 5;"
 echo "[hint] SELECT queue_name, COUNT(*) FROM messenger_messages GROUP BY queue_name;"
