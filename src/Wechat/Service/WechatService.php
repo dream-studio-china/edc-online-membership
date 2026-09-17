@@ -7,6 +7,7 @@ namespace App\Wechat\Service;
 use EasyWeChat\MiniApp\Application as MiniApp;
 use EasyWeChat\OfficialAccount\Application as OfficialAccount;
 use EasyWeChat\Pay\Application as Pay;
+use EasyWeChat\Kernel\HttpClient\Response as WechatHttpResponse;
 
 final class WechatService implements WechatServiceInterface
 {
@@ -169,6 +170,58 @@ final class WechatService implements WechatServiceInterface
         return [
             'phoneNumber' => $data['phone_info']['phoneNumber'],
         ];
+    }
+
+    /**
+     * Mini Program: generate unlimited QR code (getwxacodeunlimit)
+     *
+     * Success returns raw image bytes; failure returns JSON with errcode/errmsg.
+     * @return string Raw image bytes (PNG/JPEG)
+     */
+    public function getMiniProgramUnlimitedCode(
+        string $scene,
+        string $page = 'pages/index/index',
+        int $width = 430,
+        bool $checkPath = false,
+    ): string {
+        if (trim($scene) === '') {
+            throw new \InvalidArgumentException('Scene must not be empty.');
+        }
+
+        try {
+            $response = $this->getMiniApp()->getClient()->postJson('/wxa/getwxacodeunlimit', [
+                'scene' => $scene,
+                'page' => $page,
+                'width' => $width,
+                'check_path' => $checkPath,
+            ]);
+        } catch (\Throwable $e) {
+            throw new \RuntimeException('WeChat getUnlimitedCode failed: ' . $e->getMessage(), 0, $e);
+        }
+
+        if ($response instanceof WechatHttpResponse) {
+            if ($response->is('image')) {
+                return $response->getContent(false);
+            }
+
+            $data = $response->toArray(false);
+
+            throw new \RuntimeException(
+                'WeChat getUnlimitedCode failed: ' . ($data['errmsg'] ?? 'unknown error')
+            );
+        }
+
+        // Fallback for decorated Symfony clients: sniff content.
+        $content = $response->getContent(false);
+        $decoded = json_decode($content, true);
+
+        if (\is_array($decoded) && isset($decoded['errcode']) && (int) $decoded['errcode'] !== 0) {
+            throw new \RuntimeException(
+                'WeChat getUnlimitedCode failed: ' . ($decoded['errmsg'] ?? 'unknown error')
+            );
+        }
+
+        return $content;
     }
 
     /**
