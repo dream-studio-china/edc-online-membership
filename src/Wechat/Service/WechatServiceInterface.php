@@ -44,6 +44,21 @@ interface WechatServiceInterface
     public function getPhoneNumber(string $code): array;
 
     /**
+     * Mini Program: generate unlimited QR code (getwxacodeunlimit)
+     *
+     * @param string $scene Scene string, max 32 chars (e.g. "id=123")
+     * @param string $page Mini Program page, e.g. "pages/index/index"
+     * @param int $width Image width in px, 280-1280
+     * @return string Raw image bytes (PNG/JPEG)
+     */
+    public function getMiniProgramUnlimitedCode(
+        string $scene,
+        string $page = 'pages/index/index',
+        int $width = 430,
+        bool $checkPath = false,
+    ): string;
+
+    /**
      * Official Account: generate OAuth redirect URL
      */
     public function getOAuthRedirectUrl(string $callbackUrl): string;
