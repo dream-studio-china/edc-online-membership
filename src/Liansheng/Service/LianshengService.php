@@ -58,6 +58,24 @@ final class LianshengService implements LianshengServiceInterface
         ]);
     }
 
+    public function getMemberScoreBook(?string $mobile = null, ?string $vipId = null): array
+    {
+        $mobile = trim((string) $mobile);
+        $vipId = trim((string) $vipId);
+        if (($mobile === '') === ($vipId === '')) {
+            throw new \InvalidArgumentException('Exactly one of Liansheng member mobile or vipId is required.');
+        }
+
+        return $this->requestEnvelope('GET', '/api/wx.api', [
+            'headers' => ['Token' => $this->getToken()],
+            'query' => array_filter([
+                'method' => 'getscorebook',
+                'mobile' => $mobile !== '' ? $mobile : null,
+                'vipId' => $vipId !== '' ? $vipId : null,
+            ], static fn (mixed $value): bool => $value !== null),
+        ]);
+    }
+
     public function deductMemberPoints(
         string $mobile,
         int $points,

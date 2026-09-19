@@ -22,6 +22,11 @@ interface LianshengServiceInterface
     public function getMemberByMobile(string $mobile): array;
 
     /**
+     * @return array<string, mixed> 0704 paginated member point ledger.
+     */
+    public function getMemberScoreBook(?string $mobile = null, ?string $vipId = null): array;
+
+    /**
      * Deduct member points once through API 0703.
      *
      * @return array<string, mixed> Raw vendor response envelope, or an empty array.

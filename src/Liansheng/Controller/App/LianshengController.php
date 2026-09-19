@@ -75,6 +75,39 @@ final class LianshengController extends RestController
         }
     }
 
+    #[OA\Get(
+        path: '/api/v1/app/liansheng/member-scorebook',
+        summary: 'Get a Liansheng member points ledger',
+        parameters: [
+            new OA\Parameter(name: 'mobile', in: 'query', required: false, schema: new OA\Schema(type: 'string'), example: '13802542123'),
+            new OA\Parameter(name: 'vipId', in: 'query', required: false, schema: new OA\Schema(type: 'string'), example: '1260735'),
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Member points ledger returned'),
+            new OA\Response(response: 400, description: 'Exactly one of mobile or vipId is required'),
+            new OA\Response(response: 502, description: 'Liansheng API failure'),
+        ],
+        tags: ['Liansheng'],
+    )]
+    #[Route('/member-scorebook', name: 'member-scorebook', methods: ['GET'])]
+    public function memberScoreBook(Request $request): Response
+    {
+        $mobile = trim((string) $request->query->get('mobile', ''));
+        $vipId = trim((string) $request->query->get('vipId', ''));
+        if (($mobile === '') === ($vipId === '')) {
+            return $this->warning('Exactly one of mobile or vipId is required.', 1, null, Response::HTTP_BAD_REQUEST);
+        }
+
+        try {
+            return $this->externalSuccess($this->lianshengService->getMemberScoreBook(
+                $mobile !== '' ? $mobile : null,
+                $vipId !== '' ? $vipId : null,
+            ));
+        } catch (LianshengApiException $exception) {
+            return $this->warning($exception->getMessage(), 1, null, Response::HTTP_BAD_GATEWAY);
+        }
+    }
+
     /** @param array<int|string, mixed> $data */
     private function externalSuccess(array $data): JsonResponse
     {

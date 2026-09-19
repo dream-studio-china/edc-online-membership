@@ -63,6 +63,36 @@ final class LianshengControllerTest extends TestCase
         self::assertSame('provider unavailable', $this->decode($failure->getContent())['message']);
     }
 
+    public function testReturnsMemberScoreBookByVipId(): void
+    {
+        $service = $this->createMock(LianshengServiceInterface::class);
+        $service->expects(self::once())->method('getMemberScoreBook')
+            ->with(null, '1260735')
+            ->willReturn(['totalCount' => 1, 'list' => [['creditscore' => 10]]]);
+        $controller = $this->controller($service);
+
+        $response = $controller->memberScoreBook(Request::create(
+            '/api/v1/app/liansheng/member-scorebook',
+            'GET',
+            ['vipId' => '1260735'],
+        ));
+
+        self::assertSame(200, $response->getStatusCode());
+        self::assertSame(1, $this->decode($response->getContent())['data']['totalCount']);
+    }
+
+    public function testRequiresExactlyOneMemberScoreBookIdentifier(): void
+    {
+        $service = $this->createMock(LianshengServiceInterface::class);
+        $service->expects(self::never())->method('getMemberScoreBook');
+        $controller = $this->controller($service);
+
+        $response = $controller->memberScoreBook(Request::create('/api/v1/app/liansheng/member-scorebook'));
+
+        self::assertSame(400, $response->getStatusCode());
+        self::assertSame('Exactly one of mobile or vipId is required.', $this->decode($response->getContent())['message']);
+    }
+
     private function controller(LianshengServiceInterface $service): LianshengController
     {
         $controller = new LianshengController($service);

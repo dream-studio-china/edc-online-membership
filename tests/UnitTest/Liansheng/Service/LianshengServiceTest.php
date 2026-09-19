@@ -86,6 +86,46 @@ final class LianshengServiceTest extends TestCase
         $service->getStore();
     }
 
+    public function testGetsMemberScoreBookByMobile(): void
+    {
+        $tokenResponse = new MockResponse(json_encode([
+            'code' => 0,
+            'data' => ['id' => 'store-token', 'expiremins' => 60],
+        ], JSON_THROW_ON_ERROR));
+        $scoreBookResponse = new MockResponse(json_encode([
+            'code' => 0,
+            'msg' => 'OK',
+            'data' => [
+                'totalCount' => 0,
+                'pageSize' => 10,
+                'totalPage' => 0,
+                'currPage' => 1,
+                'list' => [],
+                'subData' => ['debitscore' => 0, 'creditscore' => 0],
+            ],
+        ], JSON_THROW_ON_ERROR));
+        $service = $this->service([$tokenResponse, $scoreBookResponse]);
+
+        $result = $service->getMemberScoreBook(mobile: '13802542123');
+
+        self::assertSame(0, $result['totalCount']);
+        self::assertSame(
+            'https://example.test/web/api/wx.api?method=getscorebook&mobile=13802542123',
+            $scoreBookResponse->getRequestUrl(),
+        );
+        self::assertContains('Token: store-token', $scoreBookResponse->getRequestOptions()['headers']);
+    }
+
+    public function testRequiresExactlyOneMemberScoreBookIdentifier(): void
+    {
+        $service = $this->service([]);
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Exactly one');
+
+        $service->getMemberScoreBook('13802542123', '1260735');
+    }
+
     public function testDeductsMemberPointsOnceWithStableReference(): void
     {
         $tokenResponse = new MockResponse(json_encode([

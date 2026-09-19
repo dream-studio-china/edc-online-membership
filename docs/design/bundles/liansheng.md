@@ -13,6 +13,7 @@
 | `getStore()` | 0102 `POST /api/open/getapptoken` | Gets the store token and its store metadata. |
 | `getBusinessRevenueReport()` | 0504 `POST /api/open/rptbusiness` | Gets a date-range business revenue report. |
 | `getMemberByMobile()` | 0701 `GET /api/vip.api?method=getvipmember` with JSON body | Gets member profiles by mobile number. The response may contain multiple records. |
+| `getMemberScoreBook()` | 0704 `GET /api/wx.api?method=getscorebook` | Gets the paginated member points ledger by mobile or vipId. |
 | `deductMemberPoints()` | 0703 `POST /api/vip.api?method=vipsubscore` | Deducts a positive integer number of member points synchronously. |
 | `creditMemberPoints()` | 0703 `POST /api/vip.api?method=vipsubscore` | Credits a positive integer number of member points synchronously. |
 
@@ -26,6 +27,7 @@ Live testing shows that 0701 requires `method=getvipmember` in the query string 
 |---|---|---|---|
 | `GET` | `/api/v1/app/liansheng/store` | `ROLE_USER` | 0102 |
 | `GET` | `/api/v1/app/liansheng/member?mobile=...` | `ROLE_USER` | 0701 |
+| `GET` | `/api/v1/app/liansheng/member-scorebook?mobile=...` or `?vipId=...` | `ROLE_USER` | 0704 |
 | `GET` | `/api/v1/manage/liansheng/business-revenue?beginDate=YYYY-MM-DD&endDate=YYYY-MM-DD` | `ROLE_ADMIN` | 0504 |
 
 Controllers own local request validation, response envelopes, authorization, and mapping vendor failures to HTTP 502. The 0102 token ID is internal and is removed from the store response.
