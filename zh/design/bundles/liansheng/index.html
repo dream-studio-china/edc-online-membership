@@ -1,6 +1,6 @@
 
 <!doctype html>
-<html lang="en" class="no-js">
+<html lang="zh" class="no-js">
   <head>
     
       <meta charset="utf-8">
@@ -10,9 +10,13 @@
       
       
       
-        <link rel="canonical" href="https://immane.github.io/crud-skeleton/issues/coverage-2026-08-09/payment-controllers/">
+        <link rel="canonical" href="https://immane.github.io/crud-skeleton/zh/design/bundles/liansheng/">
       
       
+        <link rel="prev" href="../wechat/">
+      
+      
+        <link rel="next" href="../../../runbooks/authorization/">
       
       
         
@@ -27,7 +31,7 @@
     
     
       
-        <title>Payment Controllers — Coverage & Bug Report - CRUD Skeleton</title>
+        <title>Liansheng (Lincson Cloud) - CRUD Skeleton</title>
       
     
     
@@ -78,8 +82,8 @@
     <div data-md-component="skip">
       
         
-        <a href="#payment-controllers-coverage-bug-report" class="md-skip">
-          Skip to content
+        <a href="#liansheng-bundle-design" class="md-skip">
+          跳转至
         </a>
       
     </div>
@@ -93,7 +97,7 @@
   
 
 <header class="md-header md-header--shadow" data-md-component="header">
-  <nav class="md-header__inner md-grid" aria-label="Header">
+  <nav class="md-header__inner md-grid" aria-label="页眉">
     <a href="../../.." title="CRUD Skeleton" class="md-header__button md-logo" aria-label="CRUD Skeleton" data-md-component="logo">
       
   
@@ -114,7 +118,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Payment Controllers — Coverage &amp; Bug Report
+              Liansheng (Lincson Cloud)
             
           </span>
         </div>
@@ -154,7 +158,7 @@
       <div class="md-header__option">
   <div class="md-select">
     
-    <button class="md-header__button md-icon" aria-label="Select language">
+    <button class="md-header__button md-icon" aria-label="选择当前语言">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
     </button>
     <div class="md-select__inner">
@@ -188,16 +192,16 @@
   <label class="md-search__overlay" for="__search"></label>
   <div class="md-search__inner" role="search">
     <form class="md-search__form" name="search">
-      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
       <label class="md-search__icon md-icon" for="__search">
         
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
         
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
       </label>
-      <nav class="md-search__options" aria-label="Search">
+      <nav class="md-search__options" aria-label="查找">
         
-        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
           
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
         </button>
@@ -210,7 +214,7 @@
       <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
         <div class="md-search-result" data-md-component="search-result">
           <div class="md-search-result__meta">
-            Initializing search
+            正在初始化搜索引擎
           </div>
           <ol class="md-search-result__list" role="presentation"></ol>
         </div>
@@ -222,7 +226,7 @@
     
     
       <div class="md-header__source">
-        <a href="https://github.com/immane/crud-skeleton" title="Go to repository" class="md-source" data-md-component="source">
+        <a href="https://github.com/immane/crud-skeleton" title="前往仓库" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
@@ -256,7 +260,7 @@
 
 
 
-<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+<nav class="md-nav md-nav--primary" aria-label="导航栏" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
     <a href="../../.." title="CRUD Skeleton" class="md-nav__button md-logo" aria-label="CRUD Skeleton" data-md-component="logo">
       
@@ -268,7 +272,7 @@
   </label>
   
     <div class="md-nav__source">
-      <a href="https://github.com/immane/crud-skeleton" title="Go to repository" class="md-source" data-md-component="source">
+      <a href="https://github.com/immane/crud-skeleton" title="前往仓库" class="md-source" data-md-component="source">
   <div class="md-source__icon md-icon">
     
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
@@ -295,7 +299,7 @@
   <span class="md-ellipsis">
     
   
-    Home
+    首页
   
 
     
@@ -488,7 +492,7 @@
   <span class="md-ellipsis">
     
   
-    Core Framework
+    Core 框架
   
 
     
@@ -877,7 +881,7 @@
   <span class="md-ellipsis">
     
   
-    Design Contracts
+    设计契约
   
 
     
@@ -893,7 +897,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    Design Contracts
+    设计契约
   
 
           </label>
@@ -906,14 +910,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../design/system-architecture/" class="md-nav__link">
+      <a href="../../system-architecture/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    System Architecture
+    系统架构
   
 
     
@@ -934,14 +938,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../design/api-design/" class="md-nav__link">
+      <a href="../../api-design/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    API Design
+    API 设计
   
 
     
@@ -962,14 +966,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../design/data-model/" class="md-nav__link">
+      <a href="../../data-model/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Data Model
+    数据模型
   
 
     
@@ -990,14 +994,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../design/module-design/" class="md-nav__link">
+      <a href="../../module-design/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Module Design
+    模块设计
   
 
     
@@ -1018,14 +1022,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../design/controller-design/" class="md-nav__link">
+      <a href="../../controller-design/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Controller Design
+    控制器设计
   
 
     
@@ -1046,14 +1050,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../design/api-documentation/" class="md-nav__link">
+      <a href="../../api-documentation/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    API Documentation
+    API 文档
   
 
     
@@ -1074,14 +1078,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../design/system-contracts/" class="md-nav__link">
+      <a href="../../system-contracts/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    System Contracts
+    系统契约
   
 
     
@@ -1102,7 +1106,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../design/extension-points/" class="md-nav__link">
+      <a href="../../extension-points/" class="md-nav__link">
         
   
   
@@ -1130,7 +1134,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../design/security-hardening/" class="md-nav__link">
+      <a href="../../security-hardening/" class="md-nav__link">
         
   
   
@@ -1158,7 +1162,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../design/naming-convention/" class="md-nav__link">
+      <a href="../../naming-convention/" class="md-nav__link">
         
   
   
@@ -1190,8 +1194,10 @@
       
   
   
+    
   
   
+  
     
     
     
@@ -1202,13 +1208,11 @@
       
     
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
         
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
         
           
           <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
@@ -1218,7 +1222,7 @@
   <span class="md-ellipsis">
     
   
-    Bundles
+    模块设计
   
 
     
@@ -1229,12 +1233,12 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_4">
             <span class="md-nav__icon md-icon"></span>
             
   
-    Bundles
+    模块设计
   
 
           </label>
@@ -1247,14 +1251,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../design/bundles/core/" class="md-nav__link">
+      <a href="../core/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Core Framework
+    Core 框架
   
 
     
@@ -1275,7 +1279,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../design/bundles/common/" class="md-nav__link">
+      <a href="../common/" class="md-nav__link">
         
   
   
@@ -1303,14 +1307,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../design/bundles/trade/" class="md-nav__link">
+      <a href="../trade/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Trade (E-Commerce)
+    Trade (电商)
   
 
     
@@ -1331,7 +1335,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../design/bundles/store/" class="md-nav__link">
+      <a href="../store/" class="md-nav__link">
         
   
   
@@ -1359,7 +1363,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../design/store-catalog/" class="md-nav__link">
+      <a href="../../store-catalog/" class="md-nav__link">
         
   
   
@@ -1387,7 +1391,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../design/bundles/inventory/" class="md-nav__link">
+      <a href="../inventory/" class="md-nav__link">
         
   
   
@@ -1415,14 +1419,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../design/bundles/payment/" class="md-nav__link">
+      <a href="../payment/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Payment
+    Payment (支付)
   
 
     
@@ -1443,14 +1447,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../design/bundles/wallet/" class="md-nav__link">
+      <a href="../wallet/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Wallet
+    Wallet (钱包)
   
 
     
@@ -1471,7 +1475,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../design/bundles/promotion/" class="md-nav__link">
+      <a href="../promotion/" class="md-nav__link">
         
   
   
@@ -1499,7 +1503,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../design/bundles/storage/" class="md-nav__link">
+      <a href="../storage/" class="md-nav__link">
         
   
   
@@ -1527,7 +1531,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../design/bundles/settlement/" class="md-nav__link">
+      <a href="../settlement/" class="md-nav__link">
         
   
   
@@ -1555,7 +1559,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../design/bundles/exchange/" class="md-nav__link">
+      <a href="../exchange/" class="md-nav__link">
         
   
   
@@ -1583,14 +1587,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../design/bundles/identity/" class="md-nav__link">
+      <a href="../identity/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    Identity (Auth)
+    Identity (鉴权)
   
 
     
@@ -1611,7 +1615,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../design/bundles/authorization/" class="md-nav__link">
+      <a href="../authorization/" class="md-nav__link">
         
   
   
@@ -1639,7 +1643,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../design/bundles/wechat/" class="md-nav__link">
+      <a href="../wechat/" class="md-nav__link">
         
   
   
@@ -1664,10 +1668,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../../../design/bundles/liansheng/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Liansheng (Lincson Cloud)
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -1683,6 +1714,70 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#service-contract" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Service Contract
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#controllers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Controllers
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -1931,7 +2026,7 @@
   <span class="md-ellipsis">
     
   
-    Payment
+    Payment (支付)
   
 
     
@@ -2099,7 +2194,7 @@
   <span class="md-ellipsis">
     
   
-    Wallet
+    Wallet (钱包)
   
 
     
@@ -2180,7 +2275,7 @@
   <span class="md-ellipsis">
     
   
-    Research
+    调研
   
 
     
@@ -2196,7 +2291,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    Research
+    调研
   
 
           </label>
@@ -2216,7 +2311,7 @@
   <span class="md-ellipsis">
     
   
-    EasyWeChat 6.x Usage
+    EasyWeChat 6.x 用法
   
 
     
@@ -2244,7 +2339,7 @@
   <span class="md-ellipsis">
     
   
-    Huifu Payment API
+    汇付支付 API
   
 
     
@@ -2326,7 +2421,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../architecture-review-2026-06-26/" class="md-nav__link">
+      <a href="../../../issues/architecture-review-2026-06-26/" class="md-nav__link">
         
   
   
@@ -2681,7 +2776,7 @@
   <span class="md-ellipsis">
     
   
-    AI Context
+    AI 快照
   
 
     
@@ -2726,7 +2821,7 @@
   <span class="md-ellipsis">
     
   
-    API Reference
+    API 参考
   
 
     
@@ -2742,7 +2837,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    API Reference
+    API 参考
   
 
           </label>
@@ -2852,7 +2947,7 @@
                   <div class="md-sidebar__inner">
                     
 
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+<nav class="md-nav md-nav--secondary" aria-label="目录">
   
   
   
@@ -2861,15 +2956,15 @@
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
-      Table of contents
+      目录
     </label>
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#1-coverage-results" class="md-nav__link">
+  <a href="#overview" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. Coverage results
+        Overview
       
     </span>
   </a>
@@ -2877,10 +2972,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#2-test-files-added-all-under-tests-all-green" class="md-nav__link">
+  <a href="#service-contract" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. Test files added (all under tests/, all green)
+        Service Contract
       
     </span>
   </a>
@@ -2888,82 +2983,21 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#3-bugs-found-no-source-changes-made" class="md-nav__link">
+  <a href="#controllers" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. Bugs found (no source changes made)
+        Controllers
       
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="3. Bugs found (no source changes made)">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#bug-1-exception-messages-leaked-to-api-clients-high" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        BUG-1 — Exception messages leaked to API clients (High)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#bug-2-markpaid-does-not-verify-the-notifying-gatewaypayment-matches-the-invoice-medium" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        BUG-2 — markPaid does not verify the notifying gateway/payment matches the invoice (Medium)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#bug-3-refund-forwards-the-raw-request-body-as-gateway-options-mediumlow" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        BUG-3 — Refund forwards the raw request body as gateway $options (Medium/Low)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#bug-4-parseamount-misparses-non-decimal-string-amounts-low" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        BUG-4 — parseAmount misparses non-decimal string amounts (Low)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#bug-5-webhook-masks-transient-failures-as-permanent-fail-400-low" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        BUG-5 — Webhook masks transient failures as permanent FAIL 400 (Low)
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#4-notes" class="md-nav__link">
+  <a href="#configuration" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. Notes
+        Configuration
       
     </span>
   </a>
@@ -2990,143 +3024,80 @@
   
 
 
-<h1 id="payment-controllers-coverage-bug-report">Payment Controllers — Coverage &amp; Bug Report<a class="headerlink" href="#payment-controllers-coverage-bug-report" title="Permanent link">&para;</a></h1>
-<ul>
-<li>Date: 2026-08-09</li>
-<li>Scope: <code>src/Payment/Controller/{Manage,App,Webhook}/InvoiceController|PaymentNotifyController</code>, <code>src/Payment/Service/InvoiceService.php</code>, <code>src/Payment/Entity/Invoice.php</code></li>
-<li>Constraint honored: <strong>no <code>src/</code> files modified</strong> — only test files under <code>tests/</code> and this report were added.</li>
-</ul>
-<h2 id="1-coverage-results">1. Coverage results<a class="headerlink" href="#1-coverage-results" title="Permanent link">&para;</a></h2>
-<p>Coverage measured by running the full <code>tests/Payment</code> suite with
-<code>--coverage-filter src/Payment</code> (PHP 8.5.1, PHPUnit 12.5.30).</p>
+<h1 id="liansheng-bundle-design">Liansheng Bundle Design<a class="headerlink" href="#liansheng-bundle-design" title="Permanent link">&para;</a></h1>
+<h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
+<p><code>src/Liansheng/</code> is an outbound adapter for Lincson Cloud (Liansheng). It owns the vendor HTTP contract and does not persist vendor data or couple it to local Store, Identity, or Wallet entities.</p>
+<h2 id="service-contract">Service Contract<a class="headerlink" href="#service-contract" title="Permanent link">&para;</a></h2>
+<p><code>LianshengServiceInterface</code> exposes the documented APIs needed by this application:</p>
 <table>
 <thead>
 <tr>
-<th>File</th>
-<th>Before</th>
-<th>After</th>
-<th>Lines added</th>
+<th>Method</th>
+<th>Vendor API</th>
+<th>Purpose</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>src/Payment/Controller/Manage/InvoiceController.php</code></td>
-<td>74.55%</td>
-<td><strong>100%</strong></td>
-<td>66, 67, 80, 81, 82, 83, 92, 98, 99, 108, 113, 121, 122, 131</td>
+<td><code>getStore()</code></td>
+<td>0102 <code>POST /api/open/getapptoken</code></td>
+<td>Gets the store token and its store metadata.</td>
 </tr>
 <tr>
-<td><code>src/Payment/Controller/Webhook/PaymentNotifyController.php</code></td>
-<td>77.78%</td>
-<td><strong>100%</strong></td>
-<td>33, 34</td>
+<td><code>getBusinessRevenueReport()</code></td>
+<td>0504 <code>POST /api/open/rptbusiness</code></td>
+<td>Gets a date-range business revenue report.</td>
 </tr>
 <tr>
-<td><code>src/Payment/Controller/App/InvoiceController.php</code></td>
-<td>81.82%</td>
-<td><strong>100%</strong></td>
-<td>49, 50</td>
-</tr>
-<tr>
-<td><code>src/Payment/Service/InvoiceService.php</code></td>
-<td>94.57%</td>
-<td><strong>100%</strong></td>
-<td>43, 69, 77, 83, 86, 155, 178, 200, 217, 279</td>
-</tr>
-<tr>
-<td><code>src/Payment/Entity/Invoice.php</code></td>
-<td>98.21%</td>
-<td><strong>100%</strong></td>
-<td>194</td>
+<td><code>getMemberByMobile()</code></td>
+<td>0701 <code>GET /api/vip.api?method=getvipmember</code> with JSON body</td>
+<td>Gets member profiles by mobile number. The response may contain multiple records.</td>
 </tr>
 </tbody>
 </table>
-<p>Full suite result: <code>OK (76 tests, 341 assertions)</code>.</p>
-<h2 id="2-test-files-added-all-under-tests-all-green">2. Test files added (all under <code>tests/</code>, all green)<a class="headerlink" href="#2-test-files-added-all-under-tests-all-green" title="Permanent link">&para;</a></h2>
+<p>The store token is held in <code>cache.app</code> until one minute before the vendor-reported expiry. No token, credential, member data, or report data is stored in Doctrine.</p>
+<p>Live testing shows that 0701 requires <code>method=getvipmember</code> in the query string and a JSON request body. The body accepts <code>mobile</code>, <code>cardid</code>, or <code>cloudId</code>; the returned <code>code</code> field may be null.</p>
+<h2 id="controllers">Controllers<a class="headerlink" href="#controllers" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
-<th>File</th>
-<th>Coverage targeted</th>
-<th>Notes</th>
+<th>Method</th>
+<th>Local endpoint</th>
+<th>Authorization</th>
+<th>Vendor API</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>tests/Payment/Controller/Manage/InvoiceControllerTest.php</code></td>
-<td>Manage controller guard/catch branches</td>
-<td>14 unit tests; mocks <code>InvoiceServiceInterface</code>, <code>EntityManagerInterface</code>, <code>WorkflowInterface</code> + <code>#[AllowMockObjectsWithoutExpectations]</code> + <code>setRequestStack/setSerializer/setTranslator</code> (OrderControllerTest pattern). Covers create/pay/cancel/refund/transitions success, not-found (404), and service-throws (400) branches, plus <code>parseAmount('12.34') == 1234</code> and payer resolution.</td>
+<td><code>GET</code></td>
+<td><code>/api/v1/app/liansheng/store</code></td>
+<td><code>ROLE_USER</code></td>
+<td>0102</td>
 </tr>
 <tr>
-<td><code>tests/Payment/Controller/App/InvoiceControllerTest.php</code></td>
-<td>App controller catch branch (49, 50)</td>
-<td>3 unit tests; real <code>Container</code> with <code>security.token_storage</code> returning an authenticated <code>User</code> (PromotionControllerTest pattern). Covers success, service-throws, and payer-mismatch 404.</td>
+<td><code>GET</code></td>
+<td><code>/api/v1/app/liansheng/member?mobile=...</code></td>
+<td><code>ROLE_USER</code></td>
+<td>0701</td>
 </tr>
 <tr>
-<td><code>tests/Payment/Controller/Webhook/PaymentNotifyControllerTest.php</code></td>
-<td>generic <code>\Throwable</code> catch (33, 34)</td>
-<td>4 unit tests; real <code>PaymentGatewayRegistry</code> + <code>MockGateway</code>. Covers success response, unknown-gateway <code>FAIL</code>, verification <code>FAIL: message</code>, and service-throws <code>FAIL</code>.</td>
-</tr>
-<tr>
-<td><code>tests/Payment/Service/InvoiceServiceTest.php</code></td>
-<td>service guard/edge branches</td>
-<td>9 unit tests; real <code>Container</code> + mocked EM/Workflow/Dispatcher, real <code>PaymentGatewayRegistry</code>(MockGateway)/<code>PaymentAdjustmentRegistry</code>, plus an inline <code>FakeAdjustmentProvider</code> fixture. Covers negative amount, <code>start_pay</code> guard, deduction-exceeds-amount, <code>gateway</code>/<code>tradeType</code> options, notify-invoice-not-found, <code>mark_paid</code>/<code>fail</code>/<code>cancel</code>/refund transition guards.</td>
-</tr>
-<tr>
-<td><code>tests/Payment/Entity/InvoiceCoverageTest.php</code></td>
-<td><code>Invoice::prePersist()</code> re-init of <code>createdAt</code> (194)</td>
-<td>Uses <code>ReflectionClass::newInstanceWithoutConstructor()</code> + <code>ReflectionProperty::isInitialized()</code>; deliberately avoids the deprecated <code>ReflectionProperty::setAccessible()</code> (typed non-nullable <code>createdAt</code> cannot be set to <code>null</code>).</td>
+<td><code>GET</code></td>
+<td><code>/api/v1/manage/liansheng/business-revenue?beginDate=YYYY-MM-DD&amp;endDate=YYYY-MM-DD</code></td>
+<td><code>ROLE_ADMIN</code></td>
+<td>0504</td>
 </tr>
 </tbody>
 </table>
-<p>Skipped tests: <strong>none</strong> — every correct-behavior test passes against current <code>src/</code>.</p>
-<h2 id="3-bugs-found-no-source-changes-made">3. Bugs found (no source changes made)<a class="headerlink" href="#3-bugs-found-no-source-changes-made" title="Permanent link">&para;</a></h2>
-<h3 id="bug-1-exception-messages-leaked-to-api-clients-high">BUG-1 — Exception messages leaked to API clients (High)<a class="headerlink" href="#bug-1-exception-messages-leaked-to-api-clients-high" title="Permanent link">&para;</a></h3>
-<ul>
-<li>Location: <code>src/Payment/Controller/Manage/InvoiceController.php:67,83,99,122</code> and <code>src/Payment/Controller/App/InvoiceController.php:50</code></li>
-<li>Description: every <code>catch (\Throwable $e)</code> returns <code>$e-&gt;getMessage()</code> verbatim in the HTTP 400 body (<code>return $this-&gt;warning($e-&gt;getMessage(), 400, '', 400);</code>). Internal exceptions (Doctrine/SQL failures, gateway internals, unexpected runtime errors) are surfaced to end users instead of a generic message.</li>
-<li>Impact: information disclosure; leak of internals/file paths/SQL text; inconsistent with the Webhook controller, which deliberately masks non-verification errors as <code>FAIL</code>.</li>
-<li>Reproduction: post an invoice pay/cancel/refund that triggers any <code>\Throwable</code> (e.g. unregistered gateway) and observe the raw exception text in the 400 response body.</li>
-<li>Proposed fix: catch domain exceptions (e.g. <code>InvoiceInvalidTransitionException</code>, <code>InvoiceAmountMismatchException</code>, <code>InvalidArgumentException</code>) and map them to their messages, but wrap unexpected <code>\Throwable</code> in a generic <code>warning</code> message (optionally log the original).</li>
-</ul>
-<h3 id="bug-2-markpaid-does-not-verify-the-notifying-gatewaypayment-matches-the-invoice-medium">BUG-2 — <code>markPaid</code> does not verify the notifying gateway/payment matches the invoice (Medium)<a class="headerlink" href="#bug-2-markpaid-does-not-verify-the-notifying-gatewaypayment-matches-the-invoice-medium" title="Permanent link">&para;</a></h3>
-<ul>
-<li>Location: <code>src/Payment/Service/InvoiceService.php:182</code> (<code>$invoice-&gt;setPayment($result-&gt;payment);</code>); lookup at <code>:153</code> is by <code>outTradeNo</code> only.</li>
-<li>Description: <code>markPaid</code> validates amount and currency but never checks that <code>$result-&gt;payment</code> equals the payment method recorded on the invoice (set during <code>pay()</code>). Any notify result with a matching amount+currency transitions the invoice to paid and silently overwrites the <code>payment</code> field.</li>
-<li>Impact: defense-in-depth gap — a notify routed to the wrong gateway, or a direct service call with a wrong <code>payment</code>, would be accepted and could rewrite the recorded payment method; downstream logic (refund routing, reporting) then uses the wrong gateway.</li>
-<li>Reproduction: <code>pay()</code> an invoice via <code>mock</code>, then call <code>handleNotifyResult()</code>/<code>markPaid()</code> with <code>payment: 'wechat'</code> and the correct amount/currency; the invoice becomes <code>paid</code> with <code>payment = wechat</code>.</li>
-<li>Proposed fix: in <code>markPaid</code>, require <code>$result-&gt;payment === $invoice-&gt;getPayment()</code> (or the intended gateway) before applying the transition; throw <code>InvoiceAmountMismatchException</code>/<code>InvoiceInvalidTransitionException</code> otherwise.</li>
-</ul>
-<h3 id="bug-3-refund-forwards-the-raw-request-body-as-gateway-options-mediumlow">BUG-3 — Refund forwards the raw request body as gateway <code>$options</code> (Medium/Low)<a class="headerlink" href="#bug-3-refund-forwards-the-raw-request-body-as-gateway-options-mediumlow" title="Permanent link">&para;</a></h3>
-<ul>
-<li>Location: <code>src/Payment/Controller/Manage/InvoiceController.php:118</code> (<code>... $content</code> as options) → <code>src/Payment/Service/InvoiceService.php:264</code> (<code>$gateway-&gt;refund(..., $options)</code>).</li>
-<li>Description: the full request body is passed through as <code>$options</code> to the gateway refund call. A client can include provider options such as <code>refundId</code> in the body; <code>MockGateway</code> uses <code>$options['refundId']</code> directly as the idempotency key, so a caller can override the provider refund reference.</li>
-<li>Impact: untrusted input reaches gateway options; refund idempotency keys are attacker-controlled (low impact with <code>MockGateway</code>, latent with real gateways that honor option keys).</li>
-<li>Reproduction: <code>POST /api/v1/manage/invoices/{id}/refund</code> with <code>{"amount": 100, "reason": "x", "refundId": "spoofed-id"}</code> — the stored <code>extraData</code> and returned <code>refundId</code> become <code>spoofed-id</code>.</li>
-<li>Proposed fix: whitelist the options forwarded to the gateway in <code>InvoiceService::refund()</code> (and <code>pay()</code>), or strip body-only keys (<code>amount</code>, <code>reason</code>) before forwarding.</li>
-</ul>
-<h3 id="bug-4-parseamount-misparses-non-decimal-string-amounts-low">BUG-4 — <code>parseAmount</code> misparses non-decimal string amounts (Low)<a class="headerlink" href="#bug-4-parseamount-misparses-non-decimal-string-amounts-low" title="Permanent link">&para;</a></h3>
-<ul>
-<li>Location: <code>src/Payment/Controller/Manage/InvoiceController.php:137-142</code></li>
-<li>Description: <code>parseAmount</code> decides decimal vs integer by <code>str_contains($amount, '.')</code>. Scientific-notation strings such as <code>"1e3"</code> contain no <code>'.'</code> and are cast directly: <code>(int) "1e3"</code> → <code>1</code> (silently truncating 1000 to 1 cent). Strings like <code>"1E2"</code>, <code>"0.5e2"</code>, or localized separators behave unexpectedly.</li>
-<li>Impact: a client sending a valid JSON string <code>"1e3"</code> as <code>amount</code> creates an invoice for 1 cent instead of 1000; amounts are silently wrong.</li>
-<li>Reproduction: <code>POST /api/v1/manage/invoices</code> with <code>"amount": "1e3"</code> → invoice <code>amount = 1</code>.</li>
-<li>Proposed fix: only treat strings as decimals when the value is not already an integer string (<code>(string)(int)$v === $v</code>), or delegate parsing to a strict decimal parser (e.g. <code>MoneyParser</code> / <code>decimal</code> comparison via <code>is_numeric</code> + regex).</li>
-</ul>
-<h3 id="bug-5-webhook-masks-transient-failures-as-permanent-fail-400-low">BUG-5 — Webhook masks transient failures as permanent <code>FAIL</code> 400 (Low)<a class="headerlink" href="#bug-5-webhook-masks-transient-failures-as-permanent-fail-400-low" title="Permanent link">&para;</a></h3>
-<ul>
-<li>Location: <code>src/Payment/Controller/Webhook/PaymentNotifyController.php:33-34</code></li>
-<li>Description: the generic <code>\Throwable</code> catch returns HTTP 400 with body <code>FAIL</code>. This covers both transient conditions (invoice-not-found because the webhook arrived before the invoice was persisted — a retryable condition) and permanent ones (unknown gateway name).</li>
-<li>Impact: payment providers commonly stop retrying after a 4xx. A gateway webhook arriving out-of-order (before the create/pay transaction commits) would be dropped permanently, leaving the invoice <code>paying</code> forever.</li>
-<li>Reproduction: <code>POST /api/payment/notify/mock</code> with a valid secret and an <code>outTradeNo</code> that does not exist yet → 400 <code>FAIL</code> (invoice-not-found), indistinguishable from a permanent configuration error.</li>
-<li>Proposed fix: return a retry-friendly code (e.g. HTTP 200 with a <code>FAIL</code> body, or 5xx) for transient conditions such as invoice-not-found, and reserve 4xx for verification/permanent failures. Distinguish via exception type.</li>
-</ul>
-<h2 id="4-notes">4. Notes<a class="headerlink" href="#4-notes" title="Permanent link">&para;</a></h2>
-<ul>
-<li>The <code>database is locked</code> errors encountered during coverage runs are the documented shared <code>var/test.db</code> issue; retries after a 10-15 s wait produced a clean <code>OK (76 tests, 341 assertions)</code> run.</li>
-<li>The webhook/App/Manage controller tests are pure unit tests (no DB); the pre-existing <code>tests/Payment/Integration/*</code> DB tests were left untouched and continue to pass.</li>
-<li>No <code>src/</code> files were changed; no tests were skipped.</li>
-</ul>
+<p>Controllers own local request validation, response envelopes, authorization, and mapping vendor failures to HTTP 502. The 0102 token ID is internal and is removed from the store response.</p>
+<h2 id="configuration">Configuration<a class="headerlink" href="#configuration" title="Permanent link">&para;</a></h2>
+<p>Set credentials in an uncommitted environment file or secret store:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>LIANSHENG_BASE_URL=https://wx2.lincson.cn/web
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>LIANSHENG_APP_CODE=
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>LIANSHENG_APP_SECRET=
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>LIANSHENG_USER_ID=1
+</code></pre></div>
+<p><code>LianshengApiException</code> represents transport, HTTP, invalid JSON, and vendor-level response failures.</p>
+<p><code>https://wx2.lincson.cn/web</code> has a valid certificate for <code>wx2.lincson.cn</code> and serves the documented open API over HTTPS. The older <code>https://test.lincson.cn/web</code> hostname has a certificate mismatch and its HTTPS <code>/web/api/*</code> path rejects POST with 405; it must not be used.</p>
 
 
 
@@ -3150,7 +3121,7 @@
           <button type="button" class="md-top md-icon" data-md-component="top" hidden>
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
-  Back to top
+  回到页面顶部
 </button>
         
       </main>
@@ -3182,7 +3153,7 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.sections", "navigation.expand", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
     
     
       <script src="../../../assets/javascripts/bundle.d7400e89.min.js"></script>
