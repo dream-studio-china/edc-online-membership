@@ -6,10 +6,14 @@ namespace App\Tests\UnitTest\Liansheng\Service;
 
 use App\Liansheng\Exception\LianshengApiException;
 use App\Liansheng\Service\LianshengService;
+use App\Store\Entity\Store;
+use App\Store\Repository\StoreRepository;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\MockResponse;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 final class LianshengServiceTest extends TestCase
 {
@@ -126,6 +130,19 @@ final class LianshengServiceTest extends TestCase
         $service->getMemberScoreBook('13802542123', '1260735');
     }
 
+    public function testGetsRefundExpiryDateFromStoreSettings(): void
+    {
+        $service = $this->service([], [
+            'baseUrl' => 'https://example.test/web',
+            'appCode' => 'app-code',
+            'appSecret' => 'app-secret',
+            'userId' => '1',
+            'pointRefundExpiryDate' => '2030-12-31',
+        ]);
+
+        self::assertSame('2030-12-31', $service->getPointRefundExpiryDate()->format('Y-m-d'));
+    }
+
     public function testDeductsMemberPointsOnceWithStableReference(): void
     {
         $tokenResponse = new MockResponse(json_encode([
@@ -163,7 +180,7 @@ final class LianshengServiceTest extends TestCase
             'expirydate' => '2026-09-20',
             'accno' => 'PAY-REFERENCE-1',
             'billno' => 'PAY-REFERENCE-1',
-            'roomtable' => '',
+            'roomtable' => 'ONLINE',
             'remarks' => 'Order payment',
         ], json_decode($deductionResponse->getRequestOptions()['body'], true, 512, JSON_THROW_ON_ERROR));
     }
@@ -219,7 +236,7 @@ final class LianshengServiceTest extends TestCase
             'expirydate' => '2099-12-31',
             'accno' => 'PAY-REFERENCE-1-R120',
             'billno' => 'PAY-REFERENCE-1-R120',
-            'roomtable' => '',
+            'roomtable' => 'ONLINE',
             'remarks' => 'Order refund',
         ], json_decode($creditResponse->getRequestOptions()['body'], true, 512, JSON_THROW_ON_ERROR));
     }
@@ -227,15 +244,26 @@ final class LianshengServiceTest extends TestCase
     /**
      * @param list<MockResponse> $responses
      */
-    private function service(array $responses): LianshengService
+    private function service(array $responses, ?array $lianshengSettings = null): LianshengService
     {
+        $requestStack = new RequestStack();
+        $requestStack->push(Request::create('/', 'GET', server: ['HTTP_X_STORE_CODE' => 'store-1']));
+        $store = (new Store('store-1', 'Store'))->setSettings([
+            'liansheng' => $lianshengSettings ?? [
+                'baseUrl' => 'https://example.test/web',
+                'appCode' => 'app-code',
+                'appSecret' => 'app-secret',
+                'userId' => '1',
+            ],
+        ]);
+        $storeRepository = $this->createMock(StoreRepository::class);
+        $storeRepository->method('findOneByCode')->with('store-1')->willReturn($store);
+
         return new LianshengService(
             new MockHttpClient($responses),
             new ArrayAdapter(),
-            'https://example.test/web',
-            'app-code',
-            'app-secret',
-            '1',
+            $requestStack,
+            $storeRepository,
         );
     }
 }

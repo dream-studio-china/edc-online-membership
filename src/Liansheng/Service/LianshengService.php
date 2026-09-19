@@ -5,23 +5,21 @@ declare(strict_types=1);
 namespace App\Liansheng\Service;
 
 use App\Liansheng\Exception\LianshengApiException;
+use App\Store\Entity\Store;
+use App\Store\Repository\StoreRepository;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\Contracts\Cache\ItemInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 final class LianshengService implements LianshengServiceInterface
 {
-    private const TOKEN_CACHE_KEY = 'liansheng.store_token';
-
     public function __construct(
         private readonly HttpClientInterface $httpClient,
         private readonly CacheInterface $cache,
-        private readonly string $baseUrl,
-        private readonly string $appCode,
-        private readonly string $appSecret,
-        private readonly string $userId,
-    ) {
-    }
+        private readonly RequestStack $requestStack,
+        private readonly StoreRepository $storeRepository,
+    ) {}
 
     public function getStore(): array
     {
@@ -82,8 +80,9 @@ final class LianshengService implements LianshengServiceInterface
         string $reference,
         string $remarks = '',
         ?\DateTimeInterface $accountDate = null,
+        string $roomTable = 'ONLINE',
     ): array {
-        return $this->changeMemberPoints($mobile, $points, $reference, '-', $remarks, $accountDate, $accountDate);
+        return $this->changeMemberPoints($mobile, $points, $reference, '-', $remarks, $accountDate, $accountDate, $roomTable);
     }
 
     public function creditMemberPoints(
@@ -93,8 +92,30 @@ final class LianshengService implements LianshengServiceInterface
         string $remarks = '',
         ?\DateTimeInterface $accountDate = null,
         ?\DateTimeInterface $expiryDate = null,
+        string $roomTable = 'ONLINE',
     ): array {
-        return $this->changeMemberPoints($mobile, $points, $reference, '+', $remarks, $accountDate, $expiryDate);
+        return $this->changeMemberPoints(
+            $mobile,
+            $points,
+            $reference,
+            '+',
+            $remarks,
+            $accountDate,
+            $expiryDate ?? $this->getPointRefundExpiryDate(),
+            $roomTable,
+        );
+    }
+
+    public function getPointRefundExpiryDate(): \DateTimeImmutable
+    {
+        $value = $this->configuration()['pointRefundExpiryDate'] ?? '2099-12-31';
+        $date = \DateTimeImmutable::createFromFormat('!Y-m-d', $value);
+        $errors = \DateTimeImmutable::getLastErrors();
+        if ($date === false || (is_array($errors) && ($errors['warning_count'] > 0 || $errors['error_count'] > 0))) {
+            throw new LianshengApiException('settings.liansheng.pointRefundExpiryDate must use YYYY-MM-DD.');
+        }
+
+        return $date;
     }
 
     /** @return array<string, mixed> */
@@ -106,9 +127,12 @@ final class LianshengService implements LianshengServiceInterface
         string $remarks,
         ?\DateTimeInterface $accountDate,
         ?\DateTimeInterface $expiryDate,
+        string $roomTable,
     ): array {
         $mobile = trim($mobile);
         $reference = trim($reference);
+        $roomTable = trim($roomTable);
+        $remarks = trim($remarks);
         if ($mobile === '') {
             throw new \InvalidArgumentException('Liansheng member mobile must not be empty.');
         }
@@ -117,6 +141,12 @@ final class LianshengService implements LianshengServiceInterface
         }
         if ($reference === '') {
             throw new \InvalidArgumentException('Liansheng points adjustment reference must not be empty.');
+        }
+        if ($roomTable === '') {
+            throw new \InvalidArgumentException('Liansheng points adjustment room table must not be empty.');
+        }
+        if ($remarks === '') {
+            $remarks = 'Liansheng points adjustment';
         }
 
         $effectiveAccountDate = $accountDate ?? new \DateTimeImmutable();
@@ -133,7 +163,7 @@ final class LianshengService implements LianshengServiceInterface
                 'expirydate' => $effectiveExpiryDate->format('Y-m-d'),
                 'accno' => $reference,
                 'billno' => $reference,
-                'roomtable' => '',
+                'roomtable' => $roomTable,
                 'remarks' => $remarks,
             ],
         ]);
@@ -168,17 +198,14 @@ final class LianshengService implements LianshengServiceInterface
      */
     private function getStoreTokenData(): array
     {
+        $configuration = $this->configuration();
         /** @var array<string, mixed> $data */
-        $data = $this->cache->get(self::TOKEN_CACHE_KEY, function (ItemInterface $item): array {
-            if ($this->appCode === '' || $this->appSecret === '' || $this->userId === '') {
-                throw new LianshengApiException('Liansheng credentials are not configured.');
-            }
-
+        $data = $this->cache->get('liansheng.store_token.' . $configuration['store']->getUuid(), function (ItemInterface $item) use ($configuration): array {
             $tokenData = $this->requestEnvelope('POST', '/api/open/getapptoken', [
                 'json' => [
-                    'appCode' => $this->appCode,
-                    'appSecret' => $this->appSecret,
-                    'userId' => $this->userId,
+                    'appCode' => $configuration['appCode'],
+                    'appSecret' => $configuration['appSecret'],
+                    'userId' => $configuration['userId'],
                 ],
             ]);
 
@@ -192,6 +219,50 @@ final class LianshengService implements LianshengServiceInterface
         });
 
         return $data;
+    }
+
+    /**
+     * @return array{store: Store, baseUrl: string, appCode: string, appSecret: string, userId: string, pointRefundExpiryDate?: string}
+     */
+    private function configuration(): array
+    {
+        $storeCode = trim((string) $this->requestStack->getCurrentRequest()?->headers->get('X-Store-Code', ''));
+        if ($storeCode === '') {
+            throw new LianshengApiException('X-Store-Code is required for Liansheng requests.');
+        }
+
+        $store = $this->storeRepository->findOneByCode($storeCode);
+        if (!$store instanceof Store || !$store->isActive()) {
+            throw new LianshengApiException('Liansheng store is not available.');
+        }
+
+        $liansheng = $store->getSettings()['liansheng'] ?? null;
+        if (!is_array($liansheng)) {
+            throw new LianshengApiException('settings.liansheng must be configured for this store.');
+        }
+
+        $configuration = ['store' => $store];
+        foreach (['baseUrl', 'appCode', 'appSecret', 'userId'] as $key) {
+            $value = $liansheng[$key] ?? null;
+            if (!is_string($value) && !is_int($value)) {
+                throw new LianshengApiException(sprintf('settings.liansheng.%s must be configured.', $key));
+            }
+            $value = trim((string) $value);
+            if ($value === '') {
+                throw new LianshengApiException(sprintf('settings.liansheng.%s must be configured.', $key));
+            }
+            $configuration[$key] = $value;
+        }
+
+        if (isset($liansheng['pointRefundExpiryDate'])) {
+            if (!is_string($liansheng['pointRefundExpiryDate'])) {
+                throw new LianshengApiException('settings.liansheng.pointRefundExpiryDate must be a string.');
+            }
+            $configuration['pointRefundExpiryDate'] = trim($liansheng['pointRefundExpiryDate']);
+        }
+
+        /** @var array{store: Store, baseUrl: string, appCode: string, appSecret: string, userId: string, pointRefundExpiryDate?: string} $configuration */
+        return $configuration;
     }
 
     /**
@@ -242,7 +313,7 @@ final class LianshengService implements LianshengServiceInterface
     private function request(string $method, string $path, array $options): array
     {
         try {
-            $response = $this->httpClient->request($method, rtrim($this->baseUrl, '/') . $path, $options + [
+            $response = $this->httpClient->request($method, rtrim($this->configuration()['baseUrl'], '/') . $path, $options + [
                 'timeout' => 10.0,
             ]);
             $statusCode = $response->getStatusCode();

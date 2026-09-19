@@ -11,17 +11,12 @@ use App\Payment\DTO\PaymentResult;
 use App\Payment\Entity\Invoice;
 use App\Payment\Exception\PaymentVerificationException;
 use App\Payment\Service\PaymentGatewayInterface;
-use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 final class LianshengPointGateway implements PaymentGatewayInterface
 {
-    public function __construct(
-        private readonly LianshengServiceInterface $lianshengService,
-        #[Autowire('%env(LIANSHENG_POINT_REFUND_EXPIRY_DATE)%')]
-        private readonly string $refundExpiryDate = '2099-12-31',
-    ) {}
+    public function __construct(private readonly LianshengServiceInterface $lianshengService) {}
 
     public static function getName(): string
     {
@@ -42,6 +37,7 @@ final class LianshengPointGateway implements PaymentGatewayInterface
             points: $amount,
             reference: $reference,
             remarks: mb_substr($invoice->getSubject() ?? 'Invoice payment', 0, 255),
+            roomTable: 'ONLINE',
         );
 
         return new PaymentResult(
@@ -76,11 +72,7 @@ final class LianshengPointGateway implements PaymentGatewayInterface
         }
 
         $mobile = $this->verifiedPayerMobile($invoice, 'refund');
-        $expiryDate = \DateTimeImmutable::createFromFormat('!Y-m-d', $this->refundExpiryDate);
-        $dateErrors = \DateTimeImmutable::getLastErrors();
-        if ($expiryDate === false || (is_array($dateErrors) && ($dateErrors['warning_count'] > 0 || $dateErrors['error_count'] > 0))) {
-            throw new \RuntimeException('LIANSHENG_POINT_REFUND_EXPIRY_DATE must use YYYY-MM-DD.');
-        }
+        $expiryDate = $this->lianshengService->getPointRefundExpiryDate();
 
         $cumulativeRefund = $invoice->getRefundedAmount() + $amount;
         $reference = sprintf('%s-R%d', $invoice->getOutTradeNo(), $cumulativeRefund);
@@ -90,6 +82,7 @@ final class LianshengPointGateway implements PaymentGatewayInterface
             reference: $reference,
             remarks: mb_substr($reason, 0, 255),
             expiryDate: $expiryDate,
+            roomTable: 'ONLINE',
         );
 
         return new PaymentRefundResult(

@@ -162,6 +162,9 @@ final class StoreController extends RestController
         if (array_key_exists('fulfillment', $settings) && $settings['fulfillment'] !== null && !is_array($settings['fulfillment'])) {
             throw new \InvalidArgumentException('settings.fulfillment must be an object or null.');
         }
+        if (array_key_exists('liansheng', $settings) && $settings['liansheng'] !== null && !is_array($settings['liansheng'])) {
+            throw new \InvalidArgumentException('settings.liansheng must be an object or null.');
+        }
         if (isset($settings['fulfillment']) && is_array($settings['fulfillment']) && array_key_exists('requireVerification', $settings['fulfillment'])) {
             if (!is_bool($settings['fulfillment']['requireVerification'])) {
                 throw new \InvalidArgumentException('settings.fulfillment.requireVerification must be a boolean.');

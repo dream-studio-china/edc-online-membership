@@ -27,6 +27,8 @@ final class LianshengPointGatewayTest extends TestCase
             120,
             $invoice->getOutTradeNo(),
             'Points order',
+            null,
+            'ONLINE',
         )->willReturn(['code' => 0, 'msg' => 'OK', 'data' => null]);
         $gateway = new LianshengPointGateway($service);
 
@@ -91,6 +93,7 @@ final class LianshengPointGatewayTest extends TestCase
     public function testRefundCreditsPointsWithStableReference(): void
     {
         $service = $this->createMock(LianshengServiceInterface::class);
+        $service->method('getPointRefundExpiryDate')->willReturn(new \DateTimeImmutable('2099-12-31'));
         $invoice = $this->invoice();
         $service->expects(self::once())->method('creditMemberPoints')->with(
             '13802542123',
@@ -99,6 +102,7 @@ final class LianshengPointGatewayTest extends TestCase
             'Customer cancelled',
             null,
             self::callback(static fn (\DateTimeInterface $date): bool => $date->format('Y-m-d') === '2099-12-31'),
+            'ONLINE',
         )->willReturn(['code' => 0, 'msg' => 'OK', 'data' => null]);
         $gateway = new LianshengPointGateway($service);
 
@@ -113,6 +117,7 @@ final class LianshengPointGatewayTest extends TestCase
     public function testPartialRefundCreditsOnlyThePartialAmount(): void
     {
         $service = $this->createMock(LianshengServiceInterface::class);
+        $service->method('getPointRefundExpiryDate')->willReturn(new \DateTimeImmutable('2099-12-31'));
         $invoice = $this->invoice();
         $service->expects(self::once())->method('creditMemberPoints')->with(
             '13802542123',
@@ -121,6 +126,7 @@ final class LianshengPointGatewayTest extends TestCase
             'Partial refund',
             null,
             self::isInstanceOf(\DateTimeInterface::class),
+            'ONLINE',
         )->willReturn([]);
         $gateway = new LianshengPointGateway($service);
 
@@ -133,6 +139,7 @@ final class LianshengPointGatewayTest extends TestCase
     public function testRefundDoesNotConvertProviderFailureToSuccess(): void
     {
         $service = $this->createMock(LianshengServiceInterface::class);
+        $service->method('getPointRefundExpiryDate')->willReturn(new \DateTimeImmutable('2099-12-31'));
         $service->method('creditMemberPoints')->willThrowException(new LianshengApiException('provider unavailable'));
         $gateway = new LianshengPointGateway($service);
 

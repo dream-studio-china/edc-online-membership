@@ -8,7 +8,6 @@ imports:
     - { resource: '../src/Payment/Resources/config/services_payment.yaml', ignore_errors: true }
     - { resource: '../src/Storage/Resources/config/services_storage.yaml', ignore_errors: true }
     - { resource: '../src/Wechat/Resources/config/services_wechat.yaml', ignore_errors: true }
-    - { resource: '../src/Liansheng/Resources/config/services_liansheng.yaml', ignore_errors: true }
     - { resource: '../src/Promotion/Resources/config/services_promotion.yaml', ignore_errors: true }
     - { resource: '../src/Settlement/Resources/config/services_settlement.yaml', ignore_errors: true }
     - { resource: '../src/Authorization/Resources/config/services_authorization.yaml', ignore_errors: true }
@@ -52,7 +51,6 @@ services:
             - '../src/Storage/Service/QiniuStorage.php'
             - '../src/Wechat/Service/WechatService.php'
             - '../src/Wechat/Service/Payment/WechatPayGateway.php'
-            - '../src/Liansheng/Service/LianshengService.php'
             - '../src/Settlement/Integration/Fixture/*'
             - '../src/Promotion/Exception/*'
             - '../src/Trade/Repository/ProductRepository.php'

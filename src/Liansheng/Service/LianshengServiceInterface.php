@@ -37,6 +37,7 @@ interface LianshengServiceInterface
         string $reference,
         string $remarks = '',
         ?\DateTimeInterface $accountDate = null,
+        string $roomTable = 'ONLINE',
     ): array;
 
     /**
@@ -51,5 +52,8 @@ interface LianshengServiceInterface
         string $remarks = '',
         ?\DateTimeInterface $accountDate = null,
         ?\DateTimeInterface $expiryDate = null,
+        string $roomTable = 'ONLINE',
     ): array;
+
+    public function getPointRefundExpiryDate(): \DateTimeImmutable;
 }
