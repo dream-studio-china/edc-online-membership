@@ -29,8 +29,11 @@ Live testing shows that 0701 requires `method=getvipmember` in the query string 
 | `GET` | `/api/v1/app/liansheng/member?mobile=...` | `ROLE_USER` | 0701 |
 | `GET` | `/api/v1/app/liansheng/member-scorebook?mobile=...` or `?vipId=...` | `ROLE_USER` | 0704 |
 | `GET` | `/api/v1/manage/liansheng/business-revenue?beginDate=YYYY-MM-DD&endDate=YYYY-MM-DD` | `ROLE_ADMIN` | 0504 |
+| `POST` | `/api/v1/manage/liansheng/member-points` | `ROLE_ADMIN` | 0703 |
 
 Controllers own local request validation, response envelopes, authorization, and mapping vendor failures to HTTP 502. The 0102 token ID is internal and is removed from the store response.
+
+The Manage 0703 endpoint accepts `mobile`, `dirflag` (`-`/`+`), positive integer `points`, stable `reference`, non-empty `roomtable`, and non-empty `remarks`. It derives the mutually exclusive `creditscore`/`debitscore` fields and delegates to the same Service used by the payment Gateway.
 
 ## Payment Gateway
 
