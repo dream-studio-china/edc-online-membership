@@ -1,0 +1,11 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
+    App\Liansheng\Service\LianshengService:
+        arguments:
+            $baseUrl: '%env(LIANSHENG_BASE_URL)%'
+            $appCode: '%env(LIANSHENG_APP_CODE)%'
+            $appSecret: '%env(LIANSHENG_APP_SECRET)%'
+            $userId: '%env(LIANSHENG_USER_ID)%'

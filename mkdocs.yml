@@ -96,6 +96,7 @@ nav:
       - Identity (Auth): design/bundles/identity.md
       - Authorization: design/bundles/authorization.md
       - Wechat (Login + Pay): design/bundles/wechat.md
+      - Liansheng (Lincson Cloud): design/bundles/liansheng.md
   - Runbooks:
       - Authorization: runbooks/authorization.md
       - Common: runbooks/common.md
