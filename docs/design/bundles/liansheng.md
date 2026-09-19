@@ -33,7 +33,7 @@ Live testing shows that 0701 requires `method=getvipmember` in the query string 
 
 Controllers own local request validation, response envelopes, authorization, and mapping vendor failures to HTTP 502. The 0102 token ID is internal and is removed from the store response.
 
-The Manage 0703 endpoint accepts `mobile`, `dirflag` (`-`/`+`), positive integer `points`, stable `reference`, non-empty `roomtable`, and non-empty `remarks`. It derives the mutually exclusive `creditscore`/`debitscore` fields and delegates to the same Service used by the payment Gateway.
+Every Liansheng endpoint requires `X-Store-Code`; it selects the Store-specific Liansheng configuration and token. The Manage 0703 endpoint accepts `mobile`, `dirflag` (`-`/`+`), positive integer `points`, stable `reference`, non-empty `roomtable`, and non-empty `remarks`. It derives the mutually exclusive `creditscore`/`debitscore` fields and delegates to the same Service used by the payment Gateway.
 
 ## Payment Gateway
 

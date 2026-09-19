@@ -25,6 +25,9 @@ final class LianshengController extends RestController
     #[OA\Get(
         path: '/api/v1/app/liansheng/store',
         summary: 'Get Liansheng store information',
+        parameters: [
+            new OA\Parameter(name: 'X-Store-Code', in: 'header', required: true, schema: new OA\Schema(type: 'string'), example: 'LIANSHENG-TEST'),
+        ],
         responses: [
             new OA\Response(response: 200, description: 'Store information returned'),
             new OA\Response(response: 502, description: 'Liansheng API failure'),
@@ -45,6 +48,7 @@ final class LianshengController extends RestController
         path: '/api/v1/app/liansheng/member',
         summary: 'Get Liansheng member profiles by mobile number',
         parameters: [
+            new OA\Parameter(name: 'X-Store-Code', in: 'header', required: true, schema: new OA\Schema(type: 'string'), example: 'LIANSHENG-TEST'),
             new OA\Parameter(
                 name: 'mobile',
                 in: 'query',
@@ -79,6 +83,7 @@ final class LianshengController extends RestController
         path: '/api/v1/app/liansheng/member-scorebook',
         summary: 'Get a Liansheng member points ledger',
         parameters: [
+            new OA\Parameter(name: 'X-Store-Code', in: 'header', required: true, schema: new OA\Schema(type: 'string'), example: 'LIANSHENG-TEST'),
             new OA\Parameter(name: 'mobile', in: 'query', required: false, schema: new OA\Schema(type: 'string'), example: '13802542123'),
             new OA\Parameter(name: 'vipId', in: 'query', required: false, schema: new OA\Schema(type: 'string'), example: '1260735'),
         ],

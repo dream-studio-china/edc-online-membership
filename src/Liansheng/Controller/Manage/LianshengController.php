@@ -26,6 +26,7 @@ final class LianshengController extends RestController
         path: '/api/v1/manage/liansheng/business-revenue',
         summary: 'Get a Liansheng business revenue report',
         parameters: [
+            new OA\Parameter(name: 'X-Store-Code', in: 'header', required: true, schema: new OA\Schema(type: 'string'), example: 'LIANSHENG-TEST'),
             new OA\Parameter(name: 'beginDate', in: 'query', required: true, schema: new OA\Schema(type: 'string', format: 'date'), example: '2025-02-10'),
             new OA\Parameter(name: 'endDate', in: 'query', required: true, schema: new OA\Schema(type: 'string', format: 'date'), example: '2025-02-10'),
         ],
@@ -58,6 +59,9 @@ final class LianshengController extends RestController
     #[OA\Post(
         path: '/api/v1/manage/liansheng/member-points',
         summary: 'Adjust Liansheng member points through 0703',
+        parameters: [
+            new OA\Parameter(name: 'X-Store-Code', in: 'header', required: true, schema: new OA\Schema(type: 'string'), example: 'LIANSHENG-TEST'),
+        ],
         requestBody: new OA\RequestBody(
             required: true,
             content: new OA\JsonContent(
