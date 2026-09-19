@@ -58,6 +58,83 @@ final class LianshengService implements LianshengServiceInterface
         ]);
     }
 
+    public function deductMemberPoints(
+        string $mobile,
+        int $points,
+        string $reference,
+        string $remarks = '',
+        ?\DateTimeInterface $accountDate = null,
+    ): array {
+        return $this->changeMemberPoints($mobile, $points, $reference, '-', $remarks, $accountDate, $accountDate);
+    }
+
+    public function creditMemberPoints(
+        string $mobile,
+        int $points,
+        string $reference,
+        string $remarks = '',
+        ?\DateTimeInterface $accountDate = null,
+        ?\DateTimeInterface $expiryDate = null,
+    ): array {
+        return $this->changeMemberPoints($mobile, $points, $reference, '+', $remarks, $accountDate, $expiryDate);
+    }
+
+    /** @return array<string, mixed> */
+    private function changeMemberPoints(
+        string $mobile,
+        int $points,
+        string $reference,
+        string $direction,
+        string $remarks,
+        ?\DateTimeInterface $accountDate,
+        ?\DateTimeInterface $expiryDate,
+    ): array {
+        $mobile = trim($mobile);
+        $reference = trim($reference);
+        if ($mobile === '') {
+            throw new \InvalidArgumentException('Liansheng member mobile must not be empty.');
+        }
+        if ($points <= 0) {
+            throw new \InvalidArgumentException('Liansheng points adjustment must be positive.');
+        }
+        if ($reference === '') {
+            throw new \InvalidArgumentException('Liansheng points adjustment reference must not be empty.');
+        }
+
+        $effectiveAccountDate = $accountDate ?? new \DateTimeImmutable();
+        $effectiveExpiryDate = $expiryDate ?? $effectiveAccountDate;
+        $response = $this->request('POST', '/api/vip.api', [
+            'headers' => ['Token' => $this->getToken()],
+            'query' => ['method' => 'vipsubscore'],
+            'json' => [
+                'mobile' => $mobile,
+                'accountdate' => $effectiveAccountDate->format('Y-m-d'),
+                'dirflag' => $direction,
+                'creditscore' => $direction === '+' ? $points : 0,
+                'debitscore' => $direction === '-' ? $points : 0,
+                'expirydate' => $effectiveExpiryDate->format('Y-m-d'),
+                'accno' => $reference,
+                'billno' => $reference,
+                'roomtable' => '',
+                'remarks' => $remarks,
+            ],
+        ]);
+
+        if ($response === []) {
+            return [];
+        }
+
+        $code = $response['code'] ?? null;
+        if ($code !== 0 && $code !== '0') {
+            throw new LianshengApiException(sprintf(
+                'Liansheng API request failed: %s',
+                is_string($response['msg'] ?? null) ? $response['msg'] : 'unknown error',
+            ));
+        }
+
+        return $response;
+    }
+
     private function getToken(): string
     {
         $token = $this->getStoreTokenData()['id'] ?? null;

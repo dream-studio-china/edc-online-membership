@@ -112,8 +112,10 @@ final class InvoiceServiceIntegrationTest extends IntegrationKernelTestCase
         self::assertTrue($registry->has(Invoice::PAYMENT_MOCK));
         self::assertTrue($registry->has(Invoice::PAYMENT_WALLET));
         self::assertTrue($registry->has(Invoice::PAYMENT_WECHAT));
+        self::assertTrue($registry->has(Invoice::PAYMENT_LIANSHENG_POINT));
         self::assertContains(Invoice::PAYMENT_MOCK, $registry->names());
         self::assertContains(Invoice::PAYMENT_WECHAT, $registry->names());
+        self::assertContains(Invoice::PAYMENT_LIANSHENG_POINT, $registry->names());
     }
 
     public function testHandleNotifyResultFailed(): void

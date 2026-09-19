@@ -34,6 +34,9 @@ class Invoice
     public const PAYMENT_MOCK = 'mock';
     public const PAYMENT_WALLET = 'wallet';
     public const PAYMENT_WECHAT = 'wechat';
+    public const PAYMENT_LIANSHENG_POINT = 'liansheng_point';
+
+    public const CURRENCY_LIANSHENG_POINT = 'LIANSHENG_POINT';
 
     #[ORM\Id]
     #[ORM\GeneratedValue]

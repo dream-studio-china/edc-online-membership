@@ -22,7 +22,7 @@ framework:
                 # pending: invoice created, awaiting pay() call. Can start_pay to paying or be cancelled.
                 - pending
 
-                # paying: gateway invocation in progress (wallet/wechat/mock). Wallet adjustments (wallet_balance) are applied before this place.
+                # paying: gateway invocation in progress (wallet/wechat/mock/liansheng_point). Wallet adjustments (wallet_balance) are applied before this place.
                 - paying
 
                 # paid: gateway confirmed via notify or wallet fully adjusted. Trade OrderInvoiceListener will mark order paid.

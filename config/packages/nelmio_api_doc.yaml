@@ -587,11 +587,11 @@ nelmio_api_doc:
                         sourceType: { type: string, example: 'trade_order' }
                         sourceId: { type: string, example: '42' }
                         scene: { type: string, enum: [order, deposit, wallet_topup], example: 'order' }
-                        payment: { type: string, nullable: true, enum: [mock, wallet, wechat], example: 'wallet' }
+                        payment: { type: string, nullable: true, enum: [mock, wallet, wechat, liansheng_point], example: 'wallet' }
                         gateway: { type: string, nullable: true, description: 'Provider gateway code' }
                         tradeType: { type: string, nullable: true, description: 'Gateway trade type (e.g. jsapi)' }
                         status: { type: string, enum: [pending, paying, paid, failed, cancelled, partial_refunded, refunded], example: 'pending' }
-                        amount: { type: integer, description: 'Gross amount in cents', example: 19900 }
+                        amount: { type: integer, description: 'Gross amount in the currency smallest unit; LIANSHENG_POINT uses whole points', example: 19900 }
                         refundedAmount: { type: integer, example: 0 }
                         currency: { type: string, example: 'CNY' }
                         payer: { $ref: '#/components/schemas/UserRef' }
