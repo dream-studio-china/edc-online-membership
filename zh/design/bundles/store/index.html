@@ -6189,7 +6189,7 @@ payment, cancellation, refunds, and canonical commercial status.</p>
 <li><code>ROLE_ADMIN</code> bypasses membership checks only on explicitly administrative routes.</li>
 <li>Store staff cannot elevate a Trade order's commercial status directly.</li>
 <li>Store staff actions (<code>fulfill</code>, <code>verify</code>) produce Store events; Trade applies commercial <code>complete</code> only through <code>StoreOrderVerifiedHandler</code> + <code>OrderCompletionGuardListener</code>/<code>OrderVerificationCompletionListener</code> and workflow guards.</li>
-<li>Store owners and managers may manage assignments only in their own Store. Administrators define Store-scoped roles and their permissions through the existing Manage Authorization APIs. The <code>store.staff_assignable_role_codes</code> configuration controls which role codes managers may grant (default: <code>store_catalog_manager</code>, <code>store_order_operator</code>, <code>store_fulfillment_operator</code>); they cannot create global assignments, edit role definitions, or assign non-allowlisted roles.</li>
+<li>Store owners and managers may manage assignments only in their own Store. Administrators define Store-scoped roles and their permissions through the existing Manage Authorization APIs. Managers may grant any Store-scoped role; they cannot create global assignments, edit role definitions, or assign global roles.</li>
 </ol>
 <hr />
 <h2 id="11-store-context-and-promotion-contract">11. Store Context And Promotion Contract<a class="headerlink" href="#11-store-context-and-promotion-contract" title="Permanent link">&para;</a></h2>
