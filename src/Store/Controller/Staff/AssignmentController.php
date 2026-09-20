@@ -15,9 +15,9 @@ use App\Core\Utils\UUID;
 use App\Identity\Entity\User;
 use App\Identity\Repository\UserRepository;
 use App\Store\Entity\Membership;
-use App\Store\Entity\Store;
 use App\Store\Service\MembershipServiceInterface;
 use App\Store\Service\StoreServiceInterface;
+use App\Store\View\StoreManagerAuthorizationApiMixin;
 use OpenApi\Attributes as OA;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -31,6 +31,8 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[IsGranted('ROLE_USER')]
 final class AssignmentController extends RestController
 {
+    use StoreManagerAuthorizationApiMixin;
+
     public function __construct(
         private readonly StoreServiceInterface $storeService,
         private readonly MembershipServiceInterface $membershipService,
@@ -57,7 +59,7 @@ final class AssignmentController extends RestController
     public function listAction(string $scopeId): Response
     {
         try {
-            $store = $this->managedStore($scopeId);
+            $store = $this->storeForManagement();
 
             return $this->success(array_map($this->assignmentData(...), $this->assignmentRepository->findActiveByStoreScope($store->getUuid())));
         } catch (AccessDeniedHttpException $exception) {
@@ -78,7 +80,7 @@ final class AssignmentController extends RestController
     public function assignableRolesAction(string $scopeId): Response
     {
         try {
-            $this->managedStore($scopeId);
+            $this->storeForManagement();
             $roles = $this->assignableRoleCodes === []
                 ? []
                 : $this->roleRepository->findBy(['scopeType' => Role::SCOPE_STORE, 'code' => $this->assignableRoleCodes]);
@@ -115,7 +117,7 @@ final class AssignmentController extends RestController
     public function grantAction(Request $request, string $scopeId): Response
     {
         try {
-            $store = $this->managedStore($scopeId);
+            $store = $this->storeForManagement();
             $content = json_decode($request->getContent(), true, 512, JSON_THROW_ON_ERROR);
             if (!is_array($content)) {
                 throw new \InvalidArgumentException('Invalid JSON.');
@@ -186,7 +188,7 @@ final class AssignmentController extends RestController
     public function revokeAction(string $scopeId, string $assignmentUuid): Response
     {
         try {
-            $store = $this->managedStore($scopeId);
+            $store = $this->storeForManagement();
             $assignment = $this->assignmentRepository->findOneByUuid($assignmentUuid);
             if (!$assignment instanceof Assignment || $assignment->getScopeType() !== Assignment::SCOPE_STORE || $assignment->getScopeUuid() !== $store->getUuid()) {
                 throw new NotFoundHttpException('Assignment not found in this Store.');
@@ -206,24 +208,14 @@ final class AssignmentController extends RestController
         }
     }
 
-    private function managedStore(string $scopeId): Store
+    protected function storeService(): StoreServiceInterface
     {
-        $store = $this->storeService->get(ctype_digit($scopeId) ? ['id' => (int) $scopeId] : ['uuid' => $scopeId], false);
-        if (!$store instanceof Store) {
-            throw new NotFoundHttpException('Store not found.');
-        }
+        return $this->storeService;
+    }
 
-        $actorUuid = $this->actorUuid();
-        if ($actorUuid === null) {
-            throw new AccessDeniedHttpException('Access denied.');
-        }
-        try {
-            $this->membershipService->requireAuthorization($store, $actorUuid, [Membership::ROLE_OWNER, Membership::ROLE_MANAGER]);
-        } catch (\RuntimeException) {
-            throw new AccessDeniedHttpException('Store owner or manager membership is required.');
-        }
-
-        return $store;
+    protected function membershipService(): MembershipServiceInterface
+    {
+        return $this->membershipService;
     }
 
     private function actorUuid(): ?string
@@ -239,11 +231,27 @@ final class AssignmentController extends RestController
         return [
             'uuid' => $assignment->getUuid(),
             'userUuid' => $assignment->getUserUuid(),
+            'user' => $this->userData($this->userRepository->findOneBy(['uuid' => $assignment->getUserUuid()])),
             'scopeType' => $assignment->getScopeType(),
             'scopeUuid' => $assignment->getScopeUuid(),
             'status' => $assignment->isActive() ? 'active' : 'revoked',
             'createdAt' => $assignment->getCreatedAt()->format(DATE_ATOM),
             'role' => $this->roleData($assignment->getRole()),
+        ];
+    }
+
+    /** @return array<string, mixed> */
+    private function userData(?User $user): array
+    {
+        if (!$user instanceof User) {
+            return ['uuid' => null, 'username' => null, 'nickname' => null, 'phone' => null];
+        }
+
+        return [
+            'uuid' => $user->getUuid(),
+            'username' => $user->getUsername(),
+            'nickname' => $user->getProfile()?->getNickname(),
+            'phone' => $user->getPhone(),
         ];
     }
 
