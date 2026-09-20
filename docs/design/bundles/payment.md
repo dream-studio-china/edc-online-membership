@@ -178,6 +178,9 @@ Only `SCENE_ORDER` is required in the first phase. Other scene constants exist t
 public const PAYMENT_MOCK = 'mock';
 public const PAYMENT_WALLET = 'wallet';
 public const PAYMENT_WECHAT = 'wechat';
+public const PAYMENT_LIANSHENG_POINT = 'liansheng_point';
+
+public const CURRENCY_LIANSHENG_POINT = 'LIANSHENG_POINT';
 ```
 
 Provider constants such as `fuiou`, `fuiou-pos`, `huifu`, and `huifu-pos` are reserved for future adapters. They MUST NOT be used until concrete adapters exist.
@@ -613,10 +616,13 @@ final class PaymentAdjustmentRegistry
 | `mock` | Deterministic test/development gateway | Yes |
 | `wallet` | Internal wallet balance payment implemented in Wallet module and tagged as `payment.gateway` | Yes if Wallet module remains payment-capable |
 | `wechat` | WeChat Pay adapter implemented in Wechat module and tagged as `payment.gateway` | Optional/provider-dependent |
+| `liansheng_point` | Synchronous Liansheng 0703 member-points deduction implemented in Liansheng; only for `LIANSHENG_POINT` invoices | Optional/provider-dependent |
 
 `mock` is a fake external gateway for tests and local development. It does not move wallet funds and must not be treated as wallet payment. It simulates provider pay/notify/refund behavior and is useful for validating invoice workflow, adjustments, and Trade integration without real provider credentials.
 
 When used with adjustments, `mock` notify amount MUST equal the explicit gateway payment amount, not the invoice gross amount.
+
+`liansheng_point` is a unit-of-account gateway rather than a fiat-money gateway. Its explicit integer `$amount` is the number of points sent as `debitscore`; the usual cents-to-decimal conversion does not apply. It requires the payer's verified phone from the local User record, uses `Invoice::outTradeNo` as the stable provider reference, and returns `paid` from the same request only after 0703 succeeds. Liansheng configuration is resolved from the active Store's `settings.liansheng` selected by `X-Store-Code`. It has no asynchronous notify path. Refunds synchronously credit points through the same provider endpoint (`dirflag=+`) and support full or partial amounts; their stable references are `outTradeNo-R{cumulativeRefundedPoints}`.
 
 ### 6.4 Future Provider Gateways
 

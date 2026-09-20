@@ -110,3 +110,10 @@ api_authorization:
         path: ../src/Authorization/Controller/
         namespace: App\Authorization\Controller
     type: attribute
+
+api_liansheng:
+    prefix: /api/v1
+    resource:
+        path: ../src/Liansheng/Controller/
+        namespace: App\Liansheng\Controller
+    type: attribute

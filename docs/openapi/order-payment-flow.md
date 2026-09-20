@@ -368,6 +368,7 @@ Supported payment values:
 | `mock` | Mock gateway for development/testing |
 | `wallet` | Wallet balance payment |
 | `wechat` | WeChat Pay gateway, including Mini Program JSAPI payment, if configured |
+| `liansheng_point` | Synchronous Liansheng member-points deduction for invoices whose currency is `LIANSHENG_POINT` |
 
 Common payment options:
 
@@ -413,7 +414,7 @@ Example response for mock payment not yet paid:
 }
 ```
 
-If payment completes synchronously, such as `wallet` or `mock` with `autoPaid: true`, the returned `status` is `paid`, invoice status becomes `paid`, and linked order status becomes `paid` automatically.
+If payment completes synchronously, such as `wallet`, `liansheng_point`, or `mock` with `autoPaid: true`, the returned `status` is `paid`, invoice status becomes `paid`, and linked order status becomes `paid` automatically. For `liansheng_point`, the integer invoice amount is a number of points (not cents), the payer must have a verified phone, and refunds synchronously restore points through 0703.
 
 ## WeChat Mini Program Payment
 

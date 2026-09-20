@@ -119,6 +119,7 @@ services:
     App\Inventory\Service\SpecificationRecipeServiceInterface: '@App\Inventory\Service\SpecificationRecipeService'
     App\Wechat\Service\WechatServiceInterface: '@App\Wechat\Service\WechatService'
     App\Wechat\Service\WechatAuthServiceInterface: '@App\Wechat\Service\WechatAuthService'
+    App\Liansheng\Service\LianshengServiceInterface: '@App\Liansheng\Service\LianshengService'
 
     App\Core\Validator\JsonSchemaValidator:
         public: true
