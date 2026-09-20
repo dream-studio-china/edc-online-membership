@@ -1,11 +1,5 @@
 # yaml-language-server: $schema=../vendor/symfony/dependency-injection/Loader/schema/services.schema.json
 
-parameters:
-    store.staff_assignable_role_codes:
-        - store_catalog_manager
-        - store_order_operator
-        - store_fulfillment_operator
-
 imports:
     - { resource: '../src/Core/Resources/config/services.yaml', ignore_errors: true }
     - { resource: '../src/Identity/Resources/config/services_identity.yaml', ignore_errors: true }

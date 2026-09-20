@@ -853,7 +853,7 @@ All actions check membership against the `StoreOrder`'s local `Store` relation, 
 4. `ROLE_ADMIN` bypasses membership checks only on explicitly administrative routes.
 5. Store staff cannot elevate a Trade order's commercial status directly.
 6. Store staff actions (`fulfill`, `verify`) produce Store events; Trade applies commercial `complete` only through `StoreOrderVerifiedHandler` + `OrderCompletionGuardListener`/`OrderVerificationCompletionListener` and workflow guards.
-7. Store owners and managers may manage assignments only in their own Store. Administrators define Store-scoped roles and their permissions through the existing Manage Authorization APIs. The `store.staff_assignable_role_codes` configuration controls which role codes managers may grant (default: `store_catalog_manager`, `store_order_operator`, `store_fulfillment_operator`); they cannot create global assignments, edit role definitions, or assign non-allowlisted roles.
+7. Store owners and managers may manage assignments only in their own Store. Administrators define Store-scoped roles and their permissions through the existing Manage Authorization APIs. Managers may grant any Store-scoped role; they cannot create global assignments, edit role definitions, or assign global roles.
 
 ---
 
