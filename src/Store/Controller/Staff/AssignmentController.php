@@ -27,7 +27,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
-#[Route('/store/{scopeId}/assignments', name: 'store-assignments-', requirements: ['scopeId' => '\d+|[0-9a-fA-F-]{36}'])]
+#[Route('/store/{scopeId}', name: 'store-', requirements: ['scopeId' => '\d+|[0-9a-fA-F-]{36}'])]
 #[IsGranted('ROLE_USER')]
 final class AssignmentController extends RestController
 {
@@ -53,13 +53,47 @@ final class AssignmentController extends RestController
         responses: [new OA\Response(response: 200, description: 'Assignments returned'), new OA\Response(response: 403, description: 'Manager or owner membership required')],
         tags: ['Store'],
     )]
-    #[Route('', name: 'list', methods: ['GET'])]
+    #[Route('/assignments', name: 'assignments-list', methods: ['GET'])]
     public function listAction(string $scopeId): Response
     {
         try {
             $store = $this->managedStore($scopeId);
 
             return $this->success(array_map($this->assignmentData(...), $this->assignmentRepository->findActiveByStoreScope($store->getUuid())));
+        } catch (AccessDeniedHttpException $exception) {
+            return $this->warning($exception->getMessage(), 1, null, Response::HTTP_FORBIDDEN);
+        } catch (NotFoundHttpException $exception) {
+            return $this->warning($exception->getMessage(), 1, null, Response::HTTP_NOT_FOUND);
+        }
+    }
+
+    #[OA\Get(
+        path: '/api/v1/store/{scopeId}/assignable-roles',
+        summary: 'List Store roles the manager may assign',
+        parameters: [new OA\Parameter(name: 'scopeId', in: 'path', required: true, schema: new OA\Schema(type: 'string'))],
+        responses: [new OA\Response(response: 200, description: 'Assignable roles returned'), new OA\Response(response: 403, description: 'Manager or owner membership required')],
+        tags: ['Store'],
+    )]
+    #[Route('/assignable-roles', name: 'assignable-roles', methods: ['GET'])]
+    public function assignableRolesAction(string $scopeId): Response
+    {
+        try {
+            $this->managedStore($scopeId);
+            $roles = $this->assignableRoleCodes === []
+                ? []
+                : $this->roleRepository->findBy(['scopeType' => Role::SCOPE_STORE, 'code' => $this->assignableRoleCodes]);
+            $byCode = [];
+            foreach ($roles as $role) {
+                $byCode[$role->getCode()] = $role;
+            }
+            $ordered = [];
+            foreach ($this->assignableRoleCodes as $code) {
+                if (isset($byCode[$code])) {
+                    $ordered[] = $this->roleData($byCode[$code]);
+                }
+            }
+
+            return $this->success($ordered);
         } catch (AccessDeniedHttpException $exception) {
             return $this->warning($exception->getMessage(), 1, null, Response::HTTP_FORBIDDEN);
         } catch (NotFoundHttpException $exception) {
@@ -77,7 +111,7 @@ final class AssignmentController extends RestController
         responses: [new OA\Response(response: 201, description: 'Assignment granted'), new OA\Response(response: 403, description: 'Manager or owner membership required')],
         tags: ['Store'],
     )]
-    #[Route('', name: 'grant', methods: ['POST'])]
+    #[Route('/assignments', name: 'assignments-grant', methods: ['POST'])]
     public function grantAction(Request $request, string $scopeId): Response
     {
         try {
@@ -148,7 +182,7 @@ final class AssignmentController extends RestController
         responses: [new OA\Response(response: 204, description: 'Assignment revoked'), new OA\Response(response: 403, description: 'Manager or owner membership required'), new OA\Response(response: 404, description: 'Assignment not found in this Store')],
         tags: ['Store'],
     )]
-    #[Route('/{assignmentUuid}', name: 'revoke', methods: ['DELETE'], requirements: ['assignmentUuid' => '[0-9a-fA-F-]{36}'])]
+    #[Route('/assignments/{assignmentUuid}', name: 'assignments-revoke', methods: ['DELETE'], requirements: ['assignmentUuid' => '[0-9a-fA-F-]{36}'])]
     public function revokeAction(string $scopeId, string $assignmentUuid): Response
     {
         try {
@@ -202,8 +236,6 @@ final class AssignmentController extends RestController
     /** @return array<string, mixed> */
     private function assignmentData(Assignment $assignment): array
     {
-        $role = $assignment->getRole();
-
         return [
             'uuid' => $assignment->getUuid(),
             'userUuid' => $assignment->getUserUuid(),
@@ -211,13 +243,19 @@ final class AssignmentController extends RestController
             'scopeUuid' => $assignment->getScopeUuid(),
             'status' => $assignment->isActive() ? 'active' : 'revoked',
             'createdAt' => $assignment->getCreatedAt()->format(DATE_ATOM),
-            'role' => [
-                'uuid' => $role->getUuid(),
-                'code' => $role->getCode(),
-                'name' => $role->getName(),
-                'scopeType' => $role->getScopeType(),
-                'permissions' => array_values(array_map(static fn ($permission): string => $permission->getCode(), $role->getPermissions()->toArray())),
-            ],
+            'role' => $this->roleData($assignment->getRole()),
+        ];
+    }
+
+    /** @return array<string, mixed> */
+    private function roleData(Role $role): array
+    {
+        return [
+            'uuid' => $role->getUuid(),
+            'code' => $role->getCode(),
+            'name' => $role->getName(),
+            'scopeType' => $role->getScopeType(),
+            'permissions' => array_values(array_map(static fn ($permission): string => $permission->getCode(), $role->getPermissions()->toArray())),
         ];
     }
 

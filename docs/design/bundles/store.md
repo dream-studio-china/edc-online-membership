@@ -822,6 +822,7 @@ Store staff must not use generic Trade `manage/orders` routes, which are platfor
 | POST | `/api/v1/store/manage/orders/{uuid}/fulfill` | fulfillment/manager/owner (`store:order:fulfill`) | Mark Store operation `fulfilled` (local transition; fulfilled -> fulfilled). Triggers `OrderVerificationCompletionListener` auto-complete if `_storeVerificationReceived` already true. |
 | POST | `/api/v1/store/{scopeId}/orders/{uuid}/verify` | fulfillment/manager/owner (`store:order:verify`) | Store verification post-fulfill — requires `StoreOrder.isVerificationRequired()=true` (snapshotted, not live settings) and `operationalStatus=fulfilled`; body is empty (`{}`); uses order UUID as verification token. Transitions `fulfilled -> verified` and emits `store.order.verified.v1` with `verifiedAt/verifiedBy` (no `verificationCode`). Staff `userUuid` is taken from the authenticated Identity user. |
 | GET/POST/DELETE | `/api/v1/store/{scopeId}/assignments` | owner/manager membership | Lists, grants, and revokes active allowlisted Store role assignments. The URL Store fixes assignment scope; employees must already be active members of that Store. |
+| GET | `/api/v1/store/{scopeId}/assignable-roles` | owner/manager membership | Lists Store-scoped roles the manager may grant, with their permissions. |
 
 > `POST .../accept` and `POST .../reject` have been removed. Store acceptance is automatic; rejection is deferred to future inventory.
 
