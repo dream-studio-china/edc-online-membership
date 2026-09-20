@@ -359,6 +359,22 @@ final class StaffCatalogAuthorizationTest extends IntegrationWebTestCase
         $client->request('GET', sprintf('/api/v1/store/%s/assignments', $storeA));
         self::assertResponseStatusCodeSame(200);
 
+        $client->request('GET', sprintf('/api/v1/store/%s/assignable-roles', $storeA));
+        self::assertResponseStatusCodeSame(200, $client->getResponse()->getContent());
+        $assignableRoles = $this->decodeJson($client)['data'];
+        self::assertNotEmpty($assignableRoles);
+        $assignableCodes = array_column($assignableRoles, 'code');
+        self::assertContains('store_catalog_manager', $assignableCodes);
+        self::assertNotContains('authorization_administrator', $assignableCodes);
+        foreach ($assignableRoles as $assignableRole) {
+            self::assertSame('store', $assignableRole['scopeType']);
+            self::assertArrayHasKey('permissions', $assignableRole);
+        }
+
+        $client->setServerParameter('HTTP_AUTHORIZATION', 'Bearer '.$clerkToken);
+        $client->request('GET', sprintf('/api/v1/store/%s/assignable-roles', $storeA));
+        self::assertResponseStatusCodeSame(403, $client->getResponse()->getContent());
+
         $crossStoreAssignment = $this->grantAssignment($client, $adminToken, $employee->getUuid(), 'store_catalog_manager', 'store', (string) $storeB);
         $client->setServerParameter('HTTP_AUTHORIZATION', 'Bearer '.$managerToken);
         $client->request('GET', sprintf('/api/v1/store/%s/assignments', $storeA));
