@@ -3076,6 +3076,16 @@
 <td>Gets member profiles by mobile number. The response may contain multiple records.</td>
 </tr>
 <tr>
+<td><code>registerMemberByMobile()</code></td>
+<td>0702 <code>POST /api/vip.api?method=addvip</code></td>
+<td>Registers a missing member with zero points and balances.</td>
+</tr>
+<tr>
+<td><code>getMemberCardTypes()</code></td>
+<td><code>GET /api/wx.api?method=getvipcardtype&amp;isamount=F</code></td>
+<td>Gets Store-specific member card types; use each item's <code>id</code> as 0702 <code>cardtypeId</code>.</td>
+</tr>
+<tr>
 <td><code>getMemberScoreBook()</code></td>
 <td>0704 <code>GET /api/wx.api?method=getscorebook</code></td>
 <td>Gets the paginated member points ledger by mobile or vipId.</td>
@@ -3093,7 +3103,7 @@
 </tbody>
 </table>
 <p>The store token is held in <code>cache.app</code> until one minute before the vendor-reported expiry. No token, credential, member data, or report data is stored in Doctrine.</p>
-<p>Live testing shows that 0701 requires <code>method=getvipmember</code> in the query string and a JSON request body. The body accepts <code>mobile</code>, <code>cardid</code>, or <code>cloudId</code>; the returned <code>code</code> field may be null.</p>
+<p>Live testing shows that 0701 requires <code>method=getvipmember</code> in the query string and a JSON request body. The body accepts <code>mobile</code>, <code>cardid</code>, or <code>cloudId</code>; no matching member returns <code>code=501</code>, <code>msg=没有匹配到会员资料！</code>, and <code>data=null</code>, which the adapter maps to an empty list. The local member endpoint registers an empty 0701 result through 0702 and immediately returns its successful registration response. Registration uses the mobile as the vendor <code>name</code> and <code>alias</code>, with zero initial score and balances. 0702 requires a Store-specific <code>memberCardTypeId</code>.</p>
 <h2 id="controllers">Controllers<a class="headerlink" href="#controllers" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
@@ -3116,6 +3126,12 @@
 <td><code>/api/v1/app/liansheng/member?mobile=...</code></td>
 <td><code>ROLE_USER</code></td>
 <td>0701</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/api/v1/app/liansheng/member-card-types</code></td>
+<td><code>ROLE_USER</code></td>
+<td>getvipcardtype</td>
 </tr>
 <tr>
 <td><code>GET</code></td>
@@ -3202,9 +3218,10 @@
 <a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">    </span><span class="nt">"appCode"</span><span class="p">:</span><span class="w"> </span><span class="s2">"..."</span><span class="p">,</span>
 <a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">    </span><span class="nt">"appSecret"</span><span class="p">:</span><span class="w"> </span><span class="s2">"..."</span><span class="p">,</span>
 <a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">    </span><span class="nt">"userId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"1"</span><span class="p">,</span>
-<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">    </span><span class="nt">"pointRefundExpiryDate"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2099-12-31"</span>
-<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">  </span><span class="p">}</span>
-<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="p">}</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">    </span><span class="nt">"pointRefundExpiryDate"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2099-12-31"</span><span class="p">,</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">    </span><span class="nt">"memberCardTypeId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"..."</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="w">  </span><span class="p">}</span>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="p">}</span>
 </code></pre></div>
 <p><code>LianshengApiException</code> represents transport, HTTP, invalid JSON, and vendor-level response failures.</p>
 <p><code>https://test.lincson.cn/web</code> has a certificate mismatch and its HTTPS <code>/web/api/*</code> path rejects POST with 405. The local test Store intentionally uses the vendor's HTTP endpoint instead; do not use this plaintext endpoint outside local testing.</p>
