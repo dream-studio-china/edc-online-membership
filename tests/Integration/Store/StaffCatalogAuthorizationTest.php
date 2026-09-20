@@ -312,6 +312,15 @@ final class StaffCatalogAuthorizationTest extends IntegrationWebTestCase
         $members = $this->decodeJson($client)['data'];
         $memberUuids = array_column($members, 'userUuid');
         self::assertContains($employee->getUuid(), $memberUuids);
+        $employeeRow = null;
+        foreach ($members as $row) {
+            if (($row['userUuid'] ?? null) === $employee->getUuid()) {
+                $employeeRow = $row;
+                break;
+            }
+        }
+        self::assertNotNull($employeeRow, 'employee membership row exists');
+        self::assertSame($employee->getUsername(), $employeeRow['user']['username'] ?? null, 'member row carries user display info');
 
         $client->setServerParameter('HTTP_AUTHORIZATION', 'Bearer '.$clerkToken);
         $client->request('GET', sprintf('/api/v1/store/%s/members', $storeA));
