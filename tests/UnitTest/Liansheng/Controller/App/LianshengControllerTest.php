@@ -7,9 +7,13 @@ namespace App\Tests\UnitTest\Liansheng\Controller\App;
 use App\Liansheng\Controller\App\LianshengController;
 use App\Liansheng\Exception\LianshengApiException;
 use App\Liansheng\Service\LianshengServiceInterface;
+use App\Identity\Entity\User;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
+use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
@@ -35,12 +39,12 @@ final class LianshengControllerTest extends TestCase
     {
         $service = $this->createMock(LianshengServiceInterface::class);
         $service->expects(self::never())->method('getMemberByMobile');
-        $controller = $this->controller($service);
+        $controller = $this->controller($service, new User());
 
-        $response = $controller->member(Request::create('/api/v1/app/liansheng/member'));
+        $response = $controller->member();
 
         self::assertSame(400, $response->getStatusCode());
-        self::assertSame('mobile is required.', $this->decode($response->getContent())['message']);
+        self::assertSame('Current user must have a phone number.', $this->decode($response->getContent())['message']);
     }
 
     public function testReturnsMemberAndMapsProviderFailure(): void
@@ -52,11 +56,10 @@ final class LianshengControllerTest extends TestCase
                 ['code' => '51728662', 'mobile' => '13802542123'],
                 self::throwException(new LianshengApiException('provider unavailable')),
             );
-        $controller = $this->controller($service);
-        $request = Request::create('/api/v1/app/liansheng/member', 'GET', ['mobile' => '13802542123']);
+        $controller = $this->controller($service, $this->user('13802542123'));
 
-        $success = $controller->member($request);
-        $failure = $controller->member($request);
+        $success = $controller->member();
+        $failure = $controller->member();
 
         self::assertSame('51728662', $this->decode($success->getContent())['data']['code']);
         self::assertSame(502, $failure->getStatusCode());
@@ -84,9 +87,9 @@ final class LianshengControllerTest extends TestCase
             ->with('13802542123')
             ->willReturn([]);
         $service->expects(self::once())->method('registerMemberByMobile')->with('13802542123')->willReturn(['code' => 0, 'msg' => 'OK']);
-        $controller = $this->controller($service);
+        $controller = $this->controller($service, $this->user('13802542123'));
 
-        $response = $controller->member(Request::create('/api/v1/app/liansheng/member', 'GET', ['mobile' => '13802542123']));
+        $response = $controller->member();
 
         self::assertSame(200, $response->getStatusCode());
         self::assertSame(0, $this->decode($response->getContent())['data']['code']);
@@ -101,9 +104,9 @@ final class LianshengControllerTest extends TestCase
         $service->expects(self::once())->method('registerMemberByMobile')
             ->with('13802542123')
             ->willThrowException(new LianshengApiException('member already exists'));
-        $controller = $this->controller($service);
+        $controller = $this->controller($service, $this->user('13802542123'));
 
-        $response = $controller->member(Request::create('/api/v1/app/liansheng/member', 'GET', ['mobile' => '13802542123']));
+        $response = $controller->member();
 
         self::assertSame(200, $response->getStatusCode());
         self::assertSame('51728662', $this->decode($response->getContent())['data'][0]['code']);
@@ -139,7 +142,7 @@ final class LianshengControllerTest extends TestCase
         self::assertSame('Exactly one of mobile or vipId is required.', $this->decode($response->getContent())['message']);
     }
 
-    private function controller(LianshengServiceInterface $service): LianshengController
+    private function controller(LianshengServiceInterface $service, ?User $user = null): LianshengController
     {
         $controller = new LianshengController($service);
         $serializer = $this->createMock(SerializerInterface::class);
@@ -148,10 +151,26 @@ final class LianshengControllerTest extends TestCase
         );
         $translator = $this->createMock(TranslatorInterface::class);
         $translator->method('trans')->willReturnArgument(0);
+        $tokenStorage = $this->createMock(TokenStorageInterface::class);
+        $tokenStorage->method('getToken')->willReturn(
+            $user === null ? null : new UsernamePasswordToken($user, 'main', $user->getRoles()),
+        );
+        $container = new Container();
+        $container->set('security.token_storage', $tokenStorage);
+        $controller->setContainer($container);
         $controller->setSerializer($serializer);
         $controller->setTranslator($translator);
 
         return $controller;
+    }
+
+    private function user(string $phone): User
+    {
+        return (new User())
+            ->setEmail('member@example.test')
+            ->setUsername('member')
+            ->setPhone($phone)
+            ->setPhoneVerified(true);
     }
 
     /** @return array<string, mixed> */

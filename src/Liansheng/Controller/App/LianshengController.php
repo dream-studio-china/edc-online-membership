@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Liansheng\Controller\App;
 
 use App\Core\Controller\RestController;
+use App\Identity\Entity\User;
 use App\Liansheng\Exception\LianshengApiException;
 use App\Liansheng\Service\LianshengServiceInterface;
 use OpenApi\Attributes as OA;
@@ -46,30 +47,24 @@ final class LianshengController extends RestController
 
     #[OA\Get(
         path: '/api/v1/app/liansheng/member',
-        summary: 'Get Liansheng member profiles by mobile number',
+        summary: 'Get the current user\'s Liansheng member profile',
         parameters: [
             new OA\Parameter(name: 'X-Store-Code', in: 'header', required: true, schema: new OA\Schema(type: 'string'), example: 'LIANSHENG-TEST'),
-            new OA\Parameter(
-                name: 'mobile',
-                in: 'query',
-                required: true,
-                schema: new OA\Schema(type: 'string'),
-                example: '13802542123',
-            ),
         ],
         responses: [
             new OA\Response(response: 200, description: 'Member profile returned'),
-            new OA\Response(response: 400, description: 'Mobile number missing'),
+            new OA\Response(response: 400, description: 'Current user has no phone number'),
             new OA\Response(response: 502, description: 'Liansheng API failure'),
         ],
         tags: ['Liansheng'],
     )]
     #[Route('/member', name: 'member', methods: ['GET'])]
-    public function member(Request $request): Response
+    public function member(): Response
     {
-        $mobile = trim((string) $request->query->get('mobile', ''));
+        $user = $this->getUser();
+        $mobile = $user instanceof User ? trim((string) $user->getPhone()) : '';
         if ($mobile === '') {
-            return $this->warning('mobile is required.', 1, null, Response::HTTP_BAD_REQUEST);
+            return $this->warning('Current user must have a phone number.', 1, null, Response::HTTP_BAD_REQUEST);
         }
 
         try {
