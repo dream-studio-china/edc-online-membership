@@ -6112,6 +6112,12 @@ payment, cancellation, refunds, and canonical commercial status.</p>
 <td>fulfillment/manager/owner (<code>store:order:verify</code>)</td>
 <td>Store verification post-fulfill — requires <code>StoreOrder.isVerificationRequired()=true</code> (snapshotted, not live settings) and <code>operationalStatus=fulfilled</code>; body is empty (<code>{}</code>); uses order UUID as verification token. Transitions <code>fulfilled -&gt; verified</code> and emits <code>store.order.verified.v1</code> with <code>verifiedAt/verifiedBy</code> (no <code>verificationCode</code>). Staff <code>userUuid</code> is taken from the authenticated Identity user.</td>
 </tr>
+<tr>
+<td>GET/POST/DELETE</td>
+<td><code>/api/v1/store/{scopeId}/assignments</code></td>
+<td>owner/manager membership</td>
+<td>Lists, grants, and revokes active allowlisted Store role assignments. The URL Store fixes assignment scope; employees must already be active members of that Store.</td>
+</tr>
 </tbody>
 </table>
 <blockquote>
@@ -6171,6 +6177,7 @@ payment, cancellation, refunds, and canonical commercial status.</p>
 <li><code>ROLE_ADMIN</code> bypasses membership checks only on explicitly administrative routes.</li>
 <li>Store staff cannot elevate a Trade order's commercial status directly.</li>
 <li>Store staff actions (<code>fulfill</code>, <code>verify</code>) produce Store events; Trade applies commercial <code>complete</code> only through <code>StoreOrderVerifiedHandler</code> + <code>OrderCompletionGuardListener</code>/<code>OrderVerificationCompletionListener</code> and workflow guards.</li>
+<li>Store owners and managers may manage assignments only in their own Store. Administrators define Store-scoped roles and their permissions through the existing Manage Authorization APIs. The <code>store.staff_assignable_role_codes</code> configuration controls which role codes managers may grant (default: <code>store_catalog_manager</code>, <code>store_order_operator</code>, <code>store_fulfillment_operator</code>); they cannot create global assignments, edit role definitions, or assign non-allowlisted roles.</li>
 </ol>
 <hr />
 <h2 id="11-store-context-and-promotion-contract">11. Store Context And Promotion Contract<a class="headerlink" href="#11-store-context-and-promotion-contract" title="Permanent link">&para;</a></h2>
