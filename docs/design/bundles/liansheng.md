@@ -13,13 +13,14 @@
 | `getStore()` | 0102 `POST /api/open/getapptoken` | Gets the store token and its store metadata. |
 | `getBusinessRevenueReport()` | 0504 `POST /api/open/rptbusiness` | Gets a date-range business revenue report. |
 | `getMemberByMobile()` | 0701 `GET /api/vip.api?method=getvipmember` with JSON body | Gets member profiles by mobile number. The response may contain multiple records. |
+| `registerMemberByMobile()` | 0702 `POST /api/vip.api?method=addvip` | Registers a missing member with zero points and balances. |
 | `getMemberScoreBook()` | 0704 `GET /api/wx.api?method=getscorebook` | Gets the paginated member points ledger by mobile or vipId. |
 | `deductMemberPoints()` | 0703 `POST /api/vip.api?method=vipsubscore` | Deducts a positive integer number of member points synchronously. |
 | `creditMemberPoints()` | 0703 `POST /api/vip.api?method=vipsubscore` | Credits a positive integer number of member points synchronously. |
 
 The store token is held in `cache.app` until one minute before the vendor-reported expiry. No token, credential, member data, or report data is stored in Doctrine.
 
-Live testing shows that 0701 requires `method=getvipmember` in the query string and a JSON request body. The body accepts `mobile`, `cardid`, or `cloudId`; the returned `code` field may be null.
+Live testing shows that 0701 requires `method=getvipmember` in the query string and a JSON request body. The body accepts `mobile`, `cardid`, or `cloudId`; no matching member returns `code=501`, `msg=没有匹配到会员资料！`, and `data=null`, which the adapter maps to an empty list. The local member endpoint registers an empty 0701 result through 0702, then queries 0701 again. Registration uses the mobile as the vendor `name` and `alias`, with zero initial score and balances. 0702 requires a Store-specific `memberCardTypeId`.
 
 ## Controllers
 
@@ -76,7 +77,8 @@ Liansheng is configured per Store. Every Liansheng controller or payment request
     "appCode": "...",
     "appSecret": "...",
     "userId": "1",
-    "pointRefundExpiryDate": "2099-12-31"
+    "pointRefundExpiryDate": "2099-12-31",
+    "memberCardTypeId": "..."
   }
 }
 ```

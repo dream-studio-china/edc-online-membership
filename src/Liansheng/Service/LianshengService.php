@@ -47,13 +47,81 @@ final class LianshengService implements LianshengServiceInterface
             throw new \InvalidArgumentException('Liansheng member mobile must not be empty.');
         }
 
-        return $this->requestEnvelopeData('GET', '/api/vip.api', [
+        $response = $this->request('GET', '/api/vip.api', [
             'headers' => ['Token' => $this->getToken()],
             'query' => [
                 'method' => 'getvipmember',
             ],
             'json' => ['mobile' => $mobile],
         ]);
+        if (($response['code'] ?? null) === 501 && ($response['msg'] ?? null) === '没有匹配到会员资料！') {
+            return [];
+        }
+
+        $code = $response['code'] ?? null;
+        if ($code !== 0 && $code !== '0') {
+            throw new LianshengApiException(sprintf(
+                'Liansheng API request failed: %s',
+                is_string($response['msg'] ?? null) ? $response['msg'] : 'unknown error',
+            ));
+        }
+
+        $data = $response['data'] ?? null;
+        if (!is_array($data)) {
+            throw new LianshengApiException('Liansheng API response did not contain array data.');
+        }
+
+        return $data;
+    }
+
+    public function registerMemberByMobile(string $mobile): array
+    {
+        $mobile = trim($mobile);
+        if ($mobile === '') {
+            throw new \InvalidArgumentException('Liansheng member mobile must not be empty.');
+        }
+        $cardTypeId = $this->configuration()['memberCardTypeId'] ?? null;
+        if (!is_string($cardTypeId) || $cardTypeId === '') {
+            throw new LianshengApiException('settings.liansheng.memberCardTypeId must be configured to register members.');
+        }
+
+        $response = $this->request('POST', '/api/vip.api', [
+            'headers' => ['Token' => $this->getToken()],
+            'query' => ['method' => 'addvip'],
+            'json' => [
+                'id' => '',
+                'code' => '',
+                'cardtypeId' => $cardTypeId,
+                'cardtypeName' => '',
+                'name' => $mobile,
+                'alias' => $mobile,
+                'sex' => '',
+                'mobile' => $mobile,
+                'birthtype' => '',
+                'birthday' => '',
+                'score' => '0',
+                'balance' => '0',
+                'extbalance' => '0',
+                'totalbalance' => '0',
+                'salesman' => '',
+                'expirydate' => '',
+                'available' => '',
+            ],
+        ]);
+
+        if ($response === []) {
+            return [];
+        }
+
+        $code = $response['code'] ?? null;
+        if ($code !== 0 && $code !== '0') {
+            throw new LianshengApiException(sprintf(
+                'Liansheng API request failed: %s',
+                is_string($response['msg'] ?? null) ? $response['msg'] : 'unknown error',
+            ));
+        }
+
+        return $response;
     }
 
     public function getMemberScoreBook(?string $mobile = null, ?string $vipId = null): array
@@ -222,7 +290,7 @@ final class LianshengService implements LianshengServiceInterface
     }
 
     /**
-     * @return array{store: Store, baseUrl: string, appCode: string, appSecret: string, userId: string, pointRefundExpiryDate?: string}
+     * @return array{store: Store, baseUrl: string, appCode: string, appSecret: string, userId: string, pointRefundExpiryDate?: string, memberCardTypeId?: string}
      */
     private function configuration(): array
     {
@@ -260,8 +328,14 @@ final class LianshengService implements LianshengServiceInterface
             }
             $configuration['pointRefundExpiryDate'] = trim($liansheng['pointRefundExpiryDate']);
         }
+        if (isset($liansheng['memberCardTypeId'])) {
+            if (!is_string($liansheng['memberCardTypeId'])) {
+                throw new LianshengApiException('settings.liansheng.memberCardTypeId must be a string.');
+            }
+            $configuration['memberCardTypeId'] = trim($liansheng['memberCardTypeId']);
+        }
 
-        /** @var array{store: Store, baseUrl: string, appCode: string, appSecret: string, userId: string, pointRefundExpiryDate?: string} $configuration */
+        /** @var array{store: Store, baseUrl: string, appCode: string, appSecret: string, userId: string, pointRefundExpiryDate?: string, memberCardTypeId?: string} $configuration */
         return $configuration;
     }
 

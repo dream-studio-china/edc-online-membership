@@ -22,6 +22,13 @@ interface LianshengServiceInterface
     public function getMemberByMobile(string $mobile): array;
 
     /**
+     * Registers a member through API 0702.
+     *
+     * @return array<string, mixed> Raw vendor response envelope, or an empty array.
+     */
+    public function registerMemberByMobile(string $mobile): array;
+
+    /**
      * @return array<string, mixed> 0704 paginated member point ledger.
      */
     public function getMemberScoreBook(?string $mobile = null, ?string $vipId = null): array;

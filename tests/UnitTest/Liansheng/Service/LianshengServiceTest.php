@@ -76,6 +76,76 @@ final class LianshengServiceTest extends TestCase
         self::assertContains('Token: store-token', $reportResponse->getRequestOptions()['headers']);
     }
 
+    public function testTreatsVendorMemberNotFoundResponseAsAnEmptyList(): void
+    {
+        $tokenResponse = new MockResponse(json_encode([
+            'code' => 0,
+            'data' => ['id' => 'store-token', 'expiremins' => 60],
+        ], JSON_THROW_ON_ERROR));
+        $memberResponse = new MockResponse(json_encode([
+            'code' => 501,
+            'msg' => '没有匹配到会员资料！',
+            'data' => null,
+        ], JSON_THROW_ON_ERROR));
+        $service = $this->service([$tokenResponse, $memberResponse]);
+
+        self::assertSame([], $service->getMemberByMobile('13937124718'));
+    }
+
+    public function testRegistersMemberUsing0702(): void
+    {
+        $tokenResponse = new MockResponse(json_encode([
+            'code' => 0,
+            'data' => ['id' => 'store-token', 'expiremins' => 60],
+        ], JSON_THROW_ON_ERROR));
+        $registrationResponse = new MockResponse(json_encode([
+            'code' => 0,
+            'msg' => 'OK',
+            'data' => null,
+        ], JSON_THROW_ON_ERROR));
+        $service = $this->service([$tokenResponse, $registrationResponse], [
+            'baseUrl' => 'https://example.test/web',
+            'appCode' => 'app-code',
+            'appSecret' => 'app-secret',
+            'userId' => '1',
+            'memberCardTypeId' => 'card-type-id',
+        ]);
+
+        self::assertSame(0, $service->registerMemberByMobile('13802542123')['code']);
+        self::assertSame('POST', $registrationResponse->getRequestMethod());
+        self::assertSame('https://example.test/web/api/vip.api?method=addvip', $registrationResponse->getRequestUrl());
+        self::assertContains('Token: store-token', $registrationResponse->getRequestOptions()['headers']);
+        self::assertSame([
+            'id' => '',
+            'code' => '',
+            'cardtypeId' => 'card-type-id',
+            'cardtypeName' => '',
+            'name' => '13802542123',
+            'alias' => '13802542123',
+            'sex' => '',
+            'mobile' => '13802542123',
+            'birthtype' => '',
+            'birthday' => '',
+            'score' => '0',
+            'balance' => '0',
+            'extbalance' => '0',
+            'totalbalance' => '0',
+            'salesman' => '',
+            'expirydate' => '',
+            'available' => '',
+        ], json_decode($registrationResponse->getRequestOptions()['body'], true, 512, JSON_THROW_ON_ERROR));
+    }
+
+    public function testRequiresConfiguredCardTypeToRegisterMember(): void
+    {
+        $service = $this->service([]);
+
+        $this->expectException(LianshengApiException::class);
+        $this->expectExceptionMessage('settings.liansheng.memberCardTypeId must be configured');
+
+        $service->registerMemberByMobile('13937124718');
+    }
+
     public function testRejectsApiErrors(): void
     {
         $service = $this->service([new MockResponse(json_encode([

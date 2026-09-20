@@ -73,7 +73,22 @@ final class LianshengController extends RestController
         }
 
         try {
-            return $this->externalSuccess($this->lianshengService->getMemberByMobile($mobile));
+            $member = $this->lianshengService->getMemberByMobile($mobile);
+            if ($member === []) {
+                $registrationException = null;
+                try {
+                    $this->lianshengService->registerMemberByMobile($mobile);
+                } catch (LianshengApiException $exception) {
+                    // A concurrent request may have registered the same mobile first.
+                    $registrationException = $exception;
+                }
+                $member = $this->lianshengService->getMemberByMobile($mobile);
+                if ($member === []) {
+                    throw $registrationException ?? new LianshengApiException('Liansheng member was not found after registration.');
+                }
+            }
+
+            return $this->externalSuccess($member);
         } catch (LianshengApiException $exception) {
             return $this->warning($exception->getMessage(), 1, null, Response::HTTP_BAD_GATEWAY);
         }
