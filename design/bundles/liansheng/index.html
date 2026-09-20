@@ -3123,7 +3123,7 @@
 </tr>
 <tr>
 <td><code>GET</code></td>
-<td><code>/api/v1/app/liansheng/member?mobile=...</code></td>
+<td><code>/api/v1/app/liansheng/member</code></td>
 <td><code>ROLE_USER</code></td>
 <td>0701</td>
 </tr>
@@ -3154,7 +3154,7 @@
 </tbody>
 </table>
 <p>Controllers own local request validation, response envelopes, authorization, and mapping vendor failures to HTTP 502. The 0102 token ID is internal and is removed from the store response.</p>
-<p>Every Liansheng endpoint requires <code>X-Store-Code</code>; it selects the Store-specific Liansheng configuration and token. The Manage 0703 endpoint accepts <code>mobile</code>, <code>dirflag</code> (<code>-</code>/<code>+</code>), positive integer <code>points</code>, stable <code>reference</code>, non-empty <code>roomtable</code>, and non-empty <code>remarks</code>. It derives the mutually exclusive <code>creditscore</code>/<code>debitscore</code> fields and delegates to the same Service used by the payment Gateway.</p>
+<p>Every Liansheng endpoint requires <code>X-Store-Code</code>; it selects the Store-specific Liansheng configuration and token. App <code>/member</code> queries the current authenticated User's <code>phone</code>, never a client-provided mobile. The Manage 0703 endpoint accepts <code>mobile</code>, <code>dirflag</code> (<code>-</code>/<code>+</code>), positive integer <code>points</code>, stable <code>reference</code>, non-empty <code>roomtable</code>, and non-empty <code>remarks</code>. It derives the mutually exclusive <code>creditscore</code>/<code>debitscore</code> fields and delegates to the same Service used by the payment Gateway.</p>
 <h2 id="payment-gateway">Payment Gateway<a class="headerlink" href="#payment-gateway" title="Permanent link">&para;</a></h2>
 <p><code>LianshengPointGateway</code> implements <code>PaymentGatewayInterface</code> in the Liansheng module and is auto-registered as <code>payment.gateway</code>.</p>
 <table>
