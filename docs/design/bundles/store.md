@@ -824,6 +824,7 @@ Store staff must not use generic Trade `manage/orders` routes, which are platfor
 | GET/POST/DELETE | `/api/v1/store/{scopeId}/assignments` | owner/manager membership | Lists, grants, and revokes active allowlisted Store role assignments. The URL Store fixes assignment scope; employees must already be active members of that Store. |
 | GET | `/api/v1/store/{scopeId}/assignable-roles` | owner/manager membership | Lists Store-scoped roles the manager may grant, with their permissions. |
 | GET | `/api/v1/store/{scopeId}/members` | owner/manager membership | Lists non-revoked Store memberships. |
+| GET/PUT | `/api/v1/store/{scopeId}` | owner/manager membership | View and update the current Store profile (name, timezone, currency, contact, address, settings). |
 
 > `POST .../accept` and `POST .../reject` have been removed. Store acceptance is automatic; rejection is deferred to future inventory.
 
