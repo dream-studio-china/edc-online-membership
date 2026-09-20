@@ -29,6 +29,11 @@ interface LianshengServiceInterface
     public function registerMemberByMobile(string $mobile): array;
 
     /**
+     * @return array<int|string, mixed> Available member card types from API getvipcardtype.
+     */
+    public function getMemberCardTypes(): array;
+
+    /**
      * @return array<string, mixed> 0704 paginated member point ledger.
      */
     public function getMemberScoreBook(?string $mobile = null, ?string $vipId = null): array;

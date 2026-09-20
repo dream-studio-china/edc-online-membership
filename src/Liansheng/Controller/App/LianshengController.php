@@ -75,20 +75,40 @@ final class LianshengController extends RestController
         try {
             $member = $this->lianshengService->getMemberByMobile($mobile);
             if ($member === []) {
-                $registrationException = null;
                 try {
-                    $this->lianshengService->registerMemberByMobile($mobile);
+                    return $this->externalSuccess($this->lianshengService->registerMemberByMobile($mobile));
                 } catch (LianshengApiException $exception) {
                     // A concurrent request may have registered the same mobile first.
-                    $registrationException = $exception;
-                }
-                $member = $this->lianshengService->getMemberByMobile($mobile);
-                if ($member === []) {
-                    throw $registrationException ?? new LianshengApiException('Liansheng member was not found after registration.');
+                    $member = $this->lianshengService->getMemberByMobile($mobile);
+                    if ($member === []) {
+                        throw $exception;
+                    }
                 }
             }
 
             return $this->externalSuccess($member);
+        } catch (LianshengApiException $exception) {
+            return $this->warning($exception->getMessage(), 1, null, Response::HTTP_BAD_GATEWAY);
+        }
+    }
+
+    #[OA\Get(
+        path: '/api/v1/app/liansheng/member-card-types',
+        summary: 'Get Liansheng member card types for registration',
+        parameters: [
+            new OA\Parameter(name: 'X-Store-Code', in: 'header', required: true, schema: new OA\Schema(type: 'string'), example: 'LIANSHENG-TEST'),
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Member card types returned'),
+            new OA\Response(response: 502, description: 'Liansheng API failure'),
+        ],
+        tags: ['Liansheng'],
+    )]
+    #[Route('/member-card-types', name: 'member-card-types', methods: ['GET'])]
+    public function memberCardTypes(): Response
+    {
+        try {
+            return $this->externalSuccess($this->lianshengService->getMemberCardTypes());
         } catch (LianshengApiException $exception) {
             return $this->warning($exception->getMessage(), 1, null, Response::HTTP_BAD_GATEWAY);
         }

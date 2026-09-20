@@ -124,6 +124,17 @@ final class LianshengService implements LianshengServiceInterface
         return $response;
     }
 
+    public function getMemberCardTypes(): array
+    {
+        return $this->requestEnvelopeData('GET', '/api/wx.api', [
+            'headers' => ['Token' => $this->getToken()],
+            'query' => [
+                'method' => 'getvipcardtype',
+                'isamount' => 'F',
+            ],
+        ]);
+    }
+
     public function getMemberScoreBook(?string $mobile = null, ?string $vipId = null): array
     {
         $mobile = trim((string) $mobile);

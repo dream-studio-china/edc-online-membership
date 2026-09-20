@@ -146,6 +146,26 @@ final class LianshengServiceTest extends TestCase
         $service->registerMemberByMobile('13937124718');
     }
 
+    public function testGetsMemberCardTypes(): void
+    {
+        $tokenResponse = new MockResponse(json_encode([
+            'code' => 0,
+            'data' => ['id' => 'store-token', 'expiremins' => 60],
+        ], JSON_THROW_ON_ERROR));
+        $cardTypesResponse = new MockResponse(json_encode([
+            'code' => 0,
+            'data' => [['id' => '3032191', 'name' => 'VIP会员']],
+        ], JSON_THROW_ON_ERROR));
+        $service = $this->service([$tokenResponse, $cardTypesResponse]);
+
+        self::assertSame('3032191', $service->getMemberCardTypes()[0]['id']);
+        self::assertSame(
+            'https://example.test/web/api/wx.api?method=getvipcardtype&isamount=F',
+            $cardTypesResponse->getRequestUrl(),
+        );
+        self::assertContains('Token: store-token', $cardTypesResponse->getRequestOptions()['headers']);
+    }
+
     public function testRejectsApiErrors(): void
     {
         $service = $this->service([new MockResponse(json_encode([

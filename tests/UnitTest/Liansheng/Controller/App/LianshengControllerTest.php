@@ -63,19 +63,33 @@ final class LianshengControllerTest extends TestCase
         self::assertSame('provider unavailable', $this->decode($failure->getContent())['message']);
     }
 
+    public function testReturnsMemberCardTypes(): void
+    {
+        $service = $this->createMock(LianshengServiceInterface::class);
+        $service->expects(self::once())->method('getMemberCardTypes')->willReturn([
+            ['id' => '3032191', 'name' => 'VIP会员'],
+        ]);
+        $controller = $this->controller($service);
+
+        $response = $controller->memberCardTypes();
+
+        self::assertSame(200, $response->getStatusCode());
+        self::assertSame('3032191', $this->decode($response->getContent())['data'][0]['id']);
+    }
+
     public function testRegistersMissingMemberThenReturnsItsProfile(): void
     {
         $service = $this->createMock(LianshengServiceInterface::class);
-        $service->expects(self::exactly(2))->method('getMemberByMobile')
+        $service->expects(self::once())->method('getMemberByMobile')
             ->with('13802542123')
-            ->willReturnOnConsecutiveCalls([], [['code' => '51728662', 'mobile' => '13802542123']]);
-        $service->expects(self::once())->method('registerMemberByMobile')->with('13802542123')->willReturn(['code' => 0]);
+            ->willReturn([]);
+        $service->expects(self::once())->method('registerMemberByMobile')->with('13802542123')->willReturn(['code' => 0, 'msg' => 'OK']);
         $controller = $this->controller($service);
 
         $response = $controller->member(Request::create('/api/v1/app/liansheng/member', 'GET', ['mobile' => '13802542123']));
 
         self::assertSame(200, $response->getStatusCode());
-        self::assertSame('51728662', $this->decode($response->getContent())['data'][0]['code']);
+        self::assertSame(0, $this->decode($response->getContent())['data']['code']);
     }
 
     public function testReturnsMemberCreatedByConcurrentRegistration(): void
@@ -93,19 +107,6 @@ final class LianshengControllerTest extends TestCase
 
         self::assertSame(200, $response->getStatusCode());
         self::assertSame('51728662', $this->decode($response->getContent())['data'][0]['code']);
-    }
-
-    public function testReportsWhenRegisteredMemberCannotBeQueried(): void
-    {
-        $service = $this->createMock(LianshengServiceInterface::class);
-        $service->expects(self::exactly(2))->method('getMemberByMobile')->with('13802542123')->willReturn([]);
-        $service->expects(self::once())->method('registerMemberByMobile')->with('13802542123')->willReturn(['code' => 0]);
-        $controller = $this->controller($service);
-
-        $response = $controller->member(Request::create('/api/v1/app/liansheng/member', 'GET', ['mobile' => '13802542123']));
-
-        self::assertSame(502, $response->getStatusCode());
-        self::assertSame('Liansheng member was not found after registration.', $this->decode($response->getContent())['message']);
     }
 
     public function testReturnsMemberScoreBookByVipId(): void
