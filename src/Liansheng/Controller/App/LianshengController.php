@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Liansheng\Controller\App;
 
 use App\Core\Controller\RestController;
+use App\Identity\Entity\User;
 use App\Liansheng\Exception\LianshengApiException;
 use App\Liansheng\Service\LianshengServiceInterface;
 use OpenApi\Attributes as OA;
@@ -46,34 +47,63 @@ final class LianshengController extends RestController
 
     #[OA\Get(
         path: '/api/v1/app/liansheng/member',
-        summary: 'Get Liansheng member profiles by mobile number',
+        summary: 'Get the current user\'s Liansheng member profile',
         parameters: [
             new OA\Parameter(name: 'X-Store-Code', in: 'header', required: true, schema: new OA\Schema(type: 'string'), example: 'LIANSHENG-TEST'),
-            new OA\Parameter(
-                name: 'mobile',
-                in: 'query',
-                required: true,
-                schema: new OA\Schema(type: 'string'),
-                example: '13802542123',
-            ),
         ],
         responses: [
             new OA\Response(response: 200, description: 'Member profile returned'),
-            new OA\Response(response: 400, description: 'Mobile number missing'),
+            new OA\Response(response: 400, description: 'Current user has no phone number'),
             new OA\Response(response: 502, description: 'Liansheng API failure'),
         ],
         tags: ['Liansheng'],
     )]
     #[Route('/member', name: 'member', methods: ['GET'])]
-    public function member(Request $request): Response
+    public function member(): Response
     {
-        $mobile = trim((string) $request->query->get('mobile', ''));
+        $user = $this->getUser();
+        $mobile = $user instanceof User ? trim((string) $user->getPhone()) : '';
         if ($mobile === '') {
-            return $this->warning('mobile is required.', 1, null, Response::HTTP_BAD_REQUEST);
+            return $this->warning('Current user must have a phone number.', 1, null, Response::HTTP_BAD_REQUEST);
         }
 
         try {
-            return $this->externalSuccess($this->lianshengService->getMemberByMobile($mobile));
+            $member = $this->lianshengService->getMemberByMobile($mobile);
+            if ($member === []) {
+                try {
+                    return $this->externalSuccess($this->lianshengService->registerMemberByMobile($mobile));
+                } catch (LianshengApiException $exception) {
+                    // A concurrent request may have registered the same mobile first.
+                    $member = $this->lianshengService->getMemberByMobile($mobile);
+                    if ($member === []) {
+                        throw $exception;
+                    }
+                }
+            }
+
+            return $this->externalSuccess($member);
+        } catch (LianshengApiException $exception) {
+            return $this->warning($exception->getMessage(), 1, null, Response::HTTP_BAD_GATEWAY);
+        }
+    }
+
+    #[OA\Get(
+        path: '/api/v1/app/liansheng/member-card-types',
+        summary: 'Get Liansheng member card types for registration',
+        parameters: [
+            new OA\Parameter(name: 'X-Store-Code', in: 'header', required: true, schema: new OA\Schema(type: 'string'), example: 'LIANSHENG-TEST'),
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Member card types returned'),
+            new OA\Response(response: 502, description: 'Liansheng API failure'),
+        ],
+        tags: ['Liansheng'],
+    )]
+    #[Route('/member-card-types', name: 'member-card-types', methods: ['GET'])]
+    public function memberCardTypes(): Response
+    {
+        try {
+            return $this->externalSuccess($this->lianshengService->getMemberCardTypes());
         } catch (LianshengApiException $exception) {
             return $this->warning($exception->getMessage(), 1, null, Response::HTTP_BAD_GATEWAY);
         }
