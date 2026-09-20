@@ -24,7 +24,6 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 #[Route('/store/{scopeId}', name: 'store-', requirements: ['scopeId' => '\d+|[0-9a-fA-F-]{36}'])]
@@ -42,9 +41,6 @@ final class AssignmentController extends RestController
         private readonly \Doctrine\ORM\EntityManagerInterface $em,
         private readonly AuthorizationAuditService $auditService,
         private readonly AuthorizationCacheInvalidator $cacheInvalidator,
-        /** @var list<string> */
-        #[Autowire('%store.staff_assignable_role_codes%')]
-        private readonly array $assignableRoleCodes,
     ) {
     }
 
@@ -81,21 +77,9 @@ final class AssignmentController extends RestController
     {
         try {
             $this->storeForManagement();
-            $roles = $this->assignableRoleCodes === []
-                ? []
-                : $this->roleRepository->findBy(['scopeType' => Role::SCOPE_STORE, 'code' => $this->assignableRoleCodes]);
-            $byCode = [];
-            foreach ($roles as $role) {
-                $byCode[$role->getCode()] = $role;
-            }
-            $ordered = [];
-            foreach ($this->assignableRoleCodes as $code) {
-                if (isset($byCode[$code])) {
-                    $ordered[] = $this->roleData($byCode[$code]);
-                }
-            }
+            $roles = $this->roleRepository->findBy(['scopeType' => Role::SCOPE_STORE], ['code' => 'ASC']);
 
-            return $this->success($ordered);
+            return $this->success(array_map($this->roleData(...), $roles));
         } catch (AccessDeniedHttpException $exception) {
             return $this->warning($exception->getMessage(), 1, null, Response::HTTP_FORBIDDEN);
         } catch (NotFoundHttpException $exception) {
@@ -105,7 +89,7 @@ final class AssignmentController extends RestController
 
     #[OA\Post(
         path: '/api/v1/store/{scopeId}/assignments',
-        summary: 'Grant an allowlisted Store role to an active Store member',
+        summary: 'Grant a Store-scoped role to an active Store member',
         requestBody: new OA\RequestBody(required: true, content: new OA\JsonContent(required: ['userUuid', 'roleUuid'], properties: [
             new OA\Property(property: 'userUuid', type: 'string', format: 'uuid'),
             new OA\Property(property: 'roleUuid', type: 'string', format: 'uuid'),
@@ -140,8 +124,8 @@ final class AssignmentController extends RestController
             if (!$role instanceof Role) {
                 throw new NotFoundHttpException('Role not found.');
             }
-            if ($role->getScopeType() !== Role::SCOPE_STORE || !in_array($role->getCode(), $this->assignableRoleCodes, true)) {
-                throw new \InvalidArgumentException('Role is not assignable by Store managers.');
+            if ($role->getScopeType() !== Role::SCOPE_STORE) {
+                throw new \InvalidArgumentException('Only Store-scoped roles can be assigned.');
             }
 
             $assignment = $this->assignmentRepository->findActiveAssignment($userUuid, $role, Assignment::SCOPE_STORE, $store->getUuid());
