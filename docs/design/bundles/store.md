@@ -821,6 +821,7 @@ Store staff must not use generic Trade `manage/orders` routes, which are platfor
 | GET | `/api/v1/store/manage/orders/{uuid}` | active member | StoreOrder operational detail |
 | POST | `/api/v1/store/manage/orders/{uuid}/fulfill` | fulfillment/manager/owner (`store:order:fulfill`) | Mark Store operation `fulfilled` (local transition; fulfilled -> fulfilled). Triggers `OrderVerificationCompletionListener` auto-complete if `_storeVerificationReceived` already true. |
 | POST | `/api/v1/store/{scopeId}/orders/{uuid}/verify` | fulfillment/manager/owner (`store:order:verify`) | Store verification post-fulfill — requires `StoreOrder.isVerificationRequired()=true` (snapshotted, not live settings) and `operationalStatus=fulfilled`; body is empty (`{}`); uses order UUID as verification token. Transitions `fulfilled -> verified` and emits `store.order.verified.v1` with `verifiedAt/verifiedBy` (no `verificationCode`). Staff `userUuid` is taken from the authenticated Identity user. |
+| GET/POST/DELETE | `/api/v1/store/{scopeId}/assignments` | owner/manager membership | Lists, grants, and revokes active allowlisted Store role assignments. The URL Store fixes assignment scope; employees must already be active members of that Store. |
 
 > `POST .../accept` and `POST .../reject` have been removed. Store acceptance is automatic; rejection is deferred to future inventory.
 
@@ -850,6 +851,7 @@ All actions check membership against the `StoreOrder`'s local `Store` relation, 
 4. `ROLE_ADMIN` bypasses membership checks only on explicitly administrative routes.
 5. Store staff cannot elevate a Trade order's commercial status directly.
 6. Store staff actions (`fulfill`, `verify`) produce Store events; Trade applies commercial `complete` only through `StoreOrderVerifiedHandler` + `OrderCompletionGuardListener`/`OrderVerificationCompletionListener` and workflow guards.
+7. Store owners and managers may manage assignments only in their own Store. Administrators define Store-scoped roles and their permissions through the existing Manage Authorization APIs. The `store.staff_assignable_role_codes` configuration controls which role codes managers may grant (default: `store_catalog_manager`, `store_order_operator`, `store_fulfillment_operator`); they cannot create global assignments, edit role definitions, or assign non-allowlisted roles.
 
 ---
 

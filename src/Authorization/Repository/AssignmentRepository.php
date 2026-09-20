@@ -58,6 +58,23 @@ class AssignmentRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    /** @return list<Assignment> */
+    public function findActiveByStoreScope(string $storeUuid): array
+    {
+        return $this->createQueryBuilder('a')
+            ->addSelect('role', 'permission')
+            ->join('a.role', 'role')
+            ->leftJoin('role.permissions', 'permission')
+            ->andWhere('a.scopeType = :scopeType')
+            ->andWhere('a.scopeUuid = :scopeUuid')
+            ->andWhere('a.revokedAt IS NULL')
+            ->setParameter('scopeType', Assignment::SCOPE_STORE)
+            ->setParameter('scopeUuid', $storeUuid)
+            ->orderBy('a.createdAt', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
     /**
      * @return list<string>
      */

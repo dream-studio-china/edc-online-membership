@@ -264,6 +264,118 @@ final class StaffCatalogAuthorizationTest extends IntegrationWebTestCase
         self::assertNull($assign->getRevokedAt(), 'assignment not revoked, membership is suspended');
     }
 
+    public function testManagersManageOnlyTheirStoreAssignments(): void
+    {
+        $client = static::createClient();
+        $this->seedAuthorization($client);
+        $adminToken = $this->createAdminAndGetToken($client);
+        $admin = $this->findUserByEmail('testadmin@example.com');
+        $suffix = bin2hex(random_bytes(3));
+        $storeA = $this->createStore($client, $adminToken, 'assignment-a-'.$suffix, 'Assignment Store A');
+        $storeB = $this->createStore($client, $adminToken, 'assignment-b-'.$suffix, 'Assignment Store B');
+        self::assertNotNull($storeA);
+        self::assertNotNull($storeB);
+
+        $manager = $this->createUser('assignment-manager-'.$suffix.'@pilot.test', 'assignment-manager-'.$suffix);
+        $owner = $this->createUser('assignment-owner-'.$suffix.'@pilot.test', 'assignment-owner-'.$suffix);
+        $clerk = $this->createUser('assignment-clerk-'.$suffix.'@pilot.test', 'assignment-clerk-'.$suffix);
+        $fulfillment = $this->createUser('assignment-fulfillment-'.$suffix.'@pilot.test', 'assignment-fulfillment-'.$suffix);
+        $employee = $this->createUser('assignment-employee-'.$suffix.'@pilot.test', 'assignment-employee-'.$suffix);
+        $outsider = $this->createUser('assignment-outsider-'.$suffix.'@pilot.test', 'assignment-outsider-'.$suffix);
+        $managerB = $this->createUser('assignment-manager-b-'.$suffix.'@pilot.test', 'assignment-manager-b-'.$suffix);
+
+        foreach ([[$manager, 'manager'], [$owner, 'owner'], [$clerk, 'clerk'], [$fulfillment, 'fulfillment'], [$employee, 'clerk'], [$admin, 'owner']] as [$user, $role]) {
+            $this->grantMembership($client, $adminToken, (string) $storeA, $user->getUuid(), $role);
+        }
+        $this->grantMembership($client, $adminToken, (string) $storeB, $managerB->getUuid(), 'manager');
+
+        $em = $client->getContainer()->get(EntityManagerInterface::class);
+        $catalogRole = $em->getRepository(Role::class)->findOneBy(['code' => 'store_catalog_manager']);
+        $globalRole = $em->getRepository(Role::class)->findOneBy(['code' => 'authorization_administrator']);
+        self::assertInstanceOf(Role::class, $catalogRole);
+        self::assertInstanceOf(Role::class, $globalRole);
+
+        $managerToken = $this->loginAndGetToken($manager->getEmail(), client: $client);
+        $ownerToken = $this->loginAndGetToken($owner->getEmail(), client: $client);
+        $clerkToken = $this->loginAndGetToken($clerk->getEmail(), client: $client);
+        $fulfillmentToken = $this->loginAndGetToken($fulfillment->getEmail(), client: $client);
+        $outsiderToken = $this->loginAndGetToken($outsider->getEmail(), client: $client);
+        $managerBToken = $this->loginAndGetToken($managerB->getEmail(), client: $client);
+        $employeeToken = $this->loginAndGetToken($employee->getEmail(), client: $client);
+
+        $client->setServerParameter('HTTP_AUTHORIZATION', 'Bearer '.$managerToken);
+        $client->request('GET', sprintf('/api/v1/store/%s/assignments', $storeA));
+        self::assertResponseStatusCodeSame(200);
+
+        $client->jsonRequest('POST', sprintf('/api/v1/store/%s/assignments', $storeA), [
+            'userUuid' => $employee->getUuid(),
+            'roleUuid' => $catalogRole->getUuid(),
+        ]);
+        self::assertResponseStatusCodeSame(201, $client->getResponse()->getContent());
+        $assignment = $this->decodeJson($client)['data'];
+        self::assertSame($employee->getUuid(), $assignment['userUuid']);
+        self::assertSame((string) $storeA, $assignment['scopeUuid']);
+        self::assertSame('store_catalog_manager', $assignment['role']['code']);
+        $assignmentUuid = $assignment['uuid'];
+
+        $client->jsonRequest('POST', sprintf('/api/v1/store/%s/assignments', $storeA), [
+            'userUuid' => $employee->getUuid(),
+            'roleUuid' => $catalogRole->getUuid(),
+        ]);
+        self::assertResponseStatusCodeSame(200);
+        self::assertSame($assignmentUuid, $this->decodeJson($client)['data']['uuid']);
+
+        $client->setServerParameter('HTTP_AUTHORIZATION', 'Bearer '.$employeeToken);
+        $client->request('GET', sprintf('/api/v1/store/%s/products', $storeA));
+        self::assertResponseStatusCodeSame(200, $client->getResponse()->getContent());
+
+        $client->setServerParameter('HTTP_AUTHORIZATION', 'Bearer '.$managerToken);
+        $client->jsonRequest('POST', sprintf('/api/v1/store/%s/assignments', $storeA), [
+            'userUuid' => $employee->getUuid(),
+            'roleUuid' => $catalogRole->getUuid(),
+            'scopeType' => 'global',
+        ]);
+        self::assertResponseStatusCodeSame(400);
+
+        $client->jsonRequest('POST', sprintf('/api/v1/store/%s/assignments', $storeA), [
+            'userUuid' => $employee->getUuid(),
+            'roleUuid' => $globalRole->getUuid(),
+        ]);
+        self::assertResponseStatusCodeSame(400);
+
+        $client->jsonRequest('POST', sprintf('/api/v1/store/%s/assignments', $storeA), [
+            'userUuid' => $outsider->getUuid(),
+            'roleUuid' => $catalogRole->getUuid(),
+        ]);
+        self::assertResponseStatusCodeSame(403);
+
+        foreach ([$clerkToken, $fulfillmentToken, $outsiderToken, $managerBToken] as $token) {
+            $client->setServerParameter('HTTP_AUTHORIZATION', 'Bearer '.$token);
+            $client->request('GET', sprintf('/api/v1/store/%s/assignments', $storeA));
+            self::assertResponseStatusCodeSame(403, $client->getResponse()->getContent());
+        }
+
+        $client->setServerParameter('HTTP_AUTHORIZATION', 'Bearer '.$ownerToken);
+        $client->request('GET', sprintf('/api/v1/store/%s/assignments', $storeA));
+        self::assertResponseStatusCodeSame(200);
+
+        $crossStoreAssignment = $this->grantAssignment($client, $adminToken, $employee->getUuid(), 'store_catalog_manager', 'store', (string) $storeB);
+        $client->setServerParameter('HTTP_AUTHORIZATION', 'Bearer '.$managerToken);
+        $client->request('GET', sprintf('/api/v1/store/%s/assignments', $storeA));
+        self::assertResponseStatusCodeSame(200);
+        $visibleAssignmentUuids = array_column($this->decodeJson($client)['data'], 'uuid');
+        self::assertNotContains($crossStoreAssignment, $visibleAssignmentUuids);
+        $client->request('DELETE', sprintf('/api/v1/store/%s/assignments/%s', $storeA, $crossStoreAssignment));
+        self::assertResponseStatusCodeSame(404);
+
+        $client->request('DELETE', sprintf('/api/v1/store/%s/assignments/%s', $storeA, $assignmentUuid));
+        self::assertResponseStatusCodeSame(204, $client->getResponse()->getContent());
+
+        $client->setServerParameter('HTTP_AUTHORIZATION', 'Bearer '.$employeeToken);
+        $client->request('GET', sprintf('/api/v1/store/%s/products', $storeA));
+        self::assertResponseStatusCodeSame(403, $client->getResponse()->getContent());
+    }
+
     private function createStore(KernelBrowser $client, string $adminToken, string $code, string $name): ?string
     {
         $client->setServerParameter('HTTP_AUTHORIZATION', 'Bearer ' . $adminToken);
