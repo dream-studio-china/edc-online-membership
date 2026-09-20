@@ -307,6 +307,17 @@ final class StaffCatalogAuthorizationTest extends IntegrationWebTestCase
         $client->request('GET', sprintf('/api/v1/store/%s/assignments', $storeA));
         self::assertResponseStatusCodeSame(200);
 
+        $client->request('GET', sprintf('/api/v1/store/%s/members', $storeA));
+        self::assertResponseStatusCodeSame(200, $client->getResponse()->getContent());
+        $members = $this->decodeJson($client)['data'];
+        $memberUuids = array_column($members, 'userUuid');
+        self::assertContains($employee->getUuid(), $memberUuids);
+
+        $client->setServerParameter('HTTP_AUTHORIZATION', 'Bearer '.$clerkToken);
+        $client->request('GET', sprintf('/api/v1/store/%s/members', $storeA));
+        self::assertResponseStatusCodeSame(403, $client->getResponse()->getContent());
+        $client->setServerParameter('HTTP_AUTHORIZATION', 'Bearer '.$managerToken);
+
         $client->jsonRequest('POST', sprintf('/api/v1/store/%s/assignments', $storeA), [
             'userUuid' => $employee->getUuid(),
             'roleUuid' => $catalogRole->getUuid(),
