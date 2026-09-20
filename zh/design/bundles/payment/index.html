@@ -5555,6 +5555,9 @@ Wallet balance deduction belongs to Wallet as a provider implementation. Payment
 <div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="x">public const PAYMENT_MOCK = 'mock';</span>
 <a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="x">public const PAYMENT_WALLET = 'wallet';</span>
 <a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="x">public const PAYMENT_WECHAT = 'wechat';</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="x">public const PAYMENT_LIANSHENG_POINT = 'liansheng_point';</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="x">public const CURRENCY_LIANSHENG_POINT = 'LIANSHENG_POINT';</span>
 </code></pre></div>
 <p>Provider constants such as <code>fuiou</code>, <code>fuiou-pos</code>, <code>huifu</code>, and <code>huifu-pos</code> are reserved for future adapters. They MUST NOT be used until concrete adapters exist.</p>
 <h3 id="36-constraints">3.6 Constraints<a class="headerlink" href="#36-constraints" title="Permanent link">&para;</a></h3>
@@ -6139,10 +6142,16 @@ Wallet balance deduction belongs to Wallet as a provider implementation. Payment
 <td>WeChat Pay adapter implemented in Wechat module and tagged as <code>payment.gateway</code></td>
 <td>Optional/provider-dependent</td>
 </tr>
+<tr>
+<td><code>liansheng_point</code></td>
+<td>Synchronous Liansheng 0703 member-points deduction implemented in Liansheng; only for <code>LIANSHENG_POINT</code> invoices</td>
+<td>Optional/provider-dependent</td>
+</tr>
 </tbody>
 </table>
 <p><code>mock</code> is a fake external gateway for tests and local development. It does not move wallet funds and must not be treated as wallet payment. It simulates provider pay/notify/refund behavior and is useful for validating invoice workflow, adjustments, and Trade integration without real provider credentials.</p>
 <p>When used with adjustments, <code>mock</code> notify amount MUST equal the explicit gateway payment amount, not the invoice gross amount.</p>
+<p><code>liansheng_point</code> is a unit-of-account gateway rather than a fiat-money gateway. Its explicit integer <code>$amount</code> is the number of points sent as <code>debitscore</code>; the usual cents-to-decimal conversion does not apply. It requires the payer's verified phone from the local User record, uses <code>Invoice::outTradeNo</code> as the stable provider reference, and returns <code>paid</code> from the same request only after 0703 succeeds. Liansheng configuration is resolved from the active Store's <code>settings.liansheng</code> selected by <code>X-Store-Code</code>. It has no asynchronous notify path. Refunds synchronously credit points through the same provider endpoint (<code>dirflag=+</code>) and support full or partial amounts; their stable references are <code>outTradeNo-R{cumulativeRefundedPoints}</code>.</p>
 <h3 id="64-future-provider-gateways">6.4 Future Provider Gateways<a class="headerlink" href="#64-future-provider-gateways" title="Permanent link">&para;</a></h3>
 <p>Future provider adapters MUST live under Payment gateway namespaces and MUST NOT be standalone legacy bundles.</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a>src/Payment/Service/Gateway/Fuiou/

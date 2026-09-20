@@ -4480,6 +4480,10 @@
 <td><code>wechat</code></td>
 <td>WeChat Pay gateway, including Mini Program JSAPI payment, if configured</td>
 </tr>
+<tr>
+<td><code>liansheng_point</code></td>
+<td>Synchronous Liansheng member-points deduction for invoices whose currency is <code>LIANSHENG_POINT</code></td>
+</tr>
 </tbody>
 </table>
 <p>Common payment options:</p>
@@ -4554,7 +4558,7 @@
 <a id="__codelineno-23-27" name="__codelineno-23-27" href="#__codelineno-23-27"></a><span class="w">  </span><span class="nt">"message"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Payment started"</span>
 <a id="__codelineno-23-28" name="__codelineno-23-28" href="#__codelineno-23-28"></a><span class="p">}</span>
 </code></pre></div>
-<p>If payment completes synchronously, such as <code>wallet</code> or <code>mock</code> with <code>autoPaid: true</code>, the returned <code>status</code> is <code>paid</code>, invoice status becomes <code>paid</code>, and linked order status becomes <code>paid</code> automatically.</p>
+<p>If payment completes synchronously, such as <code>wallet</code>, <code>liansheng_point</code>, or <code>mock</code> with <code>autoPaid: true</code>, the returned <code>status</code> is <code>paid</code>, invoice status becomes <code>paid</code>, and linked order status becomes <code>paid</code> automatically. For <code>liansheng_point</code>, the integer invoice amount is a number of points (not cents), the payer must have a verified phone, and refunds synchronously restore points through 0703.</p>
 <h2 id="wechat-mini-program-payment">WeChat Mini Program Payment<a class="headerlink" href="#wechat-mini-program-payment" title="Permanent link">&para;</a></h2>
 <p>WeChat Mini Program payment uses the <code>wechat</code> payment gateway with <code>tradeType: "jsapi"</code>.</p>
 <h3 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h3>
