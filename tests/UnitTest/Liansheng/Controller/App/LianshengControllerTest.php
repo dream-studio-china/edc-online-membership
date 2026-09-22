@@ -80,22 +80,36 @@ final class LianshengControllerTest extends TestCase
         self::assertSame('3032191', $this->decode($response->getContent())['data'][0]['id']);
     }
 
-    // TEMP-DISABLED: auto-register is commented out in App\LianshengController::member()
-    // until supplier 0702 stops returning code 500 with null msg. Missing members
-    // now return empty data instead of registering.
-    public function testReturnsEmptyProfileWhenMemberIsMissing(): void
+    public function testRegistersMissingMemberThenReturnsItsProfile(): void
     {
         $service = $this->createMock(LianshengServiceInterface::class);
         $service->expects(self::once())->method('getMemberByMobile')
             ->with('13802542123')
             ->willReturn([]);
-        $service->expects(self::never())->method('registerMemberByMobile');
+        $service->expects(self::once())->method('registerMemberByMobile')->with('13802542123')->willReturn(['code' => 0, 'msg' => 'OK']);
         $controller = $this->controller($service, $this->user('13802542123'));
 
         $response = $controller->member();
 
         self::assertSame(200, $response->getStatusCode());
-        self::assertSame([], $this->decode($response->getContent())['data']);
+        self::assertSame(0, $this->decode($response->getContent())['data']['code']);
+    }
+
+    public function testReturnsMemberCreatedByConcurrentRegistration(): void
+    {
+        $service = $this->createMock(LianshengServiceInterface::class);
+        $service->expects(self::exactly(2))->method('getMemberByMobile')
+            ->with('13802542123')
+            ->willReturnOnConsecutiveCalls([], [['code' => '51728662', 'mobile' => '13802542123']]);
+        $service->expects(self::once())->method('registerMemberByMobile')
+            ->with('13802542123')
+            ->willThrowException(new LianshengApiException('member already exists'));
+        $controller = $this->controller($service, $this->user('13802542123'));
+
+        $response = $controller->member();
+
+        self::assertSame(200, $response->getStatusCode());
+        self::assertSame('51728662', $this->decode($response->getContent())['data'][0]['code']);
     }
 
     public function testReturnsMemberScoreBookByVipId(): void
