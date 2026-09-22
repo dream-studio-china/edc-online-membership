@@ -112,6 +112,23 @@ final class LianshengControllerTest extends TestCase
         self::assertSame('51728662', $this->decode($response->getContent())['data'][0]['code']);
     }
 
+    public function testDegradesToEmptyProfileWhenRegistrationFails(): void
+    {
+        $service = $this->createMock(LianshengServiceInterface::class);
+        $service->expects(self::exactly(2))->method('getMemberByMobile')
+            ->with('13802542123')
+            ->willReturn([]);
+        $service->expects(self::once())->method('registerMemberByMobile')
+            ->with('13802542123')
+            ->willThrowException(new LianshengApiException('Liansheng API request failed: unknown error'));
+        $controller = $this->controller($service, $this->user('13802542123'));
+
+        $response = $controller->member();
+
+        self::assertSame(200, $response->getStatusCode());
+        self::assertSame([], $this->decode($response->getContent())['data']);
+    }
+
     public function testReturnsMemberScoreBookByVipId(): void
     {
         $service = $this->createMock(LianshengServiceInterface::class);
