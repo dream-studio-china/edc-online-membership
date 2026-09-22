@@ -9,6 +9,10 @@ use App\Liansheng\Service\LianshengService;
 use App\Store\Entity\Store;
 use App\Store\Repository\StoreRepository;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\AbstractLogger;
+use Psr\Log\LoggerInterface;
+use Psr\Log\LogLevel;
+use Psr\Log\NullLogger;
 use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\MockResponse;
@@ -331,10 +335,101 @@ final class LianshengServiceTest extends TestCase
         ], json_decode($creditResponse->getRequestOptions()['body'], true, 512, JSON_THROW_ON_ERROR));
     }
 
+    public function testLogsRequestParametersAndResponse(): void
+    {
+        $logger = new RecordingLogger();
+        $tokenResponse = new MockResponse(json_encode([
+            'code' => 0,
+            'data' => ['id' => 'store-token', 'expiremins' => 60],
+        ], JSON_THROW_ON_ERROR));
+        $memberResponse = new MockResponse(json_encode([
+            'code' => 0,
+            'msg' => 'OK',
+            'data' => [['code' => '1260735', 'mobile' => '13802542123']],
+        ], JSON_THROW_ON_ERROR));
+        $service = $this->service([$tokenResponse, $memberResponse], null, $logger);
+
+        $service->getMemberByMobile('13802542123');
+
+        self::assertSame([
+            [
+                'method' => 'POST',
+                'url' => 'https://example.test/web/api/open/getapptoken',
+                'query' => [],
+                'json' => ['appCode' => 'app-code', 'appSecret' => '[redacted]', 'userId' => '1'],
+                'headers' => [],
+            ],
+            [
+                'method' => 'POST',
+                'url' => 'https://example.test/web/api/open/getapptoken',
+                'status' => 200,
+                'body' => ['code' => 0, 'data' => ['id' => 'store-token', 'expiremins' => 60]],
+            ],
+            [
+                'method' => 'GET',
+                'url' => 'https://example.test/web/api/vip.api',
+                'query' => ['method' => 'getvipmember'],
+                'json' => ['mobile' => '13802542123'],
+                'headers' => ['Token' => 'store-token'],
+            ],
+            [
+                'method' => 'GET',
+                'url' => 'https://example.test/web/api/vip.api',
+                'status' => 200,
+                'body' => ['code' => 0, 'msg' => 'OK', 'data' => [['code' => '1260735', 'mobile' => '13802542123']]],
+            ],
+        ], array_map(static fn (array $record): array => $record['context'], $logger->records));
+    }
+
+    public function testLogsVendorErrorResponse(): void
+    {
+        $logger = new RecordingLogger();
+        $tokenResponse = new MockResponse(json_encode([
+            'code' => 0,
+            'data' => ['id' => 'store-token', 'expiremins' => 60],
+        ], JSON_THROW_ON_ERROR));
+        $notFoundResponse = new MockResponse(json_encode([
+            'code' => 501,
+            'msg' => '没有匹配到会员资料！',
+            'data' => null,
+        ], JSON_THROW_ON_ERROR));
+        $service = $this->service([$tokenResponse, $notFoundResponse], null, $logger);
+
+        self::assertSame([], $service->getMemberByMobile('13802542123'));
+
+        self::assertTrue($this->hasError($logger, 'Liansheng API returned an error'));
+    }
+
+    public function testLogsTransportFailure(): void
+    {
+        $logger = new RecordingLogger();
+        $service = $this->service([new MockResponse('', ['error' => 'connection refused'])], null, $logger);
+
+        try {
+            $service->getStore();
+            self::fail('Expected a LianshengApiException.');
+        } catch (LianshengApiException $exception) {
+            self::assertStringContainsString('Liansheng API request failed', $exception->getMessage());
+        }
+
+        self::assertTrue($this->hasError($logger, 'Liansheng API request failed'));
+    }
+
+    private function hasError(RecordingLogger $logger, string $message): bool
+    {
+        foreach ($logger->records as $record) {
+            if ($record['level'] === LogLevel::ERROR && str_contains($record['message'], $message)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     /**
      * @param list<MockResponse> $responses
      */
-    private function service(array $responses, ?array $lianshengSettings = null): LianshengService
+    private function service(array $responses, ?array $lianshengSettings = null, ?LoggerInterface $logger = null): LianshengService
     {
         $requestStack = new RequestStack();
         $requestStack->push(Request::create('/', 'GET', server: ['HTTP_X_STORE_CODE' => 'store-1']));
@@ -354,6 +449,22 @@ final class LianshengServiceTest extends TestCase
             new ArrayAdapter(),
             $requestStack,
             $storeRepository,
+            $logger ?? new NullLogger(),
         );
+    }
+}
+
+final class RecordingLogger extends AbstractLogger
+{
+    /** @var list<array{level: mixed, message: string, context: array<string, mixed>}> */
+    public array $records = [];
+
+    public function log($level, $message, array $context = []): void
+    {
+        $this->records[] = [
+            'level' => $level,
+            'message' => (string) $message,
+            'context' => $context,
+        ];
     }
 }

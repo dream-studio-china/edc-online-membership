@@ -119,6 +119,11 @@ services:
     App\Wechat\Service\WechatAuthServiceInterface: '@App\Wechat\Service\WechatAuthService'
     App\Liansheng\Service\LianshengServiceInterface: '@App\Liansheng\Service\LianshengService'
 
+    # Route Liansheng vendor-call logging to its own channel/handler (prod: var/log/liansheng.log).
+    App\Liansheng\Service\LianshengService:
+        arguments:
+            $logger: '@monolog.logger.liansheng'
+
     App\Core\Validator\JsonSchemaValidator:
         public: true
 
