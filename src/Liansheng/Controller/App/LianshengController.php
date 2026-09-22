@@ -72,11 +72,14 @@ final class LianshengController extends RestController
             if ($member === []) {
                 try {
                     return $this->externalSuccess($this->lianshengService->registerMemberByMobile($mobile));
-                } catch (LianshengApiException $exception) {
+                } catch (LianshengApiException) {
                     // A concurrent request may have registered the same mobile first.
                     $member = $this->lianshengService->getMemberByMobile($mobile);
                     if ($member === []) {
-                        throw $exception;
+                        // Registration failed and the member still does not exist (for example
+                        // the provider's 0702 endpoint is failing). Degrade to an empty profile
+                        // instead of failing the read; LianshengService already logged the error.
+                        return $this->externalSuccess([]);
                     }
                 }
             }
