@@ -7,6 +7,7 @@ namespace App\Liansheng\Service;
 use App\Liansheng\Exception\LianshengApiException;
 use App\Store\Entity\Store;
 use App\Store\Repository\StoreRepository;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Contracts\Cache\CacheInterface;
 use Symfony\Contracts\Cache\ItemInterface;
@@ -19,6 +20,7 @@ final class LianshengService implements LianshengServiceInterface
         private readonly CacheInterface $cache,
         private readonly RequestStack $requestStack,
         private readonly StoreRepository $storeRepository,
+        private readonly LoggerInterface $logger,
     ) {}
 
     public function getStore(): array
@@ -397,24 +399,80 @@ final class LianshengService implements LianshengServiceInterface
      */
     private function request(string $method, string $path, array $options): array
     {
+        $url = $path;
         try {
-            $response = $this->httpClient->request($method, rtrim($this->configuration()['baseUrl'], '/') . $path, $options + [
+            $url = rtrim($this->configuration()['baseUrl'], '/') . $path;
+            $this->logger->info('Liansheng API request', [
+                'method' => $method,
+                'url' => $url,
+                'query' => $options['query'] ?? [],
+                'json' => $this->redactPayload($options['json'] ?? []),
+                'headers' => $options['headers'] ?? [],
+            ]);
+
+            $response = $this->httpClient->request($method, $url, $options + [
                 'timeout' => 10.0,
             ]);
             $statusCode = $response->getStatusCode();
             $content = $response->getContent(false);
             $data = json_decode($content, true, 512, JSON_THROW_ON_ERROR);
         } catch (\Throwable $exception) {
+            $this->logger->error('Liansheng API request failed', [
+                'method' => $method,
+                'url' => $url,
+                'exception' => $exception->getMessage(),
+            ]);
+
             throw new LianshengApiException('Liansheng API request failed: ' . $exception->getMessage(), 0, $exception);
         }
 
+        $this->logger->info('Liansheng API response', [
+            'method' => $method,
+            'url' => $url,
+            'status' => $statusCode,
+            'body' => $data,
+        ]);
+
         if (!is_array($data)) {
+            $this->logger->error('Liansheng API response is not a JSON object', [
+                'method' => $method,
+                'url' => $url,
+                'status' => $statusCode,
+                'body' => $content,
+            ]);
+
             throw new LianshengApiException('Liansheng API response is not a JSON object.');
         }
+
+        $code = $data['code'] ?? null;
+        if ($code !== null && $code !== 0 && $code !== '0') {
+            $this->logger->error('Liansheng API returned an error', [
+                'method' => $method,
+                'url' => $url,
+                'status' => $statusCode,
+                'code' => $code,
+                'message' => is_string($data['msg'] ?? null) ? $data['msg'] : null,
+                'body' => $data,
+            ]);
+        }
+
         if ($statusCode < 200 || $statusCode >= 300) {
             throw new LianshengApiException(sprintf('Liansheng API returned HTTP %d.', $statusCode));
         }
 
         return $data;
+    }
+
+    /**
+     * @param array<string, mixed> $payload
+     * @return array<string, mixed>
+     */
+    private function redactPayload(array $payload): array
+    {
+        if (array_key_exists('appSecret', $payload)) {
+            $payload['appSecret'] = '[redacted]';
+        }
+
+        return $payload;
     }
 }
