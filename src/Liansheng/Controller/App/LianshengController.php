@@ -69,20 +69,17 @@ final class LianshengController extends RestController
 
         try {
             $member = $this->lianshengService->getMemberByMobile($mobile);
-            // TEMP-DISABLED: supplier 0702 addvip returns code 500 with null msg,
-            // turning every missing member into 502 unknown error. Re-enable once
-            // the supplier confirms the failing payload.
-            // if ($member === []) {
-            //     try {
-            //         return $this->externalSuccess($this->lianshengService->registerMemberByMobile($mobile));
-            //     } catch (LianshengApiException $exception) {
-            //         // A concurrent request may have registered the same mobile first.
-            //         $member = $this->lianshengService->getMemberByMobile($mobile);
-            //         if ($member === []) {
-            //             throw $exception;
-            //         }
-            //     }
-            // }
+            if ($member === []) {
+                try {
+                    return $this->externalSuccess($this->lianshengService->registerMemberByMobile($mobile));
+                } catch (LianshengApiException $exception) {
+                    // A concurrent request may have registered the same mobile first.
+                    $member = $this->lianshengService->getMemberByMobile($mobile);
+                    if ($member === []) {
+                        throw $exception;
+                    }
+                }
+            }
 
             return $this->externalSuccess($member);
         } catch (LianshengApiException $exception) {
