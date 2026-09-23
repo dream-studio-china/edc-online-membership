@@ -102,12 +102,16 @@ final class LianshengServiceTest extends TestCase
             'code' => 0,
             'data' => ['id' => 'store-token', 'expiremins' => 60],
         ], JSON_THROW_ON_ERROR));
+        $cardTypesResponse = new MockResponse(json_encode([
+            'code' => 0,
+            'data' => [['id' => 'card-type-id', 'name' => 'VIP会员']],
+        ], JSON_THROW_ON_ERROR));
         $registrationResponse = new MockResponse(json_encode([
             'code' => 0,
             'msg' => 'OK',
             'data' => null,
         ], JSON_THROW_ON_ERROR));
-        $service = $this->service([$tokenResponse, $registrationResponse], [
+        $service = $this->service([$tokenResponse, $cardTypesResponse, $registrationResponse], [
             'baseUrl' => 'https://example.test/web',
             'appCode' => 'app-code',
             'appSecret' => 'app-secret',
@@ -119,14 +123,17 @@ final class LianshengServiceTest extends TestCase
         self::assertSame('POST', $registrationResponse->getRequestMethod());
         self::assertSame('https://example.test/web/api/vip.api?method=addvip', $registrationResponse->getRequestUrl());
         self::assertContains('Token: store-token', $registrationResponse->getRequestOptions()['headers']);
+        $body = json_decode($registrationResponse->getRequestOptions()['body'], true, 512, JSON_THROW_ON_ERROR);
+        // id/code are synthetically generated per registration: assert shape, not value.
+        self::assertMatchesRegularExpression('/^9\d{8}$/', $body['id']);
+        self::assertMatchesRegularExpression('/^8\d{8}$/', $body['code']);
+        unset($body['id'], $body['code']);
         self::assertSame([
-            'id' => '',
-            'code' => '',
             'cardtypeId' => 'card-type-id',
-            'cardtypeName' => '',
+            'cardtypeName' => 'VIP会员',
             'name' => '13802542123',
             'alias' => '13802542123',
-            'sex' => '',
+            'sex' => '男',
             'mobile' => '13802542123',
             'birthtype' => '',
             'birthday' => '',
@@ -135,9 +142,40 @@ final class LianshengServiceTest extends TestCase
             'extbalance' => '0',
             'totalbalance' => '0',
             'salesman' => '',
-            'expirydate' => '',
-            'available' => '',
-        ], json_decode($registrationResponse->getRequestOptions()['body'], true, 512, JSON_THROW_ON_ERROR));
+            'expirydate' => '2099-12-31',
+            'available' => 'T',
+        ], $body);
+    }
+
+    public function testRegistersMemberWithEmptyCardTypeNameWhenCardTypeLookupFails(): void
+    {
+        $tokenResponse = new MockResponse(json_encode([
+            'code' => 0,
+            'data' => ['id' => 'store-token', 'expiremins' => 60],
+        ], JSON_THROW_ON_ERROR));
+        $cardTypesFailure = new MockResponse(json_encode([
+            'code' => 1001,
+            'msg' => 'card types unavailable',
+            'data' => null,
+        ], JSON_THROW_ON_ERROR));
+        $registrationResponse = new MockResponse(json_encode([
+            'code' => 0,
+            'msg' => 'OK',
+            'data' => null,
+        ], JSON_THROW_ON_ERROR));
+        $service = $this->service([$tokenResponse, $cardTypesFailure, $registrationResponse], [
+            'baseUrl' => 'https://example.test/web',
+            'appCode' => 'app-code',
+            'appSecret' => 'app-secret',
+            'userId' => '1',
+            'memberCardTypeId' => 'card-type-id',
+        ]);
+
+        self::assertSame(0, $service->registerMemberByMobile('13802542123')['code']);
+        self::assertSame(
+            '',
+            json_decode($registrationResponse->getRequestOptions()['body'], true, 512, JSON_THROW_ON_ERROR)['cardtypeName'],
+        );
     }
 
     public function testRequiresConfiguredCardTypeToRegisterMember(): void

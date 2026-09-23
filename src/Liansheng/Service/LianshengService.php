@@ -87,17 +87,31 @@ final class LianshengService implements LianshengServiceInterface
             throw new LianshengApiException('settings.liansheng.memberCardTypeId must be configured to register members.');
         }
 
+        // NOTE: id/code are vendor-owned keys. They are synthetically populated here
+        // only because the operator explicitly wants a fully populated 0702 payload
+        // ("fill everything and let the vendor deal with it"). This does NOT fix the
+        // vendor-side 500, and generated keys may collide once the vendor endpoint
+        // works — confirm the key policy with Lincson before relying on this.
+        // 9-digit range avoids the observed 7-digit vendor sequence.
+        $syntheticId = (string) random_int(900000000, 999999999);
+        $syntheticCode = (string) random_int(800000000, 899999999);
+
         $response = $this->request('POST', '/api/vip.api', [
             'headers' => ['Token' => $this->getToken()],
             'query' => ['method' => 'addvip'],
+            // Payload mirrors the documented "021 会员资料数据结构" exactly: the 16
+            // required string fields, plus cardtypeId which the implementation
+            // demands ("必须提供 cardtypeId") although the document omits it.
             'json' => [
-                'id' => '',
-                'code' => '',
+                'id' => $syntheticId,
+                'code' => $syntheticCode,
                 'cardtypeId' => $cardTypeId,
-                'cardtypeName' => '',
+                'cardtypeName' => $this->resolveMemberCardTypeName($cardTypeId),
                 'name' => $mobile,
                 'alias' => $mobile,
-                'sex' => '',
+                // Defaulted per operator instruction; the app owns no authoritative
+                // sex/birthday data, so these are placeholders, not facts.
+                'sex' => '男',
                 'mobile' => $mobile,
                 'birthtype' => '',
                 'birthday' => '',
@@ -106,8 +120,10 @@ final class LianshengService implements LianshengServiceInterface
                 'extbalance' => '0',
                 'totalbalance' => '0',
                 'salesman' => '',
-                'expirydate' => '',
-                'available' => '',
+                // Far-future expiry per operator instruction (vendor expects yyyy-MM-dd).
+                'expirydate' => '2099-12-31',
+                // Matches an active member record (real records carry "T").
+                'available' => 'T',
             ],
         ]);
 
@@ -124,6 +140,31 @@ final class LianshengService implements LianshengServiceInterface
         }
 
         return $response;
+    }
+
+    /**
+     * Resolve the vendor display name of the configured member card type.
+     *
+     * Best effort: an empty cardtypeName is accepted by 0702, so a temporary
+     * card-type lookup failure must not break member registration.
+     */
+    private function resolveMemberCardTypeName(string $cardTypeId): string
+    {
+        try {
+            foreach ($this->getMemberCardTypes() as $cardType) {
+                if (!is_array($cardType) || ($cardType['id'] ?? null) !== $cardTypeId) {
+                    continue;
+                }
+                $name = $cardType['name'] ?? null;
+                if (is_string($name) && trim($name) !== '') {
+                    return trim($name);
+                }
+            }
+        } catch (\Throwable) {
+            // Fall through to the empty name below.
+        }
+
+        return '';
     }
 
     public function getMemberCardTypes(): array
