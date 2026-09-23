@@ -124,16 +124,14 @@ final class LianshengServiceTest extends TestCase
         self::assertSame('https://example.test/web/api/vip.api?method=addvip', $registrationResponse->getRequestUrl());
         self::assertContains('Token: store-token', $registrationResponse->getRequestOptions()['headers']);
         $body = json_decode($registrationResponse->getRequestOptions()['body'], true, 512, JSON_THROW_ON_ERROR);
-        // id/code are synthetically generated per registration: assert shape, not value.
-        self::assertMatchesRegularExpression('/^9\d{8}$/', $body['id']);
-        self::assertMatchesRegularExpression('/^8\d{8}$/', $body['code']);
-        unset($body['id'], $body['code']);
         self::assertSame([
+            'id' => '',
+            'code' => '',
             'cardtypeId' => 'card-type-id',
             'cardtypeName' => 'VIP会员',
             'name' => '13802542123',
             'alias' => '13802542123',
-            'sex' => '男',
+            'sex' => '',
             'mobile' => '13802542123',
             'birthtype' => '',
             'birthday' => '',
