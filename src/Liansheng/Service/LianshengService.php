@@ -87,15 +87,9 @@ final class LianshengService implements LianshengServiceInterface
             throw new LianshengApiException('settings.liansheng.memberCardTypeId must be configured to register members.');
         }
 
-        // NOTE: id/code are vendor-owned keys. They are synthetically populated here
-        // only because the operator explicitly wants a fully populated 0702 payload
-        // ("fill everything and let the vendor deal with it"). This does NOT fix the
-        // vendor-side 500, and generated keys may collide once the vendor endpoint
-        // works — confirm the key policy with Lincson before relying on this.
-        // 9-digit range avoids the observed 7-digit vendor sequence.
-        $syntheticId = (string) random_int(900000000, 999999999);
-        $syntheticCode = (string) random_int(800000000, 899999999);
-
+        // id/code are vendor-generated (proven 2026-09-23: sending "" returns a UUID
+        // id and an 8-digit code). Never synthesize them; generated keys may collide
+        // or be rejected once the vendor endpoint works.
         $response = $this->request('POST', '/api/vip.api', [
             'headers' => ['Token' => $this->getToken()],
             'query' => ['method' => 'addvip'],
@@ -103,15 +97,15 @@ final class LianshengService implements LianshengServiceInterface
             // required string fields, plus cardtypeId which the implementation
             // demands ("必须提供 cardtypeId") although the document omits it.
             'json' => [
-                'id' => $syntheticId,
-                'code' => $syntheticCode,
+                'id' => '',
+                'code' => '',
                 'cardtypeId' => $cardTypeId,
                 'cardtypeName' => $this->resolveMemberCardTypeName($cardTypeId),
                 'name' => $mobile,
                 'alias' => $mobile,
-                // Defaulted per operator instruction; the app owns no authoritative
-                // sex/birthday data, so these are placeholders, not facts.
-                'sex' => '男',
+                // The app owns no authoritative sex data; leave empty and let the
+                // vendor store null rather than persisting a false default.
+                'sex' => '',
                 'mobile' => $mobile,
                 'birthtype' => '',
                 'birthday' => '',
