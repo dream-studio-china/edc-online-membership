@@ -279,12 +279,22 @@ final class LianshengServiceTest extends TestCase
             'code' => 0,
             'data' => ['id' => 'store-token', 'expiremins' => 60],
         ], JSON_THROW_ON_ERROR));
+        $beforeResponse = new MockResponse(json_encode([
+            'code' => 0,
+            'msg' => 'OK',
+            'data' => ['mobile' => '13802542123', 'score' => 200],
+        ], JSON_THROW_ON_ERROR));
         $deductionResponse = new MockResponse(json_encode([
             'code' => 0,
             'msg' => 'OK',
             'data' => null,
         ], JSON_THROW_ON_ERROR));
-        $service = $this->service([$tokenResponse, $deductionResponse]);
+        $afterResponse = new MockResponse(json_encode([
+            'code' => 0,
+            'msg' => 'OK',
+            'data' => ['mobile' => '13802542123', 'score' => 80],
+        ], JSON_THROW_ON_ERROR));
+        $service = $this->service([$tokenResponse, $beforeResponse, $deductionResponse, $afterResponse]);
 
         $result = $service->deductMemberPoints(
             '13802542123',
@@ -321,12 +331,17 @@ final class LianshengServiceTest extends TestCase
             'code' => 0,
             'data' => ['id' => 'store-token', 'expiremins' => 60],
         ], JSON_THROW_ON_ERROR));
+        $beforeResponse = new MockResponse(json_encode([
+            'code' => 0,
+            'msg' => 'OK',
+            'data' => ['mobile' => '13802542123', 'score' => 200],
+        ], JSON_THROW_ON_ERROR));
         $deductionResponse = new MockResponse(json_encode([
             'code' => 501,
             'msg' => 'insufficient points',
             'data' => null,
         ], JSON_THROW_ON_ERROR));
-        $service = $this->service([$tokenResponse, $deductionResponse]);
+        $service = $this->service([$tokenResponse, $beforeResponse, $deductionResponse]);
 
         $this->expectException(LianshengApiException::class);
         $this->expectExceptionMessage('insufficient points');
@@ -340,12 +355,22 @@ final class LianshengServiceTest extends TestCase
             'code' => 0,
             'data' => ['id' => 'store-token', 'expiremins' => 60],
         ], JSON_THROW_ON_ERROR));
+        $beforeResponse = new MockResponse(json_encode([
+            'code' => 0,
+            'msg' => 'OK',
+            'data' => [['mobile' => '13802542123', 'score' => 0]],
+        ], JSON_THROW_ON_ERROR));
         $creditResponse = new MockResponse(json_encode([
             'code' => 0,
             'msg' => 'OK',
             'data' => null,
         ], JSON_THROW_ON_ERROR));
-        $service = $this->service([$tokenResponse, $creditResponse]);
+        $afterResponse = new MockResponse(json_encode([
+            'code' => 0,
+            'msg' => 'OK',
+            'data' => [['mobile' => '13802542123', 'score' => 120]],
+        ], JSON_THROW_ON_ERROR));
+        $service = $this->service([$tokenResponse, $beforeResponse, $creditResponse, $afterResponse]);
 
         $result = $service->creditMemberPoints(
             '13802542123',
@@ -369,6 +394,54 @@ final class LianshengServiceTest extends TestCase
             'roomtable' => 'ONLINE',
             'remarks' => 'Order refund',
         ], json_decode($creditResponse->getRequestOptions()['body'], true, 512, JSON_THROW_ON_ERROR));
+    }
+
+    public function testThrowsWhenPointsAdjustmentIsNotApplied(): void
+    {
+        $tokenResponse = new MockResponse(json_encode([
+            'code' => 0,
+            'data' => ['id' => 'store-token', 'expiremins' => 60],
+        ], JSON_THROW_ON_ERROR));
+        $beforeResponse = new MockResponse(json_encode([
+            'code' => 0,
+            'msg' => 'OK',
+            'data' => ['mobile' => '13802542123', 'score' => 100],
+        ], JSON_THROW_ON_ERROR));
+        $creditResponse = new MockResponse(json_encode([
+            'code' => 0,
+            'msg' => 'OK',
+            'data' => null,
+        ], JSON_THROW_ON_ERROR));
+        $afterResponse = new MockResponse(json_encode([
+            'code' => 0,
+            'msg' => 'OK',
+            'data' => ['mobile' => '13802542123', 'score' => 100],
+        ], JSON_THROW_ON_ERROR));
+        $service = $this->service([$tokenResponse, $beforeResponse, $creditResponse, $afterResponse]);
+
+        $this->expectException(LianshengApiException::class);
+        $this->expectExceptionMessage('was not applied');
+
+        $service->creditMemberPoints('13802542123', 120, 'PAY-REFERENCE-1');
+    }
+
+    public function testThrowsWhenAdjustingMissingMember(): void
+    {
+        $tokenResponse = new MockResponse(json_encode([
+            'code' => 0,
+            'data' => ['id' => 'store-token', 'expiremins' => 60],
+        ], JSON_THROW_ON_ERROR));
+        $notFoundResponse = new MockResponse(json_encode([
+            'code' => 501,
+            'msg' => '没有匹配到会员资料！',
+            'data' => null,
+        ], JSON_THROW_ON_ERROR));
+        $service = $this->service([$tokenResponse, $notFoundResponse]);
+
+        $this->expectException(LianshengApiException::class);
+        $this->expectExceptionMessage('does not exist');
+
+        $service->deductMemberPoints('13802542123', 120, 'PAY-REFERENCE-1');
     }
 
     public function testLogsRequestParametersAndResponse(): void

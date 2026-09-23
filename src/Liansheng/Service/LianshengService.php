@@ -265,6 +265,10 @@ final class LianshengService implements LianshengServiceInterface
             $remarks = 'Liansheng points adjustment';
         }
 
+        // The vendor has returned successful responses without applying the
+        // adjustment. Read the balance first so the result can be verified.
+        $beforeScore = $this->getMemberScoreValue($mobile);
+
         $effectiveAccountDate = $accountDate ?? new \DateTimeImmutable();
         $effectiveExpiryDate = $expiryDate ?? $effectiveAccountDate;
         $response = $this->request('POST', '/api/vip.api', [
@@ -296,7 +300,61 @@ final class LianshengService implements LianshengServiceInterface
             ));
         }
 
+        // Verify the adjustment landed; fail closed so callers (payment gateway,
+        // manage adjustments) never record an unapplied change as successful.
+        $afterScore = $this->getMemberScoreValue($mobile);
+        $expectedDelta = $direction === '+' ? (float) $points : -(float) $points;
+        if (abs(($afterScore - $beforeScore) - $expectedDelta) > 0.001) {
+            throw new LianshengApiException(sprintf(
+                'Liansheng points adjustment was not applied (mobile %s, expected %+d, balance %.2f -> %.2f).',
+                $mobile,
+                $direction === '+' ? $points : -$points,
+                $beforeScore,
+                $afterScore,
+            ));
+        }
+
         return $response;
+    }
+
+    /**
+     * Read the member's current points balance for write verification.
+     *
+     * 0701 returns a single object or a list; a missing score counts as zero.
+     */
+    private function getMemberScoreValue(string $mobile): float
+    {
+        $member = $this->getMemberByMobile($mobile);
+        if ($member === []) {
+            throw new LianshengApiException(sprintf('Liansheng member %s does not exist.', $mobile));
+        }
+
+        $record = $member;
+        if (array_is_list($member)) {
+            $record = [];
+            foreach ($member as $item) {
+                if (is_array($item) && ($item['mobile'] ?? null) === $mobile) {
+                    $record = $item;
+                    break;
+                }
+            }
+            if ($record === []) {
+                $record = $member[0] ?? [];
+            }
+        }
+        if (!is_array($record)) {
+            throw new LianshengApiException(sprintf('Liansheng member %s profile is not readable.', $mobile));
+        }
+
+        $score = $record['score'] ?? null;
+        if ($score === null || $score === '') {
+            return 0.0;
+        }
+        if (!is_numeric($score)) {
+            throw new LianshengApiException(sprintf('Liansheng member %s score is not numeric.', $mobile));
+        }
+
+        return (float) $score;
     }
 
     private function getToken(): string
