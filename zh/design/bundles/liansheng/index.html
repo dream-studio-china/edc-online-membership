@@ -3093,16 +3093,12 @@
 <tr>
 <td><code>deductMemberPoints()</code></td>
 <td>0703 <code>POST /api/vip.api?method=vipsubscore</code></td>
-<td>Deducts a positive integer number of member points synchronously.</td>
-</tr>
-<tr>
-<td><code>creditMemberPoints()</code></td>
-<td>0703 <code>POST /api/vip.api?method=vipsubscore</code></td>
-<td>Credits a positive integer number of member points synchronously.</td>
+<td>Deducts a positive integer number of member points synchronously, through the <code>score</code> field.</td>
 </tr>
 </tbody>
 </table>
-<p>Every 0703 adjustment is write-verified: the member balance is read via 0701 before and after the call, and a mismatch with the expected delta throws instead of reporting success. This fail-closed check protects the payment gateway and manage adjustments against vendor responses that report success without applying the change.</p>
+<p>0703 only deducts and only through <code>score</code>: <code>creditscore</code>/<code>debitscore</code> are ignored by the vendor, <code>dirflag</code> has no effect (a <code>"+"</code> call still subtracts), and crediting is impossible. There is therefore no credit method and no refund path anywhere in this bundle.</p>
+<p>Every 0703 deduction is write-verified: the member balance is read via 0701 before and after the call, and a mismatch with the expected deduction throws instead of reporting success. This fail-closed check protects the payment gateway and manage adjustments against vendor responses that report success without applying the change.</p>
 <p>The store token is held in <code>cache.app</code> until one minute before the vendor-reported expiry. No token, credential, member data, or report data is stored in Doctrine.</p>
 <p>Live testing shows that 0701 requires <code>method=getvipmember</code> in the query string and a JSON request body. The body accepts <code>mobile</code>, <code>cardid</code>, or <code>cloudId</code>; no matching member returns <code>code=501</code>, <code>msg=没有匹配到会员资料！</code>, and <code>data=null</code>, which the adapter maps to an empty list. The local member endpoint registers an empty 0701 result through 0702 and immediately returns its successful registration response. If 0702 fails and a re-query of 0701 still returns no member, the endpoint degrades to an empty profile (HTTP 200) instead of failing the read; the provider error is logged by the service. Registration uses the mobile as the vendor <code>name</code> and <code>alias</code>, with zero initial score and balances, and resolves <code>cardtypeName</code> from the Store's <code>getvipcardtype</code> list by the configured <code>memberCardTypeId</code> (best effort — an empty name is accepted by 0702). The payload mirrors the vendor's documented "021 会员资料数据结构" exactly (its 16 required string fields) plus <code>cardtypeId</code>, which the implementation demands although the document omits it. <code>expirydate</code> defaults to <code>2099-12-31</code> per operator instruction. Server-owned keys (<code>id</code>, <code>code</code> — the vendor generates a UUID id and an 8-digit code, verified live) and personally identifying fields the app does not own (<code>sex</code>, <code>birthday</code>, <code>salesman</code>, …) are left empty for the vendor, which stores them as null. 0702 requires a Store-specific <code>memberCardTypeId</code>.</p>
 <h2 id="controllers">Controllers<a class="headerlink" href="#controllers" title="Permanent link">&para;</a></h2>
@@ -3155,7 +3151,7 @@
 </tbody>
 </table>
 <p>Controllers own local request validation, response envelopes, authorization, and mapping vendor failures to HTTP 502. The 0102 token ID is internal and is removed from the store response.</p>
-<p>Every Liansheng endpoint requires <code>X-Store-Code</code>; it selects the Store-specific Liansheng configuration and token. App <code>/member</code> queries the current authenticated User's <code>phone</code>, never a client-provided mobile. The Manage 0703 endpoint accepts <code>mobile</code>, <code>dirflag</code> (<code>-</code>/<code>+</code>), positive integer <code>points</code>, stable <code>reference</code>, non-empty <code>roomtable</code>, and non-empty <code>remarks</code>. It derives the mutually exclusive <code>creditscore</code>/<code>debitscore</code> fields and delegates to the same Service used by the payment Gateway.</p>
+<p>Every Liansheng endpoint requires <code>X-Store-Code</code>; it selects the Store-specific Liansheng configuration and token. App <code>/member</code> queries the current authenticated User's <code>phone</code>, never a client-provided mobile. The Manage 0703 endpoint accepts <code>mobile</code>, <code>dirflag</code> (<code>-</code> only — crediting is unsupported and rejected), positive integer <code>points</code>, stable <code>reference</code>, non-empty <code>roomtable</code>, and non-empty <code>remarks</code>, and delegates to the same Service used by the payment Gateway.</p>
 <h2 id="payment-gateway">Payment Gateway<a class="headerlink" href="#payment-gateway" title="Permanent link">&para;</a></h2>
 <p><code>LianshengPointGateway</code> implements <code>PaymentGatewayInterface</code> in the Liansheng module and is auto-registered as <code>payment.gateway</code>.</p>
 <table>
@@ -3188,7 +3184,7 @@
 </tr>
 <tr>
 <td>Completion</td>
-<td>Synchronous: one 0703 call returning vendor success produces <code>PaymentResult(status=paid)</code></td>
+<td>Synchronous: one 0703 call returning vendor success plus a matching balance change produces <code>PaymentResult(status=paid)</code></td>
 </tr>
 <tr>
 <td>Retry</td>
@@ -3200,17 +3196,17 @@
 </tr>
 <tr>
 <td>Refund</td>
-<td>Synchronous 0703 credit with <code>dirflag=+</code>; full and partial refunds are supported</td>
+<td>Unsupported: the vendor 0703 API cannot credit points, so <code>refund()</code> throws instead of calling the provider</td>
 </tr>
 </tbody>
 </table>
 <p>Payment is initiated through the existing endpoint:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>POST /api/v1/app/invoices/{id}/pay/liansheng_point
 </code></pre></div>
-<p>The invoice must already use currency <code>LIANSHENG_POINT</code>, have a positive integer amount, and belong to a payer with a verified phone. A provider error or ambiguous transport failure is propagated and never converted to a paid result. Reusing <code>outTradeNo</code> gives the provider a stable reference, but exactly-once behavior across an unknown network outcome still depends on provider-side deduplication of <code>accno</code>/<code>billno</code>.</p>
-<p>Refunds call 0703 with <code>dirflag=+</code>, <code>creditscore</code> set to the refunded points, and <code>debitscore=0</code>. The reference is <code>outTradeNo-R{cumulativeRefundedPoints}</code>, so a partial refund and a later full balance refund are distinct provider operations. Restored points use <code>settings.liansheng.pointRefundExpiryDate</code> (<code>2099-12-31</code> by default); set it to the vendor-approved <code>YYYY-MM-DD</code> expiry policy for the Store.</p>
-<p>The local test configuration uses <code>http://test.lincson.cn/web</code>. It completes 0102, 0701, 0703, and 0704 with the supplied test application, including a verified 10-point deduction and matching credit. This HTTP host is suitable only for local testing because credentials and tokens are transmitted in plaintext; production requires a vendor-provided HTTPS endpoint whose 0703 CRM Factory is configured for the Store.</p>
-<p>0703 sends every documented field on every adjustment. <code>creditscore</code> and <code>debitscore</code> are both present, with the inactive direction set to <code>0</code>; <code>roomtable</code> is the non-empty <code>ONLINE</code> default and <code>remarks</code> falls back to <code>Liansheng points adjustment</code> when the caller provides none.</p>
+<p>The invoice must already use currency <code>LIANSHENG_POINT</code>, have a positive integer amount, and belong to a payer with a verified phone. A provider error, an unapplied deduction, or an ambiguous transport failure is propagated and never converted to a paid result. Reusing <code>outTradeNo</code> gives the provider a stable reference, but exactly-once behavior across an unknown network outcome still depends on provider-side deduplication of <code>accno</code>/<code>billno</code>.</p>
+<p>Refunds are not supported and <code>refund()</code> throws <code>LogicException</code> without calling the provider, because crediting points through 0703 is impossible (a <code>"+"</code> call still subtracts).</p>
+<p>The local test configuration uses <code>http://test.lincson.cn/web</code>. It completes 0102, 0701, 0703 (deduction only, via <code>score</code>), and 0704 with the supplied test application. This HTTP host is suitable only for local testing because credentials and tokens are transmitted in plaintext; production requires a vendor-provided HTTPS endpoint whose 0703 CRM Factory is configured for the Store.</p>
+<p>0703 sends <code>mobile</code>, <code>accountdate</code>, <code>dirflag</code> (<code>-</code>), <code>score</code>, <code>expirydate</code>, <code>accno</code>, <code>billno</code>, <code>roomtable</code>, and <code>remarks</code> on every deduction. <code>creditscore</code>/<code>debitscore</code> are never sent because the vendor ignores them. <code>roomtable</code> is the non-empty <code>ONLINE</code> default and <code>remarks</code> falls back to <code>Liansheng points deduction</code> when the caller provides none.</p>
 <h2 id="configuration">Configuration<a class="headerlink" href="#configuration" title="Permanent link">&para;</a></h2>
 <p>Liansheng is configured per Store. Every Liansheng controller or payment request must include <code>X-Store-Code</code>; the active Store's <code>settings</code> provide its connection and credentials:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="p">{</span>
@@ -3219,10 +3215,9 @@
 <a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">    </span><span class="nt">"appCode"</span><span class="p">:</span><span class="w"> </span><span class="s2">"..."</span><span class="p">,</span>
 <a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">    </span><span class="nt">"appSecret"</span><span class="p">:</span><span class="w"> </span><span class="s2">"..."</span><span class="p">,</span>
 <a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">    </span><span class="nt">"userId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"1"</span><span class="p">,</span>
-<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">    </span><span class="nt">"pointRefundExpiryDate"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2099-12-31"</span><span class="p">,</span>
-<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">    </span><span class="nt">"memberCardTypeId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"..."</span>
-<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="w">  </span><span class="p">}</span>
-<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="p">}</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">    </span><span class="nt">"memberCardTypeId"</span><span class="p">:</span><span class="w"> </span><span class="s2">"..."</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">  </span><span class="p">}</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="p">}</span>
 </code></pre></div>
 <p><code>LianshengApiException</code> represents transport, HTTP, invalid JSON, and vendor-level response failures.</p>
 <p><code>https://test.lincson.cn/web</code> has a certificate mismatch and its HTTPS <code>/web/api/*</code> path rejects POST with 405. The local test Store intentionally uses the vendor's HTTP endpoint instead; do not use this plaintext endpoint outside local testing.</p>
