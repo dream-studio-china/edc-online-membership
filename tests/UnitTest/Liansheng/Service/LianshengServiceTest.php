@@ -260,19 +260,6 @@ final class LianshengServiceTest extends TestCase
         $service->getMemberScoreBook('13802542123', '1260735');
     }
 
-    public function testGetsRefundExpiryDateFromStoreSettings(): void
-    {
-        $service = $this->service([], [
-            'baseUrl' => 'https://example.test/web',
-            'appCode' => 'app-code',
-            'appSecret' => 'app-secret',
-            'userId' => '1',
-            'pointRefundExpiryDate' => '2030-12-31',
-        ]);
-
-        self::assertSame('2030-12-31', $service->getPointRefundExpiryDate()->format('Y-m-d'));
-    }
-
     public function testDeductsMemberPointsOnceWithStableReference(): void
     {
         $tokenResponse = new MockResponse(json_encode([
@@ -315,8 +302,7 @@ final class LianshengServiceTest extends TestCase
             'mobile' => '13802542123',
             'accountdate' => '2026-09-20',
             'dirflag' => '-',
-            'creditscore' => 0,
-            'debitscore' => 120,
+            'score' => 120,
             'expirydate' => '2026-09-20',
             'accno' => 'PAY-REFERENCE-1',
             'billno' => 'PAY-REFERENCE-1',
@@ -349,7 +335,7 @@ final class LianshengServiceTest extends TestCase
         $service->deductMemberPoints('13802542123', 120, 'PAY-REFERENCE-1');
     }
 
-    public function testCreditsMemberPointsWithCreditFieldsAndExpiryDate(): void
+    public function testThrowsWhenPointsDeductionIsNotApplied(): void
     {
         $tokenResponse = new MockResponse(json_encode([
             'code' => 0,
@@ -358,9 +344,9 @@ final class LianshengServiceTest extends TestCase
         $beforeResponse = new MockResponse(json_encode([
             'code' => 0,
             'msg' => 'OK',
-            'data' => [['mobile' => '13802542123', 'score' => 0]],
+            'data' => ['mobile' => '13802542123', 'score' => 200],
         ], JSON_THROW_ON_ERROR));
-        $creditResponse = new MockResponse(json_encode([
+        $deductionResponse = new MockResponse(json_encode([
             'code' => 0,
             'msg' => 'OK',
             'data' => null,
@@ -368,61 +354,14 @@ final class LianshengServiceTest extends TestCase
         $afterResponse = new MockResponse(json_encode([
             'code' => 0,
             'msg' => 'OK',
-            'data' => [['mobile' => '13802542123', 'score' => 120]],
+            'data' => ['mobile' => '13802542123', 'score' => 200],
         ], JSON_THROW_ON_ERROR));
-        $service = $this->service([$tokenResponse, $beforeResponse, $creditResponse, $afterResponse]);
-
-        $result = $service->creditMemberPoints(
-            '13802542123',
-            120,
-            'PAY-REFERENCE-1-R120',
-            'Order refund',
-            new \DateTimeImmutable('2026-09-20'),
-            new \DateTimeImmutable('2099-12-31'),
-        );
-
-        self::assertSame(0, $result['code']);
-        self::assertSame([
-            'mobile' => '13802542123',
-            'accountdate' => '2026-09-20',
-            'dirflag' => '+',
-            'creditscore' => 120,
-            'debitscore' => 0,
-            'expirydate' => '2099-12-31',
-            'accno' => 'PAY-REFERENCE-1-R120',
-            'billno' => 'PAY-REFERENCE-1-R120',
-            'roomtable' => 'ONLINE',
-            'remarks' => 'Order refund',
-        ], json_decode($creditResponse->getRequestOptions()['body'], true, 512, JSON_THROW_ON_ERROR));
-    }
-
-    public function testThrowsWhenPointsAdjustmentIsNotApplied(): void
-    {
-        $tokenResponse = new MockResponse(json_encode([
-            'code' => 0,
-            'data' => ['id' => 'store-token', 'expiremins' => 60],
-        ], JSON_THROW_ON_ERROR));
-        $beforeResponse = new MockResponse(json_encode([
-            'code' => 0,
-            'msg' => 'OK',
-            'data' => ['mobile' => '13802542123', 'score' => 100],
-        ], JSON_THROW_ON_ERROR));
-        $creditResponse = new MockResponse(json_encode([
-            'code' => 0,
-            'msg' => 'OK',
-            'data' => null,
-        ], JSON_THROW_ON_ERROR));
-        $afterResponse = new MockResponse(json_encode([
-            'code' => 0,
-            'msg' => 'OK',
-            'data' => ['mobile' => '13802542123', 'score' => 100],
-        ], JSON_THROW_ON_ERROR));
-        $service = $this->service([$tokenResponse, $beforeResponse, $creditResponse, $afterResponse]);
+        $service = $this->service([$tokenResponse, $beforeResponse, $deductionResponse, $afterResponse]);
 
         $this->expectException(LianshengApiException::class);
         $this->expectExceptionMessage('was not applied');
 
-        $service->creditMemberPoints('13802542123', 120, 'PAY-REFERENCE-1');
+        $service->deductMemberPoints('13802542123', 120, 'PAY-REFERENCE-1');
     }
 
     public function testThrowsWhenAdjustingMissingMember(): void

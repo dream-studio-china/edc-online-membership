@@ -58,7 +58,7 @@ final class LianshengController extends RestController
 
     #[OA\Post(
         path: '/api/v1/manage/liansheng/member-points',
-        summary: 'Adjust Liansheng member points through 0703',
+        summary: 'Deduct Liansheng member points through 0703 (crediting is unsupported)',
         parameters: [
             new OA\Parameter(name: 'X-Store-Code', in: 'header', required: true, schema: new OA\Schema(type: 'string'), example: 'LIANSHENG-TEST'),
         ],
@@ -68,13 +68,12 @@ final class LianshengController extends RestController
                 required: ['mobile', 'dirflag', 'points', 'reference', 'roomtable', 'remarks'],
                 properties: [
                     new OA\Property(property: 'mobile', type: 'string', example: '13802542123'),
-                    new OA\Property(property: 'dirflag', type: 'string', enum: ['-', '+'], description: '- deducts points; + credits points', example: '-'),
+                    new OA\Property(property: 'dirflag', type: 'string', enum: ['-'], description: 'Only deducts points; the vendor 0703 API cannot credit', example: '-'),
                     new OA\Property(property: 'points', type: 'integer', minimum: 1, example: 10),
                     new OA\Property(property: 'reference', type: 'string', description: 'Stable, unique provider reference', example: 'MANUAL-POINTS-001'),
                     new OA\Property(property: 'roomtable', type: 'string', example: 'ONLINE'),
                     new OA\Property(property: 'remarks', type: 'string', example: 'Manual adjustment'),
                     new OA\Property(property: 'accountDate', type: 'string', format: 'date', example: '2026-09-20'),
-                    new OA\Property(property: 'expiryDate', type: 'string', format: 'date', description: 'Optional for credits; Store default applies when omitted', example: '2099-12-31'),
                 ],
             ),
         ),
@@ -104,28 +103,24 @@ final class LianshengController extends RestController
         $remarks = $content['remarks'] ?? null;
         $points = $content['points'] ?? null;
         if (!is_string($mobile) || !is_string($dirflag) || !is_string($reference) || !is_string($roomTable) || !is_string($remarks)
-            || trim($mobile) === '' || !in_array($dirflag, ['-', '+'], true) || trim($reference) === '' || trim($roomTable) === '' || trim($remarks) === '') {
-            return $this->warning('mobile, dirflag, reference, roomtable, and remarks are required.', 1, null, Response::HTTP_BAD_REQUEST);
+            || trim($mobile) === '' || $dirflag !== '-' || trim($reference) === '' || trim($roomTable) === '' || trim($remarks) === '') {
+            return $this->warning('mobile, dirflag ("-" only; crediting is unsupported), reference, roomtable, and remarks are required.', 1, null, Response::HTTP_BAD_REQUEST);
         }
         if ((!is_int($points) && !(is_string($points) && ctype_digit($points))) || (int) $points <= 0) {
             return $this->warning('points must be a positive integer.', 1, null, Response::HTTP_BAD_REQUEST);
         }
 
         $accountDateValue = $content['accountDate'] ?? null;
-        $expiryDateValue = $content['expiryDate'] ?? null;
-        if (($accountDateValue !== null && !is_string($accountDateValue)) || ($expiryDateValue !== null && !is_string($expiryDateValue))) {
-            return $this->warning('accountDate and expiryDate must use YYYY-MM-DD.', 1, null, Response::HTTP_BAD_REQUEST);
+        if ($accountDateValue !== null && !is_string($accountDateValue)) {
+            return $this->warning('accountDate must use YYYY-MM-DD.', 1, null, Response::HTTP_BAD_REQUEST);
         }
         $accountDate = $this->optionalDate($accountDateValue);
-        $expiryDate = $this->optionalDate($expiryDateValue);
-        if (($accountDateValue !== null && $accountDate === null) || ($expiryDateValue !== null && $expiryDate === null)) {
-            return $this->warning('accountDate and expiryDate must use YYYY-MM-DD.', 1, null, Response::HTTP_BAD_REQUEST);
+        if ($accountDateValue !== null && $accountDate === null) {
+            return $this->warning('accountDate must use YYYY-MM-DD.', 1, null, Response::HTTP_BAD_REQUEST);
         }
 
         try {
-            $data = $dirflag === '-'
-                ? $this->lianshengService->deductMemberPoints(trim($mobile), (int) $points, trim($reference), trim($remarks), $accountDate, trim($roomTable))
-                : $this->lianshengService->creditMemberPoints(trim($mobile), (int) $points, trim($reference), trim($remarks), $accountDate, $expiryDate, trim($roomTable));
+            $data = $this->lianshengService->deductMemberPoints(trim($mobile), (int) $points, trim($reference), trim($remarks), $accountDate, trim($roomTable));
 
             return $this->externalSuccess($data);
         } catch (LianshengApiException $exception) {

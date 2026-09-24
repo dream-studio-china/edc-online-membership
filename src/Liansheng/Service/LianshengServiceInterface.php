@@ -41,6 +41,11 @@ interface LianshengServiceInterface
     /**
      * Deduct member points once through API 0703.
      *
+     * 0703 only deducts via the `score` field; crediting is not supported by the
+     * vendor, so there is no credit method and no refund path. The adjustment is
+     * write-verified against the member balance; a mismatch throws instead of
+     * reporting success.
+     *
      * @return array<string, mixed> Raw vendor response envelope, or an empty array.
      */
     public function deductMemberPoints(
@@ -51,21 +56,4 @@ interface LianshengServiceInterface
         ?\DateTimeInterface $accountDate = null,
         string $roomTable = 'ONLINE',
     ): array;
-
-    /**
-     * Credit member points once through API 0703.
-     *
-     * @return array<string, mixed> Raw vendor response envelope, or an empty array.
-     */
-    public function creditMemberPoints(
-        string $mobile,
-        int $points,
-        string $reference,
-        string $remarks = '',
-        ?\DateTimeInterface $accountDate = null,
-        ?\DateTimeInterface $expiryDate = null,
-        string $roomTable = 'ONLINE',
-    ): array;
-
-    public function getPointRefundExpiryDate(): \DateTimeImmutable;
 }

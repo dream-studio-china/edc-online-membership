@@ -63,41 +63,7 @@ final class LianshengPointGateway implements PaymentGatewayInterface
     /** @param array<string, mixed> $options */
     public function refund(Invoice $invoice, int $amount, int $paidAmount, string $reason, array $options = []): PaymentRefundResult
     {
-        if ($amount <= 0) {
-            throw new \InvalidArgumentException('Liansheng points refund amount must be positive.');
-        }
-        $remaining = $paidAmount - $invoice->getRefundedAmount();
-        if ($amount > $remaining) {
-            throw new \InvalidArgumentException('Liansheng points refund exceeds the paid remaining amount.');
-        }
-
-        $mobile = $this->verifiedPayerMobile($invoice, 'refund');
-        $expiryDate = $this->lianshengService->getPointRefundExpiryDate();
-
-        $cumulativeRefund = $invoice->getRefundedAmount() + $amount;
-        $reference = sprintf('%s-R%d', $invoice->getOutTradeNo(), $cumulativeRefund);
-        $response = $this->lianshengService->creditMemberPoints(
-            mobile: $mobile,
-            points: $amount,
-            reference: $reference,
-            remarks: mb_substr($reason, 0, 255),
-            expiryDate: $expiryDate,
-            roomTable: 'ONLINE',
-        );
-
-        return new PaymentRefundResult(
-            invoice: $invoice,
-            amount: $amount,
-            status: $amount >= $remaining ? Invoice::STATUS_REFUNDED : Invoice::STATUS_PARTIAL_REFUNDED,
-            refundId: $reference,
-            rawData: [
-                'reference' => $reference,
-                'points' => $amount,
-                'expiryDate' => $expiryDate->format('Y-m-d'),
-                'providerCode' => $response['code'] ?? 0,
-                'providerMessage' => is_string($response['msg'] ?? null) ? $response['msg'] : null,
-            ],
-        );
+        throw new \LogicException('Liansheng points refunds are not supported: the vendor 0703 API can only deduct points, never credit them.');
     }
 
     public function getNotifySuccessResponse(PaymentNotifyResult $result): Response
