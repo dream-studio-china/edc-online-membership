@@ -414,7 +414,7 @@ Example response for mock payment not yet paid:
 }
 ```
 
-If payment completes synchronously, such as `wallet`, `liansheng_point`, or `mock` with `autoPaid: true`, the returned `status` is `paid`, invoice status becomes `paid`, and linked order status becomes `paid` automatically. For `liansheng_point`, the integer invoice amount is a number of points (not cents), the payer must have a verified phone, and refunds synchronously restore points through 0703.
+If payment completes synchronously, such as `wallet`, `liansheng_point`, or `mock` with `autoPaid: true`, the returned `status` is `paid`, invoice status becomes `paid`, and linked order status becomes `paid` automatically. For `liansheng_point`, the integer invoice amount is a number of points (not cents), the payer must have a verified phone, and refunds are unsupported (the vendor 0703 API cannot credit points).
 
 ## WeChat Mini Program Payment
 

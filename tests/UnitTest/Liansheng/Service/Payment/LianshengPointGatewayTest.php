@@ -90,75 +90,16 @@ final class LianshengPointGatewayTest extends TestCase
 
     }
 
-    public function testRefundCreditsPointsWithStableReference(): void
+    public function testRefundIsUnsupported(): void
     {
         $service = $this->createMock(LianshengServiceInterface::class);
-        $service->method('getPointRefundExpiryDate')->willReturn(new \DateTimeImmutable('2099-12-31'));
-        $invoice = $this->invoice();
-        $service->expects(self::once())->method('creditMemberPoints')->with(
-            '13802542123',
-            120,
-            $invoice->getOutTradeNo() . '-R120',
-            'Customer cancelled',
-            null,
-            self::callback(static fn (\DateTimeInterface $date): bool => $date->format('Y-m-d') === '2099-12-31'),
-            'ONLINE',
-        )->willReturn(['code' => 0, 'msg' => 'OK', 'data' => null]);
+        $service->expects(self::never())->method('deductMemberPoints');
         $gateway = new LianshengPointGateway($service);
 
-        $result = $gateway->refund($invoice, 120, 120, 'Customer cancelled');
+        $this->expectException(\LogicException::class);
+        $this->expectExceptionMessage('refunds are not supported');
 
-        self::assertSame(Invoice::STATUS_REFUNDED, $result->status);
-        self::assertSame($invoice->getOutTradeNo() . '-R120', $result->refundId);
-        self::assertSame(120, $result->rawData['points']);
-        self::assertSame('2099-12-31', $result->rawData['expiryDate']);
-    }
-
-    public function testPartialRefundCreditsOnlyThePartialAmount(): void
-    {
-        $service = $this->createMock(LianshengServiceInterface::class);
-        $service->method('getPointRefundExpiryDate')->willReturn(new \DateTimeImmutable('2099-12-31'));
-        $invoice = $this->invoice();
-        $service->expects(self::once())->method('creditMemberPoints')->with(
-            '13802542123',
-            40,
-            $invoice->getOutTradeNo() . '-R40',
-            'Partial refund',
-            null,
-            self::isInstanceOf(\DateTimeInterface::class),
-            'ONLINE',
-        )->willReturn([]);
-        $gateway = new LianshengPointGateway($service);
-
-        $result = $gateway->refund($invoice, 40, 120, 'Partial refund');
-
-        self::assertSame(Invoice::STATUS_PARTIAL_REFUNDED, $result->status);
-        self::assertSame($invoice->getOutTradeNo() . '-R40', $result->refundId);
-    }
-
-    public function testRefundDoesNotConvertProviderFailureToSuccess(): void
-    {
-        $service = $this->createMock(LianshengServiceInterface::class);
-        $service->method('getPointRefundExpiryDate')->willReturn(new \DateTimeImmutable('2099-12-31'));
-        $service->method('creditMemberPoints')->willThrowException(new LianshengApiException('provider unavailable'));
-        $gateway = new LianshengPointGateway($service);
-
-        $this->expectException(LianshengApiException::class);
-        $this->expectExceptionMessage('provider unavailable');
-
-        $gateway->refund($this->invoice(), 120, 120, 'Refund');
-    }
-
-    public function testRefundRejectsExcessiveAmountBeforeCallingProvider(): void
-    {
-        $service = $this->createMock(LianshengServiceInterface::class);
-        $service->expects(self::never())->method('creditMemberPoints');
-        $gateway = new LianshengPointGateway($service);
-
-        $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('exceeds the paid remaining amount');
-
-        $gateway->refund($this->invoice(), 121, 120, 'Refund');
+        $gateway->refund($this->invoice(), 120, 120, 'Customer cancelled');
     }
 
     public function testNotifySuccessResponseUsesResultBody(): void

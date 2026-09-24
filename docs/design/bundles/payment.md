@@ -622,7 +622,7 @@ final class PaymentAdjustmentRegistry
 
 When used with adjustments, `mock` notify amount MUST equal the explicit gateway payment amount, not the invoice gross amount.
 
-`liansheng_point` is a unit-of-account gateway rather than a fiat-money gateway. Its explicit integer `$amount` is the number of points sent as `debitscore`; the usual cents-to-decimal conversion does not apply. It requires the payer's verified phone from the local User record, uses `Invoice::outTradeNo` as the stable provider reference, and returns `paid` from the same request only after 0703 succeeds. Liansheng configuration is resolved from the active Store's `settings.liansheng` selected by `X-Store-Code`. It has no asynchronous notify path. Refunds synchronously credit points through the same provider endpoint (`dirflag=+`) and support full or partial amounts; their stable references are `outTradeNo-R{cumulativeRefundedPoints}`.
+`liansheng_point` is a unit-of-account gateway rather than a fiat-money gateway. Its explicit integer `$amount` is the number of points deducted through the vendor 0703 `score` field; the usual cents-to-decimal conversion does not apply. It requires the payer's verified phone from the local User record, uses `Invoice::outTradeNo` as the stable provider reference, and returns `paid` from the same request only after 0703 succeeds and the balance change is verified. Liansheng configuration is resolved from the active Store's `settings.liansheng` selected by `X-Store-Code`. It has no asynchronous notify path. Refunds are unsupported and throw without calling the provider, because the vendor 0703 API cannot credit points.
 
 ### 6.4 Future Provider Gateways
 

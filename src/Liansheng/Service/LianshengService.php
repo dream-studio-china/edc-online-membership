@@ -198,53 +198,6 @@ final class LianshengService implements LianshengServiceInterface
         ?\DateTimeInterface $accountDate = null,
         string $roomTable = 'ONLINE',
     ): array {
-        return $this->changeMemberPoints($mobile, $points, $reference, '-', $remarks, $accountDate, $accountDate, $roomTable);
-    }
-
-    public function creditMemberPoints(
-        string $mobile,
-        int $points,
-        string $reference,
-        string $remarks = '',
-        ?\DateTimeInterface $accountDate = null,
-        ?\DateTimeInterface $expiryDate = null,
-        string $roomTable = 'ONLINE',
-    ): array {
-        return $this->changeMemberPoints(
-            $mobile,
-            $points,
-            $reference,
-            '+',
-            $remarks,
-            $accountDate,
-            $expiryDate ?? $this->getPointRefundExpiryDate(),
-            $roomTable,
-        );
-    }
-
-    public function getPointRefundExpiryDate(): \DateTimeImmutable
-    {
-        $value = $this->configuration()['pointRefundExpiryDate'] ?? '2099-12-31';
-        $date = \DateTimeImmutable::createFromFormat('!Y-m-d', $value);
-        $errors = \DateTimeImmutable::getLastErrors();
-        if ($date === false || (is_array($errors) && ($errors['warning_count'] > 0 || $errors['error_count'] > 0))) {
-            throw new LianshengApiException('settings.liansheng.pointRefundExpiryDate must use YYYY-MM-DD.');
-        }
-
-        return $date;
-    }
-
-    /** @return array<string, mixed> */
-    private function changeMemberPoints(
-        string $mobile,
-        int $points,
-        string $reference,
-        string $direction,
-        string $remarks,
-        ?\DateTimeInterface $accountDate,
-        ?\DateTimeInterface $expiryDate,
-        string $roomTable,
-    ): array {
         $mobile = trim($mobile);
         $reference = trim($reference);
         $roomTable = trim($roomTable);
@@ -253,16 +206,16 @@ final class LianshengService implements LianshengServiceInterface
             throw new \InvalidArgumentException('Liansheng member mobile must not be empty.');
         }
         if ($points <= 0) {
-            throw new \InvalidArgumentException('Liansheng points adjustment must be positive.');
+            throw new \InvalidArgumentException('Liansheng points deduction must be positive.');
         }
         if ($reference === '') {
-            throw new \InvalidArgumentException('Liansheng points adjustment reference must not be empty.');
+            throw new \InvalidArgumentException('Liansheng points deduction reference must not be empty.');
         }
         if ($roomTable === '') {
-            throw new \InvalidArgumentException('Liansheng points adjustment room table must not be empty.');
+            throw new \InvalidArgumentException('Liansheng points deduction room table must not be empty.');
         }
         if ($remarks === '') {
-            $remarks = 'Liansheng points adjustment';
+            $remarks = 'Liansheng points deduction';
         }
 
         // The vendor has returned successful responses without applying the
@@ -270,17 +223,19 @@ final class LianshengService implements LianshengServiceInterface
         $beforeScore = $this->getMemberScoreValue($mobile);
 
         $effectiveAccountDate = $accountDate ?? new \DateTimeImmutable();
-        $effectiveExpiryDate = $expiryDate ?? $effectiveAccountDate;
+        // 0703 only deducts, and only through the `score` field. `creditscore` /
+        // `debitscore` are ignored, `dirflag` has no effect (a "+" call still
+        // subtracts), and crediting is impossible — so there is no credit or
+        // refund path. Verified live 2026-09-23.
         $response = $this->request('POST', '/api/vip.api', [
             'headers' => ['Token' => $this->getToken()],
             'query' => ['method' => 'vipsubscore'],
             'json' => [
                 'mobile' => $mobile,
                 'accountdate' => $effectiveAccountDate->format('Y-m-d'),
-                'dirflag' => $direction,
-                'creditscore' => $direction === '+' ? $points : 0,
-                'debitscore' => $direction === '-' ? $points : 0,
-                'expirydate' => $effectiveExpiryDate->format('Y-m-d'),
+                'dirflag' => '-',
+                'score' => $points,
+                'expirydate' => $effectiveAccountDate->format('Y-m-d'),
                 'accno' => $reference,
                 'billno' => $reference,
                 'roomtable' => $roomTable,
@@ -300,15 +255,14 @@ final class LianshengService implements LianshengServiceInterface
             ));
         }
 
-        // Verify the adjustment landed; fail closed so callers (payment gateway,
+        // Verify the deduction landed; fail closed so callers (payment gateway,
         // manage adjustments) never record an unapplied change as successful.
         $afterScore = $this->getMemberScoreValue($mobile);
-        $expectedDelta = $direction === '+' ? (float) $points : -(float) $points;
-        if (abs(($afterScore - $beforeScore) - $expectedDelta) > 0.001) {
+        if (abs(($afterScore - $beforeScore) + $points) > 0.001) {
             throw new LianshengApiException(sprintf(
-                'Liansheng points adjustment was not applied (mobile %s, expected %+d, balance %.2f -> %.2f).',
+                'Liansheng points deduction was not applied (mobile %s, expected -%d, balance %.2f -> %.2f).',
                 $mobile,
-                $direction === '+' ? $points : -$points,
+                $points,
                 $beforeScore,
                 $afterScore,
             ));
@@ -396,7 +350,7 @@ final class LianshengService implements LianshengServiceInterface
     }
 
     /**
-     * @return array{store: Store, baseUrl: string, appCode: string, appSecret: string, userId: string, pointRefundExpiryDate?: string, memberCardTypeId?: string}
+     * @return array{store: Store, baseUrl: string, appCode: string, appSecret: string, userId: string, memberCardTypeId?: string}
      */
     private function configuration(): array
     {
@@ -428,12 +382,6 @@ final class LianshengService implements LianshengServiceInterface
             $configuration[$key] = $value;
         }
 
-        if (isset($liansheng['pointRefundExpiryDate'])) {
-            if (!is_string($liansheng['pointRefundExpiryDate'])) {
-                throw new LianshengApiException('settings.liansheng.pointRefundExpiryDate must be a string.');
-            }
-            $configuration['pointRefundExpiryDate'] = trim($liansheng['pointRefundExpiryDate']);
-        }
         if (isset($liansheng['memberCardTypeId'])) {
             if (!is_string($liansheng['memberCardTypeId'])) {
                 throw new LianshengApiException('settings.liansheng.memberCardTypeId must be a string.');
@@ -441,7 +389,7 @@ final class LianshengService implements LianshengServiceInterface
             $configuration['memberCardTypeId'] = trim($liansheng['memberCardTypeId']);
         }
 
-        /** @var array{store: Store, baseUrl: string, appCode: string, appSecret: string, userId: string, pointRefundExpiryDate?: string, memberCardTypeId?: string} $configuration */
+        /** @var array{store: Store, baseUrl: string, appCode: string, appSecret: string, userId: string, memberCardTypeId?: string} $configuration */
         return $configuration;
     }
 
