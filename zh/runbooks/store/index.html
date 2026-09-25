@@ -2144,10 +2144,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#5-troubleshooting" class="md-nav__link">
+  <a href="#5-console-commands" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5. Troubleshooting
+        5. Console Commands
       
     </span>
   </a>
@@ -2155,10 +2155,54 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#6-checklist-before-going-live" class="md-nav__link">
+  <a href="#6-smoke-test" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6. Checklist Before Going Live
+        6. Smoke Test
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-docker-ops" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Docker Ops
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-seed-migrate-sequence-fresh-deploy-affecting-storetrade" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Seed / Migrate Sequence (fresh deploy affecting store/trade)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Troubleshooting
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-checklist-before-going-live" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Checklist Before Going Live
       
     </span>
   </a>
@@ -3027,10 +3071,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#5-troubleshooting" class="md-nav__link">
+  <a href="#5-console-commands" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5. Troubleshooting
+        5. Console Commands
       
     </span>
   </a>
@@ -3038,10 +3082,54 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#6-checklist-before-going-live" class="md-nav__link">
+  <a href="#6-smoke-test" class="md-nav__link">
     <span class="md-ellipsis">
       
-        6. Checklist Before Going Live
+        6. Smoke Test
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-docker-ops" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Docker Ops
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-seed-migrate-sequence-fresh-deploy-affecting-storetrade" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Seed / Migrate Sequence (fresh deploy affecting store/trade)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Troubleshooting
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-checklist-before-going-live" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Checklist Before Going Live
       
     </span>
   </a>
@@ -3071,28 +3159,42 @@
 <h1 id="store-runbook">Store Runbook<a class="headerlink" href="#store-runbook" title="Permanent link">&para;</a></h1>
 <p>This runbook is the operational guide for configuring and operating the Store
 module (multi-store operations, store orders, membership). It complements
-<a href="../../design/bundles/store/"><t1/></a>.</p>
+<a href="../../design/bundles/store/"><t2/></a>.</p>
 <h2 id="1-concepts-in-one-minute">1. Concepts In One Minute<a class="headerlink" href="#1-concepts-in-one-minute" title="Permanent link">&para;</a></h2>
 <ul>
 <li><strong>Store</strong> is the multi-store tenant boundary.</li>
-<li><strong>StoreOrder</strong> extends the trade order flow with store acceptance/rejection.</li>
+<li><strong>StoreOrder</strong> tracks fulfillment of a store-scoped Trade order (<code>operationalStatus</code>:
+  <code>pending_validation → awaiting_inventory → accepted → fulfilling/fulfilled → verified</code>,
+  plus <code>rejected</code> / <code>cancelled</code>).</li>
 <li><strong>Membership</strong> tracks store-level membership.</li>
 <li>Store context is resolved per request and drives promotion and inventory scoping.</li>
 </ul>
 <h2 id="2-store-context">2. Store Context<a class="headerlink" href="#2-store-context" title="Permanent link">&para;</a></h2>
-<p>A <code>StoreContextResolver</code> resolves the current store from the request. It is bound to
-<code>App\Trade\Service\StoreContextResolverInterface</code>. Store context drives:</p>
+<p>A <code>StoreContextResolver</code> resolves the current store from the <code>X-Store-Code</code>
+request header. It is bound to
+<code>App\Trade\Service\StoreContextResolverInterface</code>. Unknown or inactive codes
+throw <code>404 Store is not available</code>. Store context drives:</p>
 <ul>
 <li>Promotion availability (<code>storeCode</code>).</li>
 <li>Inventory scoping (per-store stock).</li>
-<li>Order store association.</li>
+<li>Order store association, currency authoritativeness (mismatched <code>currency</code>
+  is rejected with <code>400 Currency mismatch</code>), and the <code>_completionMode</code>
+  snapshot (<code>store_verification</code> when the Store's
+  <code>settings.fulfillment.requireVerification</code> is <code>true</code>, else <code>manual</code>).</li>
 </ul>
 <h2 id="3-store-order-flow">3. Store Order Flow<a class="headerlink" href="#3-store-order-flow" title="Permanent link">&para;</a></h2>
-<p>Trade orders are extended with store acceptance:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>trade order created → store submit → store accept / store reject
+<p>A store-scoped Trade order auto-submits on creation and emits
+<code>trade.order.created.v1</code> for the Store consumer (plain orders without
+<code>X-Store-Code</code> stay <code>draft</code> with no outbox):</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>POST /api/v1/app/orders + X-Store-Code → trade pending → store pending_validation
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>  → accepted (INVENTORY_ENABLED=0) / awaiting_inventory → accepted (INVENTORY_ENABLED=1)
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>  → fulfilling/fulfilled → verified (only when verificationRequired=true)
 </code></pre></div>
-<p>The store workflow is enforced by Symfony Workflow. Use the transitions endpoint to
-discover available moves.</p>
+<p>There is no "store submit / accept / reject" transition endpoint. Acceptance is
+automatic (or via the inventory reservation path); rejection/cancellation is
+recorded on the <code>StoreOrder</code>. Fulfillment and verification are staff actions
+(see §4). Verification emits <code>store.order.verified.v1</code>, which completes the
+Trade order (<code>fulfilled → completed</code>) via the async relay.</p>
 <h2 id="4-store-endpoints">4. Store Endpoints<a class="headerlink" href="#4-store-endpoints" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
@@ -3104,23 +3206,163 @@ discover available moves.</p>
 </thead>
 <tbody>
 <tr>
-<td>GET/POST/PUT/DELETE</td>
-<td><code>/api/v1/manage/stores[/{id}]</code></td>
-<td>Store CRUD</td>
+<td>GET</td>
+<td><code>/api/v1/manage/stores</code></td>
+<td>List stores</td>
 </tr>
 <tr>
-<td>GET/POST/PUT/DELETE</td>
-<td><code>/api/v1/manage/store-orders[/{id}]</code></td>
-<td>Store order management</td>
+<td>POST</td>
+<td><code>/api/v1/manage/stores</code></td>
+<td>Create store (<code>code</code>, <code>name</code>, <code>timezone</code> required)</td>
 </tr>
 <tr>
-<td>GET/POST/PUT/DELETE</td>
-<td><code>/api/v1/staff/store-orders[/{id}]</code></td>
-<td>Staff store order operations</td>
+<td>GET / PUT</td>
+<td><code>/api/v1/manage/stores/{uuid}</code></td>
+<td>Store detail / update</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/v1/manage/stores/{uuid}/status/{activate\|suspend\|close}</code></td>
+<td>Change store status</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/v1/manage/stores/{uuid}/members</code></td>
+<td>List store members</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/v1/manage/stores/{uuid}/members</code></td>
+<td>Grant membership (<code>userUuid</code>, <code>role</code>)</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/v1/manage/store-orders</code></td>
+<td>List store orders (read-only)</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/v1/manage/store-orders/{id}</code></td>
+<td>Store order detail (read-only)</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/v1/store/{storeUuid}/orders</code></td>
+<td>Staff: list scoped orders</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/api/v1/store/{storeUuid}/orders/{orderUuid}</code></td>
+<td>Staff: scoped order detail</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/v1/store/{storeUuid}/orders/{orderUuid}/fulfill</code></td>
+<td>Staff: fulfill (requires <code>accepted</code> / <code>fulfillment_pending</code> / <code>fulfilling</code>)</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/v1/store/{storeUuid}/orders/{orderUuid}/verify</code></td>
+<td>Staff: verify (requires <code>fulfilled</code> + <code>verificationRequired=true</code>; emits <code>store.order.verified.v1</code>)</td>
 </tr>
 </tbody>
 </table>
-<h2 id="5-troubleshooting">5. Troubleshooting<a class="headerlink" href="#5-troubleshooting" title="Permanent link">&para;</a></h2>
+<h2 id="5-console-commands">5. Console Commands<a class="headerlink" href="#5-console-commands" title="Permanent link">&para;</a></h2>
+<p>No store admin commands exist beyond the outbox publisher (verified: only
+<code>src/Store/Command/PublishOutboxCommand.php</code> under <code>src/Store/Command/</code>).</p>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>php bin/console app:store:outbox:publish --no-interaction</code></td>
+<td>Publish pending Store outbox topics (<code>store.order.verified.v1</code>, <code>inventory.reservation.requested.v1</code>, <code>inventory.reservation.release.requested.v1</code>) to the <code>async</code> transport</td>
+</tr>
+<tr>
+<td><code>php bin/console app:trade:outbox:publish --no-interaction</code></td>
+<td>Publish <code>trade.order.created.v1</code> / <code>trade.order.cancelled.v1</code> (feeds the Store consumer)</td>
+</tr>
+<tr>
+<td><code>php bin/console app:inventory:outbox:publish --no-interaction</code></td>
+<td>Publish inventory reservation outcomes (needed when <code>INVENTORY_ENABLED=1</code>)</td>
+</tr>
+<tr>
+<td><code>php bin/console messenger:consume async --limit=20 --time-limit=10 --no-interaction</code></td>
+<td>One-shot async relay (unpacks outbox events into <code>store_order</code> rows / status moves)</td>
+</tr>
+<tr>
+<td><code>php bin/console app:identity:user:create &lt;email&gt; &lt;username&gt; &lt;password&gt; [--admin] [--role=ROLE_X] [--phone=...] [--phone-verified]</code></td>
+<td>Create a user (used by smoke tests to bootstrap <code>admin@example.com</code>)</td>
+</tr>
+<tr>
+<td><code>php bin/console app:authorization:seed</code></td>
+<td>Seed Authorization permissions/roles/field-grants (idempotent; covers <code>store:order:*</code>, <code>store:product:*</code>, <code>store:specification:*</code>)</td>
+</tr>
+</tbody>
+</table>
+<p>The Docker <code>scheduler</code> runs the full publish loop every
+<code>${OUTBOX_PUBLISH_INTERVAL:-5}</code> seconds (see §7).</p>
+<h2 id="6-smoke-test">6. Smoke Test<a class="headerlink" href="#6-smoke-test" title="Permanent link">&para;</a></h2>
+<p><code>scripts/tests/store-smoke.sh</code> — store order orchestration. Requires a running
+server (<code>BASE</code> default <code>http://127.0.0.1:8000</code>), <code>curl</code>, <code>python3</code>, <code>symfony</code> CLI.</p>
+<p>What it covers:</p>
+<ol>
+<li>Bootstraps <code>admin@example.com</code> via <code>app:identity:user:create ... --admin</code> if login fails.</li>
+<li>Creates a store (<code>POST /api/v1/manage/stores</code>) and grants the admin <code>manager</code>
+   membership (<code>POST /api/v1/manage/stores/{uuid}/members</code>).</li>
+<li>Creates a product + specification.</li>
+<li>Optional inventory path when <code>INVENTORY_ENABLED=1</code> (default <code>0</code>): creates a
+   material, sets <code>allowNegativeStock=true</code>, adjusts stock, creates a recipe.</li>
+<li>Creates a store-scoped order (<code>POST /api/v1/app/orders</code> with <code>X-Store-Code</code> header).</li>
+<li>Runs the production relay: <code>app:trade:outbox:publish</code> → <code>messenger:consume async</code>.</li>
+<li>Expects staff <code>GET /api/v1/store/{uuid}/orders</code> to show <code>accepted</code>
+   (<code>awaiting_inventory</code> first when <code>INVENTORY_ENABLED=1</code>, then <code>accepted</code> after
+   the store/inventory publish + consume steps).</li>
+<li>Runs <code>app:store:outbox:publish</code> → <code>messenger:consume async</code> and expects the
+   Trade order (<code>GET /api/v1/app/orders/{id}</code>) to reflect Store acceptance.</li>
+</ol>
+<h2 id="7-docker-ops">7. Docker Ops<a class="headerlink" href="#7-docker-ops" title="Permanent link">&para;</a></h2>
+<p>Services in <code>compose.yaml</code>: <code>app</code> (PHP-FPM), <code>worker</code>, <code>scheduler</code>, <code>nginx</code>,
+<code>database</code> (MySQL 8), <code>redis</code>, <code>mailer</code> (Mailpit).</p>
+<ul>
+<li><strong>worker</strong> consumes the <code>async</code> transport:
+  <code>php bin/console messenger:consume async --time-limit=3600 --memory-limit=256M --no-interaction</code>.
+  All Store/Trade/Inventory messages route to <code>async</code> (<code>config/packages/messenger.yaml</code>);
+  failures go to the <code>failed</code> transport (<code>doctrine://default?queue_name=failed</code>).</li>
+<li><strong>scheduler</strong> loops every <code>${OUTBOX_PUBLISH_INTERVAL:-5}</code> (default <code>5</code> seconds):
+  <code>app:trade:outbox:publish</code>, <code>app:store:outbox:publish</code>,
+  <code>app:inventory:outbox:publish</code>, <code>app:inventory:reservations:release-expired</code>,
+  <code>app:settlement:allocations:requeue-due</code>, <code>app:settlement:outbox:publish</code>.</li>
+<li><strong>JWT keys</strong> (<code>docker/app/entrypoint.sh</code>): if both keys exist they are reused;
+  in non-prod missing keys are auto-generated (2048-bit RSA, private key mode
+  <code>600</code>, persisted under mounted <code>var/</code>); in <code>prod</code> missing keys abort startup —
+  generate on the host first.</li>
+<li><strong>Env vars</strong>: <code>compose.prod.yaml</code> requires <code>APP_SECRET</code>,
+  <code>REFRESH_TOKEN_SECRET</code>, <code>MYSQL_PASSWORD</code>, <code>MYSQL_ROOT_PASSWORD</code>. Store-relevant
+  runtime knobs: <code>INVENTORY_ENABLED</code> (default <code>0</code>), <code>OUTBOX_PUBLISH_INTERVAL</code>
+  (default <code>5</code>), <code>MESSENGER_TRANSPORT_DSN</code> (default
+  <code>doctrine://default?auto_setup=0</code>).</li>
+<li><strong>Healthchecks</strong>: public <code>GET /health/live</code> (always 200 while PHP serves) and
+  <code>GET /health/ready</code> (DB required, Redis optional via <code>OTP_REDIS_DSN</code>); the
+  <code>nginx</code> healthcheck polls <code>/health/ready</code> through the full stack.</li>
+<li><strong>Metrics</strong>: public <code>GET /metrics</code> exposes <code>app_outbox_backlog{topic="store"}</code>
+  (unpublished <code>store_outbox_message</code> rows) and <code>app_messenger_failed</code>
+  (<code>messenger_messages</code> where <code>queue_name='failed'</code>).</li>
+</ul>
+<h2 id="8-seed-migrate-sequence-fresh-deploy-affecting-storetrade">8. Seed / Migrate Sequence (fresh deploy affecting store/trade)<a class="headerlink" href="#8-seed-migrate-sequence-fresh-deploy-affecting-storetrade" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>docker<span class="w"> </span>compose<span class="w"> </span>up<span class="w"> </span>-d<span class="w"> </span>--build
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>docker<span class="w"> </span>compose<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>app<span class="w"> </span>php<span class="w"> </span>bin/console<span class="w"> </span>doctrine:migrations:migrate<span class="w"> </span>--no-interaction
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>docker<span class="w"> </span>compose<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>app<span class="w"> </span>php<span class="w"> </span>bin/console<span class="w"> </span>app:identity:user:create<span class="w"> </span>admin@example.com<span class="w"> </span>admin<span class="w"> </span><span class="s1">'P@ssw0rd'</span><span class="w"> </span>--admin
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>docker<span class="w"> </span>compose<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>app<span class="w"> </span>php<span class="w"> </span>bin/console<span class="w"> </span>app:authorization:seed
+</code></pre></div>
+<p>Production adds <code>-f compose.yaml -f compose.prod.yaml --env-file .env.prod.local</code>
+to each <code>docker compose</code> invocation. Check pending migrations with
+<code>doctrine:migrations:status</code>.</p>
+<h2 id="9-troubleshooting">9. Troubleshooting<a class="headerlink" href="#9-troubleshooting" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
@@ -3132,27 +3374,64 @@ discover available moves.</p>
 <tbody>
 <tr>
 <td>Store not resolved</td>
-<td>Missing store context</td>
-<td>Check <code>StoreContextResolver</code> and request store header</td>
+<td>Missing <code>X-Store-Code</code> header</td>
+<td>Send <code>X-Store-Code: &lt;code&gt;</code>; resolver returns <code>null</code> without it</td>
 </tr>
 <tr>
-<td>Order cannot be accepted</td>
-<td>Wrong state</td>
-<td>Check store workflow transitions</td>
+<td><code>404 Store is not available</code></td>
+<td>Unknown or inactive store code</td>
+<td>Check store <code>code</code> and status (<code>activate</code> via <code>POST /api/v1/manage/stores/{uuid}/status/activate</code>)</td>
+</tr>
+<tr>
+<td><code>400 Currency mismatch</code></td>
+<td>Request <code>currency</code> differs from Store currency</td>
+<td>Omit <code>currency</code> or match the Store's currency</td>
+</tr>
+<tr>
+<td>Store order never appears</td>
+<td>Outbox relay not running</td>
+<td>Run <code>app:trade:outbox:publish</code> then <code>messenger:consume async</code>; check <code>app_outbox_backlog{topic="trade"}</code> at <code>/metrics</code></td>
+</tr>
+<tr>
+<td>Stuck in <code>awaiting_inventory</code></td>
+<td>Inventory relay not running or stock short</td>
+<td>Run <code>app:store:outbox:publish</code> → consume → <code>app:inventory:outbox:publish</code> → consume; check stock and <code>allowNegativeStock</code></td>
+</tr>
+<tr>
+<td><code>Store verification is disabled</code> on verify</td>
+<td>Order snapshot <code>verificationRequired=false</code></td>
+<td>Verification only applies when the Store had <code>settings.fulfillment.requireVerification=true</code> at order creation; immutable per order</td>
+</tr>
+<tr>
+<td><code>Store order cannot be verified in its current status</code></td>
+<td>Not <code>fulfilled</code> yet, or already <code>verified</code></td>
+<td>Fulfill first (<code>POST .../fulfill</code>); check <code>operationalStatus</code> / <code>verifiedAt</code></td>
+</tr>
+<tr>
+<td><code>Trade fulfilled → completed</code> never happens</td>
+<td><code>store.order.verified.v1</code> not relayed, or order is <code>manual</code> mode</td>
+<td>Run <code>app:store:outbox:publish</code> + consume; only <code>_completionMode=store_verification</code> orders complete via verification (manual <code>do/complete</code> is blocked with <code>Store verification is required</code>)</td>
 </tr>
 <tr>
 <td>Promotion not scoped</td>
 <td><code>storeCode</code> mismatch</td>
 <td>Verify promotion <code>storeCode</code></td>
 </tr>
+<tr>
+<td>Failed async messages piling up</td>
+<td>Handler exception / retry exhaustion</td>
+<td>Check <code>app_messenger_failed</code> at <code>/metrics</code>; inspect <code>messenger_messages</code> rows with <code>queue_name='failed'</code></td>
+</tr>
 </tbody>
 </table>
-<h2 id="6-checklist-before-going-live">6. Checklist Before Going Live<a class="headerlink" href="#6-checklist-before-going-live" title="Permanent link">&para;</a></h2>
+<h2 id="10-checklist-before-going-live">10. Checklist Before Going Live<a class="headerlink" href="#10-checklist-before-going-live" title="Permanent link">&para;</a></h2>
 <ul>
-<li>[ ] Stores created.</li>
-<li>[ ] Store context resolver configured.</li>
-<li>[ ] Store workflow transitions verified.</li>
+<li>[ ] Stores created and <code>activate</code>d.</li>
+<li>[ ] Store context (<code>X-Store-Code</code>) verified; currency matches.</li>
+<li>[ ] <code>settings.fulfillment.requireVerification</code> set per business need (immutable per order once snapshotted).</li>
+<li>[ ] Staff memberships granted; <code>store:order:fulfill</code> / <code>store:order:verify</code> permissions seeded via <code>app:authorization:seed</code>.</li>
 <li>[ ] Promotions and inventory scoped to stores.</li>
+<li>[ ] <code>worker</code> + <code>scheduler</code> running; <code>/metrics</code> backlogs near zero; <code>/health/ready</code> returns 200.</li>
 </ul>
 
 

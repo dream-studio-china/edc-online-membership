@@ -3790,7 +3790,7 @@ the <code>App</code> and <code>Manage</code> controller trees (attribute routing
 <td><code>/api/v1/app/stores/{uuid}/membership</code></td>
 <td>POST</td>
 <td><code>ROLE_USER</code></td>
-<td><strong>Self-join as member</strong> (idempotent, fixed <code>role=clerk</code>, body ignored, <code>200 Already a member</code> / <code>201 Joined</code>)</td>
+<td><strong>Self-join as member</strong> (idempotent, fixed <code>role=clerk</code>, body ignored, <code>200 Already a member</code> / <code>201 Joined</code> / <code>200 reactivated</code>)</td>
 </tr>
 <tr>
 <td><code>/api/v1/app/stores/{uuid}/membership</code></td>
@@ -3802,7 +3802,55 @@ the <code>App</code> and <code>Manage</code> controller trees (attribute routing
 <td><code>/api/v1/app/orders</code></td>
 <td>POST</td>
 <td><code>ROLE_USER</code></td>
-<td>Create order — <code>currency</code> is <strong>authoritative from <code>Store</code></strong> via <code>X-Store-Code</code> header (<code>LIANSHENG_POINT</code> for points mall, <code>CNY</code> otherwise); mismatch <code>400 Currency mismatch</code>; global (no header) defaults to <code>CNY</code></td>
+<td>Create order — <code>currency</code> is <strong>authoritative from <code>Store</code></strong> via <code>X-Store-Code</code> header (<code>LIANSHENG_POINT</code> for points mall, <code>CNY</code> otherwise); mismatch <code>400 Currency mismatch</code>; global (no header) defaults to <code>CNY</code>; unknown/inactive code <code>404 Store is not available</code>; a store order auto-submits and emits <code>trade.order.created.v1</code></td>
+</tr>
+<tr>
+<td><code>/api/v1/app/orders/quote</code></td>
+<td>POST</td>
+<td><code>ROLE_USER</code></td>
+<td>Price preview — same <code>X-Store-Code</code>/currency rule as create, no order persisted</td>
+</tr>
+<tr>
+<td><code>/api/v1/app/orders/{id}/submit</code></td>
+<td>POST</td>
+<td><code>ROLE_USER</code></td>
+<td><code>draft → pending</code> (own order only, else <code>404</code>)</td>
+</tr>
+<tr>
+<td><code>/api/v1/app/orders/{id}/confirm</code></td>
+<td>POST</td>
+<td><code>ROLE_USER</code></td>
+<td><code>pending → confirmed</code> (own order only, else <code>404</code>)</td>
+</tr>
+<tr>
+<td><code>/api/v1/app/orders/{id}/payment</code></td>
+<td>POST</td>
+<td><code>ROLE_USER</code></td>
+<td>Start payment (<code>confirmed</code> only; body <code>payment</code> defaults <code>mock</code>, see <code>openapi/order-payment-flow.md</code>)</td>
+</tr>
+<tr>
+<td><code>/api/v1/app/orders/{id}/cancel</code></td>
+<td>POST</td>
+<td><code>ROLE_USER</code></td>
+<td><code>draft/pending/confirmed → cancelled</code> (own order only; linked pending invoice cancelled too)</td>
+</tr>
+<tr>
+<td><code>/api/v1/manage/orders/{id}/fulfill</code></td>
+<td>POST</td>
+<td><code>ROLE_ADMIN</code></td>
+<td><code>paid → fulfilled</code> (<code>trackingNumber</code>/<code>shippingAddress</code>)</td>
+</tr>
+<tr>
+<td><code>/api/v1/manage/orders/{id}/refund</code></td>
+<td>POST</td>
+<td><code>ROLE_ADMIN</code></td>
+<td><code>paid → refunded</code> (<code>reason</code> required; <code>systemWalletId</code> only when no linked invoice); <code>liansheng_point</code> invoices cannot be refunded</td>
+</tr>
+<tr>
+<td><code>/api/v1/manage/orders/{id}/do/{transition}</code></td>
+<td>POST</td>
+<td><code>ROLE_ADMIN</code></td>
+<td>Generic workflow step (<code>submit/confirm/pay/fulfill/complete/cancel/refund</code>); <code>complete</code> blocked when order <code>_completionMode == 'store_verification'</code></td>
 </tr>
 </tbody>
 </table>
@@ -3982,7 +4030,7 @@ are gateway-specific plain text/accepted bytes required by each provider.</p>
 <hr />
 <h2 id="8-reference">8. Reference<a class="headerlink" href="#8-reference" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Design contract: <a href="../../design/api-design/"><t249/></a></li>
+<li>Design contract: <a href="../../design/api-design/"><t288/></a></li>
 <li>Controller + mixins: <code>src/Core/Controller/RestController.php</code>, <code>src/Core/View/*</code></li>
 <li>Auth: <code>src/Identity/Controller/AuthController.php</code>, <code>src/Identity/Controller/OtpController.php</code></li>
 <li>Webhooks: <code>src/Payment/Controller/Webhook/PaymentNotifyController.php</code></li>

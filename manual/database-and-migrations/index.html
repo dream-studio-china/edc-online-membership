@@ -3486,6 +3486,18 @@ timestamps use the date, e.g. <code>Version20250620000000</code>, <code>Version2
 <td>trade_outbox_message</td>
 </tr>
 <tr>
+<td><code>Version20260725030000</code></td>
+<td>trade_specification UUID (<code>uniq_trade_specification_uuid</code>)</td>
+</tr>
+<tr>
+<td><code>Version20260725040000</code></td>
+<td>align Store/Trade outbox schema with Doctrine mappings</td>
+</tr>
+<tr>
+<td><code>Version20260725050000</code></td>
+<td><code>trade_order.status</code> widened to VARCHAR(40)</td>
+</tr>
+<tr>
 <td><code>Version20260726000000</code></td>
 <td>inventory material/stock/recipe/reservation/ledger + inbox/outbox + store_trade_order_cancellation</td>
 </tr>
@@ -3496,6 +3508,34 @@ timestamps use the date, e.g. <code>Version20250620000000</code>, <code>Version2
 <tr>
 <td><code>Version20260819000001</code></td>
 <td>+ <code>source_item_id</code>, <code>source_item_snapshot</code> on settlement_allocation</td>
+</tr>
+<tr>
+<td><code>Version20260902000000</code></td>
+<td><code>trade_product.store_id</code> nullable (<code>SET NULL</code>, <code>idx_trade_product_store</code>) — <code>NULL</code> = shared/global</td>
+</tr>
+<tr>
+<td><code>Version20260903000000</code> / <code>Version20260903000001</code></td>
+<td><code>trade_order_item.specification_uuid</code> add + backfill from <code>specification_id</code>, then drop <code>specification_id</code> FK/column</td>
+</tr>
+<tr>
+<td><code>Version20260903000003</code></td>
+<td><code>store_order</code> verification audit columns <code>verified_at</code> / <code>verified_by</code> / <code>verification_code</code> (note: <code>verification_code</code> is DB-only — no entity field reads it; verification uses the order UUID)</td>
+</tr>
+<tr>
+<td><code>Version20260903000004</code></td>
+<td><code>store.currency</code> VARCHAR(32) <code>DEFAULT 'CNY'</code> (existing stores backfilled to <code>LIANSHENG_POINT</code>)</td>
+</tr>
+<tr>
+<td><code>Version20260903000005</code></td>
+<td>currency widened to VARCHAR(32) on <code>trade_order</code>, <code>payment_invoice</code>, <code>store_order</code></td>
+</tr>
+<tr>
+<td><code>Version20260905000000</code></td>
+<td><code>store_order.verification_required</code> snapshot (from <code>StoreContext.requireVerification</code>)</td>
+</tr>
+<tr>
+<td><code>Version20260911000000</code></td>
+<td><code>trade_product.type</code> (<code>normal</code>/<code>coupon</code>, <code>idx_trade_product_type</code>)</td>
 </tr>
 </tbody>
 </table>

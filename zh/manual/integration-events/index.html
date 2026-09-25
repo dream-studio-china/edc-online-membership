@@ -3643,7 +3643,7 @@ carry <strong>explicit scalar fields</strong> rather than an envelope (see
 <tr>
 <td><code>trade.order.created.v1</code></td>
 <td><code>trade_outbox_message</code></td>
-<td>Store (<code>TradeOrderCreatedHandler</code>) — always emitted when a <code>StoreContext</code> is present; Store validates and auto-accepts or creates an inventory reservation (no Trade ack)</td>
+<td>Store (<code>TradeOrderCreatedHandler</code>) — always emitted when a <code>StoreContext</code> is present (order auto-submitted); payload <code>{orderUuid, store{uuid,code,name,channel,currency,requireVerification}, customerUserUuid, currency, totalAmount, items[{lineId,catalogReference,quantity,unitPrice,lineAmount,snapshot}], delivery, placedAt}</code>; Store validates and auto-accepts or creates an inventory reservation (no Trade ack)</td>
 </tr>
 <tr>
 <td><code>trade.order.cancelled.v1</code></td>
@@ -3869,7 +3869,7 @@ simpler: a reused id is silently skipped.</p>
     participant IO as Inventory Outbox
 
     T-&gt;&gt;T: OrderService::createOrder(storeContext)&lt;br/&gt;(txn) workflow submit + record trade.order.created.v1&lt;br/&gt;metadata._completionMode = requireVerification ? 'store_verification' : 'manual'
-    T-&gt;&gt;TO: (txn) += trade.order.created.v1 {orderUuid, store{uuid,code,name,requireVerification}, items, delivery, placedAt}
+    T-&gt;&gt;TO: (txn) += trade.order.created.v1 {orderUuid, store{uuid,code,name,channel,currency,requireVerification}, customerUserUuid, currency, totalAmount, items, delivery, placedAt}
     TO-&gt;&gt;S: app:trade:outbox:publish → TradeOrderCreatedMessage
     S-&gt;&gt;S: (txn) inbox += trade.order.created.v1 (StoreConsumedEvent)
     alt store missing or inactive

@@ -233,6 +233,8 @@ paths:
         Creates order through the price calculation pipeline:
         resolve specifications → validate → compute line-item prices → aggregate total.
         Money: all amounts in cents. API returns decimal.
+        Currency is authoritative from the Store resolved via `X-Store-Code`
+        (mismatch → 400); without the header it defaults to `CNY`.
       requestBody:
         required: true
         content:
@@ -311,7 +313,8 @@ paths:
       summary: 'Execute workflow transition'
       description: >
         **State Machine:**
-        draft → `submit`→ pending → `confirm`→ confirmed → `pay`→ paid → `fulfill`→ fulfilled → `complete`→ completed → `refund`→ refunded.
+        draft → `submit`→ pending → `confirm`→ confirmed → `pay`→ paid → `fulfill`→ fulfilled → `complete`→ completed.
+        Refund: `refund` from paid → refunded (not from completed/fulfilled).
         Cancel: `cancel` from draft/pending/confirmed. Optionally pass data to update entity before transition.
         When `_completionMode` is `store_verification` (Store `fulfillment.requireVerification=true` snapshotted at creation), `complete` is blocked for manual calls and completes only via Store verification (`POST /store/{scopeId}/orders/{uuid}/verify`).
       requestBody:
@@ -319,29 +322,6 @@ paths:
           application/json:
             schema: { type: object }
             example: { notes: 'Submitted with notes', metadata: { source: 'admin' } }
-
-  /api/v1/manage/orders/{id}/pay:
-    parameters:
-      - { name: id, in: path, required: true, schema: { type: integer } }
-    post:
-      tags: [Orders]
-      summary: 'Pay for order (wallet deduction + transition)'
-      description: >
-        Transfers from user wallet → system wallet. Sets paidAt + paymentMethod.
-        Applies `pay` transition. Order must be in `confirmed` status.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required: [systemWalletId]
-              properties:
-                systemWalletId: { type: integer, description: 'System wallet to receive payment', example: 1 }
-                paymentMethod: { type: string, default: wallet, example: wallet }
-            example:
-              systemWalletId: 1
-              paymentMethod: wallet
 
   /api/v1/manage/orders/{id}/fulfill:
     parameters:
@@ -369,17 +349,19 @@ paths:
       tags: [Orders]
       summary: 'Refund order (wallet credit + transition)'
       description: >
-        Transfers from system wallet → user wallet. Sets refundedAt + refundReason.
-        Applies `refund` transition. Order must be `completed`.
+        Transfers from system wallet → user wallet, or refunds the linked invoice
+        for its remaining amount. Sets refundedAt + refundReason.
+        Applies `refund` transition. Order must be `paid`.
+        `liansheng_point` invoices cannot be refunded.
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
-              required: [systemWalletId, reason]
+              required: [reason]
               properties:
-                systemWalletId: { type: integer, description: 'System wallet to refund from', example: 1 }
+                systemWalletId: { type: integer, description: 'Required only when the order has no linked invoice', example: 1 }
                 reason: { type: string, example: 'Customer changed mind' }
             example:
               systemWalletId: 1
@@ -391,14 +373,14 @@ paths:
   /api/v1/app/products:
     get:
       tags: [Products]
-      summary: 'List active products (public)'
-      description: 'Only active, non-deleted products. No auth required.'
+      summary: 'List active products (authenticated)'
+      description: 'Only active, non-deleted products (shared/global without X-Store-Code; shared + store catalog with X-Store-Code). Requires authentication.'
 
   /api/v1/app/products/{id}:
     parameters: [{ name: id, in: path, required: true, schema: { type: integer } }]
     get:
       tags: [Products]
-      summary: 'Get product detail (public)'
+      summary: 'Get product detail (authenticated)'
 
   /api/v1/app/orders:
     get:
@@ -408,7 +390,12 @@ paths:
     post:
       tags: [Orders]
       summary: 'Create order (self-service)'
-      description: 'Auto-assigns current user as buyer. No user field needed.'
+      description: >
+        Auto-assigns current user as buyer. No user field needed.
+        Currency is authoritative from the Store resolved via `X-Store-Code`
+        (`LIANSHENG_POINT` for points mall, `CNY` otherwise); mismatch → 400.
+        Without the header it defaults to `CNY`. A store order auto-submits and
+        emits `trade.order.created.v1`.
       requestBody:
         required: true
         content:
@@ -418,7 +405,9 @@ paths:
               required: [items]
               properties:
                 items: { type: array, items: { type: object } }
+                currency: { type: string, example: CNY }
                 notes: { type: string }
+                metadata: { type: object }
             example:
               items: [{ specificationId: 1, quantity: 1 }]
               notes: 'Please deliver after 6pm'
@@ -444,7 +433,37 @@ paths:
       summary: 'Cancel own order'
       description: >
         User cancels own order. Allowed: draft, pending, confirmed.
-        NOT allowed: paid, fulfilled, completed (need admin refund).
+        NOT allowed: paid, fulfilled, completed (need admin refund from paid).
+
+  /api/v1/app/orders/quote:
+    post:
+      tags: [Orders]
+      summary: 'Price preview (no order created)'
+      description: 'Same X-Store-Code/currency rule as create. Requires ROLE_USER.'
+
+  /api/v1/app/orders/{id}/submit:
+    parameters: [{ name: id, in: path, required: true, schema: { type: integer } }]
+    post:
+      tags: [Orders]
+      summary: 'Submit own order (draft → pending)'
+      description: 'Own order only (404 otherwise). Requires ROLE_USER.'
+
+  /api/v1/app/orders/{id}/confirm:
+    parameters: [{ name: id, in: path, required: true, schema: { type: integer } }]
+    post:
+      tags: [Orders]
+      summary: 'Confirm own order (pending → confirmed)'
+      description: 'Own order only (404 otherwise). Requires ROLE_USER.'
+
+  /api/v1/app/orders/{id}/payment:
+    parameters: [{ name: id, in: path, required: true, schema: { type: integer } }]
+    post:
+      tags: [Orders]
+      summary: 'Pay own order (confirmed only)'
+      description: >
+        Starts payment via the invoice framework. Body `payment` defaults to `mock`
+        (`mock`, `wallet`, `wechat`, `liansheng_point`); see
+        `openapi/order-payment-flow.md`. Own order only. Requires ROLE_USER.
 
   # ====================================================================
   # COMMON — App (Public) quick overview
@@ -524,8 +543,8 @@ paths:
       tags: [Store]
       summary: 'Mark StoreOrder fulfilled (staff)'
       description: >
-        Requires `store:order:fulfill`. StoreOrder must be `accepted`/`fulfilling`.
-        No Store-to-Trade event; local fulfillment only.
+        Requires `store:order:fulfill`. StoreOrder must be `accepted`, `fulfillment_pending`,
+        or `fulfilling`. No Store-to-Trade event; local fulfillment only.
       requestBody:
         content:
           application/json:
@@ -542,8 +561,9 @@ paths:
       tags: [Store]
       summary: 'Verify StoreOrder (staff) and complete TradeOrder'
       description: >
-        Requires `store:order:verify`. StoreOrder must be `fulfilled` and snapshotted
-        `verificationRequired=true`. No body required; order UUID is the token.
+        Requires `store:order:verify`. StoreOrder must be `fulfilled` with
+        `verificationRequired=true` snapshotted from the Store (`fulfillment.requireVerification`
+        at order creation). No body required; order UUID is the token.
         Emits `store.order.verified.v1` → Trade `fulfilled → completed`. Out-of-order verification is handled via `_storeVerificationReceived`.
       requestBody:
         content:

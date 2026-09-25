@@ -3408,10 +3408,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#refund-after-completion" class="md-nav__link">
+  <a href="#refund-after-payment" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Refund After Completion
+        Refund After Payment
       
     </span>
   </a>
@@ -4055,10 +4055,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#refund-after-completion" class="md-nav__link">
+  <a href="#refund-after-payment" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Refund After Completion
+        Refund After Payment
       
     </span>
   </a>
@@ -4131,7 +4131,7 @@
 <tr>
 <td><code>paid</code></td>
 <td>Payment completed</td>
-<td>Paid, waiting fulfillment</td>
+<td>Paid, waiting fulfillment; refundable (admin <code>refund</code>)</td>
 </tr>
 <tr>
 <td><code>fulfilled</code></td>
@@ -4141,7 +4141,7 @@
 <tr>
 <td><code>completed</code></td>
 <td>Order completed</td>
-<td>Completed, refundable by backend flow</td>
+<td>Completed (terminal success; not refundable)</td>
 </tr>
 <tr>
 <td><code>cancelled</code></td>
@@ -4150,7 +4150,7 @@
 </tr>
 <tr>
 <td><code>refunded</code></td>
-<td>Order fully refunded</td>
+<td>Order fully refunded (from <code>paid</code>)</td>
 <td>Refunded</td>
 </tr>
 </tbody>
@@ -4162,12 +4162,12 @@
     confirmed --&gt; paid: pay
     paid --&gt; fulfilled: fulfill
     fulfilled --&gt; completed: complete
-    completed --&gt; refunded: refund
+    paid --&gt; refunded: refund
     draft --&gt; cancelled: cancel
     pending --&gt; cancelled: cancel
     confirmed --&gt; cancelled: cancel</code></pre>
 <p>Cancellation is allowed only from <code>draft</code>, <code>pending</code>, or <code>confirmed</code>.</p>
-<p>Refund is allowed only from <code>completed</code>.</p>
+<p>Refund is allowed only from <code>paid</code> (<code>paid → refunded</code>, <code>config/packages/workflow.yaml</code>).</p>
 <h3 id="invoice-status">Invoice Status<a class="headerlink" href="#invoice-status" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
@@ -4215,14 +4215,19 @@
 </tr>
 </tbody>
 </table>
-<p>Invoice workflow:</p>
+<p>Invoice workflow (<code>config/packages/workflow.yaml</code>):</p>
 <pre class="mermaid"><code>stateDiagram-v2
     pending --&gt; paying: start_pay
+    pending --&gt; paid: mark_paid
     paying --&gt; paid: mark_paid
-    paid --&gt; partial_refunded: partial_refund
-    partial_refunded --&gt; refunded: refund
     pending --&gt; failed: fail
-    paying --&gt; cancelled: cancel</code></pre>
+    paying --&gt; failed: fail
+    pending --&gt; cancelled: cancel
+    paying --&gt; cancelled: cancel
+    failed --&gt; cancelled: cancel
+    paid --&gt; partial_refunded: partial_refund
+    paid --&gt; refunded: refund
+    partial_refunded --&gt; refunded: refund</code></pre>
 <p>Invoice <code>paid/refunded/cancelled/failed</code> events update the linked order payment fields automatically when the invoice source is a trade order.</p>
 <h2 id="user-side-order-transitions">User-Side Order Transitions<a class="headerlink" href="#user-side-order-transitions" title="Permanent link">&para;</a></h2>
 <p><code>POST /api/v1/app/orders</code> creates an order in <code>draft</code> status.</p>
@@ -4335,7 +4340,7 @@
 <tr>
 <td><code>currency</code></td>
 <td>no</td>
-<td>Defaults to <code>CNY</code></td>
+<td>Defaults to <code>CNY</code>. When <code>X-Store-Code</code> resolves to a Store, the Store currency is authoritative and a mismatched value is rejected with <code>400 Currency mismatch</code></td>
 </tr>
 <tr>
 <td><code>notes</code></td>
@@ -4349,6 +4354,11 @@
 </tr>
 </tbody>
 </table>
+<p>Currency rule: <code>currency</code> comes from the <code>Store</code> resolved via the <code>X-Store-Code</code>
+request header (<code>LIANSHENG_POINT</code> for the points mall, <code>CNY</code> otherwise); requests
+without the header default to <code>CNY</code>. An unknown or inactive store code returns
+<code>404 Store is not available</code>. A store order is auto-submitted on creation and fans
+out to the Store via <code>trade.order.created.v1</code>.</p>
 <p>Example response:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="p">{</span>
 <a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="w">  </span><span class="nt">"data"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
@@ -4470,19 +4480,19 @@
 <tbody>
 <tr>
 <td><code>mock</code></td>
-<td>Mock gateway for development/testing</td>
+<td>Mock gateway for development/testing (<code>autoPaid: true</code> marks paid synchronously, otherwise <code>paying</code> + <code>payUrl /mock/pay/{outTradeNo}</code>; notify verified by <code>secret: mock</code>)</td>
 </tr>
 <tr>
 <td><code>wallet</code></td>
-<td>Wallet balance payment</td>
+<td>Wallet balance payment (synchronous user→system transfer; <code>systemWalletId</code> required; no external notify)</td>
 </tr>
 <tr>
 <td><code>wechat</code></td>
-<td>WeChat Pay gateway, including Mini Program JSAPI payment, if configured</td>
+<td>WeChat Pay gateway, including Mini Program JSAPI payment, if configured (<code>tradeType: jsapi\|native</code>; stays <code>paying</code> until <code>POST /api/payment/notify/wechat</code>)</td>
 </tr>
 <tr>
 <td><code>liansheng_point</code></td>
-<td>Synchronous Liansheng member-points deduction for invoices whose currency is <code>LIANSHENG_POINT</code></td>
+<td>Synchronous Liansheng member-points deduction for invoices whose currency is <code>LIANSHENG_POINT</code> (deduct-only via vendor 0703 <code>vipsubscore</code> <code>score</code> field; no notify endpoint; <strong>refunds unsupported</strong> — the vendor API can only deduct, never credit)</td>
 </tr>
 </tbody>
 </table>
@@ -4900,7 +4910,8 @@
 <a id="__codelineno-56-2" name="__codelineno-56-2" href="#__codelineno-56-2"></a><span class="err">Authorization: Bearer &lt;admin_access_token&gt;</span>
 </code></pre></div>
 <p>Allowed only from <code>fulfilled</code>.</p>
-<p>Result: order status becomes <code>completed</code>.</p>
+<p>Result: order status becomes <code>completed</code> (terminal success; not refundable — refund
+applies to <code>paid</code> orders).</p>
 <blockquote>
 <p>Store-verified orders: if the order was created with <code>X-Store-Code</code> and the Store has <code>fulfillment.requireVerification=true</code>, the order's <code>_completionMode</code> is <code>store_verification</code>. Manual <code>do/complete</code> is then blocked (<code>Store verification is required</code>) and completion happens automatically after <code>POST /api/v1/store/{scopeId}/orders/{uuid}/verify</code> (fulfilled → verified) emits <code>store.order.verified.v1</code>. If verification arrived before fulfillment, completion is applied right after <code>fulfill</code>.</p>
 </blockquote>
@@ -4911,7 +4922,7 @@
 <a id="__codelineno-57-2" name="__codelineno-57-2" href="#__codelineno-57-2"></a><span class="err">Authorization: Bearer &lt;admin_access_token&gt;</span>
 <a id="__codelineno-57-3" name="__codelineno-57-3" href="#__codelineno-57-3"></a><span class="err">Content-Type: application/json</span>
 </code></pre></div>
-<p>Allowed only from <code>completed</code>.</p>
+<p>Allowed only from <code>paid</code>.</p>
 <p>Request:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-58-1" name="__codelineno-58-1" href="#__codelineno-58-1"></a><span class="p">{</span>
 <a id="__codelineno-58-2" name="__codelineno-58-2" href="#__codelineno-58-2"></a><span class="w">  </span><span class="nt">"reason"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Customer requested refund"</span><span class="p">,</span>
@@ -4938,6 +4949,10 @@
 <tr>
 <td>Invoice has wallet deduction</td>
 <td>Adjusted invoices only support full refund.</td>
+</tr>
+<tr>
+<td>Invoice paid via <code>liansheng_point</code></td>
+<td>Refund rejected — points refunds are unsupported (vendor 0703 API is deduct-only).</td>
 </tr>
 </tbody>
 </table>
@@ -5040,7 +5055,7 @@
 </tr>
 <tr>
 <td><code>refund</code></td>
-<td><code>completed</code></td>
+<td><code>paid</code></td>
 <td><code>refunded</code></td>
 </tr>
 </tbody>
@@ -5079,7 +5094,7 @@
 </tr>
 <tr>
 <td><code>paid</code></td>
-<td>Show paid/waiting fulfillment</td>
+<td>Show paid/waiting fulfillment; Refund (admin, <code>paid → refunded</code>; not available for <code>liansheng_point</code>)</td>
 </tr>
 <tr>
 <td><code>fulfilled</code></td>
@@ -5236,7 +5251,7 @@
 <div class="highlight"><pre><span></span><code><a id="__codelineno-80-1" name="__codelineno-80-1" href="#__codelineno-80-1"></a><span class="err">POST /api/v1/app/orders/{orderId}/cancel</span>
 </code></pre></div>
 <p>If an invoice is linked and still cancellable, it is cancelled too.</p>
-<h3 id="refund-after-completion">Refund After Completion<a class="headerlink" href="#refund-after-completion" title="Permanent link">&para;</a></h3>
+<h3 id="refund-after-payment">Refund After Payment<a class="headerlink" href="#refund-after-payment" title="Permanent link">&para;</a></h3>
 <p>Backend/admin:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-81-1" name="__codelineno-81-1" href="#__codelineno-81-1"></a><span class="err">POST /api/v1/manage/orders/{orderId}/refund</span>
 </code></pre></div>

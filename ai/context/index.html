@@ -3303,10 +3303,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#15-database-tables-33-migrations-single-source-migrations-directory" class="md-nav__link">
+  <a href="#15-database-tables-37-migrations-single-source-migrations-directory" class="md-nav__link">
     <span class="md-ellipsis">
       
-        15. Database Tables (33 Migrations — single source: migrations/ directory)
+        15. Database Tables (37 Migrations — single source: migrations/ directory)
       
     </span>
   </a>
@@ -4340,10 +4340,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#15-database-tables-33-migrations-single-source-migrations-directory" class="md-nav__link">
+  <a href="#15-database-tables-37-migrations-single-source-migrations-directory" class="md-nav__link">
     <span class="md-ellipsis">
       
-        15. Database Tables (33 Migrations — single source: migrations/ directory)
+        15. Database Tables (37 Migrations — single source: migrations/ directory)
       
     </span>
   </a>
@@ -4717,20 +4717,20 @@
 <a id="__codelineno-0-46" name="__codelineno-0-46" href="#__codelineno-0-46"></a>│   ├── Service/OrderService.php        # StoreContext-aware creation + price pipeline (Store visibility via CatalogResolver); writes _store + _completionMode + trade.order.created.v1
 <a id="__codelineno-0-47" name="__codelineno-0-47" href="#__codelineno-0-47"></a>│   ├── Command/PublishOutboxCommand.php # app:trade:outbox:publish
 <a id="__codelineno-0-48" name="__codelineno-0-48" href="#__codelineno-0-48"></a>│   ├── MessageHandler/           # StoreOrderVerifiedHandler (no inbox table; guard via _completionMode + _storeVerificationReceived)
-<a id="__codelineno-0-49" name="__codelineno-0-49" href="#__codelineno-0-49"></a>│   ├── EventListener/            # OrderCompletionGuardListener (workflow.order.guard.complete), OrderVerificationCompletionListener (workflow.order.completed.fulfill)
+<a id="__codelineno-0-49" name="__codelineno-0-49" href="#__codelineno-0-49"></a>│   ├── EventListener/            # OrderCompletionGuardListener (workflow.order.guard.complete), OrderVerificationCompletionListener (workflow.order.completed.fulfill), OrderWorkflowListener (timestamps + domain events + trade.order.cancelled.v1), OrderInvoiceListener (Invoice events → order pay)
 <a id="__codelineno-0-50" name="__codelineno-0-50" href="#__codelineno-0-50"></a>│   ├── Service/Pricing/                # PriceCalculatorInterface (Base via CatalogResolver, Quantity, Total)
 <a id="__codelineno-0-51" name="__codelineno-0-51" href="#__codelineno-0-51"></a>│   ├── EventListener/OrderWorkflowListener.php
 <a id="__codelineno-0-52" name="__codelineno-0-52" href="#__codelineno-0-52"></a>│   ├── Exception/                      # OrderInvalidTransitionException, SpecificationNotFoundException
-<a id="__codelineno-0-53" name="__codelineno-0-53" href="#__codelineno-0-53"></a>│   └── Controller/App/ + Manage/       # CRUD + workflow + pay/refund/fulfill + items + cancel (catalog via Store)
+<a id="__codelineno-0-53" name="__codelineno-0-53" href="#__codelineno-0-53"></a>│   └── Controller/App/ + Manage/       # App: CRUD + quote/items/submit/confirm/cancel/payment/refund; Manage: CRUD + quote/items/fulfill/refund + generic todo/transitions/do (no dedicated pay endpoint; catalog via Store)
 <a id="__codelineno-0-54" name="__codelineno-0-54" href="#__codelineno-0-54"></a>│
 <a id="__codelineno-0-55" name="__codelineno-0-55" href="#__codelineno-0-55"></a>├── src/Store/                    # Multi-store operational boundary + catalog
-<a id="__codelineno-0-56" name="__codelineno-0-56" href="#__codelineno-0-56"></a>│   ├── Entity/                   # Store, Product (trade_product, nullable store), Specification (trade_specification), membership, StoreOrder, Outbox, Inbox
-<a id="__codelineno-0-57" name="__codelineno-0-57" href="#__codelineno-0-57"></a>│   ├── Repository/               # ProductRepository, SpecificationRepository (Store-owned)
-<a id="__codelineno-0-58" name="__codelineno-0-58" href="#__codelineno-0-58"></a>│   ├── Service/                  # ProductService, SpecificationService, Context, membership, StoreOrder, Outbox services
+<a id="__codelineno-0-56" name="__codelineno-0-56" href="#__codelineno-0-56"></a>│   ├── Entity/                   # Store, Product (trade_product, nullable store), Specification (trade_specification), Membership (store_membership), StoreOrder (store_order), StoreOutboxMessage (store_outbox_message), StoreConsumedEvent (store_consumed_event, inbox idempotency), StoreTradeOrderCancellation (cancellation tombstone)
+<a id="__codelineno-0-57" name="__codelineno-0-57" href="#__codelineno-0-57"></a>│   ├── Repository/               # Store, Product, Specification, Membership, StoreOrder, StoreOutboxMessage, StoreConsumedEvent, StoreTradeOrderCancellation (Store-owned)
+<a id="__codelineno-0-58" name="__codelineno-0-58" href="#__codelineno-0-58"></a>│   ├── Service/                  # ProductService, SpecificationService, StoreService, StoreContextResolver (X-Store-Code), StoreSettingsResolver, MembershipService, StoreOrderService, StoreOutboxService (+ interfaces)
 <a id="__codelineno-0-59" name="__codelineno-0-59" href="#__codelineno-0-59"></a>│   ├── Service/Catalog/StoreCatalogResolver.php  # Implements Trade CatalogResolverInterface (Store visibility: global or owned)
-<a id="__codelineno-0-60" name="__codelineno-0-60" href="#__codelineno-0-60"></a>│   ├── MessageHandler/           # Inbox-idempotent Trade order consumer; Inventory outcome consumers
+<a id="__codelineno-0-60" name="__codelineno-0-60" href="#__codelineno-0-60"></a>│   ├── MessageHandler/           # TradeOrderCreatedHandler + TradeOrderCancelledHandler (inbox-idempotent Trade consumers) + ReservationConfirmed/Rejected/ReleasedHandler (Inventory outcomes, Store-local, no Trade relay)
 <a id="__codelineno-0-61" name="__codelineno-0-61" href="#__codelineno-0-61"></a>│   ├── Command/PublishOutboxCommand.php # app:store:outbox:publish
-<a id="__codelineno-0-62" name="__codelineno-0-62" href="#__codelineno-0-62"></a>│   └── Controller/App/ + Manage/ + Staff/ # App/Manage Product/Specification + StoreOrder + Staff membership checks (DqlExpression row-scope: !entity.getStore() / !entity.getProduct().getStore())
+<a id="__codelineno-0-62" name="__codelineno-0-62" href="#__codelineno-0-62"></a>│   └── Controller/App/ + Manage/ + Staff/ # App (Membership/Product/Specification/Store/StoreOrder) + Manage (Product/SpecificationAll/Specification/Store/StoreOrder) + Staff (Assignment/Membership/Product/Specification/Store/StoreOrder fulfill+verify, DqlExpression row-scope: !entity.getStore() / !entity.getProduct().getStore())
 <a id="__codelineno-0-63" name="__codelineno-0-63" href="#__codelineno-0-63"></a>│
 <a id="__codelineno-0-64" name="__codelineno-0-64" href="#__codelineno-0-64"></a>├── src/Payment/                  # Payment module
 <a id="__codelineno-0-65" name="__codelineno-0-65" href="#__codelineno-0-65"></a>│   ├── Entity/Invoice.php              # Payment invoice (pending→paying→paid→refunded)
@@ -4803,7 +4803,7 @@
 <a id="__codelineno-0-132" name="__codelineno-0-132" href="#__codelineno-0-132"></a>│       ├── workflow.yaml         # Order state machine (Trade: draft→pending→confirmed→paid→fulfilled→completed; completion guard via _completionMode)
 <a id="__codelineno-0-133" name="__codelineno-0-133" href="#__codelineno-0-133"></a>│       ├── messenger.yaml        # Trade/Store integration messages to async transport (only store.order.verified remaining for Store→Trade)
 <a id="__codelineno-0-134" name="__codelineno-0-134" href="#__codelineno-0-134"></a>│       └── ...
-<a id="__codelineno-0-135" name="__codelineno-0-135" href="#__codelineno-0-135"></a>├── migrations/                   # 33 migrations (latest: 20260903000003 — see `migrations/`; includes store `store_id` nullable and OrderItem `specificationUuid` backfill)
+<a id="__codelineno-0-135" name="__codelineno-0-135" href="#__codelineno-0-135"></a>├── migrations/                   # 37 migrations (latest: 20260911000000 — see `migrations/`; includes store `store_id` nullable and OrderItem `specificationUuid` backfill)
 <a id="__codelineno-0-136" name="__codelineno-0-136" href="#__codelineno-0-136"></a>├── translations/                 # i18n translation files (messages.en/zh/zh_Hant/ja.yaml)
 <a id="__codelineno-0-137" name="__codelineno-0-137" href="#__codelineno-0-137"></a>├── docs/
 <a id="__codelineno-0-138" name="__codelineno-0-138" href="#__codelineno-0-138"></a>│   ├── ai/context.md             # This file
@@ -5179,19 +5179,27 @@ and completed by <code>OrderVerificationCompletionListener</code> on <code>workf
 <tbody>
 <tr>
 <td><code>calculatePrices(items, currency, storeCode?, meta?)</code></td>
-<td>Pipeline: BasePriceCalculator → QuantityCalculator → <strong>TotalAggregator (subtotal, priority 55)</strong> → <strong>PromotionCalculator (priority 60)</strong>. <code>meta</code> is an opaque bidirectional channel for calculators.</td>
+<td>Pipeline: BasePriceCalculator (-100) → QuantityCalculator (50) → <strong>TotalAggregator (subtotal, priority 55)</strong> → <strong>PromotionCalculator (priority 60)</strong>. <code>meta</code> is an opaque bidirectional channel for calculators.</td>
 </tr>
 <tr>
 <td><code>createOrder(..., ?StoreContext)</code></td>
-<td>Creates Order + OrderItems. A resolved StoreContext writes <code>_store</code> snapshot and <code>_completionMode</code> (<code>store_verification</code> when <code>StoreContext.requireVerification</code> else <code>manual</code>) plus <code>trade.order.created.v1</code> in the same transaction (always; Store validates, never acks with accepted/rejected).</td>
+<td>Creates Order + OrderItems. A resolved StoreContext writes <code>_store</code> snapshot and <code>_completionMode</code> (<code>store_verification</code> when <code>StoreContext.requireVerification</code> else <code>manual</code>), applies <code>submit</code> (draft→pending) plus <code>trade.order.created.v1</code> in the same transaction (Store validates, never acks with accepted/rejected); without a StoreContext creates a plain draft order (no outbox).</td>
 </tr>
 <tr>
-<td><code>pay(Order, systemWalletId, paymentMethod)</code></td>
-<td>User wallet → system wallet via <code>TransferService</code>. Sets <code>paidAt</code>.</td>
+<td><code>createPayment(Order, payment, options)</code></td>
+<td>Creates (or reuses pending) Invoice (<code>trade_order</code> source, <code>order</code> scene) then <code>InvoiceService::pay()</code> via gateway (<code>mock</code> default, <code>wallet</code>/<code>wechat</code>/<code>liansheng_point</code>); paid result flows back via Invoice events.</td>
+</tr>
+<tr>
+<td><code>refundPayment(Order, reason, options)</code></td>
+<td>Refunds the linked Invoice via <code>InvoiceService::refund()</code>.</td>
+</tr>
+<tr>
+<td><code>cancel(Order)</code></td>
+<td>Cancels the linked Invoice (<code>Order cancelled.</code>); the workflow <code>cancel</code> transition itself is applied by the controller.</td>
 </tr>
 <tr>
 <td><code>refund(Order, systemWalletId, reason)</code></td>
-<td>System wallet → user wallet via <code>TransferService</code>. Sets <code>refundedAt</code>.</td>
+<td>Legacy wallet-direct path (no Invoice): system wallet → user wallet via <code>TransferService</code>. Sets <code>refundedAt</code>. Only for orders without a linked Invoice.</td>
 </tr>
 <tr>
 <td><code>fulfill(Order, data)</code></td>
@@ -5227,7 +5235,12 @@ and completed by <code>OrderVerificationCompletionListener</code> on <code>workf
 <tr>
 <td><code>paymentMethod</code></td>
 <td>string</td>
-<td>On pay</td>
+<td>On pay (legacy wallet-direct path)</td>
+</tr>
+<tr>
+<td><code>invoiceId</code> / <code>invoiceNo</code> / <code>paymentStatus</code></td>
+<td>string</td>
+<td>Invoice linkage set by <code>createPayment()</code> (uuid / outTradeNo / status)</td>
 </tr>
 <tr>
 <td><code>trackingNumber</code></td>
@@ -5288,18 +5301,13 @@ and completed by <code>OrderVerificationCompletionListener</code> on <code>workf
 </tr>
 <tr>
 <td>POST</td>
-<td><code>/manage/orders/{id}/pay</code></td>
-<td>Wallet payment + transition</td>
-</tr>
-<tr>
-<td>POST</td>
 <td><code>/manage/orders/{id}/fulfill</code></td>
-<td>Fulfill with tracking</td>
+<td>Fulfill with tracking (paid→fulfilled)</td>
 </tr>
 <tr>
 <td>POST</td>
 <td><code>/manage/orders/{id}/refund</code></td>
-<td>Wallet refund + transition</td>
+<td>Refund: linked Invoice via <code>refundPayment()</code> else legacy wallet <code>refund()</code> + transition</td>
 </tr>
 <tr>
 <td>GET</td>
@@ -5344,19 +5352,29 @@ and completed by <code>OrderVerificationCompletionListener</code> on <code>workf
 <td>View own order items</td>
 </tr>
 <tr>
-<td>GET</td>
-<td><code>/app/orders/{id}/items</code></td>
-<td>View own order items</td>
+<td>POST</td>
+<td><code>/app/orders/{id}/submit</code></td>
+<td>Submit own order (draft→pending)</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/app/orders/{id}/confirm</code></td>
+<td>Confirm own order (pending→confirmed)</td>
 </tr>
 <tr>
 <td>POST</td>
 <td><code>/app/orders/{id}/cancel</code></td>
-<td>Cancel own order (draft/pending/confirmed)</td>
+<td>Cancel own order (draft/pending/confirmed; cancels linked Invoice)</td>
 </tr>
 <tr>
 <td>POST</td>
 <td><code>/app/orders/{id}/payment</code></td>
-<td><strong>Pay order via gateway (wallet, mock, wechat)</strong></td>
+<td><strong>Pay order via gateway (<code>mock</code> default, <code>wallet</code>, <code>wechat</code>, <code>liansheng_point</code>)</strong></td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/app/orders/{id}/refund</code></td>
+<td>Refund own order (linked Invoice if present, else legacy wallet path with <code>systemWalletId</code>)</td>
 </tr>
 </tbody>
 </table>
@@ -5377,8 +5395,8 @@ and completed by <code>OrderVerificationCompletionListener</code> on <code>workf
 </tr>
 <tr>
 <td>GET</td>
-<td><code>/api/v1/app/specifications/by-product/{id}</code></td>
-<td>Specs for a product</td>
+<td><code>/api/v1/app/specifications/by-product/{productId}</code></td>
+<td>Specs for a product (numeric product id)</td>
 </tr>
 <tr>
 <td>GET</td>
@@ -5888,7 +5906,7 @@ and Store publishers; the existing <code>worker</code> will consume its Messenge
 </tr>
 <tr>
 <td><strong>Soft delete</strong></td>
-<td>Trade</td>
+<td>Store catalog (<code>trade_*</code> tables)</td>
 <td><code>isDeleted</code> boolean on Product, Specification</td>
 </tr>
 <tr>
@@ -6183,7 +6201,7 @@ and Store publishers; the existing <code>worker</code> will consume its Messenge
 </table>
 <h3 id="144-schema-configuration-configpackagesnelmio_api_docyaml">14.4 Schema Configuration (<code>config/packages/nelmio_api_doc.yaml</code>)<a class="headerlink" href="#144-schema-configuration-configpackagesnelmio_api_docyaml" title="Permanent link">&para;</a></h3>
 <p>44+ named schemas across 13 tags (Auth, Products, Orders, Categories, Tags, Contents, Comments, Pages, Media, Settings, Promotions, PromotionTemplates, Wallet, System, Wechat, Authorization, Store). Each with field-level type, description, enum, and example values. <code>path_patterns</code> includes both <code>^/api</code> and <code>^/system</code>.</p>
-<h2 id="15-database-tables-33-migrations-single-source-migrations-directory">15. Database Tables (33 Migrations — single source: <code>migrations/</code> directory)<a class="headerlink" href="#15-database-tables-33-migrations-single-source-migrations-directory" title="Permanent link">&para;</a></h2>
+<h2 id="15-database-tables-37-migrations-single-source-migrations-directory">15. Database Tables (37 Migrations — single source: <code>migrations/</code> directory)<a class="headerlink" href="#15-database-tables-37-migrations-single-source-migrations-directory" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
@@ -6246,7 +6264,7 @@ and Store publishers; the existing <code>worker</code> will consume its Messenge
 </tr>
 <tr>
 <td>20260725000000-20260725050000</td>
-<td>Identity User UUID; Store, Store membership/order, Store Outbox/Inbox; Trade Outbox; Specification UUID; Trade order status <code>VARCHAR(40)</code></td>
+<td>Identity User UUID; Store, Store membership/order, Store Outbox + StoreConsumedEvent (inbox idempotency); Trade Outbox; Specification UUID; Trade order status <code>VARCHAR(40)</code></td>
 </tr>
 <tr>
 <td>20260726000000</td>
@@ -6299,6 +6317,22 @@ and Store publishers; the existing <code>worker</code> will consume its Messenge
 <tr>
 <td>20260903000003</td>
 <td>Store order verification fields (<code>verified_at</code>, <code>verified_by</code>, <code>verification_code</code>)</td>
+</tr>
+<tr>
+<td>20260903000004</td>
+<td>Store <code>currency</code> column (default <code>CNY</code>; existing stores backfilled to <code>LIANSHENG_POINT</code>)</td>
+</tr>
+<tr>
+<td>20260903000005</td>
+<td><code>trade_order</code>/<code>store_order</code> <code>currency</code> widened to <code>VARCHAR(32)</code></td>
+</tr>
+<tr>
+<td>20260905000000</td>
+<td>Store order <code>verification_required</code> snapshot flag</td>
+</tr>
+<tr>
+<td>20260911000000</td>
+<td><code>trade_product.type</code> discriminator (<code>normal</code> vs <code>coupon</code>)</td>
 </tr>
 </tbody>
 </table>
@@ -6579,7 +6613,7 @@ and Store publishers; the existing <code>worker</code> will consume its Messenge
 <tr>
 <td><code>app:store:outbox:publish</code></td>
 <td>Store</td>
-<td>Relay Store acceptance/rejection events to Messenger</td>
+<td>Relay unpublished Store integration events (<code>store.order.verified.v1</code>, <code>inventory.reservation.requested.v1</code>, <code>inventory.reservation.release.requested.v1</code>) to Messenger</td>
 </tr>
 <tr>
 <td><code>app:inventory:outbox:publish</code></td>
@@ -6669,14 +6703,14 @@ covered by concurrency tests. The disabled schema/module may be deployed safely.
 </tbody>
 </table>
 <h3 id="223-integration-flow">22.3 Integration Flow<a class="headerlink" href="#223-integration-flow" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>Trade order created (always trade.order.created.v1 with StoreContext; _completionMode = store_verification/manual)
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>Trade order created (only when `X-Store-Code` resolves a StoreContext: `submit` applied + `trade.order.created.v1`; `_completionMode` = store_verification/manual; plain draft with no outbox otherwise)
 <a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>  → Store validates (missing/inactive Store throws RuntimeException for retry; no rejected event) + creates StoreOrder
 <a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>  → INVENTORY_ENABLED=0: Store accepts immediately; INVENTORY_ENABLED=1: Store awaitInventory + inventory.reservation.requested.v1
 <a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>  → Inventory resolves recipe or direct finished material
 <a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>  → Inventory reserves stock atomically (checks allowNegativeStock per stock)
 <a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>  → Inventory publishes confirmed or rejected outcome
 <a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>  → Store accepts (confirmed) or rejects (rejected) StoreOrder locally (no Trade relay)
-<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>  → Later: fulfilled StoreOrder is verified via POST /store/{id}/orders/{uuid}/verify -&gt; store.order.verified.v1 {orderUuid, storeOrderUuid, storeUuid, verifiedBy, verifiedAt}
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>  → Later: fulfilled StoreOrder is verified via POST /api/v1/store/{scopeId}/orders/{orderUuid}/verify -&gt; store.order.verified.v1 {orderUuid, storeOrderUuid, storeUuid, verifiedBy, verifiedAt}
 <a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>  → Trade StoreOrderVerifiedHandler checks _completionMode + storeUuid, sets _storeVerificationReceived and completes via guarded complete (out-of-order handled by OrderVerificationCompletionListener on fulfill)
 </code></pre></div>
 <h3 id="224-reservation-processing">22.4 Reservation Processing<a class="headerlink" href="#224-reservation-processing" title="Permanent link">&para;</a></h3>

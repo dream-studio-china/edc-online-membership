@@ -1545,10 +1545,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#54-pipeline-execution" class="md-nav__link">
+  <a href="#54-dtos" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5.4 Pipeline Execution
+        5.4 DTOs
       
     </span>
   </a>
@@ -1556,10 +1556,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#55-dtos" class="md-nav__link">
+  <a href="#55-meta-channel-contract" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5.5 DTOs
+        5.5 meta Channel Contract
       
     </span>
   </a>
@@ -1567,21 +1567,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#56-meta-channel-contract" class="md-nav__link">
+  <a href="#56-registration" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5.6 meta Channel Contract
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#57-registration" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        5.7 Registration
+        5.6 Registration
       
     </span>
   </a>
@@ -1695,10 +1684,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#82-app-public-authenticated" class="md-nav__link">
+  <a href="#82-app-authenticated-role_user-own-orders-only" class="md-nav__link">
     <span class="md-ellipsis">
       
-        8.2 App (Public, Authenticated)
+        8.2 App (Authenticated, ROLE_USER, own orders only)
       
     </span>
   </a>
@@ -1756,10 +1745,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#94-payment-pay" class="md-nav__link">
+  <a href="#94-payment" class="md-nav__link">
     <span class="md-ellipsis">
       
-        9.4 Payment (Pay)
+        9.4 Payment
       
     </span>
   </a>
@@ -3577,10 +3566,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#54-pipeline-execution" class="md-nav__link">
+  <a href="#54-dtos" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5.4 Pipeline Execution
+        5.4 DTOs
       
     </span>
   </a>
@@ -3588,10 +3577,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#55-dtos" class="md-nav__link">
+  <a href="#55-meta-channel-contract" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5.5 DTOs
+        5.5 meta Channel Contract
       
     </span>
   </a>
@@ -3599,21 +3588,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#56-meta-channel-contract" class="md-nav__link">
+  <a href="#56-registration" class="md-nav__link">
     <span class="md-ellipsis">
       
-        5.6 meta Channel Contract
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#57-registration" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        5.7 Registration
+        5.6 Registration
       
     </span>
   </a>
@@ -3727,10 +3705,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#82-app-public-authenticated" class="md-nav__link">
+  <a href="#82-app-authenticated-role_user-own-orders-only" class="md-nav__link">
     <span class="md-ellipsis">
       
-        8.2 App (Public, Authenticated)
+        8.2 App (Authenticated, ROLE_USER, own orders only)
       
     </span>
   </a>
@@ -3788,10 +3766,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#94-payment-pay" class="md-nav__link">
+  <a href="#94-payment" class="md-nav__link">
     <span class="md-ellipsis">
       
-        9.4 Payment (Pay)
+        9.4 Payment
       
     </span>
   </a>
@@ -3952,12 +3930,12 @@ commercial-order authority and references the Store catalog via scalar snapshots
 <tr>
 <td><code>OrderItem</code></td>
 <td><code>trade_order_item</code></td>
-<td>Line item with <code>specificationUuid</code> (scalar), <code>specificationTitle</code>, snapshots, quantity, unit price</td>
+<td>Line item with scalar <code>specificationUuid</code> (indexed, no FK), <code>specificationTitle</code>, <code>specSnapshot</code>/<code>productSnapshot</code>, quantity, unit/cost/profit prices (no <code>lineId</code> column — <code>lineId</code> is the outbox payload key for the item <code>uuid</code>)</td>
 </tr>
 <tr>
 <td><code>TradeOutboxMessage</code></td>
 <td><code>trade_outbox_message</code></td>
-<td>Transactional integration event relay record</td>
+<td>Transactional integration event relay record (<code>event_id</code>, <code>topic</code>, <code>aggregate_type</code>, <code>aggregate_id</code>, <code>payload</code>, <code>occurred_at</code>/<code>available_at</code>/<code>published_at</code>, <code>attempts</code>, <code>last_error</code>); topics <code>trade.order.created.v1</code>, <code>trade.order.cancelled.v1</code></td>
 </tr>
 </tbody>
 </table>
@@ -3976,49 +3954,60 @@ when inventory is disabled, auto-accepts immediately. Store verification
 via <code>Trade/EventListener/OrderCompletionGuardListener</code> and
 <code>Trade/EventListener/OrderVerificationCompletionListener</code>.
 <code>Trade/EventListener/OrderWorkflowListener</code> is status-driven for <code>completed</code> and does not
-hard-code Store transition names. The status column is <code>VARCHAR(40)</code>.</p>
+hard-code Store transition names. On <code>cancel</code> of a store-scoped order it also records
+<code>trade.order.cancelled.v1</code> in the outbox. The status column is <code>VARCHAR(40)</code>.</p>
 <hr />
 <h2 id="2-file-structure">2. File Structure<a class="headerlink" href="#2-file-structure" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>src/Trade/
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>|-- Controller/
 <a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>|   |-- App/
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>|   |   `-- OrderController.php           # Public: list/create/cancel own orders
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>|   |   `-- OrderController.php           # Public: list/create/quote/submit/confirm/payment/refund/cancel own orders
 <a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>|   |-- Manage/
-<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>|       |-- OrderController.php            # CRUD + workflow + price calculation
-<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>|-- Entity/
-<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>|   |-- Order.php
-<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>|   |-- OrderItem.php  # scalar specificationUuid + snapshots (FK removed, irreversible)
-<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>|   `-- TradeOutboxMessage.php
-<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>|-- Command/PublishOutboxCommand.php
-<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>|-- DTO/StoreContext.php
-<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>|-- Message/ + MessageHandler/             # Store integration contracts/consumers
-<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>|-- EventListener/
-<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>|   |-- OrderWorkflowListener.php          # Post-transition timestamp setters
-<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>|-- Exception/
-<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>|   |-- OrderInvalidTransitionException.php
-<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>|   |-- SpecificationNotFoundException.php
-<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>|-- Repository/
-<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>|   |-- OrderItemRepository.php
-<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>|   |-- OrderRepository.php
-<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>|-- Service/
-<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>|   |-- Catalog/CatalogResolverInterface.php + CatalogItem.php # Trade-owned port/DTO
-<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>|   |-- OrderService.php                   # Order creation + price pipeline (no Store import)
-<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>|   |-- Pricing/
-<a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a>|       |-- PriceCalculatorInterface.php   # Plugin contract
-<a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a>|       |-- PriceCalculationContext.php    # Input/output DTO (storeCode)
-<a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a>|       |-- PriceCalculationResult.php     # Result DTO
-<a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a>|       |-- BasePriceCalculator.php        # Resolves via CatalogResolver (Store visibility enforced in Store)
-<a id="__codelineno-0-30" name="__codelineno-0-30" href="#__codelineno-0-30"></a>|       |-- QuantityCalculator.php         # Computes price = unitPrice * quantity
-<a id="__codelineno-0-31" name="__codelineno-0-31" href="#__codelineno-0-31"></a>|       |-- TotalAggregator.php            # Establishes subtotal (priority 55)
-<a id="__codelineno-0-32" name="__codelineno-0-32" href="#__codelineno-0-32"></a>
-<a id="__codelineno-0-33" name="__codelineno-0-33" href="#__codelineno-0-33"></a> src/Store/
-<a id="__codelineno-0-34" name="__codelineno-0-34" href="#__codelineno-0-34"></a> |-- Entity/Product.php  # trade_product, nullable store ManyToOne Store
-<a id="__codelineno-0-35" name="__codelineno-0-35" href="#__codelineno-0-35"></a> |-- Entity/Specification.php # trade_specification, ManyToOne Store\Product
-<a id="__codelineno-0-36" name="__codelineno-0-36" href="#__codelineno-0-36"></a> |-- Repository/ProductRepository.php, SpecificationRepository.php
-<a id="__codelineno-0-37" name="__codelineno-0-37" href="#__codelineno-0-37"></a> |-- Service/ProductService.php, SpecificationService.php
-<a id="__codelineno-0-38" name="__codelineno-0-38" href="#__codelineno-0-38"></a> |-- Service/Catalog/StoreCatalogResolver.php # Trade CatalogResolverInterface impl (Store visibility)
-<a id="__codelineno-0-39" name="__codelineno-0-39" href="#__codelineno-0-39"></a> |-- Controller/App/ProductController.php, SpecificationController.php # DqlExpression row-scope
-<a id="__codelineno-0-40" name="__codelineno-0-40" href="#__codelineno-0-40"></a> |-- Controller/Manage/ProductController.php, SpecificationController.php, SpecificationAllController.php
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>|       |-- OrderController.php            # CRUD + workflow + fulfill/refund + price calculation (no /pay endpoint)
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>|       `-- OrderItemController.php        # Order-item CRUD at /manage/order-items
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>|-- Entity/
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>|   |-- Order.php
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>|   |-- OrderItem.php  # scalar specificationUuid + snapshots (FK removed, irreversible)
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>|   `-- TradeOutboxMessage.php            # topics trade.order.created.v1 / trade.order.cancelled.v1
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>|-- Command/PublishOutboxCommand.php      # app:trade:outbox:publish (manual invocation, no scheduler)
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>|-- DTO/StoreContext.php                 # Store snapshot DTO consumed by Trade (resolved from X-Store-Code by Store)
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>|-- Event/ OrderPaidEvent.php, OrderFulfilledEvent.php, OrderCompletedEvent.php, OrderCancelledEvent.php, OrderRefundedEvent.php
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>|-- Message/ TradeOrderCreatedMessage.php, TradeOrderCancelledMessage.php, StoreOrderVerifiedMessage.php (inbound, dispatched by Store outbox)
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>|-- MessageHandler/StoreOrderVerifiedHandler.php  # sets _storeVerificationReceived, tries complete (out-of-order safe)
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>|-- EventListener/
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>|   |-- OrderWorkflowListener.php          # Post-transition timestamp setters + domain-event broadcast + cancelled outbox
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>|   |-- OrderCompletionGuardListener.php   # Blocks complete unless manual mode or verification flag set
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>|   |-- OrderVerificationCompletionListener.php # Auto-completes on fulfill when verification already received
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>|   `-- OrderInvoiceListener.php           # Syncs InvoicePaid/Refunded/Cancelled/FailedEvent into Order (pay/refund transitions)
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>|-- Exception/
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>|   |-- OrderInvalidTransitionException.php
+<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>|   |-- SpecificationNotFoundException.php
+<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>|-- Repository/
+<a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a>|   |-- OrderItemRepository.php
+<a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a>|   |-- OrderRepository.php
+<a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a>|-- Service/
+<a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a>|   |-- Catalog/CatalogResolverInterface.php + CatalogItem.php # Trade-owned port/DTO
+<a id="__codelineno-0-30" name="__codelineno-0-30" href="#__codelineno-0-30"></a>|   |-- StoreContextResolverInterface.php  # Port; implemented by Store (X-Store-Code header)
+<a id="__codelineno-0-31" name="__codelineno-0-31" href="#__codelineno-0-31"></a>|   |-- OrderService.php                   # Order creation + price pipeline (no Store import)
+<a id="__codelineno-0-32" name="__codelineno-0-32" href="#__codelineno-0-32"></a>|   |-- OrderServiceInterface.php          # calculatePrices/createOrder/refund/fulfill/createPayment/refundPayment/cancel
+<a id="__codelineno-0-33" name="__codelineno-0-33" href="#__codelineno-0-33"></a>|   |-- OrderItemService.php               # Order-item CRUD service
+<a id="__codelineno-0-34" name="__codelineno-0-34" href="#__codelineno-0-34"></a>|   |-- TradeOutboxService.php             # record(topic, aggregateType, aggregateId, payload)
+<a id="__codelineno-0-35" name="__codelineno-0-35" href="#__codelineno-0-35"></a>|   |-- Pricing/
+<a id="__codelineno-0-36" name="__codelineno-0-36" href="#__codelineno-0-36"></a>|       |-- PriceCalculatorInterface.php   # Plugin contract
+<a id="__codelineno-0-37" name="__codelineno-0-37" href="#__codelineno-0-37"></a>|       |-- PriceCalculationContext.php    # Input/output DTO (storeCode)
+<a id="__codelineno-0-38" name="__codelineno-0-38" href="#__codelineno-0-38"></a>|       |-- PriceCalculationResult.php     # Result DTO
+<a id="__codelineno-0-39" name="__codelineno-0-39" href="#__codelineno-0-39"></a>|       |-- BasePriceCalculator.php        # Resolves via CatalogResolver (Store visibility enforced in Store)
+<a id="__codelineno-0-40" name="__codelineno-0-40" href="#__codelineno-0-40"></a>|       |-- QuantityCalculator.php         # Computes price = unitPrice * quantity
+<a id="__codelineno-0-41" name="__codelineno-0-41" href="#__codelineno-0-41"></a>|       |-- TotalAggregator.php            # Establishes subtotal (priority 55)
+<a id="__codelineno-0-42" name="__codelineno-0-42" href="#__codelineno-0-42"></a>
+<a id="__codelineno-0-43" name="__codelineno-0-43" href="#__codelineno-0-43"></a> src/Store/
+<a id="__codelineno-0-44" name="__codelineno-0-44" href="#__codelineno-0-44"></a> |-- Entity/Product.php  # trade_product, nullable store ManyToOne Store
+<a id="__codelineno-0-45" name="__codelineno-0-45" href="#__codelineno-0-45"></a> |-- Entity/Specification.php # trade_specification, ManyToOne Store\Product
+<a id="__codelineno-0-46" name="__codelineno-0-46" href="#__codelineno-0-46"></a> |-- Repository/ProductRepository.php, SpecificationRepository.php
+<a id="__codelineno-0-47" name="__codelineno-0-47" href="#__codelineno-0-47"></a> |-- Service/ProductService.php, SpecificationService.php
+<a id="__codelineno-0-48" name="__codelineno-0-48" href="#__codelineno-0-48"></a> |-- Service/Catalog/StoreCatalogResolver.php # Trade CatalogResolverInterface impl (Store visibility)
+<a id="__codelineno-0-49" name="__codelineno-0-49" href="#__codelineno-0-49"></a> |-- Controller/App/ProductController.php, SpecificationController.php # DqlExpression row-scope
+<a id="__codelineno-0-50" name="__codelineno-0-50" href="#__codelineno-0-50"></a> |-- Controller/Manage/ProductController.php, SpecificationController.php, SpecificationAllController.php
 </code></pre></div>
 <hr />
 <h2 id="3-entity-relationships">3. Entity Relationships<a class="headerlink" href="#3-entity-relationships" title="Permanent link">&para;</a></h2>
@@ -4061,18 +4050,25 @@ hard-code Store transition names. The status column is <code>VARCHAR(40)</code>.
 <ul>
 <li>UUID v4</li>
 <li><code>totalAmount</code> in cents</li>
-<li><code>currency</code>: default <code>CNY</code></li>
+<li><code>currency</code>: default <code>CNY</code> (Store-scoped orders inherit the Store currency; a mismatched request currency is rejected)</li>
 <li><code>status</code>: state machine marking field (draft/pending/confirmed/paid/fulfilled/completed/cancelled/refunded)</li>
-<li><code>cancelledAt</code>, <code>completedAt</code>: set by <code>OrderWorkflowListener</code></li>
+<li><code>paidAt</code>, <code>fulfilledAt</code>, <code>completedAt</code>, <code>cancelledAt</code>, <code>refundedAt</code>: set by <code>OrderWorkflowListener</code> on the matching transition (<code>paidAt</code> may also be set from the invoice's <code>paidAt</code> by <code>OrderInvoiceListener</code>; <code>refundedAt</code> from the invoice's <code>refundedAt</code>)</li>
+<li><code>paymentMethod</code>: gateway name snapshot (e.g. <code>mock</code>, <code>wallet</code>, <code>wechat</code>, <code>liansheng_point</code>), synced from the paid invoice</li>
+<li><code>invoiceId</code>/<code>invoiceNo</code>: linked Payment invoice <code>uuid</code>/<code>outTradeNo</code>; <code>paymentStatus</code>: synced invoice status snapshot</li>
+<li><code>trackingNumber</code>, <code>shippingAddress</code>: set by <code>fulfill</code>; <code>refundReason</code>: set by legacy wallet <code>refund</code></li>
+<li><code>metadata</code> keys: <code>_store</code> (StoreContext snapshot), <code>_completionMode</code> (<code>manual</code>|<code>store_verification</code>), <code>_storeVerificationReceived</code> (set by <code>StoreOrderVerifiedHandler</code>)</li>
 <li><code>items</code>: cascaded persist</li>
 </ul>
 <h3 id="44-orderitem">4.4 OrderItem<a class="headerlink" href="#44-orderitem" title="Permanent link">&para;</a></h3>
 <ul>
-<li>UUID v4</li>
+<li>UUID v4 (unique)</li>
+<li><code>specificationUuid</code>: scalar snapshot of the Specification <code>uuid</code> (nullable, indexed, no FK)</li>
+<li><code>specificationTitle</code>: snapshot of the spec name (backfilled from <code>specSnapshot.name</code> in <code>PrePersist</code> when null)</li>
 <li><code>unitPrice</code>: snapshot of specification's price at order time (cents)</li>
-<li><code>price</code>: <code>unitPrice * quantity</code>, auto-calculated in <code>#[ORM\PrePersist]</code></li>
-<li><code>cost</code>, <code>profit</code>: for margin tracking</li>
-<li><code>specSnapshot</code>, <code>productSnapshot</code>: JSON snapshots captured at creation for historical record</li>
+<li><code>price</code>: <code>unitPrice * quantity</code>, recomputed in <code>#[ORM\PrePersist]</code></li>
+<li><code>cost</code>, <code>profit</code>: for margin tracking (<code>setCost()</code> derives <code>profit = price - cost</code>)</li>
+<li><code>specSnapshot</code> (<code>{id, uuid, name, productId}</code>), <code>productSnapshot</code> (<code>{id, uuid, name}</code>): JSON snapshots captured by <code>BasePriceCalculator</code> for historical record</li>
+<li><code>metadata</code>: JSON extensible field</li>
 </ul>
 <hr />
 <h2 id="5-price-calculation-pipeline">5. Price Calculation Pipeline<a class="headerlink" href="#5-price-calculation-pipeline" title="Permanent link">&para;</a></h2>
@@ -4122,42 +4118,35 @@ hard-code Store transition names. The status column is <code>VARCHAR(40)</code>.
 </table>
 <p>External modules (e.g., <code>Promotion</code>, future <code>Coupon</code>) hook into the pipeline by implementing <code>PriceCalculatorInterface</code> and tagging with <code>#[AutoconfigureTag('trade.price_calculator')]</code>. Trade has zero awareness of these modules.</p>
 <h3 id="53-pipeline-execution">5.3 Pipeline Execution<a class="headerlink" href="#53-pipeline-execution" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>OrderService::calculatePrices($items, $currency)
-<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>  -&gt; Collect all PriceCalculatorInterface implementations (auto-tagged)
-<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>  -&gt; Sort by getPriority() ascending
-<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>  -&gt; Execute each in sequence on PriceCalculationContext
-<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>  -&gt; Return PriceCalculationResult (items, totalAmount, currency)
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>OrderService::calculatePrices($items, $currency, $storeCode = null, $meta = [])
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>  -&gt; Create PriceCalculationContext with items, currency, user, storeCode, meta
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>  -&gt; Collect all PriceCalculatorInterface implementations (auto-tagged)
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>  -&gt; Sort by getPriority() ascending
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>  -&gt; Execute each in sequence on PriceCalculationContext
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>     (BasePriceCalculator → QuantityCalculator → TotalAggregator → PromotionCalculator)
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>  -&gt; Return PriceCalculationResult (items, totalAmount, currency, meta)
 </code></pre></div>
-<h3 id="54-pipeline-execution">5.4 Pipeline Execution<a class="headerlink" href="#54-pipeline-execution" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>OrderService::calculatePrices($items, $currency, $storeCode = null, $meta = [])
-<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>  -&gt; Create PriceCalculationContext with items, currency, user, storeCode, meta
-<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>  -&gt; Collect all PriceCalculatorInterface implementations (auto-tagged)
-<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>  -&gt; Sort by getPriority() ascending
-<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>  -&gt; Execute each in sequence on PriceCalculationContext
-<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>     (BasePriceCalculator → QuantityCalculator → TotalAggregator → PromotionCalculator)
-<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>  -&gt; Return PriceCalculationResult (items, totalAmount, currency, meta)
+<h3 id="54-dtos">5.4 DTOs<a class="headerlink" href="#54-dtos" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="x">class PriceCalculationContext</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="x">{</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="x">    public array $inputItems;     // Raw input from request</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="x">    public array $items;          // Mutated by calculators</span>
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="x">    public int $totalAmount;      // Final total in cents</span>
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="x">    public string $currency;      // e.g., 'CNY'</span>
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="x">    public array $meta = [];      // Bidirectional opaque channel for calculators</span>
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="x">    public ?object $user = null;  // Current user (for member-level conditions)</span>
+<a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="x">    public ?string $storeCode = null; // Multi-store routing</span>
+<a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="x">}</span>
+<a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a>
+<a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a><span class="x">class PriceCalculationResult</span>
+<a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a><span class="x">{</span>
+<a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a><span class="x">    public int $totalAmount;</span>
+<a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a><span class="x">    public string $currency;</span>
+<a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a><span class="x">    public array $items;          // Calculated order items</span>
+<a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a><span class="x">    public array $meta;           // From context.meta (carries promotion/coupon results)</span>
+<a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a><span class="x">}</span>
 </code></pre></div>
-<h3 id="55-dtos">5.5 DTOs<a class="headerlink" href="#55-dtos" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="x">class PriceCalculationContext</span>
-<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="x">{</span>
-<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="x">    public array $inputItems;     // Raw input from request</span>
-<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="x">    public array $items;          // Mutated by calculators</span>
-<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="x">    public int $totalAmount;      // Final total in cents</span>
-<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="x">    public string $currency;      // e.g., 'CNY'</span>
-<a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="x">    public array $meta = [];      // Bidirectional opaque channel for calculators</span>
-<a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="x">    public ?object $user = null;  // Current user (for member-level conditions)</span>
-<a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="x">    public ?string $storeCode = null; // Multi-store routing</span>
-<a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="x">}</span>
-<a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a>
-<a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a><span class="x">class PriceCalculationResult</span>
-<a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a><span class="x">{</span>
-<a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a><span class="x">    public int $totalAmount;</span>
-<a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a><span class="x">    public string $currency;</span>
-<a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a><span class="x">    public array $items;          // Calculated order items</span>
-<a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a><span class="x">    public array $meta;           // From context.meta (carries promotion/coupon results)</span>
-<a id="__codelineno-5-18" name="__codelineno-5-18" href="#__codelineno-5-18"></a><span class="x">}</span>
-</code></pre></div>
-<h3 id="56-meta-channel-contract">5.6 <code>meta</code> Channel Contract<a class="headerlink" href="#56-meta-channel-contract" title="Permanent link">&para;</a></h3>
+<h3 id="55-meta-channel-contract">5.5 <code>meta</code> Channel Contract<a class="headerlink" href="#55-meta-channel-contract" title="Permanent link">&para;</a></h3>
 <p><code>meta</code> is an opaque array that Trade never inspects. Calculators read from it as input
 and write to it as output. The contract is:</p>
 <table>
@@ -4191,12 +4180,13 @@ and write to it as output. The contract is:</p>
 - <code>PriceCalculationResult::fromContext()</code> copies <code>context.meta</code> verbatim into the result.
 - New modules (e.g., Coupon) follow the same pattern: implement <code>PriceCalculatorInterface</code>,
   read from <code>context.meta['coupon']</code>, write to <code>context.meta['coupon']</code>.</p>
-<h3 id="57-registration">5.7 Registration<a class="headerlink" href="#57-registration" title="Permanent link">&para;</a></h3>
-<p>Calculators are auto-discovered and tagged via <code>config/services.yaml</code>:</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="nt">services</span><span class="p">:</span>
-<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">  </span><span class="nt">App\Trade\Service\Pricing\</span><span class="p">:</span>
-<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">    </span><span class="nt">resource</span><span class="p">:</span><span class="w"> </span><span class="s">'../src/Trade/Service/Pricing/'</span>
-<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="w">    </span><span class="nt">tags</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">'trade.price_calculator'</span><span class="p p-Indicator">]</span>
+<h3 id="56-registration">5.6 Registration<a class="headerlink" href="#56-registration" title="Permanent link">&para;</a></h3>
+<p>Calculators are auto-discovered via <code>#[AutoconfigureTag('trade.price_calculator')]</code> on each
+calculator class and injected into <code>OrderService</code> via <code>#[AutowireIterator('trade.price_calculator')]</code>
+(sorted by <code>getPriority()</code> ascending at runtime):</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="x">// Each calculator self-tags, e.g. BasePriceCalculator:</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="x">#[AutoconfigureTag('trade.price_calculator')]</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="x">class BasePriceCalculator implements PriceCalculatorInterface { /* ... */ }</span>
 </code></pre></div>
 <p>New calculators can be added by implementing the interface -- no other code changes needed.</p>
 <hr />
@@ -4204,28 +4194,28 @@ and write to it as output. The contract is:</p>
 <h3 id="61-configuration">6.1 Configuration<a class="headerlink" href="#61-configuration" title="Permanent link">&para;</a></h3>
 <p><strong>File</strong>: <code>config/packages/workflow.yaml</code> — Trade owns the order lifecycle. Store does not add
 Trade places or transitions. Store verification is a Trade-owned guard on <code>complete</code>.</p>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="nt">framework</span><span class="p">:</span>
-<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">  </span><span class="nt">workflows</span><span class="p">:</span>
-<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">    </span><span class="nt">order</span><span class="p">:</span>
-<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">      </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">state_machine</span>
-<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="w">      </span><span class="nt">marking_store</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt"> type</span><span class="p">:</span><span class="w"> </span><span class="nv">method</span><span class="p p-Indicator">,</span><span class="nt"> property</span><span class="p">:</span><span class="w"> </span><span class="nv">status</span><span class="w"> </span><span class="p p-Indicator">}</span>
-<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="w">      </span><span class="nt">places</span><span class="p">:</span>
-<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">draft</span>
-<a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pending</span>
-<a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">confirmed</span>
-<a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">paid</span>
-<a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fulfilled</span>
-<a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">completed</span>
-<a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">cancelled</span>
-<a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">refunded</span>
-<a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a><span class="w">      </span><span class="nt">transitions</span><span class="p">:</span>
-<a id="__codelineno-7-16" name="__codelineno-7-16" href="#__codelineno-7-16"></a><span class="w">        </span><span class="nt">submit</span><span class="p">:</span><span class="w">   </span><span class="l l-Scalar l-Scalar-Plain">draft -&gt; pending</span>
-<a id="__codelineno-7-17" name="__codelineno-7-17" href="#__codelineno-7-17"></a><span class="w">        </span><span class="nt">confirm</span><span class="p">:</span><span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">pending -&gt; confirmed</span>
-<a id="__codelineno-7-18" name="__codelineno-7-18" href="#__codelineno-7-18"></a><span class="w">        </span><span class="nt">pay</span><span class="p">:</span><span class="w">      </span><span class="l l-Scalar l-Scalar-Plain">confirmed -&gt; paid</span>
-<a id="__codelineno-7-19" name="__codelineno-7-19" href="#__codelineno-7-19"></a><span class="w">        </span><span class="nt">fulfill</span><span class="p">:</span><span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">paid -&gt; fulfilled</span>
-<a id="__codelineno-7-20" name="__codelineno-7-20" href="#__codelineno-7-20"></a><span class="w">        </span><span class="nt">complete</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fulfilled -&gt; completed</span><span class="w">  </span><span class="c1"># guard: _completionMode == store_verification requires Store verification</span>
-<a id="__codelineno-7-21" name="__codelineno-7-21" href="#__codelineno-7-21"></a><span class="w">        </span><span class="nt">cancel</span><span class="p">:</span><span class="w">   </span><span class="p p-Indicator">[</span><span class="nv">draft</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">pending</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">confirmed</span><span class="p p-Indicator">]</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">-&gt; cancelled</span>
-<a id="__codelineno-7-22" name="__codelineno-7-22" href="#__codelineno-7-22"></a><span class="w">        </span><span class="nt">refund</span><span class="p">:</span><span class="w">   </span><span class="l l-Scalar l-Scalar-Plain">paid -&gt; refunded</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="nt">framework</span><span class="p">:</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">  </span><span class="nt">workflows</span><span class="p">:</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">    </span><span class="nt">order</span><span class="p">:</span>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="w">      </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">state_machine</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="w">      </span><span class="nt">marking_store</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt"> type</span><span class="p">:</span><span class="w"> </span><span class="nv">method</span><span class="p p-Indicator">,</span><span class="nt"> property</span><span class="p">:</span><span class="w"> </span><span class="nv">status</span><span class="w"> </span><span class="p p-Indicator">}</span>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="w">      </span><span class="nt">places</span><span class="p">:</span>
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">draft</span>
+<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pending</span>
+<a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">confirmed</span>
+<a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">paid</span>
+<a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fulfilled</span>
+<a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">completed</span>
+<a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">cancelled</span>
+<a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">refunded</span>
+<a id="__codelineno-6-15" name="__codelineno-6-15" href="#__codelineno-6-15"></a><span class="w">      </span><span class="nt">transitions</span><span class="p">:</span>
+<a id="__codelineno-6-16" name="__codelineno-6-16" href="#__codelineno-6-16"></a><span class="w">        </span><span class="nt">submit</span><span class="p">:</span><span class="w">   </span><span class="l l-Scalar l-Scalar-Plain">draft -&gt; pending</span>
+<a id="__codelineno-6-17" name="__codelineno-6-17" href="#__codelineno-6-17"></a><span class="w">        </span><span class="nt">confirm</span><span class="p">:</span><span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">pending -&gt; confirmed</span>
+<a id="__codelineno-6-18" name="__codelineno-6-18" href="#__codelineno-6-18"></a><span class="w">        </span><span class="nt">pay</span><span class="p">:</span><span class="w">      </span><span class="l l-Scalar l-Scalar-Plain">confirmed -&gt; paid</span>
+<a id="__codelineno-6-19" name="__codelineno-6-19" href="#__codelineno-6-19"></a><span class="w">        </span><span class="nt">fulfill</span><span class="p">:</span><span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">paid -&gt; fulfilled</span>
+<a id="__codelineno-6-20" name="__codelineno-6-20" href="#__codelineno-6-20"></a><span class="w">        </span><span class="nt">complete</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fulfilled -&gt; completed</span><span class="w">  </span><span class="c1"># guard: _completionMode == store_verification requires Store verification</span>
+<a id="__codelineno-6-21" name="__codelineno-6-21" href="#__codelineno-6-21"></a><span class="w">        </span><span class="nt">cancel</span><span class="p">:</span><span class="w">   </span><span class="p p-Indicator">[</span><span class="nv">draft</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">pending</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">confirmed</span><span class="p p-Indicator">]</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">-&gt; cancelled</span>
+<a id="__codelineno-6-22" name="__codelineno-6-22" href="#__codelineno-6-22"></a><span class="w">        </span><span class="nt">refund</span><span class="p">:</span><span class="w">   </span><span class="l l-Scalar l-Scalar-Plain">paid -&gt; refunded</span>
 </code></pre></div>
 <p>Guards live in <code>Trade/EventListener/OrderCompletionGuardListener</code> (reads <code>Order.metadata._completionMode</code>).
 Plain manual orders and legacy orders without <code>_completionMode</code> remain permissive.</p>
@@ -4285,58 +4275,87 @@ Plain manual orders and legacy orders without <code>_completionMode</code> remai
 </tbody>
 </table>
 <h3 id="63-workflow-listener">6.3 Workflow Listener<a class="headerlink" href="#63-workflow-listener" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="x">class OrderWorkflowListener</span>
-<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="x">{</span>
-<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="x">    // On cancel/pay/fulfill/refund/complete -&gt; set timestamps per transition</span>
-<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="x">    // On complete -&gt; set completedAt + dispatch OrderCompletedEvent</span>
-<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="x">}</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="x">class OrderWorkflowListener</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="x">{</span>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="x">    // On cancel/pay/fulfill/refund/complete -&gt; set timestamps per transition</span>
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="x">    //   (paidAt/fulfilledAt/refundedAt only when null; cancelledAt/completedAt always)</span>
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="x">    // On pay/fulfill/complete/cancel/refund -&gt; dispatch OrderPaid/Fulfilled/Completed/Cancelled/RefundedEvent</span>
+<a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="x">    // On cancel of a store-scoped order -&gt; record trade.order.cancelled.v1 in the outbox</span>
+<a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="x">    // On complete -&gt; set completedAt + dispatch OrderCompletedEvent</span>
+<a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="x">}</span>
 </code></pre></div>
+<p>Related listeners (same <code>workflow.order</code> events):</p>
+<ul>
+<li><code>OrderCompletionGuardListener</code> (<code>workflow.order.guard.complete</code>): blocks <code>complete</code> when
+  <code>metadata._completionMode === 'store_verification'</code> unless the transient
+  <code>completingFromStoreVerification</code> flag is set. Manual/legacy orders without
+  <code>_completionMode</code> remain permissive. There are no <code>store_accepted</code>/<code>rejected</code> places.</li>
+<li><code>OrderVerificationCompletionListener</code> (<code>workflow.order.completed.fulfill</code>): if the order is
+  <code>store_verification</code> mode and <code>_storeVerificationReceived</code> is already true (verification
+  arrived out of order, before <code>fulfill</code>), applies <code>complete</code> immediately.</li>
+<li><code>OrderInvoiceListener</code> (sync <code>InvoicePaid/Refunded/Cancelled/FailedEvent</code>): on paid, verifies
+  invoice amount/currency match, syncs <code>invoiceId</code>/<code>invoiceNo</code>/<code>paymentStatus</code>/<code>paymentMethod</code>/
+  <code>paidAt</code>, and applies the <code>pay</code> transition; on refunded, syncs status and applies <code>refund</code>;
+  on cancelled/failed, only syncs <code>paymentStatus</code>.</li>
+<li><code>StoreOrderVerifiedHandler</code> (async <code>StoreOrderVerifiedMessage</code>, i.e. <code>store.order.verified.v1</code>
+  dispatched by the Store outbox): ignores unknown orders, store-uuid mismatches, and
+  non-<code>store_verification</code> orders; otherwise sets <code>_storeVerificationReceived = true</code> and
+  applies <code>complete</code> when enabled — if the order is not yet <code>fulfilled</code>, the flag persists
+  and <code>OrderVerificationCompletionListener</code> completes it after <code>fulfill</code>.</li>
+</ul>
 <hr />
 <h2 id="7-order-creation-flow">7. Order Creation Flow<a class="headerlink" href="#7-order-creation-flow" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>POST /api/v1/manage/orders
-<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>  Body: {items: [{specification: {id: N}, quantity: N}, ...], currency: "CNY", notes: "...", meta: {coupon: {...}}}
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>POST /api/v1/manage/orders (or POST /api/v1/app/orders)
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>  Body: {items: [{specificationId: N|"uuid", quantity: N}, ...], currency: "CNY", notes: "...", metadata: {...}, meta: {coupon: {...}}}
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>  + optional X-Store-Code header (resolved by Store into StoreContext; request currency must match Store currency)
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>  |
+<a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>  v
+<a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>OrderService::calculatePrices($items, $currency, $storeCode, $meta)
+<a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>  -&gt; Create PriceCalculationContext(items, currency)
+<a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>  -&gt; Set context.user, context.storeCode, context.meta = $meta
+<a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a>   -&gt; Price Calculation Pipeline (Base → Quantity → TotalAggregator [subtotal] → Promotion)
+<a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a>   -&gt; Returns PriceCalculationResult (items, totalAmount, currency, meta)
+<a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a>  |
+<a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a>  v
+<a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a>OrderService::createOrder($calculatedItems, $user, $totalAmount, $currency, $notes, $metadata, $storeContext)
+<a id="__codelineno-8-14" name="__codelineno-8-14" href="#__codelineno-8-14"></a>  -&gt; Within transaction:
+<a id="__codelineno-8-15" name="__codelineno-8-15" href="#__codelineno-8-15"></a>     -&gt; Create Order entity (totalAmount, currency, notes, metadata)
+<a id="__codelineno-8-16" name="__codelineno-8-16" href="#__codelineno-8-16"></a>     -&gt; When $storeContext !== null: snapshot metadata._store + metadata._completionMode
+<a id="__codelineno-8-17" name="__codelineno-8-17" href="#__codelineno-8-17"></a>        (manual|store_verification), apply submit (draft -&gt; pending), record trade.order.created.v1 outbox
+<a id="__codelineno-8-18" name="__codelineno-8-18" href="#__codelineno-8-18"></a>        with items [{lineId (= item uuid), catalogReference (= specificationUuid), quantity, unitPrice,
+<a id="__codelineno-8-19" name="__codelineno-8-19" href="#__codelineno-8-19"></a>        lineAmount, snapshot: {specification, product}}, ...], delivery, placedAt
+<a id="__codelineno-8-20" name="__codelineno-8-20" href="#__codelineno-8-20"></a>     -&gt; For each calculated item: create OrderItem
+<a id="__codelineno-8-21" name="__codelineno-8-21" href="#__codelineno-8-21"></a>        -&gt; Snapshot spec + product data
+<a id="__codelineno-8-22" name="__codelineno-8-22" href="#__codelineno-8-22"></a>        -&gt; Auto-calculate price = unitPrice * quantity (PrePersist)
+<a id="__codelineno-8-23" name="__codelineno-8-23" href="#__codelineno-8-23"></a>     -&gt; Persist + flush
+<a id="__codelineno-8-24" name="__codelineno-8-24" href="#__codelineno-8-24"></a>  -&gt; Returns Order entity
+</code></pre></div>
+<h3 id="71-quote-flow-order-preview">7.1 Quote Flow (Order Preview)<a class="headerlink" href="#71-quote-flow-order-preview" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>POST /api/v1/app/orders/quote
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>  Body: {items: [{specificationId: N, quantity: N}, ...], meta: {coupon: {code: "ABC"}}}
 <a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>  |
 <a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>  v
 <a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>OrderService::calculatePrices($items, $currency, $storeCode, $meta)
-<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>  -&gt; Create PriceCalculationContext(items, currency)
-<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a>  -&gt; Set context.user, context.storeCode, context.meta = $meta
-<a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a>   -&gt; Price Calculation Pipeline (Base → Quantity → TotalAggregator [subtotal] → Promotion)
-<a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a>   -&gt; Returns PriceCalculationResult (items, totalAmount, currency, meta)
-<a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a>  |
-<a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a>  v
-<a id="__codelineno-9-12" name="__codelineno-9-12" href="#__codelineno-9-12"></a>OrderService::createOrder($calculatedItems, $user, $totalAmount, $currency, $notes)
-<a id="__codelineno-9-13" name="__codelineno-9-13" href="#__codelineno-9-13"></a>  -&gt; Within transaction:
-<a id="__codelineno-9-14" name="__codelineno-9-14" href="#__codelineno-9-14"></a>     -&gt; Create Order entity
-<a id="__codelineno-9-15" name="__codelineno-9-15" href="#__codelineno-9-15"></a>     -&gt; For each calculated item: create OrderItem
-<a id="__codelineno-9-16" name="__codelineno-9-16" href="#__codelineno-9-16"></a>        -&gt; Snapshot spec + product data
-<a id="__codelineno-9-17" name="__codelineno-9-17" href="#__codelineno-9-17"></a>        -&gt; Auto-calculate price = unitPrice * quantity (PrePersist)
-<a id="__codelineno-9-18" name="__codelineno-9-18" href="#__codelineno-9-18"></a>     -&gt; Persist + flush
-<a id="__codelineno-9-19" name="__codelineno-9-19" href="#__codelineno-9-19"></a>  -&gt; Returns Order entity
-</code></pre></div>
-<h3 id="71-quote-flow-order-preview">7.1 Quote Flow (Order Preview)<a class="headerlink" href="#71-quote-flow-order-preview" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>POST /api/v1/app/orders/quote
-<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>  Body: {items: [{specificationId: N, quantity: N}, ...], meta: {coupon: {code: "ABC"}}}
-<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>  |
-<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>  v
-<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>OrderService::calculatePrices($items, $currency, $storeCode, $meta)
-<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>  -&gt; Returns PriceCalculationResult (items, totalAmount, currency, meta)
-<a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a>  -&gt; No Order is persisted — pure pricing preview
-<a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a>
-<a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a>Response:
-<a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a>{
-<a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a>  data: {
-<a id="__codelineno-10-12" name="__codelineno-10-12" href="#__codelineno-10-12"></a>    items: [{specificationId: 1, unitPrice: 10000, price: 10000, ...}],
-<a id="__codelineno-10-13" name="__codelineno-10-13" href="#__codelineno-10-13"></a>    totalAmount: 8000,
-<a id="__codelineno-10-14" name="__codelineno-10-14" href="#__codelineno-10-14"></a>    currency: "CNY",
-<a id="__codelineno-10-15" name="__codelineno-10-15" href="#__codelineno-10-15"></a>    meta: {
-<a id="__codelineno-10-16" name="__codelineno-10-16" href="#__codelineno-10-16"></a>      promotion: { inner: [{promotionId: 1, promotionName: "满减", ...}] }
-<a id="__codelineno-10-17" name="__codelineno-10-17" href="#__codelineno-10-17"></a>    }
-<a id="__codelineno-10-18" name="__codelineno-10-18" href="#__codelineno-10-18"></a>  }
-<a id="__codelineno-10-19" name="__codelineno-10-19" href="#__codelineno-10-19"></a>}
+<a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>  -&gt; Returns PriceCalculationResult (items, totalAmount, currency, meta)
+<a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a>  -&gt; No Order is persisted — pure pricing preview
+<a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a>
+<a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a>Response:
+<a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a>{
+<a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a>  data: {
+<a id="__codelineno-9-12" name="__codelineno-9-12" href="#__codelineno-9-12"></a>    items: [{specificationId: 1, unitPrice: 10000, price: 10000, ...}],
+<a id="__codelineno-9-13" name="__codelineno-9-13" href="#__codelineno-9-13"></a>    totalAmount: 8000,
+<a id="__codelineno-9-14" name="__codelineno-9-14" href="#__codelineno-9-14"></a>    currency: "CNY",
+<a id="__codelineno-9-15" name="__codelineno-9-15" href="#__codelineno-9-15"></a>    meta: {
+<a id="__codelineno-9-16" name="__codelineno-9-16" href="#__codelineno-9-16"></a>      promotion: { inner: [{promotionId: 1, promotionName: "满减", ...}] }
+<a id="__codelineno-9-17" name="__codelineno-9-17" href="#__codelineno-9-17"></a>    }
+<a id="__codelineno-9-18" name="__codelineno-9-18" href="#__codelineno-9-18"></a>  }
+<a id="__codelineno-9-19" name="__codelineno-9-19" href="#__codelineno-9-19"></a>}
 </code></pre></div>
 <hr />
 <h2 id="8-api-endpoints">8. API Endpoints<a class="headerlink" href="#8-api-endpoints" title="Permanent link">&para;</a></h2>
 <h3 id="81-manage-admin-role_admin">8.1 Manage (Admin, ROLE_ADMIN)<a class="headerlink" href="#81-manage-admin-role_admin" title="Permanent link">&para;</a></h3>
+<p>Product/Specification endpoints live in the Store bundle (<code>src/Store/Controller/Manage/</code>);
+Trade Manage owns orders and order items only.</p>
 <table>
 <thead>
 <tr>
@@ -4346,56 +4365,6 @@ Plain manual orders and legacy orders without <code>_completionMode</code> remai
 </tr>
 </thead>
 <tbody>
-<tr>
-<td>GET</td>
-<td><code>/api/v1/manage/products</code></td>
-<td>List products</td>
-</tr>
-<tr>
-<td>GET</td>
-<td><code>/api/v1/manage/products/{id}</code></td>
-<td>Product detail</td>
-</tr>
-<tr>
-<td>POST</td>
-<td><code>/api/v1/manage/products</code></td>
-<td>Create product</td>
-</tr>
-<tr>
-<td>PUT</td>
-<td><code>/api/v1/manage/products/{id}</code></td>
-<td>Update product</td>
-</tr>
-<tr>
-<td>DELETE</td>
-<td><code>/api/v1/manage/products/{id}</code></td>
-<td>Delete product</td>
-</tr>
-<tr>
-<td>GET</td>
-<td><code>/api/v1/manage/specifications</code></td>
-<td>List specs</td>
-</tr>
-<tr>
-<td>POST</td>
-<td><code>/api/v1/manage/specifications</code></td>
-<td>Create spec</td>
-</tr>
-<tr>
-<td>PUT</td>
-<td><code>/api/v1/manage/specifications/{id}</code></td>
-<td>Update spec</td>
-</tr>
-<tr>
-<td>DELETE</td>
-<td><code>/api/v1/manage/specifications/{id}</code></td>
-<td>Delete spec</td>
-</tr>
-<tr>
-<td>GET</td>
-<td><code>/api/v1/manage/products/{id}/specifications/{sid}</code></td>
-<td><strong>Manage spec detail</strong></td>
-</tr>
 <tr>
 <td>GET</td>
 <td><code>/api/v1/manage/orders</code></td>
@@ -4409,7 +4378,7 @@ Plain manual orders and legacy orders without <code>_completionMode</code> remai
 <tr>
 <td>POST</td>
 <td><code>/api/v1/manage/orders</code></td>
-<td>Create order (custom logic)</td>
+<td>Create order (custom logic; accepts <code>user</code> id)</td>
 </tr>
 <tr>
 <td><strong>POST</strong></td>
@@ -4433,18 +4402,13 @@ Plain manual orders and legacy orders without <code>_completionMode</code> remai
 </tr>
 <tr>
 <td>POST</td>
-<td><code>/api/v1/manage/orders/{id}/pay</code></td>
-<td>Pay with wallet deduction</td>
-</tr>
-<tr>
-<td>POST</td>
 <td><code>/api/v1/manage/orders/{id}/fulfill</code></td>
-<td>Fulfill with tracking info</td>
+<td>Fulfill (paid → fulfilled) with tracking info</td>
 </tr>
 <tr>
 <td>POST</td>
 <td><code>/api/v1/manage/orders/{id}/refund</code></td>
-<td>Refund with wallet credit</td>
+<td>Refund via linked invoice when present, else wallet transfer (paid → refunded)</td>
 </tr>
 <tr>
 <td>GET</td>
@@ -4459,16 +4423,22 @@ Plain manual orders and legacy orders without <code>_completionMode</code> remai
 <tr>
 <td>POST</td>
 <td><code>/api/v1/manage/orders/{id}/do/{transition}</code></td>
-<td>Execute transition</td>
+<td>Execute transition (cancel also cancels linked invoice)</td>
 </tr>
 <tr>
 <td>PUT</td>
 <td><code>/api/v1/manage/orders/{id}/status-reset</code></td>
 <td>Admin reset marking</td>
 </tr>
+<tr>
+<td>GET/POST/PUT/DELETE</td>
+<td><code>/api/v1/manage/order-items[/{id}]</code></td>
+<td>Order-item CRUD (<code>OrderItemController</code>)</td>
+</tr>
 </tbody>
 </table>
-<h3 id="82-app-public-authenticated">8.2 App (Public, Authenticated)<a class="headerlink" href="#82-app-public-authenticated" title="Permanent link">&para;</a></h3>
+<h3 id="82-app-authenticated-role_user-own-orders-only">8.2 App (Authenticated, ROLE_USER, own orders only)<a class="headerlink" href="#82-app-authenticated-role_user-own-orders-only" title="Permanent link">&para;</a></h3>
+<p>Product/Specification browsing lives in the Store bundle (<code>src/Store/Controller/App/</code>).</p>
 <table>
 <thead>
 <tr>
@@ -4478,31 +4448,6 @@ Plain manual orders and legacy orders without <code>_completionMode</code> remai
 </tr>
 </thead>
 <tbody>
-<tr>
-<td>GET</td>
-<td><code>/api/v1/app/products</code></td>
-<td>List active, non-deleted products</td>
-</tr>
-<tr>
-<td>GET</td>
-<td><code>/api/v1/app/products/{id}</code></td>
-<td>Product detail</td>
-</tr>
-<tr>
-<td><strong>GET</strong></td>
-<td><strong><code>/api/v1/app/specifications</code></strong></td>
-<td><strong>Browse all active specs</strong></td>
-</tr>
-<tr>
-<td><strong>GET</strong></td>
-<td><strong><code>/api/v1/app/specifications/by-product/{id}</code></strong></td>
-<td><strong>Specs by product</strong></td>
-</tr>
-<tr>
-<td><strong>GET</strong></td>
-<td><strong><code>/api/v1/app/specifications/{id}</code></strong></td>
-<td><strong>Spec detail</strong></td>
-</tr>
 <tr>
 <td>GET</td>
 <td><code>/api/v1/app/orders</code></td>
@@ -4530,8 +4475,28 @@ Plain manual orders and legacy orders without <code>_completionMode</code> remai
 </tr>
 <tr>
 <td>POST</td>
+<td><code>/api/v1/app/orders/{id}/submit</code></td>
+<td>Submit draft → pending</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/v1/app/orders/{id}/confirm</code></td>
+<td>Confirm pending → confirmed</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/v1/app/orders/{id}/payment</code></td>
+<td>Start payment via invoice (<code>{payment, ...options}</code>)</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/api/v1/app/orders/{id}/refund</code></td>
+<td>Refund via linked invoice when present, else wallet transfer</td>
+</tr>
+<tr>
+<td>POST</td>
 <td><code>/api/v1/app/orders/{id}/cancel</code></td>
-<td>Cancel own order</td>
+<td>Cancel own order (workflow <code>cancel</code> + linked invoice cancel)</td>
 </tr>
 </tbody>
 </table>
@@ -4547,13 +4512,16 @@ Plain manual orders and legacy orders without <code>_completionMode</code> remai
 <li><code>transitions</code>: Returns available transitions for a specific order</li>
 <li><code>do/{transition}</code>: Executes the named transition within a transaction, optionally accepting data to update the entity before transition</li>
 </ul>
-<h3 id="94-payment-pay">9.4 Payment (Pay)<a class="headerlink" href="#94-payment-pay" title="Permanent link">&para;</a></h3>
-<ul>
-<li><code>POST /manage/orders/{id}/pay</code> with <code>{systemWalletId, paymentMethod}</code></li>
-<li>Validates order is in <code>confirmed</code> status</li>
-<li>Deducts from user's wallet, credits to system wallet via <code>TransferService</code></li>
-<li>Sets <code>paidAt</code>, <code>paymentMethod</code>, applies <code>pay</code> transition</li>
-</ul>
+<h3 id="94-payment">9.4 Payment<a class="headerlink" href="#94-payment" title="Permanent link">&para;</a></h3>
+<p>There is no <code>POST /manage/orders/{id}/pay</code> endpoint. Payment is started by the customer via
+<code>POST /app/orders/{id}/payment</code> with <code>{payment, ...options}</code> (<code>payment</code> defaults to <code>mock</code>),
+which calls <code>OrderService::createPayment()</code>: it reuses the pending linked invoice when one
+exists, otherwise creates one via <code>InvoiceService::createInvoice()</code> (<code>sourceType: trade_order</code>,
+<code>scene: order</code>), syncs <code>invoiceId</code>/<code>invoiceNo</code>/<code>paymentStatus</code>, and delegates to
+<code>InvoiceService::pay()</code>. The <code>confirmed → paid</code> transition is applied asynchronously by
+<code>OrderInvoiceListener</code> on <code>InvoicePaidEvent</code> (after amount/currency verification), which also
+syncs <code>paymentMethod</code> and <code>paidAt</code>. There is no <code>OrderService::pay()</code> method and
+<code>TransferService</code> is never touched on the pay path.</p>
 <h3 id="95-fulfillment">9.5 Fulfillment<a class="headerlink" href="#95-fulfillment" title="Permanent link">&para;</a></h3>
 <ul>
 <li><code>POST /manage/orders/{id}/fulfill</code> with <code>{trackingNumber, shippingAddress}</code></li>
@@ -4563,16 +4531,21 @@ Plain manual orders and legacy orders without <code>_completionMode</code> remai
 </ul>
 <h3 id="96-refund">9.6 Refund<a class="headerlink" href="#96-refund" title="Permanent link">&para;</a></h3>
 <ul>
-<li><code>POST /manage/orders/{id}/refund</code> with <code>{systemWalletId, reason}</code></li>
-<li>Validates order is in <code>completed</code> status</li>
-<li>Transfers from system wallet back to user's wallet via <code>TransferService</code></li>
-<li>Sets <code>refundedAt</code>, <code>refundReason</code>, applies <code>refund</code> transition</li>
+<li><code>POST /manage/orders/{id}/refund</code> and <code>POST /app/orders/{id}/refund</code> with <code>{reason, ...}</code></li>
+<li>Validates the order can take the <code>refund</code> transition (i.e. status is <code>paid</code>; <code>fulfilled</code>/<code>completed</code> cannot directly refund)</li>
+<li>When a linked invoice exists (<code>invoiceId !== null</code>), delegates to <code>OrderService::refundPayment()</code>
+  (<code>InvoiceService::refund()</code>); the <code>paid → refunded</code> transition is then applied by
+  <code>OrderInvoiceListener</code> on <code>InvoiceRefundedEvent</code></li>
+<li>Otherwise (legacy wallet path) requires <code>{systemWalletId}</code>: <code>OrderService::refund()</code> transfers
+  from the system wallet back to the user's wallet via <code>TransferService</code>, sets <code>refundedAt</code>/
+  <code>refundReason</code>, and the controller applies the <code>refund</code> transition in the same transaction</li>
 </ul>
 <h3 id="97-user-cancel">9.7 User Cancel<a class="headerlink" href="#97-user-cancel" title="Permanent link">&para;</a></h3>
 <ul>
-<li><code>POST /app/orders/{id}/cancel</code> -- authenticated user cancels own order</li>
-<li>Allowed only when status is <code>draft</code>, <code>pending</code>, or <code>confirmed</code></li>
-<li>Sets status to <code>cancelled</code> (not via workflow, direct update)</li>
+<li><code>POST /app/orders/{id}/cancel</code> -- authenticated user cancels own order (ownership verified)</li>
+<li>Allowed only when the workflow allows <code>cancel</code> (i.e. status is <code>draft</code>, <code>pending</code>, or <code>confirmed</code>)</li>
+<li>Runs in a transaction via the <code>cancel</code> workflow transition (not a direct status update) and
+  cancels the linked invoice first via <code>OrderService::cancel()</code> (<code>InvoiceService::cancel()</code>)</li>
 </ul>
 <h3 id="98-view-items">9.8 View Items<a class="headerlink" href="#98-view-items" title="Permanent link">&para;</a></h3>
 <ul>
@@ -4613,14 +4586,32 @@ Plain manual orders and legacy orders without <code>_completionMode</code> remai
 <td>Conversion on read</td>
 <td><code>/ 100</code></td>
 </tr>
+<tr>
+<td>Points currency</td>
+<td><code>LIANSHENG_POINT</code> invoices carry whole point units (no cents conversion; see Payment bundle <code>liansheng_point</code> gateway). Trade <code>totalAmount</code> stays an integer throughout and Store currency is passed through verbatim</td>
+</tr>
 </tbody>
 </table>
 <hr />
 <h2 id="11-database-migrations">11. Database Migrations<a class="headerlink" href="#11-database-migrations" title="Permanent link">&para;</a></h2>
-<p><strong>Version</strong>: <code>Version20250620000000</code></p>
-<p>Creates 4 tables: <code>trade_product</code>, <code>trade_specification</code>, <code>trade_order</code>, <code>trade_order_item</code>.</p>
-<p><strong>Version</strong>: <code>Version20250621000000</code></p>
-<p>Adds columns to <code>trade_order</code>: <code>paid_at</code>, <code>refunded_at</code>, <code>fulfilled_at</code>, <code>payment_method</code>, <code>tracking_number</code>, <code>shipping_address</code>, <code>refund_reason</code>.</p>
+<ul>
+<li><code>Version20260624223701</code>: adds <code>invoice_id</code>/<code>invoice_no</code>/<code>payment_status</code> to <code>trade_order</code>
+  (plus datetime-type alignment on trade tables).</li>
+<li><code>Version20260725020000</code>: creates <code>trade_outbox_message</code> (<code>event_id</code> unique, <code>topic</code>,
+  <code>aggregate_type</code>, <code>aggregate_id</code>, <code>payload</code>, <code>occurred_at</code>/<code>available_at</code>/<code>published_at</code>,
+  <code>attempts</code>, <code>last_error</code>).</li>
+<li><code>Version20260725040000</code>: aligns outbox datetime mappings with Doctrine mappings.</li>
+<li><code>Version20260725050000</code>: widens <code>trade_order.status</code> to <code>VARCHAR(40)</code>.</li>
+<li><code>Version20260903000000</code> + <code>Version20260903000001</code>: OrderItem UUID migration — backfills
+  <code>specification_uuid</code> from the old <code>specification_id</code> FK, drops the FK/index/column
+  (irreversible), adds <code>idx_trade_order_item_spec_uuid</code>.</li>
+<li><code>Version20260903000005</code>: <code>trade_order.currency</code> definition (default <code>CNY</code>).</li>
+<li><code>Version20260911000000</code>: adds <code>type</code> discriminator (<code>normal</code> vs <code>coupon</code>) to <code>trade_product</code>
+  (Store-owned entity, shared table).</li>
+</ul>
+<p>Earlier bootstrapping migrations (<code>Version20250620000000</code> creating the four trade tables;
+<code>Version20250621000000</code> adding <code>paid_at</code>/<code>refunded_at</code>/<code>fulfilled_at</code>/<code>payment_method</code>/
+<code>tracking_number</code>/<code>shipping_address</code>/<code>refund_reason</code>) predate the <code>Version2026*</code> series above.</p>
 <hr />
 <h2 id="12-testing">12. Testing<a class="headerlink" href="#12-testing" title="Permanent link">&para;</a></h2>
 <table>
@@ -4632,28 +4623,28 @@ Plain manual orders and legacy orders without <code>_completionMode</code> remai
 </thead>
 <tbody>
 <tr>
-<td><code>tests/Trade/Entity/</code></td>
-<td>Product, Order, OrderItem, Specification unit tests</td>
+<td><code>tests/UnitTest/Trade/Entity/</code></td>
+<td>Order, OrderItem (+ legacy Product/Specification) unit tests</td>
 </tr>
 <tr>
-<td><code>tests/Trade/Service/</code></td>
-<td>OrderService create order, OrderItem service</td>
+<td><code>tests/UnitTest/Trade/Service/</code></td>
+<td>OrderService create order, OrderService payments (invoice paths)</td>
 </tr>
 <tr>
-<td><code>tests/Trade/Pricing/</code></td>
-<td>BasePriceCalculator, QuantityCalculator, TotalAggregator, PriceCalculationResult</td>
+<td><code>tests/UnitTest/Trade/Pricing/</code></td>
+<td>Pipeline pricing tests</td>
 </tr>
 <tr>
-<td><code>tests/Trade/Controller/</code></td>
-<td>OrderController create/quote/list/detail</td>
+<td><code>tests/UnitTest/Trade/EventListener/</code></td>
+<td>OrderInvoiceListener, OrderWorkflowListener</td>
 </tr>
 <tr>
-<td><code>tests/Trade/Integration/</code></td>
-<td>Product repository, Order repository integration</td>
+<td><code>tests/UnitTest/Trade/Controller/</code></td>
+<td>App + Manage OrderController tests</td>
 </tr>
 <tr>
-<td><code>tests/Promotion/Integration/</code></td>
-<td>8 real SQLite pipeline tests with Doctrine + actual OrderService</td>
+<td><code>tests/UnitTest/Promotion/Service/</code></td>
+<td>PromotionCalculator pipeline tests (real pipeline coverage)</td>
 </tr>
 </tbody>
 </table>

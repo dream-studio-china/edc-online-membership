@@ -6566,16 +6566,12 @@ Wallet balance deduction belongs to Wallet as a provider implementation. Payment
 </tr>
 <tr>
 <td>POST</td>
-<td><code>/api/v1/manage/orders/{id}/payment</code></td>
-<td>Admin create/start order payment</td>
-</tr>
-<tr>
-<td>POST</td>
 <td><code>/api/v1/manage/orders/{id}/refund</code></td>
 <td>Refund order through linked invoice</td>
 </tr>
 </tbody>
 </table>
+<p>There is no <code>POST /api/v1/manage/orders/{id}/payment</code> endpoint; admin-initiated payment goes through the App payment endpoint.</p>
 <h3 id="104-adjustment-request-payload">10.4 Adjustment Request Payload<a class="headerlink" href="#104-adjustment-request-payload" title="Permanent link">&para;</a></h3>
 <p>Payment endpoints MAY accept adjustment options and pass them to registered adjustment providers. First phase supports only one wallet balance deduction in the invoice currency, implemented by the Wallet module.</p>
 <p>Shortcut payload for App clients:</p>

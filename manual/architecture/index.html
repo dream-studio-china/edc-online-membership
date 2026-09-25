@@ -3672,8 +3672,11 @@ webhooks (<code>PaymentNotifyController</code>) with provider-agnostic invoice e
 <ul>
 <li><code>Trade</code> publishes <code>TradeOrderCreatedMessage</code>/<code>TradeOrderCancelledMessage</code>; <code>Store</code>
   consumes them to fan orders out to stores (<code>StoreOrder</code>).</li>
-<li><code>Store</code> publishes <code>StoreOrderAcceptedMessage</code>/<code>StoreOrderRejectedMessage</code>; <code>Trade</code>
-  consumes them to move order state.</li>
+<li><code>Store</code> publishes <code>StoreOrderVerifiedMessage</code> (topic <code>store.order.verified.v1</code>);
+  <code>Trade</code> consumes it to complete the order when its snapshot
+  <code>metadata._completionMode == 'store_verification'</code>. The former
+  <code>store.order.accepted/rejected.v1</code> acceptance relays were removed — Store
+  accepts/rejects locally with no Trade relay.</li>
 <li><code>Trade</code> requests inventory reservations through <code>ReservationRequestedMessage</code>;
   <code>Inventory</code> confirms/rejects via <code>ReservationConfirmed/RejectedMessage</code>.</li>
 <li><code>Payment</code> emits <code>InvoicePaidEvent</code>, <code>InvoiceRefundedEvent</code>, etc.; the <code>Wallet</code>

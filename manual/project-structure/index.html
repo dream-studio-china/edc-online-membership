@@ -3227,81 +3227,91 @@ modules plug into it.</p>
 <a id="__codelineno-1-38" name="__codelineno-1-38" href="#__codelineno-1-38"></a>│   ├── Repository/, EventListener/
 <a id="__codelineno-1-39" name="__codelineno-1-39" href="#__codelineno-1-39"></a>│   └── Resources/config/services_identity.yaml
 <a id="__codelineno-1-40" name="__codelineno-1-40" href="#__codelineno-1-40"></a>│
-<a id="__codelineno-1-41" name="__codelineno-1-41" href="#__codelineno-1-41"></a>├── Trade/                          # E-commerce
-<a id="__codelineno-1-42" name="__codelineno-1-42" href="#__codelineno-1-42"></a>│   ├── Controller/{App,Manage}/    # Product, Specification, Order (currency from Store via X-Store-Code), OrderItem
-<a id="__codelineno-1-43" name="__codelineno-1-43" href="#__codelineno-1-43"></a>│   ├── Service/
-<a id="__codelineno-1-44" name="__codelineno-1-44" href="#__codelineno-1-44"></a>│   │   ├── OrderService.php (currency from StoreContext), ProductService.php, SpecificationService.php
-<a id="__codelineno-1-45" name="__codelineno-1-45" href="#__codelineno-1-45"></a>│   │   ├── Pricing/                # BasePrice → Quantity → TotalAggregator pipeline (currency validated)
-<a id="__codelineno-1-46" name="__codelineno-1-46" href="#__codelineno-1-46"></a>│   │   └── TradeOutboxService.php
-<a id="__codelineno-1-47" name="__codelineno-1-47" href="#__codelineno-1-47"></a>│   ├── Entity/                     # Product (store-private), Specification, Order (currency varchar(32), LIANSHENG_POINT), OrderItem, TradeOutboxMessage
-<a id="__codelineno-1-48" name="__codelineno-1-48" href="#__codelineno-1-48"></a>│   ├── DTO/StoreContext.php        # StoreContext with currency snapshot (code, uuid, name, channel, currency)
-<a id="__codelineno-1-49" name="__codelineno-1-49" href="#__codelineno-1-49"></a>│   ├── Message/ + MessageHandler/  # TradeOrderCreated/Cancelled, StoreOrderAccepted/Rejected
-<a id="__codelineno-1-50" name="__codelineno-1-50" href="#__codelineno-1-50"></a>│   ├── Event/ + EventListener/     # Order*Event, OrderInvoiceListener, OrderWorkflowListener
-<a id="__codelineno-1-51" name="__codelineno-1-51" href="#__codelineno-1-51"></a>│   └── Command/PublishOutboxCommand.php
-<a id="__codelineno-1-52" name="__codelineno-1-52" href="#__codelineno-1-52"></a>│
-<a id="__codelineno-1-53" name="__codelineno-1-53" href="#__codelineno-1-53"></a>├── Store/                          # Multi-store operations
-<a id="__codelineno-1-54" name="__codelineno-1-54" href="#__codelineno-1-54"></a>│   ├── Controller/{App,Manage,Staff}/  # App: Store (public) + Membership self-join (`POST /app/stores/{uuid}/membership`); Manage: Store CRUD + members; Staff: Store-scoped ops
-<a id="__codelineno-1-55" name="__codelineno-1-55" href="#__codelineno-1-55"></a>│   ├── Service/                    # StoreService, StoreOrderService, StoreOutboxService, StoreContextResolver (X-Store-Code → StoreContext with currency)
-<a id="__codelineno-1-56" name="__codelineno-1-56" href="#__codelineno-1-56"></a>│   ├── Entity/                     # Store (currency varchar(32) DEFAULT CNY, LIANSHENG_POINT for points mall), Membership, StoreOrder (currency), StoreOutboxMessage, …
-<a id="__codelineno-1-57" name="__codelineno-1-57" href="#__codelineno-1-57"></a>│   ├── Resources/JsonSchema/       # StoreAddress.json, StoreContact.json (subTitle 1..100 + tags array 1..30×20), StoreSettings.json
-<a id="__codelineno-1-58" name="__codelineno-1-58" href="#__codelineno-1-58"></a>│   ├── MessageHandler/             # Reservation*, TradeOrder* handlers
-<a id="__codelineno-1-59" name="__codelineno-1-59" href="#__codelineno-1-59"></a>│   └── Command/PublishOutboxCommand.php
-<a id="__codelineno-1-60" name="__codelineno-1-60" href="#__codelineno-1-60"></a>│
-<a id="__codelineno-1-61" name="__codelineno-1-61" href="#__codelineno-1-61"></a>├── Inventory/                      # Stock &amp; reservations
-<a id="__codelineno-1-62" name="__codelineno-1-62" href="#__codelineno-1-62"></a>│   ├── Controller/Manage/          # Material, Recipe, Stock
-<a id="__codelineno-1-63" name="__codelineno-1-63" href="#__codelineno-1-63"></a>│   ├── Service/                    # InventoryService, StockService, MaterialService, Quantity
-<a id="__codelineno-1-64" name="__codelineno-1-64" href="#__codelineno-1-64"></a>│   ├── Entity/                     # Stock, Reservation, ReservationLine, LedgerEntry, …
-<a id="__codelineno-1-65" name="__codelineno-1-65" href="#__codelineno-1-65"></a>│   ├── Message/ + MessageHandler/  # ReservationRequested/Confirmed/Rejected/Released/…
-<a id="__codelineno-1-66" name="__codelineno-1-66" href="#__codelineno-1-66"></a>│   └── Command/                    # PublishOutbox, ReleaseExpiredReservations
-<a id="__codelineno-1-67" name="__codelineno-1-67" href="#__codelineno-1-67"></a>│
-<a id="__codelineno-1-68" name="__codelineno-1-68" href="#__codelineno-1-68"></a>├── Payment/                        # Invoice lifecycle &amp; gateways
-<a id="__codelineno-1-69" name="__codelineno-1-69" href="#__codelineno-1-69"></a>│   ├── Controller/{App,Manage,Webhook}/  # Invoice, PaymentNotify
-<a id="__codelineno-1-70" name="__codelineno-1-70" href="#__codelineno-1-70"></a>│   ├── Service/
-<a id="__codelineno-1-71" name="__codelineno-1-71" href="#__codelineno-1-71"></a>│   │   ├── InvoiceService.php      # State machine: pending → paid/refunded/failed/cancelled
-<a id="__codelineno-1-72" name="__codelineno-1-72" href="#__codelineno-1-72"></a>│   │   ├── Gateway/                # MockGateway + PaymentGatewayInterface
-<a id="__codelineno-1-73" name="__codelineno-1-73" href="#__codelineno-1-73"></a>│   │   └── Adjustment/             # PaymentAdjustmentRegistry (wallets etc.)
-<a id="__codelineno-1-74" name="__codelineno-1-74" href="#__codelineno-1-74"></a>│   ├── DTO/, Event/, Exception/, Entity/Invoice.php, Repository/
-<a id="__codelineno-1-75" name="__codelineno-1-75" href="#__codelineno-1-75"></a>│   └── Resources/config/services_payment.yaml   # payment.gateway tag
-<a id="__codelineno-1-76" name="__codelineno-1-76" href="#__codelineno-1-76"></a>│
-<a id="__codelineno-1-77" name="__codelineno-1-77" href="#__codelineno-1-77"></a>├── Wallet/                         # Balances &amp; transfers
-<a id="__codelineno-1-78" name="__codelineno-1-78" href="#__codelineno-1-78"></a>│   ├── Controller/{App,Manage}/    # Wallet, Transaction, Voucher, PaymentDeduction
-<a id="__codelineno-1-79" name="__codelineno-1-79" href="#__codelineno-1-79"></a>│   ├── Service/
-<a id="__codelineno-1-80" name="__codelineno-1-80" href="#__codelineno-1-80"></a>│   │   ├── WalletService.php, TransactionService.php, ReconciliationService.php
-<a id="__codelineno-1-81" name="__codelineno-1-81" href="#__codelineno-1-81"></a>│   │   ├── Deposit/  Withdraw/  Transfer/  Payment/  (provider registries)
-<a id="__codelineno-1-82" name="__codelineno-1-82" href="#__codelineno-1-82"></a>│   │   └── Concern/WrapInTransactionTrait.php
-<a id="__codelineno-1-83" name="__codelineno-1-83" href="#__codelineno-1-83"></a>│   ├── Entity/                     # Wallet (versioned, optimistic lock), Transaction, Voucher, …
-<a id="__codelineno-1-84" name="__codelineno-1-84" href="#__codelineno-1-84"></a>│   ├── DTO/, Exception/
-<a id="__codelineno-1-85" name="__codelineno-1-85" href="#__codelineno-1-85"></a>│   └── Integration/Settlement/     # WalletSettlementVoucherPort
+<a id="__codelineno-1-41" name="__codelineno-1-41" href="#__codelineno-1-41"></a>├── Trade/                          # E-commerce orders
+<a id="__codelineno-1-42" name="__codelineno-1-42" href="#__codelineno-1-42"></a>│   ├── Controller/App/OrderController.php       # Self-service: create (currency from Store via X-Store-Code), quote, items, submit/confirm, payment, cancel, refund
+<a id="__codelineno-1-43" name="__codelineno-1-43" href="#__codelineno-1-43"></a>│   ├── Controller/Manage/OrderController.php    # Admin: create (same currency rule), update/delete draft-only, quote, items, fulfill, refund + workflow mixin
+<a id="__codelineno-1-44" name="__codelineno-1-44" href="#__codelineno-1-44"></a>│   ├── Controller/Manage/OrderItemController.php# Admin OrderItem CRUD (`/manage/order-items`)
+<a id="__codelineno-1-45" name="__codelineno-1-45" href="#__codelineno-1-45"></a>│   ├── Service/
+<a id="__codelineno-1-46" name="__codelineno-1-46" href="#__codelineno-1-46"></a>│   │   ├── OrderService.php (currency from StoreContext; auto-submit + `trade.order.created.v1` when Store present), OrderItemService.php, TradeOutboxService.php (+ `*ServiceInterface`)
+<a id="__codelineno-1-47" name="__codelineno-1-47" href="#__codelineno-1-47"></a>│   │   ├── Pricing/                # BasePrice (-100) → Quantity (50) → TotalAggregator (55) pipeline (+ Promotion at 60)
+<a id="__codelineno-1-48" name="__codelineno-1-48" href="#__codelineno-1-48"></a>│   │   └── Catalog/                # CatalogResolverInterface, CatalogItem (price lookup via Store catalog)
+<a id="__codelineno-1-49" name="__codelineno-1-49" href="#__codelineno-1-49"></a>│   ├── Entity/                     # Order (currency varchar(32), metadata `_store`/`_completionMode`), OrderItem (specificationUuid), TradeOutboxMessage
+<a id="__codelineno-1-50" name="__codelineno-1-50" href="#__codelineno-1-50"></a>│   ├── DTO/StoreContext.php        # StoreContext snapshot (storeUuid, storeCode, storeName, channel, currency, requireVerification)
+<a id="__codelineno-1-51" name="__codelineno-1-51" href="#__codelineno-1-51"></a>│   ├── Message/                    # TradeOrderCreated/Cancelled + StoreOrderVerified (consumed from Store; accepted/rejected relays removed)
+<a id="__codelineno-1-52" name="__codelineno-1-52" href="#__codelineno-1-52"></a>│   ├── MessageHandler/StoreOrderVerifiedHandler.php
+<a id="__codelineno-1-53" name="__codelineno-1-53" href="#__codelineno-1-53"></a>│   ├── Event/ (OrderPaid/Cancelled/Fulfilled/Completed/Refunded) + EventListener/ (OrderWorkflow/Invoice/CompletionGuard/VerificationCompletion listeners)
+<a id="__codelineno-1-54" name="__codelineno-1-54" href="#__codelineno-1-54"></a>│   └── Command/PublishOutboxCommand.php  # app:trade:outbox:publish (topics trade.order.created/cancelled.v1)
+<a id="__codelineno-1-55" name="__codelineno-1-55" href="#__codelineno-1-55"></a>│
+<a id="__codelineno-1-56" name="__codelineno-1-56" href="#__codelineno-1-56"></a>├── Store/                          # Multi-store operations + catalog
+<a id="__codelineno-1-57" name="__codelineno-1-57" href="#__codelineno-1-57"></a>│   ├── Controller/App/             # Product + Specification + Store + StoreOrder (authenticated self-service) + Membership self-join (`POST /app/stores/{uuid}/membership`, fixed `clerk`)
+<a id="__codelineno-1-58" name="__codelineno-1-58" href="#__codelineno-1-58"></a>│   ├── Controller/Manage/          # Store CRUD + members grant; Product CRUD; Specification (`/manage/products/{productId}/specifications`) + SpecificationAll; StoreOrder
+<a id="__codelineno-1-59" name="__codelineno-1-59" href="#__codelineno-1-59"></a>│   ├── Controller/Staff/           # Store-scoped ops: Assignment, Membership, Product, Specification, Store, StoreOrder (fulfill/verify)
+<a id="__codelineno-1-60" name="__codelineno-1-60" href="#__codelineno-1-60"></a>│   ├── Controller/Concerns/        # Shared staff-controller concerns
+<a id="__codelineno-1-61" name="__codelineno-1-61" href="#__codelineno-1-61"></a>│   ├── Service/                    # StoreService, MembershipService, ProductService, SpecificationService, StoreOrderService, StoreOutboxService (+ interfaces), StoreContextResolver (X-Store-Code → StoreContext), StoreSettingsResolver, Catalog/StoreCatalogResolver
+<a id="__codelineno-1-62" name="__codelineno-1-62" href="#__codelineno-1-62"></a>│   ├── Entity/                     # Store (currency varchar(32) DEFAULT CNY), Membership, Product (store_id nullable: NULL = shared), Specification, StoreOrder (currency, verificationRequired snapshot, verifiedAt/verifiedBy), StoreOutboxMessage, StoreConsumedEvent, StoreTradeOrderCancellation
+<a id="__codelineno-1-63" name="__codelineno-1-63" href="#__codelineno-1-63"></a>│   ├── Resources/JsonSchema/       # StoreAddress.json, StoreContact.json (subTitle 1..100 + tags ≤20×30 unique), StoreSettings.json (fulfillment.requireVerification)
+<a id="__codelineno-1-64" name="__codelineno-1-64" href="#__codelineno-1-64"></a>│   ├── MessageHandler/             # TradeOrderCreated/TradeOrderCancelled + ReservationConfirmed/Rejected/Released handlers
+<a id="__codelineno-1-65" name="__codelineno-1-65" href="#__codelineno-1-65"></a>│   ├── Repository/                 # …Repository.php per entity above
+<a id="__codelineno-1-66" name="__codelineno-1-66" href="#__codelineno-1-66"></a>│   ├── Security/StoreAuthorizationVoter.php
+<a id="__codelineno-1-67" name="__codelineno-1-67" href="#__codelineno-1-67"></a>│   ├── View/                       # StoreManagerAuthorizationApiMixin, StoreScopedAuthorizationApiMixin
+<a id="__codelineno-1-68" name="__codelineno-1-68" href="#__codelineno-1-68"></a>│   ├── DTO/StoreSettings.php       # fulfillment.requireVerification only
+<a id="__codelineno-1-69" name="__codelineno-1-69" href="#__codelineno-1-69"></a>│   └── Command/PublishOutboxCommand.php  # app:store:outbox:publish (topics store.order.verified + inventory.reservation.requested/release.requested.v1)
+<a id="__codelineno-1-70" name="__codelineno-1-70" href="#__codelineno-1-70"></a>│
+<a id="__codelineno-1-71" name="__codelineno-1-71" href="#__codelineno-1-71"></a>├── Inventory/                      # Stock &amp; reservations
+<a id="__codelineno-1-72" name="__codelineno-1-72" href="#__codelineno-1-72"></a>│   ├── Controller/Manage/          # Material, Recipe, Stock
+<a id="__codelineno-1-73" name="__codelineno-1-73" href="#__codelineno-1-73"></a>│   ├── Service/                    # InventoryService, StockService, MaterialService, Quantity
+<a id="__codelineno-1-74" name="__codelineno-1-74" href="#__codelineno-1-74"></a>│   ├── Entity/                     # Stock, Reservation, ReservationLine, LedgerEntry, …
+<a id="__codelineno-1-75" name="__codelineno-1-75" href="#__codelineno-1-75"></a>│   ├── Message/ + MessageHandler/  # ReservationRequested/Confirmed/Rejected/Released/…
+<a id="__codelineno-1-76" name="__codelineno-1-76" href="#__codelineno-1-76"></a>│   └── Command/                    # PublishOutbox, ReleaseExpiredReservations
+<a id="__codelineno-1-77" name="__codelineno-1-77" href="#__codelineno-1-77"></a>│
+<a id="__codelineno-1-78" name="__codelineno-1-78" href="#__codelineno-1-78"></a>├── Payment/                        # Invoice lifecycle &amp; gateways
+<a id="__codelineno-1-79" name="__codelineno-1-79" href="#__codelineno-1-79"></a>│   ├── Controller/{App,Manage,Webhook}/  # Invoice, PaymentNotify
+<a id="__codelineno-1-80" name="__codelineno-1-80" href="#__codelineno-1-80"></a>│   ├── Service/
+<a id="__codelineno-1-81" name="__codelineno-1-81" href="#__codelineno-1-81"></a>│   │   ├── InvoiceService.php      # State machine: pending → paid/refunded/failed/cancelled
+<a id="__codelineno-1-82" name="__codelineno-1-82" href="#__codelineno-1-82"></a>│   │   ├── Gateway/                # MockGateway + PaymentGatewayInterface
+<a id="__codelineno-1-83" name="__codelineno-1-83" href="#__codelineno-1-83"></a>│   │   └── Adjustment/             # PaymentAdjustmentRegistry (wallets etc.)
+<a id="__codelineno-1-84" name="__codelineno-1-84" href="#__codelineno-1-84"></a>│   ├── DTO/, Event/, Exception/, Entity/Invoice.php, Repository/
+<a id="__codelineno-1-85" name="__codelineno-1-85" href="#__codelineno-1-85"></a>│   └── Resources/config/services_payment.yaml   # payment.gateway tag
 <a id="__codelineno-1-86" name="__codelineno-1-86" href="#__codelineno-1-86"></a>│
-<a id="__codelineno-1-87" name="__codelineno-1-87" href="#__codelineno-1-87"></a>├── Promotion/                      # Promotions &amp; pricing effects
-<a id="__codelineno-1-88" name="__codelineno-1-88" href="#__codelineno-1-88"></a>│   ├── Controller/{App,Manage}/    # Promotion, PromotionTemplate
+<a id="__codelineno-1-87" name="__codelineno-1-87" href="#__codelineno-1-87"></a>├── Wallet/                         # Balances &amp; transfers
+<a id="__codelineno-1-88" name="__codelineno-1-88" href="#__codelineno-1-88"></a>│   ├── Controller/{App,Manage}/    # Wallet, Transaction, Voucher, PaymentDeduction
 <a id="__codelineno-1-89" name="__codelineno-1-89" href="#__codelineno-1-89"></a>│   ├── Service/
-<a id="__codelineno-1-90" name="__codelineno-1-90" href="#__codelineno-1-90"></a>│   │   ├── PromotionService.php, PromotionTemplateService.php
-<a id="__codelineno-1-91" name="__codelineno-1-91" href="#__codelineno-1-91"></a>│   │   ├── PromotionCalculator.php # tagged trade.price_calculator (priority 60)
-<a id="__codelineno-1-92" name="__codelineno-1-92" href="#__codelineno-1-92"></a>│   │   └── Dsl/                    # Lexer, Parser, Evaluator, AST for rule expressions
-<a id="__codelineno-1-93" name="__codelineno-1-93" href="#__codelineno-1-93"></a>│   ├── Strategy/                   # Discount, FullReduction, Gift, Tiered, MemberDiscount, …
-<a id="__codelineno-1-94" name="__codelineno-1-94" href="#__codelineno-1-94"></a>│   └── Entity/                     # Promotion, PromotionTemplate
-<a id="__codelineno-1-95" name="__codelineno-1-95" href="#__codelineno-1-95"></a>│
-<a id="__codelineno-1-96" name="__codelineno-1-96" href="#__codelineno-1-96"></a>├── Settlement/                     # Rule-driven allocation &amp; finality
-<a id="__codelineno-1-97" name="__codelineno-1-97" href="#__codelineno-1-97"></a>│   ├── Controller/Manage/          # SettlementRule, Plan, Allocation, Outbox, …
-<a id="__codelineno-1-98" name="__codelineno-1-98" href="#__codelineno-1-98"></a>│   ├── Service/
-<a id="__codelineno-1-99" name="__codelineno-1-99" href="#__codelineno-1-99"></a>│   │   ├── SettlementService.php, SettlementRuleEngine.php
-<a id="__codelineno-1-100" name="__codelineno-1-100" href="#__codelineno-1-100"></a>│   │   └── Money/                  # QuantumAmount (brick/math, scale 18), AllocationRoundingService
-<a id="__codelineno-1-101" name="__codelineno-1-101" href="#__codelineno-1-101"></a>│   ├── Port/ + Integration/        # SettlementVoucherPort, Clock; in-memory/fixture impls
-<a id="__codelineno-1-102" name="__codelineno-1-102" href="#__codelineno-1-102"></a>│   ├── Contract/                   # DTO contracts: AllocationProposal, ComputedAllocation, …
-<a id="__codelineno-1-103" name="__codelineno-1-103" href="#__codelineno-1-103"></a>│   ├── Context/                    # SettlementContextResolverRegistry
-<a id="__codelineno-1-104" name="__codelineno-1-104" href="#__codelineno-1-104"></a>│   ├── Message/ + MessageHandler/  # FundingConfirmed, AllocationPosting
-<a id="__codelineno-1-105" name="__codelineno-1-105" href="#__codelineno-1-105"></a>│   └── Command/                    # PublishOutbox, RequeueDuePosting
-<a id="__codelineno-1-106" name="__codelineno-1-106" href="#__codelineno-1-106"></a>│
-<a id="__codelineno-1-107" name="__codelineno-1-107" href="#__codelineno-1-107"></a>├── Storage/                        # Media storage abstraction
-<a id="__codelineno-1-108" name="__codelineno-1-108" href="#__codelineno-1-108"></a>│   └── Service/                    # MediaStorageInterface, MediaStorageRegistry, LocalStorage, QiniuStorage
-<a id="__codelineno-1-109" name="__codelineno-1-109" href="#__codelineno-1-109"></a>│
-<a id="__codelineno-1-110" name="__codelineno-1-110" href="#__codelineno-1-110"></a>└── Wechat/                         # WeChat login + Pay
-<a id="__codelineno-1-111" name="__codelineno-1-111" href="#__codelineno-1-111"></a>    ├── Controller/                 # LoginController, Controller/{App,Manage}/WechatUser
-<a id="__codelineno-1-112" name="__codelineno-1-112" href="#__codelineno-1-112"></a>    ├── Service/                    # WechatAuthService, WechatService, WechatUserService
-<a id="__codelineno-1-113" name="__codelineno-1-113" href="#__codelineno-1-113"></a>    ├── Service/Payment/WechatPayGateway.php
-<a id="__codelineno-1-114" name="__codelineno-1-114" href="#__codelineno-1-114"></a>    ├── Entity/WechatUser.php
-<a id="__codelineno-1-115" name="__codelineno-1-115" href="#__codelineno-1-115"></a>    └── Resources/config/services_wechat.yaml
+<a id="__codelineno-1-90" name="__codelineno-1-90" href="#__codelineno-1-90"></a>│   │   ├── WalletService.php, TransactionService.php, ReconciliationService.php
+<a id="__codelineno-1-91" name="__codelineno-1-91" href="#__codelineno-1-91"></a>│   │   ├── Deposit/  Withdraw/  Transfer/  Payment/  (provider registries)
+<a id="__codelineno-1-92" name="__codelineno-1-92" href="#__codelineno-1-92"></a>│   │   └── Concern/WrapInTransactionTrait.php
+<a id="__codelineno-1-93" name="__codelineno-1-93" href="#__codelineno-1-93"></a>│   ├── Entity/                     # Wallet (versioned, optimistic lock), Transaction, Voucher, …
+<a id="__codelineno-1-94" name="__codelineno-1-94" href="#__codelineno-1-94"></a>│   ├── DTO/, Exception/
+<a id="__codelineno-1-95" name="__codelineno-1-95" href="#__codelineno-1-95"></a>│   └── Integration/Settlement/     # WalletSettlementVoucherPort
+<a id="__codelineno-1-96" name="__codelineno-1-96" href="#__codelineno-1-96"></a>│
+<a id="__codelineno-1-97" name="__codelineno-1-97" href="#__codelineno-1-97"></a>├── Promotion/                      # Promotions &amp; pricing effects
+<a id="__codelineno-1-98" name="__codelineno-1-98" href="#__codelineno-1-98"></a>│   ├── Controller/{App,Manage}/    # Promotion, PromotionTemplate
+<a id="__codelineno-1-99" name="__codelineno-1-99" href="#__codelineno-1-99"></a>│   ├── Service/
+<a id="__codelineno-1-100" name="__codelineno-1-100" href="#__codelineno-1-100"></a>│   │   ├── PromotionService.php, PromotionTemplateService.php
+<a id="__codelineno-1-101" name="__codelineno-1-101" href="#__codelineno-1-101"></a>│   │   ├── PromotionCalculator.php # tagged trade.price_calculator (priority 60)
+<a id="__codelineno-1-102" name="__codelineno-1-102" href="#__codelineno-1-102"></a>│   │   └── Dsl/                    # Lexer, Parser, Evaluator, AST for rule expressions
+<a id="__codelineno-1-103" name="__codelineno-1-103" href="#__codelineno-1-103"></a>│   ├── Strategy/                   # Discount, FullReduction, Gift, Tiered, MemberDiscount, …
+<a id="__codelineno-1-104" name="__codelineno-1-104" href="#__codelineno-1-104"></a>│   └── Entity/                     # Promotion, PromotionTemplate
+<a id="__codelineno-1-105" name="__codelineno-1-105" href="#__codelineno-1-105"></a>│
+<a id="__codelineno-1-106" name="__codelineno-1-106" href="#__codelineno-1-106"></a>├── Settlement/                     # Rule-driven allocation &amp; finality
+<a id="__codelineno-1-107" name="__codelineno-1-107" href="#__codelineno-1-107"></a>│   ├── Controller/Manage/          # SettlementRule, Plan, Allocation, Outbox, …
+<a id="__codelineno-1-108" name="__codelineno-1-108" href="#__codelineno-1-108"></a>│   ├── Service/
+<a id="__codelineno-1-109" name="__codelineno-1-109" href="#__codelineno-1-109"></a>│   │   ├── SettlementService.php, SettlementRuleEngine.php
+<a id="__codelineno-1-110" name="__codelineno-1-110" href="#__codelineno-1-110"></a>│   │   └── Money/                  # QuantumAmount (brick/math, scale 18), AllocationRoundingService
+<a id="__codelineno-1-111" name="__codelineno-1-111" href="#__codelineno-1-111"></a>│   ├── Port/ + Integration/        # SettlementVoucherPort, Clock; in-memory/fixture impls
+<a id="__codelineno-1-112" name="__codelineno-1-112" href="#__codelineno-1-112"></a>│   ├── Contract/                   # DTO contracts: AllocationProposal, ComputedAllocation, …
+<a id="__codelineno-1-113" name="__codelineno-1-113" href="#__codelineno-1-113"></a>│   ├── Context/                    # SettlementContextResolverRegistry
+<a id="__codelineno-1-114" name="__codelineno-1-114" href="#__codelineno-1-114"></a>│   ├── Message/ + MessageHandler/  # FundingConfirmed, AllocationPosting
+<a id="__codelineno-1-115" name="__codelineno-1-115" href="#__codelineno-1-115"></a>│   └── Command/                    # PublishOutbox, RequeueDuePosting
+<a id="__codelineno-1-116" name="__codelineno-1-116" href="#__codelineno-1-116"></a>│
+<a id="__codelineno-1-117" name="__codelineno-1-117" href="#__codelineno-1-117"></a>├── Storage/                        # Media storage abstraction
+<a id="__codelineno-1-118" name="__codelineno-1-118" href="#__codelineno-1-118"></a>│   └── Service/                    # MediaStorageInterface, MediaStorageRegistry, LocalStorage, QiniuStorage
+<a id="__codelineno-1-119" name="__codelineno-1-119" href="#__codelineno-1-119"></a>│
+<a id="__codelineno-1-120" name="__codelineno-1-120" href="#__codelineno-1-120"></a>└── Wechat/                         # WeChat login + Pay
+<a id="__codelineno-1-121" name="__codelineno-1-121" href="#__codelineno-1-121"></a>    ├── Controller/                 # LoginController, Controller/{App,Manage}/WechatUser
+<a id="__codelineno-1-122" name="__codelineno-1-122" href="#__codelineno-1-122"></a>    ├── Service/                    # WechatAuthService, WechatService, WechatUserService
+<a id="__codelineno-1-123" name="__codelineno-1-123" href="#__codelineno-1-123"></a>    ├── Service/Payment/WechatPayGateway.php
+<a id="__codelineno-1-124" name="__codelineno-1-124" href="#__codelineno-1-124"></a>    ├── Entity/WechatUser.php
+<a id="__codelineno-1-125" name="__codelineno-1-125" href="#__codelineno-1-125"></a>    └── Resources/config/services_wechat.yaml
 </code></pre></div>
 <h2 id="config"><code>config/</code><a class="headerlink" href="#config" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>config/

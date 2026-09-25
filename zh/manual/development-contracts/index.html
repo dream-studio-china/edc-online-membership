@@ -3694,8 +3694,10 @@ must behave as if they were independent services.</p>
 </tbody>
 </table>
 <h3 id="messenger-routing-async-transport">Messenger routing (async transport)<a class="headerlink" href="#messenger-routing-async-transport" title="Permanent link">&para;</a></h3>
-<p>Registered messages include: Trade order created/cancelled / store accepted/rejected,
-Inventory reservation request/confirm/reject/release, Settlement funding-confirmed and
+<p>Registered messages include: Trade order created/cancelled, Store order verified
+(<code>store.order.verified.v1</code> — the only Store→Trade message; the former
+accepted/rejected relays were removed), Inventory reservation
+request/confirm/reject/release, Settlement funding-confirmed and
 allocation-posting. Handlers live in the consuming module's <code>MessageHandler/</code>
 directory (e.g. <code>src/Store/MessageHandler/TradeOrderCreatedHandler.php</code>,
 <code>src/Inventory/MessageHandler</code>). Failure transport is <code>failed</code> with a 3-retry,
@@ -3977,7 +3979,7 @@ inconsistent prefixes inside a module, non-mirrored controller/service names.</p
 <a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="x">    'settings' =&gt; 'Store/StoreSettings',</span>
 <a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="x">];</span>
 </code></pre></div>
-<p>Each declared field present and non-null is validated against <code>src/{Bundle}/Resources/JsonSchema/{Name}.json</code> (<code>Core\Validator\JsonSchemaValidator::validate()</code>). Violations throw <code>JsonSchemaViolationException</code> → <code>ValidatorException</code> → <code>400</code> via <code>warning()</code>. <code>Store</code> bundle ships <code>StoreAddress</code> (province/city/district/street/detail/latitude/longitude/geohash...; <code>latitude↔longitude</code> dependencies, <code>additionalProperties:false</code>), <code>StoreContact</code> (phone/email/uuid, <code>subTitle</code> 1..100, <code>tags</code> array 1..30×20 unique), <code>StoreSettings</code> (order/fulfillment booleans, top-level <code>additionalProperties:true</code> for forward compat, empty <code>{}</code> coerced to object). <code>Store</code> entity adds <code>currency</code> varchar(32) <code>DEFAULT 'CNY'</code> (<code>LIANSHENG_POINT</code> for points mall, validated <code>^[A-Za-z0-9._-]{1,32}$</code>). Validator lives in <code>Core</code>, schemas in each bundle.</p>
+<p>Each declared field present and non-null is validated against <code>src/{Bundle}/Resources/JsonSchema/{Name}.json</code> (<code>Core\Validator\JsonSchemaValidator::validate()</code>). Violations throw <code>JsonSchemaViolationException</code> → <code>ValidatorException</code> → <code>400</code> via <code>warning()</code>. <code>Store</code> bundle ships <code>StoreAddress</code> (province/city/district/street/detail/formattedAddress/latitude/longitude/geohash…; <code>latitude↔longitude</code> dependencies, <code>additionalProperties:false</code>), <code>StoreContact</code> (phone/email/uuid, <code>subTitle</code> 1..100, <code>tags</code> array ≤20×30 unique), <code>StoreSettings</code> (<code>fulfillment.requireVerification</code> boolean only, top-level <code>additionalProperties:true</code> for forward compat, empty <code>{}</code> coerced to object). The manage controller additionally requires <code>settings.order/fulfillment/liansheng</code> to be objects-or-null when present and <code>requireVerification</code> to be boolean. <code>settings.liansheng.memberCardTypeId</code> (string) is read by <code>LianshengService</code> for 0702 member registration; no <code>pointRefundExpiryDate</code> key is read by any code. <code>Store</code> entity adds <code>currency</code> varchar(32) <code>DEFAULT 'CNY'</code> (<code>LIANSHENG_POINT</code> for points mall, validated <code>^[A-Za-z0-9._-]{1,32}$</code>). Validator lives in <code>Core</code>, schemas in each bundle.</p>
 <h3 id="rate-limiting">Rate limiting<a class="headerlink" href="#rate-limiting" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
