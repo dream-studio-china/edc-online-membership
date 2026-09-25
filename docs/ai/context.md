@@ -68,20 +68,20 @@
 │   ├── Service/OrderService.php        # StoreContext-aware creation + price pipeline (Store visibility via CatalogResolver); writes _store + _completionMode + trade.order.created.v1
 │   ├── Command/PublishOutboxCommand.php # app:trade:outbox:publish
 │   ├── MessageHandler/           # StoreOrderVerifiedHandler (no inbox table; guard via _completionMode + _storeVerificationReceived)
-│   ├── EventListener/            # OrderCompletionGuardListener (workflow.order.guard.complete), OrderVerificationCompletionListener (workflow.order.completed.fulfill)
+│   ├── EventListener/            # OrderCompletionGuardListener (workflow.order.guard.complete), OrderVerificationCompletionListener (workflow.order.completed.fulfill), OrderWorkflowListener (timestamps + domain events + trade.order.cancelled.v1), OrderInvoiceListener (Invoice events → order pay)
 │   ├── Service/Pricing/                # PriceCalculatorInterface (Base via CatalogResolver, Quantity, Total)
 │   ├── EventListener/OrderWorkflowListener.php
 │   ├── Exception/                      # OrderInvalidTransitionException, SpecificationNotFoundException
-│   └── Controller/App/ + Manage/       # CRUD + workflow + pay/refund/fulfill + items + cancel (catalog via Store)
+│   └── Controller/App/ + Manage/       # App: CRUD + quote/items/submit/confirm/cancel/payment/refund; Manage: CRUD + quote/items/fulfill/refund + generic todo/transitions/do (no dedicated pay endpoint; catalog via Store)
 │
 ├── src/Store/                    # Multi-store operational boundary + catalog
-│   ├── Entity/                   # Store, Product (trade_product, nullable store), Specification (trade_specification), membership, StoreOrder, Outbox, Inbox
-│   ├── Repository/               # ProductRepository, SpecificationRepository (Store-owned)
-│   ├── Service/                  # ProductService, SpecificationService, Context, membership, StoreOrder, Outbox services
+│   ├── Entity/                   # Store, Product (trade_product, nullable store), Specification (trade_specification), Membership (store_membership), StoreOrder (store_order), StoreOutboxMessage (store_outbox_message), StoreConsumedEvent (store_consumed_event, inbox idempotency), StoreTradeOrderCancellation (cancellation tombstone)
+│   ├── Repository/               # Store, Product, Specification, Membership, StoreOrder, StoreOutboxMessage, StoreConsumedEvent, StoreTradeOrderCancellation (Store-owned)
+│   ├── Service/                  # ProductService, SpecificationService, StoreService, StoreContextResolver (X-Store-Code), StoreSettingsResolver, MembershipService, StoreOrderService, StoreOutboxService (+ interfaces)
 │   ├── Service/Catalog/StoreCatalogResolver.php  # Implements Trade CatalogResolverInterface (Store visibility: global or owned)
-│   ├── MessageHandler/           # Inbox-idempotent Trade order consumer; Inventory outcome consumers
+│   ├── MessageHandler/           # TradeOrderCreatedHandler + TradeOrderCancelledHandler (inbox-idempotent Trade consumers) + ReservationConfirmed/Rejected/ReleasedHandler (Inventory outcomes, Store-local, no Trade relay)
 │   ├── Command/PublishOutboxCommand.php # app:store:outbox:publish
-│   └── Controller/App/ + Manage/ + Staff/ # App/Manage Product/Specification + StoreOrder + Staff membership checks (DqlExpression row-scope: !entity.getStore() / !entity.getProduct().getStore())
+│   └── Controller/App/ + Manage/ + Staff/ # App (Membership/Product/Specification/Store/StoreOrder) + Manage (Product/SpecificationAll/Specification/Store/StoreOrder) + Staff (Assignment/Membership/Product/Specification/Store/StoreOrder fulfill+verify, DqlExpression row-scope: !entity.getStore() / !entity.getProduct().getStore())
 │
 ├── src/Payment/                  # Payment module
 │   ├── Entity/Invoice.php              # Payment invoice (pending→paying→paid→refunded)
@@ -154,7 +154,7 @@
 │       ├── workflow.yaml         # Order state machine (Trade: draft→pending→confirmed→paid→fulfilled→completed; completion guard via _completionMode)
 │       ├── messenger.yaml        # Trade/Store integration messages to async transport (only store.order.verified remaining for Store→Trade)
 │       └── ...
-├── migrations/                   # 33 migrations (latest: 20260903000003 — see `migrations/`; includes store `store_id` nullable and OrderItem `specificationUuid` backfill)
+├── migrations/                   # 37 migrations (latest: 20260911000000 — see `migrations/`; includes store `store_id` nullable and OrderItem `specificationUuid` backfill)
 ├── translations/                 # i18n translation files (messages.en/zh/zh_Hant/ja.yaml)
 ├── docs/
 │   ├── ai/context.md             # This file
@@ -331,10 +331,12 @@ and completed by `OrderVerificationCompletionListener` on `workflow.order.comple
 
 | Method | Description |
 |--------|-------------|
-| `calculatePrices(items, currency, storeCode?, meta?)` | Pipeline: BasePriceCalculator → QuantityCalculator → **TotalAggregator (subtotal, priority 55)** → **PromotionCalculator (priority 60)**. `meta` is an opaque bidirectional channel for calculators. |
-| `createOrder(..., ?StoreContext)` | Creates Order + OrderItems. A resolved StoreContext writes `_store` snapshot and `_completionMode` (`store_verification` when `StoreContext.requireVerification` else `manual`) plus `trade.order.created.v1` in the same transaction (always; Store validates, never acks with accepted/rejected). |
-| `pay(Order, systemWalletId, paymentMethod)` | User wallet → system wallet via `TransferService`. Sets `paidAt`. |
-| `refund(Order, systemWalletId, reason)` | System wallet → user wallet via `TransferService`. Sets `refundedAt`. |
+| `calculatePrices(items, currency, storeCode?, meta?)` | Pipeline: BasePriceCalculator (-100) → QuantityCalculator (50) → **TotalAggregator (subtotal, priority 55)** → **PromotionCalculator (priority 60)**. `meta` is an opaque bidirectional channel for calculators. |
+| `createOrder(..., ?StoreContext)` | Creates Order + OrderItems. A resolved StoreContext writes `_store` snapshot and `_completionMode` (`store_verification` when `StoreContext.requireVerification` else `manual`), applies `submit` (draft→pending) plus `trade.order.created.v1` in the same transaction (Store validates, never acks with accepted/rejected); without a StoreContext creates a plain draft order (no outbox). |
+| `createPayment(Order, payment, options)` | Creates (or reuses pending) Invoice (`trade_order` source, `order` scene) then `InvoiceService::pay()` via gateway (`mock` default, `wallet`/`wechat`/`liansheng_point`); paid result flows back via Invoice events. |
+| `refundPayment(Order, reason, options)` | Refunds the linked Invoice via `InvoiceService::refund()`. |
+| `cancel(Order)` | Cancels the linked Invoice (`Order cancelled.`); the workflow `cancel` transition itself is applied by the controller. |
+| `refund(Order, systemWalletId, reason)` | Legacy wallet-direct path (no Invoice): system wallet → user wallet via `TransferService`. Sets `refundedAt`. Only for orders without a linked Invoice. |
 | `fulfill(Order, data)` | Set tracking/shipping + `fulfilledAt`. |
 
 ### 7.3 Order Entity Fields
@@ -344,7 +346,8 @@ and completed by `OrderVerificationCompletionListener` on `workflow.order.comple
 | `paidAt` | DateTimeImmutable | On `pay` transition |
 | `refundedAt` | DateTimeImmutable | On `refund` transition |
 | `fulfilledAt` | DateTimeImmutable | On `fulfill` transition |
-| `paymentMethod` | string | On pay |
+| `paymentMethod` | string | On pay (legacy wallet-direct path) |
+| `invoiceId` / `invoiceNo` / `paymentStatus` | string | Invoice linkage set by `createPayment()` (uuid / outTradeNo / status) |
 | `trackingNumber` | string | On fulfill |
 | `shippingAddress` | text | On fulfill |
 | `refundReason` | text | On refund |
@@ -359,9 +362,8 @@ and completed by `OrderVerificationCompletionListener` on `workflow.order.comple
 | PUT | `/manage/orders/{id}` | Update draft only |
 | DELETE | `/manage/orders/{id}` | Delete draft only |
 | GET | `/manage/orders/{id}/items` | View order items |
-| POST | `/manage/orders/{id}/pay` | Wallet payment + transition |
-| POST | `/manage/orders/{id}/fulfill` | Fulfill with tracking |
-| POST | `/manage/orders/{id}/refund` | Wallet refund + transition |
+| POST | `/manage/orders/{id}/fulfill` | Fulfill with tracking (paid→fulfilled) |
+| POST | `/manage/orders/{id}/refund` | Refund: linked Invoice via `refundPayment()` else legacy wallet `refund()` + transition |
 | GET | `/manage/orders/todo` | Orders with pending transitions |
 | GET | `/manage/orders/{id}/transitions` | Available transitions |
 | POST | `/manage/orders/{id}/do/{transition}` | Execute generic transition |
@@ -373,16 +375,18 @@ and completed by `OrderVerificationCompletionListener` on `workflow.order.comple
 | POST | `/app/orders` | Create order. With trusted `X-Store-Code`, creates order with Store snapshot (`_completionMode` from `requireVerification`) and emits `trade.order.created.v1` for Store to fulfill (Store auto-accepts or reserves inventory, no accepted/rejected relay); without a Store context creates a plain draft order. |
 | **POST** | **`/app/orders/quote`** | **Price preview without creating order** |
 | GET | `/app/orders/{id}/items` | View own order items |
-| GET | `/app/orders/{id}/items` | View own order items |
-| POST | `/app/orders/{id}/cancel` | Cancel own order (draft/pending/confirmed) |
-| POST | `/app/orders/{id}/payment` | **Pay order via gateway (wallet, mock, wechat)** |
+| POST | `/app/orders/{id}/submit` | Submit own order (draft→pending) |
+| POST | `/app/orders/{id}/confirm` | Confirm own order (pending→confirmed) |
+| POST | `/app/orders/{id}/cancel` | Cancel own order (draft/pending/confirmed; cancels linked Invoice) |
+| POST | `/app/orders/{id}/payment` | **Pay order via gateway (`mock` default, `wallet`, `wechat`, `liansheng_point`)** |
+| POST | `/app/orders/{id}/refund` | Refund own order (linked Invoice if present, else legacy wallet path with `systemWalletId`) |
 
 ### 7.6 App Specification Endpoints
 
 | Method | Path | Description |
 |--------|------|-------------|
 | GET | `/api/v1/app/specifications` | Browse all active specs |
-| GET | `/api/v1/app/specifications/by-product/{id}` | Specs for a product |
+| GET | `/api/v1/app/specifications/by-product/{productId}` | Specs for a product (numeric product id) |
 | GET | `/api/v1/app/specifications/{id}` | Spec detail |
 
 ## 8. Payment Module
@@ -642,7 +646,7 @@ Placed in `src/Core/Controller/System/` (framework layer). NelmioApiDoc path_pat
 | **Field whitelisting** | Controllers | `$requiredCreateProperties`, `$acceptedCreateProperties`, `$acceptedUpdateProperties` (Role: `code/name/scopeType`; Assignment: `userUuid/roleUuid/scopeType/scopeUuid`; Content: `title/body/category/tags/metadata`) |
 | **Money in cents** | Wallet + Trade + Payment | `bigint` cents, API boundary converts ×/÷100 |
 | **UUID v4** | Trade + Wallet + Authorization + Store | `UUID::v4()` for external identity |
-| **Soft delete** | Trade | `isDeleted` boolean on Product, Specification |
+| **Soft delete** | Store catalog (`trade_*` tables) | `isDeleted` boolean on Product, Specification |
 | **Snapshot** | Trade | `OrderItem` captures `specSnapshot`/`productSnapshot` at creation |
 | **Order metadata** | Trade | App order creation accepts optional `metadata` JSON and persists it as-is to `trade_order.metadata`, useful for receiver/address snapshots and frontend extension data |
 | **State machine** | Trade | Symfony Workflow for orders |
@@ -725,7 +729,7 @@ Enriches all endpoints (90+):
 
 44+ named schemas across 13 tags (Auth, Products, Orders, Categories, Tags, Contents, Comments, Pages, Media, Settings, Promotions, PromotionTemplates, Wallet, System, Wechat, Authorization, Store). Each with field-level type, description, enum, and example values. `path_patterns` includes both `^/api` and `^/system`.
 
-## 15. Database Tables (33 Migrations — single source: `migrations/` directory)
+## 15. Database Tables (37 Migrations — single source: `migrations/` directory)
 
 | Version | Tables |
 |---------|--------|
@@ -742,7 +746,7 @@ Enriches all endpoints (90+):
 | 20260703020000 | `identity_profile` (replaces `member` table; level, nickname, avatar, metadata; FK to `users`) |
 | 20260704000000 | `promotion_template`, `promotion` (DSL text, AST cache, per-store config, time range, `IDX_PROMOTION_ACTIVE_STORE` composite index) |
 | 20260713000000 | `common_picture` (nullable `user_id` FK→`users` ON DELETE SET NULL, required `category_id` FK→`common_category` ON DELETE CASCADE, nullable `title`, required `image`, nullable `metadata` json) |
-| 20260725000000-20260725050000 | Identity User UUID; Store, Store membership/order, Store Outbox/Inbox; Trade Outbox; Specification UUID; Trade order status `VARCHAR(40)` |
+| 20260725000000-20260725050000 | Identity User UUID; Store, Store membership/order, Store Outbox + StoreConsumedEvent (inbox idempotency); Trade Outbox; Specification UUID; Trade order status `VARCHAR(40)` |
 | 20260726000000 | Inventory tables (material, stock, recipe, recipe_line, reservation, reservation_line, ledger_entry, inbox, outbox) + `store_trade_order_cancellation` |
 | 20260815000000 | `wallet.currency` widened to VARCHAR(32) (unit-of-account codes like `CNY.ESCROW`) |
 | 20260815010000 | `wallet.held` column (frozen/available balance separation) |
@@ -756,6 +760,10 @@ Enriches all endpoints (90+):
 | 20260903000000-20260903000001 | Trade OrderItem `specificationUuid` backfill two-step (add uuid, drop FK) — irreversible |
 | 20260903000002 | Identity `users.created_at` / `updated_at` timestamps |
 | 20260903000003 | Store order verification fields (`verified_at`, `verified_by`, `verification_code`) |
+| 20260903000004 | Store `currency` column (default `CNY`; existing stores backfilled to `LIANSHENG_POINT`) |
+| 20260903000005 | `trade_order`/`store_order` `currency` widened to `VARCHAR(32)` |
+| 20260905000000 | Store order `verification_required` snapshot flag |
+| 20260911000000 | `trade_product.type` discriminator (`normal` vs `coupon`) |
 
 ## 16. Documentation Assets
 
@@ -872,7 +880,7 @@ Requires `.env.prod.local` copied from `.env.prod.example` with `APP_SECRET`, `R
 | `app:authorization:seed` | Authorization | Seed permissions/roles/field-grants (11/3/4, idempotent, registry-validated) |
 | `app:storage:qiniu:settings:init` | Storage | Initialize missing Qiniu `common_setting` records (`qiniu.access_key`, `qiniu.secret_key`, `qiniu.bucket`, `qiniu.domain`) without overwriting existing values |
 | `app:trade:outbox:publish` | Trade | Relay unpublished Trade integration events to Messenger |
-| `app:store:outbox:publish` | Store | Relay Store acceptance/rejection events to Messenger |
+| `app:store:outbox:publish` | Store | Relay unpublished Store integration events (`store.order.verified.v1`, `inventory.reservation.requested.v1`, `inventory.reservation.release.requested.v1`) to Messenger |
 | `app:inventory:outbox:publish` | Inventory | Relay published Inventory integration events to Messenger |
 | `app:inventory:reservations:release-expired` | Inventory | Release expired confirmed reservations |
 
@@ -923,14 +931,14 @@ covered by concurrency tests. The disabled schema/module may be deployed safely.
 
 ### 22.3 Integration Flow
 ```
-Trade order created (always trade.order.created.v1 with StoreContext; _completionMode = store_verification/manual)
+Trade order created (only when `X-Store-Code` resolves a StoreContext: `submit` applied + `trade.order.created.v1`; `_completionMode` = store_verification/manual; plain draft with no outbox otherwise)
   → Store validates (missing/inactive Store throws RuntimeException for retry; no rejected event) + creates StoreOrder
   → INVENTORY_ENABLED=0: Store accepts immediately; INVENTORY_ENABLED=1: Store awaitInventory + inventory.reservation.requested.v1
   → Inventory resolves recipe or direct finished material
   → Inventory reserves stock atomically (checks allowNegativeStock per stock)
   → Inventory publishes confirmed or rejected outcome
   → Store accepts (confirmed) or rejects (rejected) StoreOrder locally (no Trade relay)
-  → Later: fulfilled StoreOrder is verified via POST /store/{id}/orders/{uuid}/verify -> store.order.verified.v1 {orderUuid, storeOrderUuid, storeUuid, verifiedBy, verifiedAt}
+  → Later: fulfilled StoreOrder is verified via POST /api/v1/store/{scopeId}/orders/{orderUuid}/verify -> store.order.verified.v1 {orderUuid, storeOrderUuid, storeUuid, verifiedBy, verifiedAt}
   → Trade StoreOrderVerifiedHandler checks _completionMode + storeUuid, sets _storeVerificationReceived and completes via guarded complete (out-of-order handled by OrderVerificationCompletionListener on fulfill)
 ```
 

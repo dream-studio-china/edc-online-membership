@@ -77,25 +77,35 @@ src/
 │   ├── Repository/, EventListener/
 │   └── Resources/config/services_identity.yaml
 │
-├── Trade/                          # E-commerce
-│   ├── Controller/{App,Manage}/    # Product, Specification, Order (currency from Store via X-Store-Code), OrderItem
+├── Trade/                          # E-commerce orders
+│   ├── Controller/App/OrderController.php       # Self-service: create (currency from Store via X-Store-Code), quote, items, submit/confirm, payment, cancel, refund
+│   ├── Controller/Manage/OrderController.php    # Admin: create (same currency rule), update/delete draft-only, quote, items, fulfill, refund + workflow mixin
+│   ├── Controller/Manage/OrderItemController.php# Admin OrderItem CRUD (`/manage/order-items`)
 │   ├── Service/
-│   │   ├── OrderService.php (currency from StoreContext), ProductService.php, SpecificationService.php
-│   │   ├── Pricing/                # BasePrice → Quantity → TotalAggregator pipeline (currency validated)
-│   │   └── TradeOutboxService.php
-│   ├── Entity/                     # Product (store-private), Specification, Order (currency varchar(32), LIANSHENG_POINT), OrderItem, TradeOutboxMessage
-│   ├── DTO/StoreContext.php        # StoreContext with currency snapshot (code, uuid, name, channel, currency)
-│   ├── Message/ + MessageHandler/  # TradeOrderCreated/Cancelled, StoreOrderAccepted/Rejected
-│   ├── Event/ + EventListener/     # Order*Event, OrderInvoiceListener, OrderWorkflowListener
-│   └── Command/PublishOutboxCommand.php
+│   │   ├── OrderService.php (currency from StoreContext; auto-submit + `trade.order.created.v1` when Store present), OrderItemService.php, TradeOutboxService.php (+ `*ServiceInterface`)
+│   │   ├── Pricing/                # BasePrice (-100) → Quantity (50) → TotalAggregator (55) pipeline (+ Promotion at 60)
+│   │   └── Catalog/                # CatalogResolverInterface, CatalogItem (price lookup via Store catalog)
+│   ├── Entity/                     # Order (currency varchar(32), metadata `_store`/`_completionMode`), OrderItem (specificationUuid), TradeOutboxMessage
+│   ├── DTO/StoreContext.php        # StoreContext snapshot (storeUuid, storeCode, storeName, channel, currency, requireVerification)
+│   ├── Message/                    # TradeOrderCreated/Cancelled + StoreOrderVerified (consumed from Store; accepted/rejected relays removed)
+│   ├── MessageHandler/StoreOrderVerifiedHandler.php
+│   ├── Event/ (OrderPaid/Cancelled/Fulfilled/Completed/Refunded) + EventListener/ (OrderWorkflow/Invoice/CompletionGuard/VerificationCompletion listeners)
+│   └── Command/PublishOutboxCommand.php  # app:trade:outbox:publish (topics trade.order.created/cancelled.v1)
 │
-├── Store/                          # Multi-store operations
-│   ├── Controller/{App,Manage,Staff}/  # App: Store (public) + Membership self-join (`POST /app/stores/{uuid}/membership`); Manage: Store CRUD + members; Staff: Store-scoped ops
-│   ├── Service/                    # StoreService, StoreOrderService, StoreOutboxService, StoreContextResolver (X-Store-Code → StoreContext with currency)
-│   ├── Entity/                     # Store (currency varchar(32) DEFAULT CNY, LIANSHENG_POINT for points mall), Membership, StoreOrder (currency), StoreOutboxMessage, …
-│   ├── Resources/JsonSchema/       # StoreAddress.json, StoreContact.json (subTitle 1..100 + tags array 1..30×20), StoreSettings.json
-│   ├── MessageHandler/             # Reservation*, TradeOrder* handlers
-│   └── Command/PublishOutboxCommand.php
+├── Store/                          # Multi-store operations + catalog
+│   ├── Controller/App/             # Product + Specification + Store + StoreOrder (authenticated self-service) + Membership self-join (`POST /app/stores/{uuid}/membership`, fixed `clerk`)
+│   ├── Controller/Manage/          # Store CRUD + members grant; Product CRUD; Specification (`/manage/products/{productId}/specifications`) + SpecificationAll; StoreOrder
+│   ├── Controller/Staff/           # Store-scoped ops: Assignment, Membership, Product, Specification, Store, StoreOrder (fulfill/verify)
+│   ├── Controller/Concerns/        # Shared staff-controller concerns
+│   ├── Service/                    # StoreService, MembershipService, ProductService, SpecificationService, StoreOrderService, StoreOutboxService (+ interfaces), StoreContextResolver (X-Store-Code → StoreContext), StoreSettingsResolver, Catalog/StoreCatalogResolver
+│   ├── Entity/                     # Store (currency varchar(32) DEFAULT CNY), Membership, Product (store_id nullable: NULL = shared), Specification, StoreOrder (currency, verificationRequired snapshot, verifiedAt/verifiedBy), StoreOutboxMessage, StoreConsumedEvent, StoreTradeOrderCancellation
+│   ├── Resources/JsonSchema/       # StoreAddress.json, StoreContact.json (subTitle 1..100 + tags ≤20×30 unique), StoreSettings.json (fulfillment.requireVerification)
+│   ├── MessageHandler/             # TradeOrderCreated/TradeOrderCancelled + ReservationConfirmed/Rejected/Released handlers
+│   ├── Repository/                 # …Repository.php per entity above
+│   ├── Security/StoreAuthorizationVoter.php
+│   ├── View/                       # StoreManagerAuthorizationApiMixin, StoreScopedAuthorizationApiMixin
+│   ├── DTO/StoreSettings.php       # fulfillment.requireVerification only
+│   └── Command/PublishOutboxCommand.php  # app:store:outbox:publish (topics store.order.verified + inventory.reservation.requested/release.requested.v1)
 │
 ├── Inventory/                      # Stock & reservations
 │   ├── Controller/Manage/          # Material, Recipe, Stock

@@ -845,8 +845,9 @@ Trade MAY expose convenience routes that call Payment services:
 | Method | Path | Purpose |
 |--------|------|---------|
 | POST | `/api/v1/app/orders/{id}/payment` | Create/start invoice payment for order |
-| POST | `/api/v1/manage/orders/{id}/payment` | Admin create/start order payment |
 | POST | `/api/v1/manage/orders/{id}/refund` | Refund order through linked invoice |
+
+There is no `POST /api/v1/manage/orders/{id}/payment` endpoint; admin-initiated payment goes through the App payment endpoint.
 
 ### 10.4 Adjustment Request Payload
 

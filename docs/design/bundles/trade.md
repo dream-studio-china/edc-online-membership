@@ -33,8 +33,8 @@ Product and Specification are `Store` entities (`Product.store` nullable). `Stor
 | `Store\Product` | `trade_product` | Sellable product with name, description, status, nullable `store` |
 | `Store\Specification` | `trade_specification` | Product variant (name, price in cents, status) |
 | `Order` | `trade_order` | Purchase order with state machine, total, currency |
-| `OrderItem` | `trade_order_item` | Line item with `specificationUuid` (scalar), `specificationTitle`, snapshots, quantity, unit price |
-| `TradeOutboxMessage` | `trade_outbox_message` | Transactional integration event relay record |
+| `OrderItem` | `trade_order_item` | Line item with scalar `specificationUuid` (indexed, no FK), `specificationTitle`, `specSnapshot`/`productSnapshot`, quantity, unit/cost/profit prices (no `lineId` column — `lineId` is the outbox payload key for the item `uuid`) |
+| `TradeOutboxMessage` | `trade_outbox_message` | Transactional integration event relay record (`event_id`, `topic`, `aggregate_type`, `aggregate_id`, `payload`, `occurred_at`/`available_at`/`published_at`, `attempts`, `last_error`); topics `trade.order.created.v1`, `trade.order.cancelled.v1` |
 
 ### 1.2 Store-Scoped Orders (optional, default off)
 
@@ -53,7 +53,8 @@ when inventory is disabled, auto-accepts immediately. Store verification
 via `Trade/EventListener/OrderCompletionGuardListener` and
 `Trade/EventListener/OrderVerificationCompletionListener`.
 `Trade/EventListener/OrderWorkflowListener` is status-driven for `completed` and does not
-hard-code Store transition names. The status column is `VARCHAR(40)`.
+hard-code Store transition names. On `cancel` of a store-scoped order it also records
+`trade.order.cancelled.v1` in the outbox. The status column is `VARCHAR(40)`.
 
 ---
 
@@ -63,18 +64,24 @@ hard-code Store transition names. The status column is `VARCHAR(40)`.
 src/Trade/
 |-- Controller/
 |   |-- App/
-|   |   `-- OrderController.php           # Public: list/create/cancel own orders
+|   |   `-- OrderController.php           # Public: list/create/quote/submit/confirm/payment/refund/cancel own orders
 |   |-- Manage/
-|       |-- OrderController.php            # CRUD + workflow + price calculation
+|       |-- OrderController.php            # CRUD + workflow + fulfill/refund + price calculation (no /pay endpoint)
+|       `-- OrderItemController.php        # Order-item CRUD at /manage/order-items
 |-- Entity/
 |   |-- Order.php
 |   |-- OrderItem.php  # scalar specificationUuid + snapshots (FK removed, irreversible)
-|   `-- TradeOutboxMessage.php
-|-- Command/PublishOutboxCommand.php
-|-- DTO/StoreContext.php
-|-- Message/ + MessageHandler/             # Store integration contracts/consumers
+|   `-- TradeOutboxMessage.php            # topics trade.order.created.v1 / trade.order.cancelled.v1
+|-- Command/PublishOutboxCommand.php      # app:trade:outbox:publish (manual invocation, no scheduler)
+|-- DTO/StoreContext.php                 # Store snapshot DTO consumed by Trade (resolved from X-Store-Code by Store)
+|-- Event/ OrderPaidEvent.php, OrderFulfilledEvent.php, OrderCompletedEvent.php, OrderCancelledEvent.php, OrderRefundedEvent.php
+|-- Message/ TradeOrderCreatedMessage.php, TradeOrderCancelledMessage.php, StoreOrderVerifiedMessage.php (inbound, dispatched by Store outbox)
+|-- MessageHandler/StoreOrderVerifiedHandler.php  # sets _storeVerificationReceived, tries complete (out-of-order safe)
 |-- EventListener/
-|   |-- OrderWorkflowListener.php          # Post-transition timestamp setters
+|   |-- OrderWorkflowListener.php          # Post-transition timestamp setters + domain-event broadcast + cancelled outbox
+|   |-- OrderCompletionGuardListener.php   # Blocks complete unless manual mode or verification flag set
+|   |-- OrderVerificationCompletionListener.php # Auto-completes on fulfill when verification already received
+|   `-- OrderInvoiceListener.php           # Syncs InvoicePaid/Refunded/Cancelled/FailedEvent into Order (pay/refund transitions)
 |-- Exception/
 |   |-- OrderInvalidTransitionException.php
 |   |-- SpecificationNotFoundException.php
@@ -83,7 +90,11 @@ src/Trade/
 |   |-- OrderRepository.php
 |-- Service/
 |   |-- Catalog/CatalogResolverInterface.php + CatalogItem.php # Trade-owned port/DTO
+|   |-- StoreContextResolverInterface.php  # Port; implemented by Store (X-Store-Code header)
 |   |-- OrderService.php                   # Order creation + price pipeline (no Store import)
+|   |-- OrderServiceInterface.php          # calculatePrices/createOrder/refund/fulfill/createPayment/refundPayment/cancel
+|   |-- OrderItemService.php               # Order-item CRUD service
+|   |-- TradeOutboxService.php             # record(topic, aggregateType, aggregateId, payload)
 |   |-- Pricing/
 |       |-- PriceCalculatorInterface.php   # Plugin contract
 |       |-- PriceCalculationContext.php    # Input/output DTO (storeCode)
@@ -149,18 +160,25 @@ OrderItem (uuid, quantity, unitPrice: cents, price: cents, cost, profit, specifi
 
 - UUID v4
 - `totalAmount` in cents
-- `currency`: default `CNY`
+- `currency`: default `CNY` (Store-scoped orders inherit the Store currency; a mismatched request currency is rejected)
 - `status`: state machine marking field (draft/pending/confirmed/paid/fulfilled/completed/cancelled/refunded)
-- `cancelledAt`, `completedAt`: set by `OrderWorkflowListener`
+- `paidAt`, `fulfilledAt`, `completedAt`, `cancelledAt`, `refundedAt`: set by `OrderWorkflowListener` on the matching transition (`paidAt` may also be set from the invoice's `paidAt` by `OrderInvoiceListener`; `refundedAt` from the invoice's `refundedAt`)
+- `paymentMethod`: gateway name snapshot (e.g. `mock`, `wallet`, `wechat`, `liansheng_point`), synced from the paid invoice
+- `invoiceId`/`invoiceNo`: linked Payment invoice `uuid`/`outTradeNo`; `paymentStatus`: synced invoice status snapshot
+- `trackingNumber`, `shippingAddress`: set by `fulfill`; `refundReason`: set by legacy wallet `refund`
+- `metadata` keys: `_store` (StoreContext snapshot), `_completionMode` (`manual`|`store_verification`), `_storeVerificationReceived` (set by `StoreOrderVerifiedHandler`)
 - `items`: cascaded persist
 
 ### 4.4 OrderItem
 
-- UUID v4
+- UUID v4 (unique)
+- `specificationUuid`: scalar snapshot of the Specification `uuid` (nullable, indexed, no FK)
+- `specificationTitle`: snapshot of the spec name (backfilled from `specSnapshot.name` in `PrePersist` when null)
 - `unitPrice`: snapshot of specification's price at order time (cents)
-- `price`: `unitPrice * quantity`, auto-calculated in `#[ORM\PrePersist]`
-- `cost`, `profit`: for margin tracking
-- `specSnapshot`, `productSnapshot`: JSON snapshots captured at creation for historical record
+- `price`: `unitPrice * quantity`, recomputed in `#[ORM\PrePersist]`
+- `cost`, `profit`: for margin tracking (`setCost()` derives `profit = price - cost`)
+- `specSnapshot` (`{id, uuid, name, productId}`), `productSnapshot` (`{id, uuid, name}`): JSON snapshots captured by `BasePriceCalculator` for historical record
+- `metadata`: JSON extensible field
 
 ---
 
@@ -190,16 +208,6 @@ External modules (e.g., `Promotion`, future `Coupon`) hook into the pipeline by 
 ### 5.3 Pipeline Execution
 
 ```
-OrderService::calculatePrices($items, $currency)
-  -> Collect all PriceCalculatorInterface implementations (auto-tagged)
-  -> Sort by getPriority() ascending
-  -> Execute each in sequence on PriceCalculationContext
-  -> Return PriceCalculationResult (items, totalAmount, currency)
-```
-
-### 5.4 Pipeline Execution
-
-```
 OrderService::calculatePrices($items, $currency, $storeCode = null, $meta = [])
   -> Create PriceCalculationContext with items, currency, user, storeCode, meta
   -> Collect all PriceCalculatorInterface implementations (auto-tagged)
@@ -209,7 +217,7 @@ OrderService::calculatePrices($items, $currency, $storeCode = null, $meta = [])
   -> Return PriceCalculationResult (items, totalAmount, currency, meta)
 ```
 
-### 5.5 DTOs
+### 5.4 DTOs
 
 ```php
 class PriceCalculationContext
@@ -232,7 +240,7 @@ class PriceCalculationResult
 }
 ```
 
-### 5.6 `meta` Channel Contract
+### 5.5 `meta` Channel Contract
 
 `meta` is an opaque array that Trade never inspects. Calculators read from it as input
 and write to it as output. The contract is:
@@ -249,15 +257,16 @@ and write to it as output. The contract is:
 - New modules (e.g., Coupon) follow the same pattern: implement `PriceCalculatorInterface`,
   read from `context.meta['coupon']`, write to `context.meta['coupon']`.
 
-### 5.7 Registration
+### 5.6 Registration
 
-Calculators are auto-discovered and tagged via `config/services.yaml`:
+Calculators are auto-discovered via `#[AutoconfigureTag('trade.price_calculator')]` on each
+calculator class and injected into `OrderService` via `#[AutowireIterator('trade.price_calculator')]`
+(sorted by `getPriority()` ascending at runtime):
 
-```yaml
-services:
-  App\Trade\Service\Pricing\:
-    resource: '../src/Trade/Service/Pricing/'
-    tags: ['trade.price_calculator']
+```php
+// Each calculator self-tags, e.g. BasePriceCalculator:
+#[AutoconfigureTag('trade.price_calculator')]
+class BasePriceCalculator implements PriceCalculatorInterface { /* ... */ }
 ```
 
 New calculators can be added by implementing the interface -- no other code changes needed.
@@ -317,17 +326,40 @@ Plain manual orders and legacy orders without `_completionMode` remain permissiv
 class OrderWorkflowListener
 {
     // On cancel/pay/fulfill/refund/complete -> set timestamps per transition
+    //   (paidAt/fulfilledAt/refundedAt only when null; cancelledAt/completedAt always)
+    // On pay/fulfill/complete/cancel/refund -> dispatch OrderPaid/Fulfilled/Completed/Cancelled/RefundedEvent
+    // On cancel of a store-scoped order -> record trade.order.cancelled.v1 in the outbox
     // On complete -> set completedAt + dispatch OrderCompletedEvent
 }
 ```
+
+Related listeners (same `workflow.order` events):
+
+- `OrderCompletionGuardListener` (`workflow.order.guard.complete`): blocks `complete` when
+  `metadata._completionMode === 'store_verification'` unless the transient
+  `completingFromStoreVerification` flag is set. Manual/legacy orders without
+  `_completionMode` remain permissive. There are no `store_accepted`/`rejected` places.
+- `OrderVerificationCompletionListener` (`workflow.order.completed.fulfill`): if the order is
+  `store_verification` mode and `_storeVerificationReceived` is already true (verification
+  arrived out of order, before `fulfill`), applies `complete` immediately.
+- `OrderInvoiceListener` (sync `InvoicePaid/Refunded/Cancelled/FailedEvent`): on paid, verifies
+  invoice amount/currency match, syncs `invoiceId`/`invoiceNo`/`paymentStatus`/`paymentMethod`/
+  `paidAt`, and applies the `pay` transition; on refunded, syncs status and applies `refund`;
+  on cancelled/failed, only syncs `paymentStatus`.
+- `StoreOrderVerifiedHandler` (async `StoreOrderVerifiedMessage`, i.e. `store.order.verified.v1`
+  dispatched by the Store outbox): ignores unknown orders, store-uuid mismatches, and
+  non-`store_verification` orders; otherwise sets `_storeVerificationReceived = true` and
+  applies `complete` when enabled — if the order is not yet `fulfilled`, the flag persists
+  and `OrderVerificationCompletionListener` completes it after `fulfill`.
 
 ---
 
 ## 7. Order Creation Flow
 
 ```
-POST /api/v1/manage/orders
-  Body: {items: [{specification: {id: N}, quantity: N}, ...], currency: "CNY", notes: "...", meta: {coupon: {...}}}
+POST /api/v1/manage/orders (or POST /api/v1/app/orders)
+  Body: {items: [{specificationId: N|"uuid", quantity: N}, ...], currency: "CNY", notes: "...", metadata: {...}, meta: {coupon: {...}}}
+  + optional X-Store-Code header (resolved by Store into StoreContext; request currency must match Store currency)
   |
   v
 OrderService::calculatePrices($items, $currency, $storeCode, $meta)
@@ -337,9 +369,13 @@ OrderService::calculatePrices($items, $currency, $storeCode, $meta)
    -> Returns PriceCalculationResult (items, totalAmount, currency, meta)
   |
   v
-OrderService::createOrder($calculatedItems, $user, $totalAmount, $currency, $notes)
+OrderService::createOrder($calculatedItems, $user, $totalAmount, $currency, $notes, $metadata, $storeContext)
   -> Within transaction:
-     -> Create Order entity
+     -> Create Order entity (totalAmount, currency, notes, metadata)
+     -> When $storeContext !== null: snapshot metadata._store + metadata._completionMode
+        (manual|store_verification), apply submit (draft -> pending), record trade.order.created.v1 outbox
+        with items [{lineId (= item uuid), catalogReference (= specificationUuid), quantity, unitPrice,
+        lineAmount, snapshot: {specification, product}}, ...], delivery, placedAt
      -> For each calculated item: create OrderItem
         -> Snapshot spec + product data
         -> Auto-calculate price = unitPrice * quantity (PrePersist)
@@ -377,48 +413,42 @@ Response:
 
 ### 8.1 Manage (Admin, ROLE_ADMIN)
 
+Product/Specification endpoints live in the Store bundle (`src/Store/Controller/Manage/`);
+Trade Manage owns orders and order items only.
+
 | Method | Path | Description |
 |--------|------|-------------|
-| GET | `/api/v1/manage/products` | List products |
-| GET | `/api/v1/manage/products/{id}` | Product detail |
-| POST | `/api/v1/manage/products` | Create product |
-| PUT | `/api/v1/manage/products/{id}` | Update product |
-| DELETE | `/api/v1/manage/products/{id}` | Delete product |
-| GET | `/api/v1/manage/specifications` | List specs |
-| POST | `/api/v1/manage/specifications` | Create spec |
-| PUT | `/api/v1/manage/specifications/{id}` | Update spec |
-| DELETE | `/api/v1/manage/specifications/{id}` | Delete spec |
-| GET | `/api/v1/manage/products/{id}/specifications/{sid}` | **Manage spec detail** |
 | GET | `/api/v1/manage/orders` | List orders |
 | GET | `/api/v1/manage/orders/{id}` | Order detail |
-| POST | `/api/v1/manage/orders` | Create order (custom logic) |
+| POST | `/api/v1/manage/orders` | Create order (custom logic; accepts `user` id) |
 | **POST** | **`/api/v1/manage/orders/quote`** | **Calculate prices without creating order** |
 | PUT | `/api/v1/manage/orders/{id}` | Update draft order only |
 | DELETE | `/api/v1/manage/orders/{id}` | Delete draft order only |
 | GET | `/api/v1/manage/orders/{id}/items` | View order items |
-| POST | `/api/v1/manage/orders/{id}/pay` | Pay with wallet deduction |
-| POST | `/api/v1/manage/orders/{id}/fulfill` | Fulfill with tracking info |
-| POST | `/api/v1/manage/orders/{id}/refund` | Refund with wallet credit |
+| POST | `/api/v1/manage/orders/{id}/fulfill` | Fulfill (paid → fulfilled) with tracking info |
+| POST | `/api/v1/manage/orders/{id}/refund` | Refund via linked invoice when present, else wallet transfer (paid → refunded) |
 | GET | `/api/v1/manage/orders/todo` | Orders with available transitions |
 | GET | `/api/v1/manage/orders/{id}/transitions` | Enabled transitions |
-| POST | `/api/v1/manage/orders/{id}/do/{transition}` | Execute transition |
+| POST | `/api/v1/manage/orders/{id}/do/{transition}` | Execute transition (cancel also cancels linked invoice) |
 | PUT | `/api/v1/manage/orders/{id}/status-reset` | Admin reset marking |
+| GET/POST/PUT/DELETE | `/api/v1/manage/order-items[/{id}]` | Order-item CRUD (`OrderItemController`) |
 
-### 8.2 App (Public, Authenticated)
+### 8.2 App (Authenticated, ROLE_USER, own orders only)
+
+Product/Specification browsing lives in the Store bundle (`src/Store/Controller/App/`).
 
 | Method | Path | Description |
 |--------|------|-------------|
-| GET | `/api/v1/app/products` | List active, non-deleted products |
-| GET | `/api/v1/app/products/{id}` | Product detail |
-| **GET** | **`/api/v1/app/specifications`** | **Browse all active specs** |
-| **GET** | **`/api/v1/app/specifications/by-product/{id}`** | **Specs by product** |
-| **GET** | **`/api/v1/app/specifications/{id}`** | **Spec detail** |
 | GET | `/api/v1/app/orders` | List current user's orders |
 | GET | `/api/v1/app/orders/{id}` | Order detail |
 | POST | `/api/v1/app/orders` | Create order |
 | **POST** | **`/api/v1/app/orders/quote`** | **Calculate prices without creating order** |
 | GET | `/api/v1/app/orders/{id}/items` | View order items |
-| POST | `/api/v1/app/orders/{id}/cancel` | Cancel own order |
+| POST | `/api/v1/app/orders/{id}/submit` | Submit draft → pending |
+| POST | `/api/v1/app/orders/{id}/confirm` | Confirm pending → confirmed |
+| POST | `/api/v1/app/orders/{id}/payment` | Start payment via invoice (`{payment, ...options}`) |
+| POST | `/api/v1/app/orders/{id}/refund` | Refund via linked invoice when present, else wallet transfer |
+| POST | `/api/v1/app/orders/{id}/cancel` | Cancel own order (workflow `cancel` + linked invoice cancel) |
 
 ---
 
@@ -438,12 +468,17 @@ Orders can only be deleted in `draft` status. Other states require cancellation 
 - `transitions`: Returns available transitions for a specific order
 - `do/{transition}`: Executes the named transition within a transaction, optionally accepting data to update the entity before transition
 
-### 9.4 Payment (Pay)
+### 9.4 Payment
 
-- `POST /manage/orders/{id}/pay` with `{systemWalletId, paymentMethod}`
-- Validates order is in `confirmed` status
-- Deducts from user's wallet, credits to system wallet via `TransferService`
-- Sets `paidAt`, `paymentMethod`, applies `pay` transition
+There is no `POST /manage/orders/{id}/pay` endpoint. Payment is started by the customer via
+`POST /app/orders/{id}/payment` with `{payment, ...options}` (`payment` defaults to `mock`),
+which calls `OrderService::createPayment()`: it reuses the pending linked invoice when one
+exists, otherwise creates one via `InvoiceService::createInvoice()` (`sourceType: trade_order`,
+`scene: order`), syncs `invoiceId`/`invoiceNo`/`paymentStatus`, and delegates to
+`InvoiceService::pay()`. The `confirmed → paid` transition is applied asynchronously by
+`OrderInvoiceListener` on `InvoicePaidEvent` (after amount/currency verification), which also
+syncs `paymentMethod` and `paidAt`. There is no `OrderService::pay()` method and
+`TransferService` is never touched on the pay path.
 
 ### 9.5 Fulfillment
 
@@ -454,16 +489,21 @@ Orders can only be deleted in `draft` status. Other states require cancellation 
 
 ### 9.6 Refund
 
-- `POST /manage/orders/{id}/refund` with `{systemWalletId, reason}`
-- Validates order is in `completed` status
-- Transfers from system wallet back to user's wallet via `TransferService`
-- Sets `refundedAt`, `refundReason`, applies `refund` transition
+- `POST /manage/orders/{id}/refund` and `POST /app/orders/{id}/refund` with `{reason, ...}`
+- Validates the order can take the `refund` transition (i.e. status is `paid`; `fulfilled`/`completed` cannot directly refund)
+- When a linked invoice exists (`invoiceId !== null`), delegates to `OrderService::refundPayment()`
+  (`InvoiceService::refund()`); the `paid → refunded` transition is then applied by
+  `OrderInvoiceListener` on `InvoiceRefundedEvent`
+- Otherwise (legacy wallet path) requires `{systemWalletId}`: `OrderService::refund()` transfers
+  from the system wallet back to the user's wallet via `TransferService`, sets `refundedAt`/
+  `refundReason`, and the controller applies the `refund` transition in the same transaction
 
 ### 9.7 User Cancel
 
-- `POST /app/orders/{id}/cancel` -- authenticated user cancels own order
-- Allowed only when status is `draft`, `pending`, or `confirmed`
-- Sets status to `cancelled` (not via workflow, direct update)
+- `POST /app/orders/{id}/cancel` -- authenticated user cancels own order (ownership verified)
+- Allowed only when the workflow allows `cancel` (i.e. status is `draft`, `pending`, or `confirmed`)
+- Runs in a transaction via the `cancel` workflow transition (not a direct status update) and
+  cancels the linked invoice first via `OrderService::cancel()` (`InvoiceService::cancel()`)
 
 ### 9.8 View Items
 
@@ -482,18 +522,29 @@ Orders can only be deleted in `draft` status. Other states require cancellation 
 | API output | Decimal string/number |
 | Conversion on write | `* 100` (via `@transform` expression or service) |
 | Conversion on read | `/ 100` |
+| Points currency | `LIANSHENG_POINT` invoices carry whole point units (no cents conversion; see Payment bundle `liansheng_point` gateway). Trade `totalAmount` stays an integer throughout and Store currency is passed through verbatim |
 
 ---
 
 ## 11. Database Migrations
 
-**Version**: `Version20250620000000`
+- `Version20260624223701`: adds `invoice_id`/`invoice_no`/`payment_status` to `trade_order`
+  (plus datetime-type alignment on trade tables).
+- `Version20260725020000`: creates `trade_outbox_message` (`event_id` unique, `topic`,
+  `aggregate_type`, `aggregate_id`, `payload`, `occurred_at`/`available_at`/`published_at`,
+  `attempts`, `last_error`).
+- `Version20260725040000`: aligns outbox datetime mappings with Doctrine mappings.
+- `Version20260725050000`: widens `trade_order.status` to `VARCHAR(40)`.
+- `Version20260903000000` + `Version20260903000001`: OrderItem UUID migration — backfills
+  `specification_uuid` from the old `specification_id` FK, drops the FK/index/column
+  (irreversible), adds `idx_trade_order_item_spec_uuid`.
+- `Version20260903000005`: `trade_order.currency` definition (default `CNY`).
+- `Version20260911000000`: adds `type` discriminator (`normal` vs `coupon`) to `trade_product`
+  (Store-owned entity, shared table).
 
-Creates 4 tables: `trade_product`, `trade_specification`, `trade_order`, `trade_order_item`.
-
-**Version**: `Version20250621000000`
-
-Adds columns to `trade_order`: `paid_at`, `refunded_at`, `fulfilled_at`, `payment_method`, `tracking_number`, `shipping_address`, `refund_reason`.
+Earlier bootstrapping migrations (`Version20250620000000` creating the four trade tables;
+`Version20250621000000` adding `paid_at`/`refunded_at`/`fulfilled_at`/`payment_method`/
+`tracking_number`/`shipping_address`/`refund_reason`) predate the `Version2026*` series above.
 
 ---
 
@@ -501,9 +552,9 @@ Adds columns to `trade_order`: `paid_at`, `refunded_at`, `fulfilled_at`, `paymen
 
 | Suite | Tests |
 |-------|-------|
-| `tests/Trade/Entity/` | Product, Order, OrderItem, Specification unit tests |
-| `tests/Trade/Service/` | OrderService create order, OrderItem service |
-| `tests/Trade/Pricing/` | BasePriceCalculator, QuantityCalculator, TotalAggregator, PriceCalculationResult |
-| `tests/Trade/Controller/` | OrderController create/quote/list/detail |
-| `tests/Trade/Integration/` | Product repository, Order repository integration |
-| `tests/Promotion/Integration/` | 8 real SQLite pipeline tests with Doctrine + actual OrderService |
+| `tests/UnitTest/Trade/Entity/` | Order, OrderItem (+ legacy Product/Specification) unit tests |
+| `tests/UnitTest/Trade/Service/` | OrderService create order, OrderService payments (invoice paths) |
+| `tests/UnitTest/Trade/Pricing/` | Pipeline pricing tests |
+| `tests/UnitTest/Trade/EventListener/` | OrderInvoiceListener, OrderWorkflowListener |
+| `tests/UnitTest/Trade/Controller/` | App + Manage OrderController tests |
+| `tests/UnitTest/Promotion/Service/` | PromotionCalculator pipeline tests (real pipeline coverage) |

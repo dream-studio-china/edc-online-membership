@@ -161,7 +161,7 @@ carry **explicit scalar fields** rather than an envelope (see
 
 | Topic (`.v1` suffix = version) | Emitter outbox | Consumer |
 |--------------------------------|----------------|----------|
-| `trade.order.created.v1` | `trade_outbox_message` | Store (`TradeOrderCreatedHandler`) — always emitted when a `StoreContext` is present; Store validates and auto-accepts or creates an inventory reservation (no Trade ack) |
+| `trade.order.created.v1` | `trade_outbox_message` | Store (`TradeOrderCreatedHandler`) — always emitted when a `StoreContext` is present (order auto-submitted); payload `{orderUuid, store{uuid,code,name,channel,currency,requireVerification}, customerUserUuid, currency, totalAmount, items[{lineId,catalogReference,quantity,unitPrice,lineAmount,snapshot}], delivery, placedAt}`; Store validates and auto-accepts or creates an inventory reservation (no Trade ack) |
 | `trade.order.cancelled.v1` | `trade_outbox_message` | Store (`TradeOrderCancelledHandler`) |
 | `store.order.verified.v1` | `store_outbox_message` | Trade (`StoreOrderVerifiedHandler`) — only when Trade order metadata `_completionMode == 'store_verification'` (snapshot of `StoreContext.requireVerification` at creation); payload `{orderUuid, storeOrderUuid, storeUuid, verifiedBy, verifiedAt}` (no `verificationCode`; audit `verifiedBy`/`verifiedAt` only); guard is Trade `_completionMode` |
 | `store.order.accepted.v1` | — | **Removed** — former Store→Trade acceptance ack; no longer emitted or consumed |
@@ -339,7 +339,7 @@ sequenceDiagram
     participant IO as Inventory Outbox
 
     T->>T: OrderService::createOrder(storeContext)<br/>(txn) workflow submit + record trade.order.created.v1<br/>metadata._completionMode = requireVerification ? 'store_verification' : 'manual'
-    T->>TO: (txn) += trade.order.created.v1 {orderUuid, store{uuid,code,name,requireVerification}, items, delivery, placedAt}
+    T->>TO: (txn) += trade.order.created.v1 {orderUuid, store{uuid,code,name,channel,currency,requireVerification}, customerUserUuid, currency, totalAmount, items, delivery, placedAt}
     TO->>S: app:trade:outbox:publish → TradeOrderCreatedMessage
     S->>S: (txn) inbox += trade.order.created.v1 (StoreConsumedEvent)
     alt store missing or inactive
