@@ -73,8 +73,10 @@ must behave as if they were independent services.
 
 ### Messenger routing (async transport)
 
-Registered messages include: Trade order created/cancelled / store accepted/rejected,
-Inventory reservation request/confirm/reject/release, Settlement funding-confirmed and
+Registered messages include: Trade order created/cancelled, Store order verified
+(`store.order.verified.v1` — the only Store→Trade message; the former
+accepted/rejected relays were removed), Inventory reservation
+request/confirm/reject/release, Settlement funding-confirmed and
 allocation-posting. Handlers live in the consuming module's `MessageHandler/`
 directory (e.g. `src/Store/MessageHandler/TradeOrderCreatedHandler.php`,
 `src/Inventory/MessageHandler`). Failure transport is `failed` with a 3-retry,
@@ -246,7 +248,7 @@ Controller field whitelist ($requiredCreateProperties / $acceptedCreatePropertie
   ];
   ```
 
-  Each declared field present and non-null is validated against `src/{Bundle}/Resources/JsonSchema/{Name}.json` (`Core\Validator\JsonSchemaValidator::validate()`). Violations throw `JsonSchemaViolationException` → `ValidatorException` → `400` via `warning()`. `Store` bundle ships `StoreAddress` (province/city/district/street/detail/latitude/longitude/geohash...; `latitude↔longitude` dependencies, `additionalProperties:false`), `StoreContact` (phone/email/uuid, `subTitle` 1..100, `tags` array 1..30×20 unique), `StoreSettings` (order/fulfillment booleans, top-level `additionalProperties:true` for forward compat, empty `{}` coerced to object). `Store` entity adds `currency` varchar(32) `DEFAULT 'CNY'` (`LIANSHENG_POINT` for points mall, validated `^[A-Za-z0-9._-]{1,32}$`). Validator lives in `Core`, schemas in each bundle.
+   Each declared field present and non-null is validated against `src/{Bundle}/Resources/JsonSchema/{Name}.json` (`Core\Validator\JsonSchemaValidator::validate()`). Violations throw `JsonSchemaViolationException` → `ValidatorException` → `400` via `warning()`. `Store` bundle ships `StoreAddress` (province/city/district/street/detail/formattedAddress/latitude/longitude/geohash…; `latitude↔longitude` dependencies, `additionalProperties:false`), `StoreContact` (phone/email/uuid, `subTitle` 1..100, `tags` array ≤20×30 unique), `StoreSettings` (`fulfillment.requireVerification` boolean only, top-level `additionalProperties:true` for forward compat, empty `{}` coerced to object). The manage controller additionally requires `settings.order/fulfillment/liansheng` to be objects-or-null when present and `requireVerification` to be boolean. `settings.liansheng.memberCardTypeId` (string) is read by `LianshengService` for 0702 member registration; no `pointRefundExpiryDate` key is read by any code. `Store` entity adds `currency` varchar(32) `DEFAULT 'CNY'` (`LIANSHENG_POINT` for points mall, validated `^[A-Za-z0-9._-]{1,32}$`). Validator lives in `Core`, schemas in each bundle.
 
 ### Rate limiting
 

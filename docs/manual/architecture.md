@@ -198,8 +198,11 @@ Cross-module writes never call the target module synchronously:
 
 - `Trade` publishes `TradeOrderCreatedMessage`/`TradeOrderCancelledMessage`; `Store`
   consumes them to fan orders out to stores (`StoreOrder`).
-- `Store` publishes `StoreOrderAcceptedMessage`/`StoreOrderRejectedMessage`; `Trade`
-  consumes them to move order state.
+- `Store` publishes `StoreOrderVerifiedMessage` (topic `store.order.verified.v1`);
+  `Trade` consumes it to complete the order when its snapshot
+  `metadata._completionMode == 'store_verification'`. The former
+  `store.order.accepted/rejected.v1` acceptance relays were removed — Store
+  accepts/rejects locally with no Trade relay.
 - `Trade` requests inventory reservations through `ReservationRequestedMessage`;
   `Inventory` confirms/rejects via `ReservationConfirmed/RejectedMessage`.
 - `Payment` emits `InvoicePaidEvent`, `InvoiceRefundedEvent`, etc.; the `Wallet`

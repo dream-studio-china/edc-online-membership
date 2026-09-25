@@ -130,9 +130,19 @@ Current chain (excerpt):
 | `Version20260624223701` | payment `invoice`, `wechat_user`, **`messenger_messages`** |
 | `Version20260725010000` | store, store_membership, store_order, store_consumed_event, store_outbox_message |
 | `Version20260725020000` | trade_outbox_message |
+| `Version20260725030000` | trade_specification UUID (`uniq_trade_specification_uuid`) |
+| `Version20260725040000` | align Store/Trade outbox schema with Doctrine mappings |
+| `Version20260725050000` | `trade_order.status` widened to VARCHAR(40) |
 | `Version20260726000000` | inventory material/stock/recipe/reservation/ledger + inbox/outbox + store_trade_order_cancellation |
 | `Version20260819000000` | settlement_rule, settlement_rule_version, settlement_plan, settlement_allocation, settlement_consumed_event, settlement_outbox_message |
 | `Version20260819000001` | + `source_item_id`, `source_item_snapshot` on settlement_allocation |
+| `Version20260902000000` | `trade_product.store_id` nullable (`SET NULL`, `idx_trade_product_store`) — `NULL` = shared/global |
+| `Version20260903000000` / `Version20260903000001` | `trade_order_item.specification_uuid` add + backfill from `specification_id`, then drop `specification_id` FK/column |
+| `Version20260903000003` | `store_order` verification audit columns `verified_at` / `verified_by` / `verification_code` (note: `verification_code` is DB-only — no entity field reads it; verification uses the order UUID) |
+| `Version20260903000004` | `store.currency` VARCHAR(32) `DEFAULT 'CNY'` (existing stores backfilled to `LIANSHENG_POINT`) |
+| `Version20260903000005` | currency widened to VARCHAR(32) on `trade_order`, `payment_invoice`, `store_order` |
+| `Version20260905000000` | `store_order.verification_required` snapshot (from `StoreContext.requireVerification`) |
+| `Version20260911000000` | `trade_product.type` (`normal`/`coupon`, `idx_trade_product_type`) |
 
 ---
 

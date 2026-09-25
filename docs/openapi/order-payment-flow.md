@@ -27,11 +27,11 @@ Amounts are stored as integer cents/fen. For example, `1234` means `12.34 CNY`.
 | `draft` | Order created but not submitted/confirmed | Created, not payable yet |
 | `pending` | Submitted and waiting for confirmation | Ready for user/backend confirmation |
 | `confirmed` | Confirmed and can start payment | Payable |
-| `paid` | Payment completed | Paid, waiting fulfillment |
+| `paid` | Payment completed | Paid, waiting fulfillment; refundable (admin `refund`) |
 | `fulfilled` | Order shipped/fulfilled | Waiting completion/receipt |
-| `completed` | Order completed | Completed, refundable by backend flow |
+| `completed` | Order completed | Completed (terminal success; not refundable) |
 | `cancelled` | Order cancelled | Cancelled |
-| `refunded` | Order fully refunded | Refunded |
+| `refunded` | Order fully refunded (from `paid`) | Refunded |
 
 Order workflow:
 
@@ -42,7 +42,7 @@ stateDiagram-v2
     confirmed --> paid: pay
     paid --> fulfilled: fulfill
     fulfilled --> completed: complete
-    completed --> refunded: refund
+    paid --> refunded: refund
     draft --> cancelled: cancel
     pending --> cancelled: cancel
     confirmed --> cancelled: cancel
@@ -50,7 +50,7 @@ stateDiagram-v2
 
 Cancellation is allowed only from `draft`, `pending`, or `confirmed`.
 
-Refund is allowed only from `completed`.
+Refund is allowed only from `paid` (`paid → refunded`, `config/packages/workflow.yaml`).
 
 ### Invoice Status
 
@@ -64,16 +64,21 @@ Refund is allowed only from `completed`.
 | `partial_refunded` | Partially refunded | Partial refund completed |
 | `refunded` | Fully refunded | Full refund completed |
 
-Invoice workflow:
+Invoice workflow (`config/packages/workflow.yaml`):
 
 ```mermaid
 stateDiagram-v2
     pending --> paying: start_pay
+    pending --> paid: mark_paid
     paying --> paid: mark_paid
-    paid --> partial_refunded: partial_refund
-    partial_refunded --> refunded: refund
     pending --> failed: fail
+    paying --> failed: fail
+    pending --> cancelled: cancel
     paying --> cancelled: cancel
+    failed --> cancelled: cancel
+    paid --> partial_refunded: partial_refund
+    paid --> refunded: refund
+    partial_refunded --> refunded: refund
 ```
 
 Invoice `paid/refunded/cancelled/failed` events update the linked order payment fields automatically when the invoice source is a trade order.
@@ -202,9 +207,15 @@ Rules:
 | `items` | yes | Non-empty array |
 | `items[].specificationId` | yes | Specification id |
 | `items[].quantity` | yes | Must be at least `1` |
-| `currency` | no | Defaults to `CNY` |
+| `currency` | no | Defaults to `CNY`. When `X-Store-Code` resolves to a Store, the Store currency is authoritative and a mismatched value is rejected with `400 Currency mismatch` |
 | `notes` | no | Customer note |
 | `metadata` | no | Saved as-is into `trade_order.metadata`, suitable for receiver/address snapshots and other frontend payloads |
+
+Currency rule: `currency` comes from the `Store` resolved via the `X-Store-Code`
+request header (`LIANSHENG_POINT` for the points mall, `CNY` otherwise); requests
+without the header default to `CNY`. An unknown or inactive store code returns
+`404 Store is not available`. A store order is auto-submitted on creation and fans
+out to the Store via `trade.order.created.v1`.
 
 Example response:
 
@@ -365,10 +376,10 @@ Supported payment values:
 
 | payment | Meaning |
 | --- | --- |
-| `mock` | Mock gateway for development/testing |
-| `wallet` | Wallet balance payment |
-| `wechat` | WeChat Pay gateway, including Mini Program JSAPI payment, if configured |
-| `liansheng_point` | Synchronous Liansheng member-points deduction for invoices whose currency is `LIANSHENG_POINT` |
+| `mock` | Mock gateway for development/testing (`autoPaid: true` marks paid synchronously, otherwise `paying` + `payUrl /mock/pay/{outTradeNo}`; notify verified by `secret: mock`) |
+| `wallet` | Wallet balance payment (synchronous user→system transfer; `systemWalletId` required; no external notify) |
+| `wechat` | WeChat Pay gateway, including Mini Program JSAPI payment, if configured (`tradeType: jsapi\|native`; stays `paying` until `POST /api/payment/notify/wechat`) |
+| `liansheng_point` | Synchronous Liansheng member-points deduction for invoices whose currency is `LIANSHENG_POINT` (deduct-only via vendor 0703 `vipsubscore` `score` field; no notify endpoint; **refunds unsupported** — the vendor API can only deduct, never credit) |
 
 Common payment options:
 
@@ -799,7 +810,8 @@ Authorization: Bearer <admin_access_token>
 
 Allowed only from `fulfilled`.
 
-Result: order status becomes `completed`.
+Result: order status becomes `completed` (terminal success; not refundable — refund
+applies to `paid` orders).
 
 > Store-verified orders: if the order was created with `X-Store-Code` and the Store has `fulfillment.requireVerification=true`, the order's `_completionMode` is `store_verification`. Manual `do/complete` is then blocked (`Store verification is required`) and completion happens automatically after `POST /api/v1/store/{scopeId}/orders/{uuid}/verify` (fulfilled → verified) emits `store.order.verified.v1`. If verification arrived before fulfillment, completion is applied right after `fulfill`.
 
@@ -815,7 +827,7 @@ Authorization: Bearer <admin_access_token>
 Content-Type: application/json
 ```
 
-Allowed only from `completed`.
+Allowed only from `paid`.
 
 Request:
 
@@ -833,6 +845,7 @@ Rules:
 | Order has linked invoice | Calls invoice refund for remaining invoice amount. `systemWalletId` is needed if the payment/refund path uses wallet. |
 | Order has no linked invoice | Uses wallet transfer refund and requires `systemWalletId`. |
 | Invoice has wallet deduction | Adjusted invoices only support full refund. |
+| Invoice paid via `liansheng_point` | Refund rejected — points refunds are unsupported (vendor 0703 API is deduct-only). |
 
 Example response:
 
@@ -922,7 +935,7 @@ Supported transitions:
 | `fulfill` | `paid` | `fulfilled` |
 | `complete` | `fulfilled` | `completed` |
 | `cancel` | `draft`, `pending`, `confirmed` | `cancelled` |
-| `refund` | `completed` | `refunded` |
+| `refund` | `paid` | `refunded` |
 
 The body is optional. If present, supported order fields are updated before transition.
 
@@ -950,7 +963,7 @@ Authorization: Bearer <admin_access_token>
 | `draft` | Submit; Cancel |
 | `pending` | Confirm; Cancel |
 | `confirmed` | Pay; Cancel |
-| `paid` | Show paid/waiting fulfillment |
+| `paid` | Show paid/waiting fulfillment; Refund (admin, `paid → refunded`; not available for `liansheng_point`) |
 | `fulfilled` | Show shipped/fulfilled |
 | `completed` | Show completed |
 | `cancelled` | No primary action |
@@ -1092,7 +1105,7 @@ POST /api/v1/app/orders/{orderId}/cancel
 
 If an invoice is linked and still cancellable, it is cancelled too.
 
-### Refund After Completion
+### Refund After Payment
 
 Backend/admin:
 

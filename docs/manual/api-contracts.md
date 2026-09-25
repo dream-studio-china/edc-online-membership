@@ -190,9 +190,17 @@ the `App` and `Manage` controller trees (attribute routing).
 | `/api/v1/manage/stores` | POST | `ROLE_ADMIN` | Create store (`code`, `name`, `timezone`, `currency` 1..32 default `CNY`, `contact`/`address`/`settings` validated via JSON Schema) |
 | `/api/v1/manage/stores/{uuid}` | PUT | `ROLE_ADMIN` | Update store (`name`, `timezone`, `currency`, `contact`, `address`, `settings`); `code` immutable |
 | `/api/v1/manage/stores/{uuid}/members` | POST | `ROLE_ADMIN` | Grant membership (`userUuid`, `role` `owner/manager/clerk/fulfillment`) — upsert & re-activate |
-| `/api/v1/app/stores/{uuid}/membership` | POST | `ROLE_USER` | **Self-join as member** (idempotent, fixed `role=clerk`, body ignored, `200 Already a member` / `201 Joined`) |
+| `/api/v1/app/stores/{uuid}/membership` | POST | `ROLE_USER` | **Self-join as member** (idempotent, fixed `role=clerk`, body ignored, `200 Already a member` / `201 Joined` / `200 reactivated`) |
 | `/api/v1/app/stores/{uuid}/membership` | GET | `ROLE_USER` | Get own membership for store |
-| `/api/v1/app/orders` | POST | `ROLE_USER` | Create order — `currency` is **authoritative from `Store`** via `X-Store-Code` header (`LIANSHENG_POINT` for points mall, `CNY` otherwise); mismatch `400 Currency mismatch`; global (no header) defaults to `CNY` |
+| `/api/v1/app/orders` | POST | `ROLE_USER` | Create order — `currency` is **authoritative from `Store`** via `X-Store-Code` header (`LIANSHENG_POINT` for points mall, `CNY` otherwise); mismatch `400 Currency mismatch`; global (no header) defaults to `CNY`; unknown/inactive code `404 Store is not available`; a store order auto-submits and emits `trade.order.created.v1` |
+| `/api/v1/app/orders/quote` | POST | `ROLE_USER` | Price preview — same `X-Store-Code`/currency rule as create, no order persisted |
+| `/api/v1/app/orders/{id}/submit` | POST | `ROLE_USER` | `draft → pending` (own order only, else `404`) |
+| `/api/v1/app/orders/{id}/confirm` | POST | `ROLE_USER` | `pending → confirmed` (own order only, else `404`) |
+| `/api/v1/app/orders/{id}/payment` | POST | `ROLE_USER` | Start payment (`confirmed` only; body `payment` defaults `mock`, see `openapi/order-payment-flow.md`) |
+| `/api/v1/app/orders/{id}/cancel` | POST | `ROLE_USER` | `draft/pending/confirmed → cancelled` (own order only; linked pending invoice cancelled too) |
+| `/api/v1/manage/orders/{id}/fulfill` | POST | `ROLE_ADMIN` | `paid → fulfilled` (`trackingNumber`/`shippingAddress`) |
+| `/api/v1/manage/orders/{id}/refund` | POST | `ROLE_ADMIN` | `paid → refunded` (`reason` required; `systemWalletId` only when no linked invoice); `liansheng_point` invoices cannot be refunded |
+| `/api/v1/manage/orders/{id}/do/{transition}` | POST | `ROLE_ADMIN` | Generic workflow step (`submit/confirm/pay/fulfill/complete/cancel/refund`); `complete` blocked when order `_completionMode == 'store_verification'` |
 
 `StoreContact` (`Store/StoreContact` schema) now includes `subTitle` (1..100) and `tags` (array 1..30×20 unique) alongside `phone`, `email`, `serviceHours`, etc.; `StoreAddress` includes `province/city/district/street/detail/formattedAddress/latitude/longitude` with `additionalProperties:false`.
 
